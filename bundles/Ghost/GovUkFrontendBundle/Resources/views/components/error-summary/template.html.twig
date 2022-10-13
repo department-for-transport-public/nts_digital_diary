@@ -1,0 +1,29 @@
+<div class="govuk-error-summary
+  {%- if params.classes is defined and params.classes %} {{ params.classes }}{% endif %}" aria-labelledby="error-summary-title" role="alert"
+  {%- if params.disableAutoFocus is defined and params.disableAutoFocus %} data-disable-auto-focus="true"{% endif %}
+  {%- for attribute, value in params.attributes | default({}) %} {{ attribute }}="{{ value }}"{% endfor %}
+data-module="govuk-error-summary">
+    <h2 class="govuk-error-summary__title" id="error-summary-title">
+        {% if params.titleHtml is defined %}{{ params.titleHtml | raw }}{% else %}{{ params.titleText }}{% endif %}
+    </h2>
+    <div class="govuk-error-summary__body">
+        {% if params.descriptionHtml is defined or params.descriptionText is defined -%}
+            <p>
+                {% if params.descriptionHtml is defined %}{{ params.descriptionHtml | raw }}{% else %}{{ params.descriptionText }}{% endif %}
+            </p>
+        {%- endif -%}
+        <ul class="govuk-list govuk-error-summary__list">
+            {%- for item in params.errorList|default([]) %}
+                <li>
+                    {%- if item.href is defined and item.href %}
+                        <a href="{{ item.href }}"{% for attribute, value in item.attributes | default([]) %} {{attribute}}="{{value}}"{% endfor %}>
+                            {% if item.html is defined %}{{ item.html | raw }}{% else %}{{ item.text }}{% endif %}
+                        </a>
+                    {% else %}
+                        {% if item.html is defined %}{{ item.html | raw }}{% else %}{{ item.text }}{% endif %}
+                    {% endif %}
+                </li>
+            {%- endfor -%}
+        </ul>
+    </div>
+</div>

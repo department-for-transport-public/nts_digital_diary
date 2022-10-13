@@ -1,0 +1,35 @@
+@import "node_modules/govuk-frontend/govuk/helpers/colour";
+
+#session-reminder {
+  box-sizing: border-box;
+
+  border: 2px solid govuk-colour('orange');
+  font-family: "GDS Transport", arial, sans-serif;
+  padding: 15px;
+  margin-top: 30px;
+  margin-bottom: 30px;
+
+  font-size: 125%;
+
+  a {
+    color: govuk-colour('blue');
+  }
+
+  &.visible {
+    display: block ! important;
+  }
+
+  > .expired {
+    display: none;
+  }
+
+  &.expired {
+    > .expired {
+      display: block;
+    }
+
+    > .extend {
+      display: none;
+    }
+  }
+}

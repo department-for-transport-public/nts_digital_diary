@@ -1,0 +1,21 @@
+{% extends 'interviewer/dashboard/base.html.twig' %}
+{% trans_default_domain 'interviewer' %}
+{% set household = subject %}
+{% set areaPeriod = household.areaPeriod %}
+{% set action = 'submit-household' %}
+
+{% block content %}
+    {%- from "@GhostGovUkFrontend/components/macros.html.twig" import actionlessSummaryListRow, warningText -%}
+
+    <dl class="govuk-summary-list">
+        {{ actionlessSummaryListRow(
+            "household.diary-week-start-date" | trans,
+            household.diaryWeekStartDate|date(format_date_default),
+        ) }}
+    </dl>
+
+    <p class="govuk-body">{{ 'household.submit.copy' | trans }}</p>
+    {{ warningText('household.submit.warning' | trans) }}
+
+    {{ form(form) }}
+{% endblock %}

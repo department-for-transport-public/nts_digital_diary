@@ -1,0 +1,41 @@
+@import "node_modules/govuk-frontend/govuk/core/lists";
+@import "node_modules/govuk-frontend/govuk/settings/measurements";
+@import "node_modules/govuk-frontend/govuk/tools/compatibility";
+
+$govuk-orange-button-colour: govuk-colour("orange", $legacy: #f47738);
+$govuk-orange-button-hover-colour: govuk-shade($govuk-orange-button-colour, 10%);
+$govuk-orange-button-shadow-colour: govuk-shade($govuk-orange-button-colour, 40%);
+$govuk-orange-button-text-colour: govuk-colour("white");
+$button-shadow-size: $govuk-border-width-form-element;
+
+.govuk-button--orange {
+    background-color: $govuk-orange-button-colour;
+    box-shadow: 0 $button-shadow-size 0 $govuk-orange-button-shadow-colour;
+
+    &,
+    &:link,
+    &:visited,
+    &:active,
+    &:hover {
+        color: $govuk-orange-button-text-colour;
+    }
+
+    // alphagov/govuk_template includes a specific a:link:focus selector
+    // designed to make unvisited links a slightly darker blue when focussed, so
+    // we need to override the text colour for that combination of selectors so
+    // so that unvisited links styled as buttons do not end up with dark blue
+    // text when focussed.
+    @include govuk-compatibility(govuk_template) {
+        &:link:focus {
+            color: $govuk-orange-button-text-colour;
+        }
+    }
+
+    &:hover {
+        background-color: $govuk-orange-button-hover-colour;
+
+        &[disabled] {
+            background-color: $govuk-orange-button-colour;
+        }
+    }
+}

@@ -1,0 +1,27 @@
+twig:
+    default_path: '%kernel.project_dir%/templates'
+    form_themes:
+        - 'theme.html.twig'
+    globals:
+        env_label_frontend: '%env(string:APP_ENV_LABEL_FRONTEND)%'
+        env_label_colour: '%env(string:APP_ENV_LABEL_COLOUR)%'
+        env_label_background: '%env(string:APP_ENV_LABEL_BACKGROUND)%'
+        env_google_site_verification: '%env(default:false:APP_GOOGLE_SITE_VERIFICATION)%'
+
+        format_date_default: !php/const App\Utility\DateTimeFormats::DATE_DEFAULT
+        format_date_reverse: !php/const App\Utility\DateTimeFormats::DATE_REVERSE
+        format_date_short_with_dow: !php/const App\Utility\DateTimeFormats::DATE_SHORT_WITH_DOW
+        format_date_with_dow: !php/const App\Utility\DateTimeFormats::DATE_WITH_DOW
+
+        format_time_short: !php/const App\Utility\DateTimeFormats::TIME_SHORT
+
+        csp_inline_script_helper: '@App\Utility\CspInlineScriptHelper'
+        url_signer: '@App\Utility\UrlSigner'
+
+        hostnames:
+            frontend: '%hostnames.frontend%'
+            admin: '%hostnames.admin%'
+
+when@test:
+    twig:
+        strict_variables: true

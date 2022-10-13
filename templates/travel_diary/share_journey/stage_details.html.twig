@@ -1,0 +1,31 @@
+{%- extends 'travel_diary/share_journey/base_form.html.twig' -%}
+
+{%- trans_default_domain 'travel-diary' -%}
+
+{%- set current_stage = form.vars.data -%}
+
+{%- set translation_parameters = {
+    stage_number: current_stage.number
+} -%}
+
+{%- set methodType = form.vars.data.method.type ?? null -%}
+{%- set title_translation_key = "share-journey.stage-details." ~ methodType ~ ".page-title" -%}
+
+{% block preFormContent %}
+    {%- import "@GhostGovUkFrontend/components/macros.html.twig" as m -%}
+    {%- if methodType == 'public' -%}
+        <div class="prose-scope">
+            {{ 'share-journey.stage-details.public.introduction' | trans | markdown_to_html }}
+        </div>
+        {{- m.details({
+            summaryText: "share-journey.stage-details.ticket-type.help-summary" | trans,
+            html: "stage.ticket.ticket-type.help" | trans | markdown_to_html
+        }) -}}
+    {%- elseif methodType == 'private' -%}
+        {%- if current_stage.isDriver == true -%}
+            <div class="prose-scope">
+                {{ m.warningText('share-journey.stage-details.private.source-was-driver-introduction' | trans) }}
+            </div>
+        {%- endif -%}
+    {%- endif -%}
+{% endblock %}

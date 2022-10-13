@@ -1,0 +1,38 @@
+services:
+    limiter.api:
+        class: App\Limiter\ApiRequestLimiter
+        autowire: true
+
+    limiter.login:
+        class: Symfony\Component\Security\Http\RateLimiter\DefaultLoginRateLimiter
+        arguments:
+            $globalFactory: '@limiter.ip'
+            $localFactory: '@limiter.ip_and_username'
+
+# Cache overridden in cache.yaml
+framework:
+    rate_limiter:
+        api_key:
+            policy: 'sliding_window'
+            limit: 5
+            interval: '1 minute'
+        api_ip:
+            policy: 'sliding_window'
+            limit: 5
+            interval: '1 minute'
+        ip:
+            policy: 'sliding_window'
+            limit: 15
+            interval: '5 minutes'
+        ip_and_username:
+            policy: 'sliding_window'
+            limit: 5
+            interval: '5 minutes'
+        forgotten_password_email:
+            policy: 'sliding_window'
+            limit: 2
+            interval: '10 minutes'
+        forgotten_password_ip:
+            policy: 'sliding_window'
+            limit: 5
+            interval: '10 minutes'

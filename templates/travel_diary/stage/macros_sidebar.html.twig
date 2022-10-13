@@ -1,0 +1,57 @@
+{%- trans_default_domain 'travel-diary' -%}
+
+{%- macro stageSidebar(stage, options) -%}
+    {%- set translation_prefix = "stage.side" -%}
+    {%- set options = options ?? {} -%}
+    {%- set h2class = "govuk-heading-s" -%}
+    {%- set h3class = "govuk-heading-s govuk-!-font-size-16" -%}
+    {%- set bodyClass = "govuk-body-s" -%}
+
+    {%- if stage.method is not null or stage.methodOther is not null -%}
+        {%- if options.showHeading ?? true -%}
+            <h2 class="{{ h2class }}">{{ "stage.side.title.stage" | trans }}</h2>
+        {%- endif -%}
+
+        <h3 class="{{ h3class }} govuk-!-margin-bottom-1">{{ "#{translation_prefix}.title.method" | trans }}</h3>
+        <p class="{{ bodyClass }}">{{ stage.methodOther is not null ?
+            "stage.view.method.other" | trans({method: stage.methodOther}) :
+            ("stage.method.choices." ~ stage.method.descriptionTranslationKey) | trans }}</p>
+    {%- endif -%}
+
+    {%- if stage.distanceTravelled is not null -%}
+        <h3 class="{{ h3class }} govuk-!-margin-bottom-1">{{ "#{translation_prefix}.title.distance-and-time" | trans }}</h3>
+        <p class="{{ bodyClass }}">
+            {{- "distance.#{stage.distanceTravelled.unit}" | trans({value: stage.distanceTravelled.value}, 'messages') -}}
+            {{- ' / ' -}}
+            {{- "stage.view.travel-time.value" | trans({minutes: stage.travelTime}) }}
+        </p>
+    {%- endif -%}
+
+    {%- if stage.adultCount is not null or stage.childCount is not null -%}
+        <h3 class="{{ h3class }} govuk-!-margin-bottom-1">{{ "#{translation_prefix}.title.people-travelling" | trans }}</h3>
+        <p class="{{ bodyClass }}">
+            {{- "stage.view.companion-count.value" | trans({adultCount: stage.adultCount ?? 0, childCount: stage.childCount ?? 0, count: stage.travellingPeopleCount}) -}}
+        </p>
+    {%- endif -%}
+
+    {%- if stage.vehicle is not null or stage.vehicleOther is not null -%}
+        <h3 class="{{ h3class }} govuk-!-margin-bottom-1">{{ "#{translation_prefix}.title.vehicle" | trans }}</h3>
+        <p class="{{ bodyClass }}">
+            {{- stage.vehicle.friendlyName ?? stage.vehicleOther ?? ("#{translation_prefix}.vehicle.unknown" | trans) -}}
+        </p>
+    {%- endif -%}
+
+    {%- if stage.isDriver is not null -%}
+        <h3 class="{{ h3class }} govuk-!-margin-bottom-1">{{ "#{translation_prefix}.title.driver-or-passenger" | trans }}</h3>
+        <p class="{{ bodyClass }}">
+            {{- ("stage.view.driver-or-passenger." ~ (stage.isDriver ? 'driver' : 'passenger')) | trans -}}
+        </p>
+    {%- endif -%}
+
+    {%- if stage.parkingCost is not null -%}
+        <h3 class="{{ h3class }} govuk-!-margin-bottom-1">{{ "#{translation_prefix}.title.parking-cost" | trans }}</h3>
+        <p class="{{ bodyClass }}">
+            {{ "stage.view.parking-cost.value" | trans({cost: stage.parkingCost/100}) }}
+        </p>
+    {%- endif -%}
+{%- endmacro -%}

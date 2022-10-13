@@ -1,0 +1,44 @@
+@import "common/container";
+
+body {
+    background-color: lightgray;
+}
+
+.govuk-table__cell-no-bottom-border {
+    border-bottom-color: transparent;
+}
+
+.video-container, {
+    position: relative;
+    width: 100%;
+    height: 0;
+    padding-bottom: 56.25%;
+
+    > iframe {
+        position: absolute;
+        top: 0;
+        left: 0;
+        width: 100%;
+        height: 100%;
+    }
+}
+
+.diary-keeper-view .govuk-table__header {
+    overflow-wrap: normal;
+}
+
+.header-with-following-tag {
+    > h1 {
+        @include govuk-responsive-margin(3, "bottom");
+
+        + .govuk-tag {
+            @include govuk-responsive-margin(6, "bottom");
+        }
+    }
+}
+
+.fieldset--share-stage-details {
+    > legend {
+        @include govuk-responsive-margin(3, "bottom");
+    }
+}

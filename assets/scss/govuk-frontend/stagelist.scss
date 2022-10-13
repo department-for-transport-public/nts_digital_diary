@@ -1,0 +1,12 @@
+.nts-stagelist {
+  li {
+    position: relative;
+  }
+
+  &--current:before {
+    content: "▸";
+    position: absolute;
+    font-weight: bold;
+    left: -32px;
+  }
+}

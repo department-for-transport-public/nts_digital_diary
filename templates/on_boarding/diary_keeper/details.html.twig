@@ -1,0 +1,26 @@
+{% trans_default_domain 'on-boarding' %}
+
+{% set showActions = showActions ?? true %}
+
+<div class="govuk-summary-list">
+    {%- set actionPath = showActions ? path('onboarding_diarykeeper_edit', {diaryKeeperId: diaryKeeper.id}) : false -%}
+
+    {{- _self.listRow('name', diaryKeeper.name, diaryKeeper.name, showActions ? actionPath) -}}
+    {{- _self.listRow('capi', diaryKeeper.number, diaryKeeper.name, actionPath) -}}
+    {{- _self.listRow('is-adult', diaryKeeper.isAdult | format_bool | trans({}, 'messages'), diaryKeeper.name, actionPath) -}}
+
+    {%- set actionPath = showActions ? path('onboarding_diarykeeper_edit', {diaryKeeperId: diaryKeeper.id, place: constant('App\\FormWizard\\OnBoarding\\DiaryKeeperState::STATE_IDENTITY')}) : false -%}
+    {{- _self.listRow('proxied-by', diaryKeeper.proxyNames | join(', ') | default('-'), diaryKeeper.name, actionPath) -}}
+    {{- _self.listRow('user-identifier', diaryKeeper.user.hasValidIdentifierForLogin ? diaryKeeper.user.userIdentifier : '-', diaryKeeper.name, actionPath) -}}
+</div>
+
+{%- macro listRow(key, value, name, path) -%}
+    {%- from '@GhostGovUkFrontend/components/macros.html.twig' import summaryListRow -%}
+    {{- summaryListRow(
+        "diary-keeper.view.summary.#{key}" | trans,
+        value,
+        path
+            ? {(path): {label: 'actions.change', srHiddenSuffix: "diary-keeper.view.change-action-suffix.#{key}", srHiddenSuffixParameters: {name: name}, srHiddenSuffixDomain: 'on-boarding'}}
+        : {}
+    ) -}}
+{%- endmacro -%}

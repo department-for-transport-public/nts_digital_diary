@@ -1,0 +1,160 @@
+{% trans_default_domain 'travel-diary' %}
+
+{% macro showJourney(journey, options) %}
+    {%- set options = options ?? {} %}
+
+    <dl class="govuk-summary-list">
+        {{ _self.journey_row(journey, "purpose", journey.purpose, options | merge({place: 'purpose'})) }}
+        {{ _self.journey_row(journey, "start-location-time",
+            "journey.view.location-and-time" | trans({
+                location: journey.startLocationForDisplay,
+                time: journey.startTime | date(format_time_short),
+            }),
+            options | merge({place: "locations"})
+        ) }}
+        {{ _self.journey_row(journey, "end-location-time",
+            "journey.view.location-and-time" | trans({
+                location: journey.endLocationForDisplay,
+                time: journey.endTime | date(format_time_short),
+            }),
+            options | merge({place: "locations"})
+        ) }}
+    </dl>
+{% endmacro %}
+
+{% macro showStages(stages, options) %}
+    {%- set options = options ?? {} %}
+
+    {%- if stages is not empty -%}
+        <div class="govuk-tabs" data-module="govuk-tabs">
+            <h2 class="govuk-tabs__title">
+                {{ "journey.view.tabs.title" | trans }}
+            </h2>
+            <ul class="govuk-tabs__list">
+                {%- for stage in stages -%}
+                    <li class="govuk-tabs__list-item{% if loop.first %} govuk-tabs__list-item--selected{% endif %}">
+                        <a class="govuk-tabs__tab" href="#stage-{{ stage.number }}">
+                            {{ "journey.view.stage-x" | trans({number: stage.number}) }}
+                        </a>
+                    </li>
+                {%- endfor -%}
+            </ul>
+            {%- for stage in stages -%}
+                {# @var stage \App\Entity\Journey\Stage #}
+                <section class="govuk-tabs__panel" id="stage-{{ stage.number }}">
+                    {%- set journey = stage.journey -%}
+                    {%- set day = journey.diaryDay -%}
+                    {{ _self.showStage(stage, options) }}
+
+                    <p class="govuk-body">
+                        <a class="govuk-link" href="{{ path('traveldiary_stage_delete', {stageId: stage.id}) }}">
+                            {{- "journey.view.delete-stage" | trans -}}<span class="govuk-visually-hidden">
+                                {{- ' ' ~ ("journey.view.delete-stage-sr-hidden-suffix" | trans({
+                                    stageNumber: stage.number,
+                                    travelTime: stage.travelTime,
+                                    method: stage.methodForDisplay | trans
+                                })) -}}</span>
+                        </a>
+                    </p>
+                </section>
+            {%- endfor -%}
+        </div>
+    {%- endif -%}
+{% endmacro %}
+
+{% macro showStage(stage, options) %}
+    {# @var stage \App\Entity\Journey\Stage #}
+    {%- set diaryKeeper = stage.journey.diaryDay.diaryKeeper -%}
+    {%- set options = options ?? {} %}
+    {%- set headingElement = options.headingElement ?? 'h3' %}
+
+    {% if options.showHeading ?? true %}<{{ headingElement }} class="{{ options.headingClass ?? 'govuk-heading-l' }} govuk-!-padding-top-4">{{ "stage.view.x-ordinal" | trans({number: stage.number}) }}</{{ headingElement }}>{% endif %}
+
+    <dl class="govuk-summary-list">
+        {{ _self.stage_row(stage, "method", stage.methodForDisplay | trans,
+            options | merge({disable_link: true})
+        ) }}
+        {{ _self.stage_row(stage, "distance",
+            stage.distanceTravelled.isBlank
+                ? '-'
+                : "distance.#{stage.distanceTravelled.unit}" | trans({value: stage.distanceTravelled.value}, 'messages'),
+            options | merge({place: 'details'})
+        ) }}
+        {{ _self.stage_row(stage, "travel-time",
+            stage.travelTime is null ? '-' : "stage.view.travel-time.value" | trans({minutes: stage.travelTime}),
+            options | merge({place: 'details'})
+        ) }}
+        {{ _self.stage_row(stage, "companion-count",
+            "stage.view.companion-count.value" | trans({adultCount: stage.adultCount ?? 0, childCount: stage.childCount ?? 0, count: stage.travellingPeopleCount}),
+            options | merge({place: 'details'})
+        ) }}
+
+        {%- if stage.method.type == constant('App\\Entity\\Journey\\Method::TYPE_PRIVATE') %}
+            {{ _self.stage_row(stage, "vehicle",
+                stage.vehicle.friendlyName ?? stage.vehicleOther ?? ("stage.view.vehicle.unknown" | trans),
+                options | merge({place: 'vehicle'})
+            ) }}
+            {%- if diaryKeeper.isAdult -%}
+                {{ _self.stage_row(stage, "driver-or-passenger",
+                    ("stage.view.driver-or-passenger." ~ (stage.isDriver ? 'driver' : 'passenger')) | trans,
+                    options | merge({place: 'vehicle'})
+                ) }}
+                {{ _self.stage_row(stage, "parking-cost",
+                    (not stage.parkingCost is same as null) ?"stage.view.parking-cost.value" | trans({cost: stage.parkingCost/100}) : '-',
+                    options | merge({place: 'vehicle'})
+                ) }}
+            {%- endif -%}
+        {%- elseif stage.method.type == constant('App\\Entity\\Journey\\Method::TYPE_PUBLIC') %}
+            {{ _self.stage_row(stage, "ticket-type",
+                stage.ticketType,
+                options | merge({place: 'ticket-type'})
+            ) }}
+
+            {{ _self.stage_row(stage, "ticket-cost",
+                (not stage.ticketCost is same as null) ? ("stage.view.ticket-cost.value" | trans({cost: stage.ticketCost/100})) : '-',
+                options | merge({place: 'ticket-type'})
+            ) }}
+
+            {{ _self.stage_row(stage, "boarding-count",
+                stage.boardingCount,
+                options | merge({place: 'ticket-type'})
+            ) }}
+        {%- endif -%}
+    </dl>
+{% endmacro %}
+
+{% macro journey_row(journey, translation_key, value, options) -%}
+    {%- set url = path('traveldiary_journey_wizard_edit', {journeyId: journey.id, place: options.place ?? translation_key}) -%}
+    {{- _self.row(url, "journey.view", translation_key, value, options) -}}
+{% endmacro %}
+
+{% macro stage_row(stage, translation_key, value, options) %}
+    {%- set url = (options.disable_link | default(false)) == true ? null : path('traveldiary_stage_wizard_edit', {stageId: stage.id, place: options.place ?? null}) -%}
+    {%- set srHiddenSuffixParams = (options.srHiddenSuffixParams ?? {})|merge({
+        stageDescription: 'stage.view.stage-description' | trans({
+            stageNumber: stage.number,
+            travelTime: stage.travelTime,
+            method: stage.methodForDisplay | trans,
+        })
+    }) -%}
+    {%- set options = (options ?? {}) | merge({srHiddenSuffixParams: srHiddenSuffixParams}) -%}
+    {{- _self.row(url, "stage.view", translation_key, value, options) -}}
+{% endmacro %}
+
+{% macro row(url, translation_prefix, translation_key, value, options) %}
+    {%- import "@GhostGovUkFrontend/components/macros.html.twig" as m -%}
+    {%- set label = "#{translation_prefix}.#{translation_key}.key" | trans -%}
+    {%- set place = options.place ?? translation_key -%}
+    {%- set options = options ?? {} %}
+    {%- set srHiddenSuffix = "#{translation_prefix}.#{translation_key}.change-sr-hidden-suffix" -%}
+    {%- set actions = url == null ? {} : {
+        (url): {
+            label: "actions.change",
+            srHiddenSuffix: srHiddenSuffix,
+            srHiddenSuffixDomain: 'travel-diary',
+            srHiddenSuffixParams: options.srHiddenSuffixParams ?? {},
+            srHiddenSuffixSplitContext: options.srHiddenSuffixSplitContext ?? true,
+        },
+    } -%}
+    {{- m.summaryListRow(label, value, actions, options) -}}
+{% endmacro %}

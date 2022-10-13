@@ -1,0 +1,76 @@
+{%- import '@GhostGovUkFrontend/components/macros.html.twig' as govuk -%}
+<!DOCTYPE html>
+<html lang="{{ htmlLang | default('en') }}" class="govuk-template {{ htmlClasses | default('') }}" {{ govuk.attributes(html_attributes | default({})) }}>
+<head>
+    <meta charset="utf-8" />
+    <title{% if pageTitleLang | default(false) %} lang="{{ pageTitleLang }}"{% endif %}>{% block pageTitle %}GOV.UK - The best place to find government services and information{% endblock %}</title>
+    <meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
+    <meta name="theme-color" content="{{ themeColor | default('#0b0c0c') }}" />
+    {% if block('metaDescription') is defined %}<meta name="description" content="{{ block('metaDescription') }}">{% endif %}
+
+    <meta http-equiv="X-UA-Compatible" content="IE=edge" />
+
+    {% block headIcons %}
+        <link rel="shortcut icon" sizes="16x16 32x32 48x48" href="{{ asset('build/images/favicon.ico') }}" type="image/x-icon" />
+        <link rel="mask-icon" href="{{ asset('build/images/govuk-mask-icon.svg') }}" color="{{ themeColor | default('#0b0c0c') }}">
+        <link rel="apple-touch-icon" sizes="180x180" href="{{ asset('build/images/govuk-apple-touch-icon-180x180.png') }}">
+        <link rel="apple-touch-icon" sizes="167x167" href="{{ asset('build/images/govuk-apple-touch-icon-167x167.png') }}">
+        <link rel="apple-touch-icon" sizes="152x152" href="{{ asset('build/images/govuk-apple-touch-icon-152x152.png') }}">
+        <link rel="apple-touch-icon" href="{{ asset('build/images/govuk-apple-touch-icon.png') }}">
+    {% endblock %}
+
+    {% block head %}{% endblock %}
+
+    <meta property="og:image" content="{{ asset('build/images/govuk-opengraph-image.png') }}">
+</head>
+<body class="govuk-template__body {{ bodyClasses | default('') }}"{% for attribute, value in bodyAttributes | default([]) %} {{ attribute }}="{{ value }}"{% endfor %}>
+<script nonce="{{ csp_inline_script_helper.nonce('js-detect') }}">document.body.classList.add('js-enabled');</script>
+{% block bodyStart %}{% endblock %}
+
+{% block skipLink %}
+    {{ govuk.skipLink({href: '#main-content', text: 'Skip to main content'}) }}
+{% endblock %}
+
+{% block header %}
+    {% block headerBar %}
+    {{ govuk.header({}) }}
+    {% endblock %}
+    {% set feedbackMailtoBody -%}
+        <br><br><br><br>
+        ----<br>
+        Helpful feedback information<br><br>
+        Page loaded: {{ date().format('c') }}<br>
+        Path: {{ app.request.server.get('REQUEST_URI') }}<br>
+        {%- endset %}
+    {% set phaseBannerHtml %}
+        This is a new service – your
+        <a class="govuk-link" href="mailto:feedback@ghostlimited.com?subject=DfT National Travel Survey: user feedback&body={{ feedbackMailtoBody | replace({'<br>' : '%0A'}) }}">feedback</a>
+        will help us to improve it.
+    {% endset %}
+    {{ govuk.phaseBanner({
+        classes: 'govuk-width-container',
+        tag: {
+            text: "beta"
+        },
+        html: phaseBannerHtml
+    }) }}
+{% endblock %}
+
+{% block beforeMain %}{% endblock %}
+
+{% block main %}
+    <div class="govuk-width-container {{ containerClasses | default('') }}">
+        {% block beforeContent %}{% endblock %}
+        <main class="govuk-main-wrapper {{ mainClasses | default('') }}" id="main-content" role="main"{% if mainLang | default(false) %} lang="{{ mainLang }}"{% endif %}>
+            {% block content %}{% endblock %}
+        </main>
+    </div>
+{% endblock %}
+
+{% block footer %}
+    {{ govuk.footer({}) }}
+{% endblock %}
+
+{% block bodyEnd %}{% endblock %}
+</body>
+</html>

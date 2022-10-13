@@ -1,0 +1,20 @@
+{% trans_default_domain "travel-diary" %}
+{%- import "@GhostGovUkFrontend/components/macros.html.twig" as m -%}
+{%- set household = diaryKeeper.household -%}
+{%- set areaPeriod = household.areaPeriod -%}
+<dl class="govuk-summary-list govuk-!-margin-bottom-9">
+    {%- if showName ?? true -%}
+        {{- m.actionlessSummaryListRow(
+            "days.list.name" | trans,
+            diaryKeeper.name
+        ) -}}
+    {%- endif -%}
+    {{- m.actionlessSummaryListRow(
+        "days.list.serial" | trans,
+        household.serialNumber(diaryKeeper.number)
+    ) -}}
+    {{- m.actionlessSummaryListRow(
+        "days.list.state" | trans,
+        ("diary-keeper.states." ~ (diaryKeeper.diaryState ?? 'new')) | trans({}, 'interviewer')
+    ) -}}
+</dl>

@@ -1,0 +1,19 @@
+.govuk-summary-list.govuk-summary-list-reorder {
+  a.govuk-summary-list-reorder__link_hidden {
+    color: #666;
+    pointer-events: none;
+    text-decoration: none;
+  }
+
+  .govuk-summary-list__key {
+    width: 6%;
+  }
+
+  .govuk-summary-list__value {
+    width: 45%;
+  }
+
+  .govuk-summary-list__actions {
+    width: 49%;
+  }
+}

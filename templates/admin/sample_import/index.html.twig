@@ -1,0 +1,37 @@
+{% extends 'admin/base.html.twig' %}
+
+{% trans_default_domain 'admin' %}
+{% set title_translation_prefix = 'sample-import.form' %}
+{% set title_translation_domain = 'admin' %}
+
+{% block content %}
+    {% if areas is defined %}
+        {% from '@GhostGovUkFrontend/components/macros.html.twig' import warningText %}
+        {% if not form.vars.errors is empty %}
+            {{ warningText('The sample was not imported due to errors with some or all areas') }}
+        {% else %}
+            <p class="govuk-body">
+                The following areas have been imported (from <code>"{{ form.areas.vars.data.clientOriginalName }}"</code>):
+            </p>
+            <p class="govuk-body">
+                Download the list of passcodes <a download="nts-sample-import-generated-passcodes-{{ "" | date('Ymd-His') }}.csv" href="{{ include('admin/sample_import/passcodes.csv.twig') | data_uri('text/csv') }}">here</a>.
+            </p>
+        {% endif %}
+        {# @var area \App\Entity\AreaPeriod #}
+        <ul class="govuk-list govuk-list--bullet">
+            {% for area in areas %}
+                <li>
+                    {{ area.area }}
+                    {% if normalizedErrors["data[#{loop.index0}].area"] ?? false %}
+                        {% for error in normalizedErrors["data[#{loop.index0}].area"] %}
+                            <br>
+                            <span class="govuk-error-message">{{ error.message }}</span>
+                        {% endfor %}
+                    {% endif %}
+                </li>
+            {% endfor %}
+        </ul>
+    {% else %}
+        {{ form(form) }}
+    {% endif %}
+{% endblock %}

@@ -1,0 +1,17 @@
+{% extends 'interviewer/dashboard/base.html.twig' %}
+{% trans_default_domain 'interviewer' %}
+
+{% set title_translation_key = "mark-as-approved.page-title" %}
+{% set heading_class = "govuk-heading-xl" %}
+{% set breadcrumb_translation_parameters = {
+    diary_keeper_name: diaryKeeper.name,
+} %}
+{% set household = diaryKeeper.household %}
+{% set areaPeriod = household.areaPeriod %}
+
+{% block content %}
+    <p class="govuk-body govuk-!-margin-bottom-6">
+        {{- 'mark-as-approved.copy' | trans | nl2br -}}
+    </p>
+    {{ form(form) }}
+{% endblock %}

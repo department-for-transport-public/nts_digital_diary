@@ -1,0 +1,23 @@
+{% extends 'base.html.twig' %}
+
+{% block pageTitle %}
+    {{ (prefix ~ 'title')|trans }}
+{% endblock %}
+
+{% block sessionWarning %}{% endblock %}
+
+{% block pageHeading %}
+    <h1 class="govuk-heading govuk-heading-xl">{{ (prefix ~ 'heading')|trans|nl2br }}</h1>
+
+{% endblock %}
+
+{% block content %}
+    <div class="govuk-grid-row">
+        <div class="govuk-grid-column-two-thirds">
+            <p class="govuk-body">{{ (prefix ~ 'copy')|trans|nl2br }}</p>
+        </div>
+        <div class="govuk-grid-column-one-third">
+            {# TODO: User general assistance (e.g. contact details) #}
+        </div>
+    </div>
+{% endblock %}

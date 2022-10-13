@@ -1,0 +1,35 @@
+# see https://symfony.com/doc/current/reference/configuration/framework.html
+framework:
+    secret: '%env(APP_SECRET)%'
+    csrf_protection: true
+
+    form:
+        legacy_error_messages: false
+
+    http_method_override: false
+
+    # Enables session support. Note that the session will ONLY be started if you read or write from it.
+    # Remove or comment this section to explicitly disable session support.
+    session:
+        cookie_secure: true
+        cookie_samesite: lax
+        handler_id: Symfony\Component\HttpFoundation\Session\Storage\Handler\PdoSessionHandler
+        storage_factory_id: session.storage.factory.native
+
+        ## Pentest recommended limiting session lifetime
+        # using gc_maxlifetime looks at idle time, not just a finite cookie lifetime
+        gc_maxlifetime: 3600
+        gc_probability: 5
+        gc_divisor: 100
+
+    #esi: true
+    #fragments: true
+    php_errors:
+        log: true
+
+services:
+    Symfony\Component\HttpFoundation\Session\Storage\Handler\PdoSessionHandler:
+        arguments:
+            - '%env(resolve:DATABASE_URL)%'
+#            If you get transaction issues (e.g. after login) uncomment the line below
+#            - { lock_mode: !php/const Symfony\Component\HttpFoundation\Session\Storage\Handler\PdoSessionHandler::LOCK_ADVISORY }

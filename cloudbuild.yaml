@@ -1,0 +1,67 @@
+options:
+    env:
+        - 'APP_SECRET=${_APP_SECRET}'
+        - 'DOMAIN_NAME=${_DOMAIN_NAME}'
+
+steps:
+    # Start by running some pre-install actions
+    - name: node:14
+      id: 'pre-install-script'
+      entrypoint: sh
+      args: ['-c', 'config/gcloud-build/call-remote-action.sh -a pre-install']
+      waitFor: ['-']
+
+    # Copy deployment config files in to root directory (alpine required for gsutil)
+    - name: "gcr.io/google.com/cloudsdktool/cloud-sdk:alpine"
+      id: 'copy-deploy-files'
+      entrypoint: sh
+      args: ['-c', 'gsutil rsync config/gcloud-build/all/ . && gsutil rsync config/gcloud-build/$PROJECT_ID/ .']
+      waitFor: ['pre-install-script']
+
+    # build assets, and .env.local file
+    - name: node:14
+      id: 'yarn-build'
+      entrypoint: sh
+      args: ['-c', 'yarn install --frozen-lockfile --network-timeout 60000 && yarn run deploy-build && yarn run build-env-subs']
+      env:
+          - 'APP_ENV=prod'
+          - 'DATABASE_URL=${_DATABASE_URL}'
+          - 'APP_FEATURES=${_APP_FEATURES}'
+          - 'APP_ENV_LABEL_FRONTEND="${_APP_ENV_LABEL_FRONTEND}"'
+          - 'APP_ENV_LABEL_COLOUR="${_APP_ENV_LABEL_COLOUR}"'
+          - 'APP_ENV_LABEL_BACKGROUND="${_APP_ENV_LABEL_BACKGROUND}"'
+          - 'APP_GOOGLE_SITE_VERIFICATION="${_APP_GOOGLE_SITE_VERIFICATION}"'
+          - 'APP_HOSTNAME_SEPARATOR=${_APP_HOSTNAME_SEPARATOR}'
+          - 'ALPHAGOV_NOTIFY_API_KEY=${_ALPHAGOV_NOTIFY_API_KEY}'
+      waitFor: ['copy-deploy-files']
+
+    ## The app deployment will not run `composer install` if the composer.lock file has not changed
+    ## meaning that post install scripts, or even update scripts to not get run
+    # deploy default service
+    - name: "gcr.io/cloud-builders/gcloud"
+      id: 'deploy-default-service'
+      args: ["app", "deploy", "app.default.yaml", "--ignore-file=.gcloudignore", "--no-cache"]
+      waitFor: ['yarn-build']
+    - name: "gcr.io/cloud-builders/gcloud"
+      id: 'deploy-admin-service'
+      args: ["app", "deploy", "app.admin.yaml", "--ignore-file=.gcloudignore", "--no-cache"]
+      waitFor: ['deploy-default-service']
+
+    ## https://stackoverflow.com/questions/58893845/cloud-build-permission-denied-when-deploy-to-cloud-run-with-set-sql-instance
+    # the cloud build service account needs iam.serviceAccountUser role to perform this - but we don't have permission to add that role!
+    # deploy cron jobs
+
+    - name: "gcr.io/cloud-builders/gcloud"
+      id: 'deploy-cron'
+      args: ["app", "deploy", "cron.yaml"]
+      waitFor: ['deploy-default-service', 'deploy-admin-service']
+
+    # Finish up by calling the post-install-script
+    - name: node:14
+      id: 'post-install-script'
+      entrypoint: sh
+      args: ['-c', 'config/gcloud-build/call-remote-action.sh -a post-install']
+      waitFor: ['deploy-default-service', 'deploy-admin-service', 'deploy-cron']
+
+timeout: "1800s"
+logsBucket: '${_BUILD_LOG_BUCKET}'

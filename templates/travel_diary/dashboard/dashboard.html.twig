@@ -1,0 +1,74 @@
+{% extends 'travel_diary/base.html.twig' %}
+{% trans_default_domain 'travel-diary' %}
+
+{% set title_translation_key = "days.page-title" %}
+{% set heading_class = "govuk-heading-xl" %}
+
+{% set translation_parameters = {
+    diary_keeper_name: diaryKeeper | diary_keeper_display_name,
+} %}
+{% set breadcrumb_translation_parameters = translation_parameters %}
+
+{% block content %}
+    {# @var diaryKeeper \App\Entity\DiaryKeeer #}
+    <p class="govuk-body">{{ 'days.intro' | trans }}</p>
+
+    {% include 'travel_diary/dashboard/includes/diary_keeper_details.html.twig'%}
+
+    {%- import "@GhostGovUkFrontend/components/macros.html.twig" as m -%}
+
+    {% set filteredProxies = diaryKeeper.actingAsProxyFor | filter(d => is_granted('CAN_IMPERSONATE_USER', d.user)) %}
+    {% if not is_granted('IS_IMPERSONATOR') and filteredProxies is not empty %}
+        <h2 class="govuk-heading-m">{{ 'days.other-members-of-my-household' | trans }}</h2>
+        <ul class="govuk-list">
+            {% for proxy in filteredProxies %}
+                {# @var proxy \App\Entity\DiaryKeeper #}
+                <li><a class="govuk-link" href="{{ path('app_home', {_switch_user: proxy.user.userIdentifier}) }}">{{ "days.switch-user" | trans({diary_keeper_name: proxy | diary_keeper_display_name}) }}</a></li>
+            {% endfor %}
+        </ul>
+    {% endif %}
+
+    {% if diaryKeeper.practiceDay %}
+        <h2 class="govuk-heading-m">{{ "days.practice-day.heading" | trans(translation_parameters) }}</h2>
+        <p class="govuk-body">
+            <a class="govuk-link" href="{{ path('traveldiary_dashboard_day', {'dayNumber': 0}) }}">{{ "days.practice-day.link" | trans(translation_parameters) }}</a>
+        </p>
+    {% endif %}
+
+    <h2 class="govuk-heading-m">{{ "days.diary-week" | trans(translation_parameters) }}</h2>
+    <dl class="govuk-summary-list">
+        {% for day in diaryKeeper.diaryDays %}
+            {{ m.summaryListRow(
+                "descriptions.day" | trans({
+                    dayNumber: day.number,
+                    date: day.date | date(format_date_with_dow),
+                }),
+                "days.x-journeys" | trans({
+                    journeyCount: day.journeys | length,
+                }),
+                {
+                    (path('traveldiary_journey_wizard_start', {dayNumber: day.number})): {
+                        label: "days.add-journey",
+                        labelDomain: 'travel-diary',
+                        srHiddenSuffix: "days.add-journey-sr-hidden-suffix",
+                        srHiddenSuffixParams: { dayNumber: day.number },
+                        srHiddenSuffixDomain: 'travel-diary',
+                    },
+                    (path('traveldiary_dashboard_day', {dayNumber: day.number})): {
+                        label: "days.view",
+                        labelDomain: 'travel-diary',
+                        srHiddenSuffix: "days.view-sr-hidden-suffix",
+                        srHiddenSuffixParams: { dayNumber: day.number },
+                        srHiddenSuffixDomain: 'travel-diary',
+                    }
+                }
+            ) }}
+        {% endfor %}
+    </dl>
+
+    {%- if workflow_can(diaryKeeper, constant('App\\Entity\\DiaryKeeper::TRANSITION_COMPLETE')) -%}
+        <div class="govuk-button-group">
+            <a class="govuk-button" href="{{ path('traveldiary_mark_as_complete') }}">{{ 'mark-as-complete.form.mark-as-complete' | trans }}</a>
+        </div>
+    {%- endif -%}
+{% endblock %}

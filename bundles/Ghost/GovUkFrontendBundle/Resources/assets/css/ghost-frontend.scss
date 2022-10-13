@@ -1,0 +1,59 @@
+// To resolve DAC_Usability_Link_Hover_01:
+// - See comments in settings/_links.scss in govuk-frontend
+// - Also: https://github.com/alphagov/govuk-frontend/issues/2204
+$govuk-new-link-styles: true;
+
+@import "node_modules/govuk-frontend/govuk/all";
+
+@import "govuk-buttons";
+@import "govuk-confirmation";
+@import "govuk-header";
+@import "govuk-time-input";
+@import "govuk-money-input";
+@import "govuk-grid";
+@import "govuk-radios";
+
+@import "orange-button";
+@import "prose-scope";
+
+@import "session-reminder";
+@import "show-password";
+
+@include govuk-media-query($from: tablet) {
+    .govuk-button + .govuk-button {
+        margin-left: 10px;
+    }
+}
+
+@include govuk-media-query($until: tablet) {
+    // Makes sure there's a vertical between grouped-into-column checkbox choices when they get collapsed into a
+    // single vertical column on mobile.
+    .govuk-checkboxes > .govuk-grid-row > div {
+        margin-bottom: govuk-spacing(2);
+    }
+}
+
+// Make sure that long words get broken so that we satisfy accessibility requirements (small zoomed screens)
+* {
+    overflow-wrap: anywhere;
+}
+
+// Exclusion for the service phase tag
+.govuk-phase-banner__content__tag {
+    overflow-wrap: normal;
+}
+
+.govuk-table__actions {
+    text-align: right;
+}
+
+.link-button {
+    display: inline;
+    border: none;
+    background: transparent;
+    font-size: 1rem;
+    height: auto;
+    cursor: pointer;
+    text-decoration: underline;
+    @include govuk-font($size: 19, $line-height: 19px);
+}

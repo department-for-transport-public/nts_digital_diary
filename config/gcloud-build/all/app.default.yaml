@@ -1,0 +1,19 @@
+## GCP AppEngine config
+runtime: php74
+entrypoint: serve public/index.php
+service: default
+instance_class: F2
+automatic_scaling:
+  target_cpu_utilization: 0.8
+  min_instances: 1
+  max_concurrent_requests: 50
+  target_throughput_utilization: 0.8
+
+handlers:
+  - url: /build
+    static_dir: public/build
+  - url: /.*
+    script: auto
+
+inbound_services:
+  - warmup

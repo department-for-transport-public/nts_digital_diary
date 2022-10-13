@@ -1,0 +1,14 @@
+{%- extends 'travel_diary/share_journey/base_form.html.twig' -%}
+
+{%- trans_default_domain 'travel-diary' -%}
+
+{% block preFormContent %}
+    <div class="prose-scope">
+        {%-
+            set intro_translation_key = is_granted('CAN_SHARE_JOURNEY', subject) ?
+                'share-journey.introduction.pre-form' :
+                'share-journey.cannot-share.pre-form'
+        -%}
+        {{- intro_translation_key | trans(translation_parameters) | markdown_to_html -}}
+    </div>
+{% endblock %}

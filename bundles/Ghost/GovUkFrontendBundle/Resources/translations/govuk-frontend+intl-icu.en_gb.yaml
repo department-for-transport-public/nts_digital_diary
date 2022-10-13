@@ -1,0 +1,8 @@
+components:
+  show_password:
+    announce_hide: Your password is hidden
+    announce_show: Your password is shown
+    hide: Hide
+    hide_password: Hide password
+    show: Show
+    show_password: Show password

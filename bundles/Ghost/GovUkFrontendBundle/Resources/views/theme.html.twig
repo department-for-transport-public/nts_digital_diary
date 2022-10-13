@@ -1,0 +1,600 @@
+{% extends "form_div_layout.html.twig" %}
+
+{%- block form -%}
+    {{ form_start(form) }}
+    {{- form_help(form) -}}
+    {{- form_widget(form) -}}
+    {{ form_end(form) }}
+{%- endblock form -%}
+
+{%- block form_label -%}
+    {#- Need to replicate since label is sometimes wrapped in a H1 -#}
+    {% if label is not same as(false) -%}
+        {% if not compound -%}
+            {% set label_attr = label_attr|merge({'for': id}) %}
+        {%- endif -%}
+        {% if required -%}
+            {% set label_attr = label_attr|merge({'class': (label_attr.class|default('') ~ ' required')|trim}) %}
+        {%- endif -%}
+        {% if label is empty -%}
+            {%- if label_format is not empty -%}
+                {% set label = label_format|replace({
+                    '%name%': name,
+                    '%id%': id,
+                }) %}
+            {%- else -%}
+                {% set label = name|humanize %}
+            {%- endif -%}
+        {%- endif -%}
+
+        {%- set element = element|default('label') -%}
+        {%- if label_is_page_heading | default(false) -%}
+            {%- if element == 'legend' -%}
+                {#-
+                is_page_heading with a <legend> element: The <legend> wraps the <h1>
+                https://design-system.service.gov.uk/get-started/labels-legends-headings/#legends-as-page-headings
+
+                Assuming that this only happens with checkbox/radio/date-input groups as shown in the documentation,
+                which means we're in a fieldset.
+                -#}
+                {%- set label_attr = label_attr|merge({'class': ('govuk-fieldset__legend ' ~ label_attr.class|default(''))|trim}) -%}
+                <legend{% if label_attr %}{% with { attr: label_attr } %}{{ block('attributes') }}{% endwith %}{% endif %}>
+                {%- with {element: label_heading_element ?? 'h1', label_attr: { class: 'govuk-fieldset__heading'}} %}
+                    {{- block('form_label_inner') -}}
+                {%- endwith -%}
+                </legend>
+            {%- else -%}
+                {#-
+                    is_page_heading with a <label> element: The <h1> wraps the <label>
+                    https://design-system.service.gov.uk/get-started/labels-legends-headings/#labels-as-page-headings
+                -#}
+                {%- set label_attr = label_attr|merge({'class': ('govuk-label ' ~ label_attr.class|default(''))|trim}) -%}
+                <h1 class="govuk-label-wrapper">
+                    {{- block('form_label_inner') -}}
+                </h1>
+            {%- endif -%}
+        {%- else -%}
+            {%- set label_class = (element == 'legend') ? 'govuk-fieldset__legend ' : 'govuk-label ' -%}
+            {%- set label_attr = label_attr|merge({'class': (label_class ~ label_attr.class|default(''))|trim}) -%}
+            {{- block('form_label_inner') -}}
+        {%- endif -%}
+    {%- endif -%}
+{%- endblock form_label -%}
+
+{%- block form_label_inner -%}
+    <{{ element|default('label') }}{% if label_attr %}{% with { attr: label_attr } %}{{ block('attributes') }}{% endwith %}{% endif %}>
+        {{- block('form_label_inner_content') -}}
+    </{{ element|default('label') }}>
+{%- endblock -%}
+
+{%- block form_label_inner_content -%}
+    {%- if translation_domain is same as(false) -%}
+        {%- if label_html | default(false) is same as(true) -%}
+            {{- label | raw -}}
+        {%- elseif label_html | default(false) is same as('markdown') -%}
+            {{- label | markdown_to_html -}}
+        {%- else -%}
+            {{- label | nl2br -}}
+        {%- endif -%}
+    {%- else -%}
+        {%- if label_html | default(false) is same as(true) -%}
+            {{- label | trans(label_translation_parameters, translation_domain) | raw -}}
+        {%- elseif label_html | default(false) is same as('markdown') -%}
+            {{- label | trans(label_translation_parameters, translation_domain) | raw -}}
+        {%- else -%}
+            {{- label | trans(label_translation_parameters, translation_domain) | nl2br -}}
+        {%- endif -%}
+    {%- endif -%}
+{%- endblock -%}
+
+{%- block gds_row_wrapped_in_fieldset -%}
+    {%- import _self as s -%}
+    {{- s.gds_form_row(_context, true) -}}
+{%- endblock -%}
+
+{%- block form_row -%}
+    {%- from _self import gds_form_row -%}
+    {{- gds_form_row(_context, false) -}}
+{%- endblock -%}
+
+{%- macro gds_form_row(context, isWrappedInFieldset) -%}
+    {%- with context|merge({isWrappedInFieldset: isWrappedInFieldset}) only -%}
+        {%- set widget_context_overrides = {} -%}
+        {%- if help is not empty or errors is not empty -%}
+            {%- set widget_context_overrides = attr|merge({
+                attr: {
+                    'aria-describedby': (
+                        (help is not empty ? id ~"-hint " : '') ~
+                        (errors is not empty ? id ~"-error " : '') ~
+                        attr['aria-describedby']|default('')
+                    ) | trim
+                }
+            }) -%}
+        {%- endif -%}
+        <div{% with {
+            attr: row_attr|merge({
+                'class': (
+                    'govuk-form-group ' ~
+                    (errors is not empty ? 'govuk-form-group--error ' : '') ~
+                    row_attr.class|default('')
+                ) | trim
+            })
+            } %}{{ block('attributes') }}{% endwith %}>
+            {% if isWrappedInFieldset -%}
+                {% set fieldsetDescribedBy = ((help is not empty ? id ~"-hint " : '') ~ (errors is not empty ? id ~"-error " : ''))|trim -%}
+                <fieldset class="govuk-fieldset" role="group"{% if fieldsetDescribedBy is not empty %} aria-describedby="{{ fieldsetDescribedBy }}"{% endif %}>
+                {%- if not (label_rendered ?? false) %}{{- form_label(form, null, {element: 'legend'}) -}}{% endif -%}
+            {% else %}
+                {%- if not (label_rendered ?? false) %}{{- form_label(form) -}}{%- endif -%}
+            {%- endif -%}
+            {{- form_help(form) -}}
+            {{- form_errors(form) -}}
+            {{- form_widget(form, widget_context_overrides) -}}
+            {%- if isWrappedInFieldset -%}
+                </fieldset>
+            {%- endif %}
+        </div>
+    {%- endwith -%}
+{%- endmacro -%}
+
+{%- block form_errors -%}
+    {%- if errors|length > 0 -%}
+        {%- set id = form.vars.id ~ '-error' -%}
+        <p id="{{ id }}" class="govuk-error-message">
+            <span class="govuk-visually-hidden">Error:</span>
+            {% for error in errors -%}
+                {{ error.message }}
+                {%- if not loop.last %}<br>{% endif -%}
+            {%- endfor -%}
+        </p>
+    {%- endif -%}
+{%- endblock form_errors -%}
+
+{% block form_help -%}
+    {%- if help is not empty -%}
+        {%- set help_content -%}
+            {%- if translation_domain is same as(false) -%}
+                {%- if help_html is same as(true) -%}
+                    {{- help | raw -}}
+                {%- elseif help_html is same as('markdown') -%}
+                    {{- help | markdown_to_html -}}
+                {%- else -%}
+                    {{- help | nl2br -}}
+                {%- endif -%}
+            {%- else -%}
+                {%- set helpTranslated = help | trans(help_translation_parameters, translation_domain) -%}
+                {%- if helpTranslated is not empty -%}
+                    {%- if help_html is same as(true) -%}
+                        {{- helpTranslated | raw -}}
+                    {%- elseif help_html is same as('markdown') -%}
+                        {{- helpTranslated | markdown_to_html -}}
+                    {%- else -%}
+                        {{- helpTranslated | nl2br -}}
+                    {%- endif -%}
+                {%- endif -%}
+            {%- endif -%}
+        {%- endset -%}
+
+        {%- if help_content is not empty -%}
+            {%- set help_attr = help_attr|merge({class: ('govuk-hint ' ~ help_attr.class|default(''))|trim}) -%}
+            <div id="{{ id }}-hint"{% with { attr: help_attr } %}{{ block('attributes') }}{% endwith %}>
+                {{ help_content -}}
+            </div>
+        {%- endif -%}
+    {%- endif -%}
+{%- endblock %}
+
+{%- block gds_password_widget %}
+    {%- if enable_show_password | default(false) -%}
+<div class="gem-c-show-password"
+     data-module="show-password"
+     data-show-text="{{ 'components.show_password.show' | trans([], 'govuk-frontend' )}}"
+     data-hide-text="{{ 'components.show_password.hide' | trans([], 'govuk-frontend' )}}"
+     data-show-full-text="{{ 'components.show_password.show_password' | trans([], 'govuk-frontend') }}"
+     data-hide-full-text="{{ 'components.show_password.hide_password' | trans([], 'govuk-frontend') }}"
+     data-announce-show="{{ 'components.show_password.announce_show' | trans([], 'govuk-frontend') }}"
+     data-announce-hide="{{ 'components.show_password.announce_hide' | trans([], 'govuk-frontend') }}"
+>
+    {%- endif -%}
+        {{ block('gds_input_widget') }}
+    {%- if enable_show_password | default(false) -%}
+        </div>
+    {%- endif -%}
+{%- endblock -%}
+
+{%- block gds_input_widget -%}
+    {% set blockClass = blockClass | default('govuk-input') %}
+    {%- set attr = attr|merge({
+        class: ("#{blockClass} " ~
+            (errors is not empty ? "#{blockClass}--error " : '') ~
+            attr.class|default(''))|trim
+    }) -%}
+
+    {% if prefix | default(false) or suffix | default(false) %}<div class="{{ blockClass }}__wrapper">{% endif %}
+    {% if prefix | default(false) %}
+        {% include '@GhostGovUkFrontend/includes/gds_input_widget_affix.html.twig' with {affix: prefix, affix_html: prefix_html, class: "#{blockClass}__prefix"} %}
+    {% endif %}
+    {{ block('form_widget_simple') }}
+    {% if suffix | default(false) %}
+        {% include '@GhostGovUkFrontend/includes/gds_input_widget_affix.html.twig' with {affix: suffix, affix_html: suffix_html, class: "#{blockClass}__suffix"} %}
+    {% endif %}
+    {% if prefix | default(false) or suffix | default(false) %}</div>{% endif %}
+{%- endblock -%}
+
+{%- block gds_textarea_row -%}
+    {%- if character_count|default(false) -%}
+        <div class="govuk-character-count" data-module="govuk-character-count"
+                {%- if max_length | default(false) %} data-maxlength="{{ max_length }}"{% endif -%}
+                {%- if threshold | default(false) %} data-threshold="{{ threshold }}"{% endif -%}
+                {%- if max_words | default(false) %} data-maxwords="{{ max_words }}"{% endif -%}>
+            {%- set row_context_overrides = {
+                attr: attr|merge({
+                    'aria-describedby': (id ~ '-info ' ~ attr['aria_describedby']|default(''))|trim,
+                    class: ('govuk-js-character-count ' ~ attr['class']|default(''))|trim,
+                }),
+            } -%}
+            {{- form_row(form, row_context_overrides) -}}
+            <span id="{{ id }}-info" class="govuk-hint govuk-character-count__message" aria-live="polite">
+                You can enter up to {{ max_words|default(max_length) }} {{ max_words ? 'words' : 'characters' }}
+            </span>
+        </div>
+    {%- else -%}
+        {{- form_row(form) -}}
+    {%- endif -%}
+{%- endblock -%}
+
+{%- block gds_textarea_widget -%}
+    {%- set attr = attr|merge({
+        class: ('govuk-textarea ' ~
+        (errors is not empty ? 'govuk-textarea--error ' : '') ~
+        attr.class|default(''))|trim
+    }) -%}
+    {{ block('textarea_widget') }}
+{%- endblock -%}
+
+{%- block gds_choice_row -%}
+    {% if expanded %}
+        {% if multiple and label is empty and help is empty %}
+            {{- block('form_row') -}}
+        {% elseif not multiple and label is empty %}
+            {{- block('form_row') -}}
+        {% else %}
+            {{- block('gds_row_wrapped_in_fieldset') -}}
+        {% endif %}
+    {% else %}
+        {{- form_row(form) -}}
+    {% endif %}
+{%- endblock -%}
+
+{%- block gds_choice_widget -%}
+    {% if expanded %}
+        {{- block('gds_choice_widget_expanded') -}}
+    {% else %}
+        {{- block('gds_choice_widget_collapsed') -}}
+    {% endif %}
+{%- endblock -%}
+
+{%- block gds_choice_widget_collapsed -%}
+    {%- set attr = attr|merge({
+        class: ('govuk-select ' ~
+        (errors is not empty ? 'govuk-select--error ' : '') ~
+        attr.class|default(''))|trim
+    }) -%}
+    {{ block('choice_widget_collapsed') }}
+{%- endblock -%}
+
+{%- block gds_choice_widget_expanded -%}
+    {%- set blockPrefix = multiple ? 'gds_checkbox_inner' : 'gds_radio' -%}
+    {%- set classPrefix = multiple ? 'govuk-checkboxes' : 'govuk-radios' -%}
+    {%- set dataModuleAttr = {'data-module': multiple ? 'govuk-checkboxes' : 'govuk-radios'} -%}
+    {%- set attr = attr | merge({
+        class: (classPrefix ~ ' ' ~ attr.class|default('') ~ (has_conditional ? " #{classPrefix}--conditional" : '')) | trim
+    }) | merge(dataModuleAttr) -%}
+    <div {{ block('widget_container_attributes') }}>
+
+        {%- set isGrouped = (form.vars.choices | first).choices is defined -%}
+
+        {%- if not isGrouped -%}
+            {%- for child in form %}
+                {{ block('gds_choice_widget_expanded_item') }}
+            {%- endfor -%}
+        {%- else -%}
+            <div class="govuk-grid-row">
+                {%- for group in form.vars.choices %}
+                    <div class="govuk-grid-column-one-half govuk-!-margin-top-3 govuk-!-margin-bottom-3">
+                        <fieldset {% with {attr: fieldset_attr ?? {}} %}{{ block('attributes') }}{% endwith %} class="govuk-fieldset {{ attr.class | default('') }}" role="group">
+                            {% with {element: 'legend', label: group.label, label_attr: group.labelAttr ?? label_attr, label_heading_element: group.labelHeadingElement} %}
+                                {{- block('form_label') }}
+                            {% endwith %}
+                            {%- for idx, choice in group.choices %}
+                                {% with {
+                                    child: form[idx],
+                                } %}
+                                    {{ block('gds_choice_widget_expanded_item') }}
+                                {% endwith %}
+                            {% endfor -%}
+                        </fieldset>
+                    </div>
+                {%- endfor -%}
+            </div>
+        {%- endif -%}
+    </div>
+{% endblock %}
+
+{% block gds_choice_widget_expanded_item %}
+    {%- set conditionalFormItem = child.vars.conditional_form_name | default(false) -%}
+    {%- set conditionalHideFormItems = namesToIds(form, child.vars.conditional_hide_form_names | default(null)) -%}
+    <div class="{{ classPrefix }}__item">
+        {%- with child.vars|merge({
+            'label_is_page_heading': false,
+            'blockPrefix': blockPrefix,
+            'classPrefix': classPrefix,
+            'attr': child.vars.attr | merge({
+                'data-aria-controls': (conditionalFormItem ? "conditional-#{child.vars.id}" : ''),
+                'data-aria-hide-controls': (conditionalHideFormItems is not empty ? (conditionalHideFormItems|json_encode) : '')
+            }),
+        }) only -%}
+            {{- block(blockPrefix ~ '_widget') -}}
+            {{- block(blockPrefix ~ '_label') -}}
+            {%- set help_attr = {'class': classPrefix ~ '__hint'} -%}
+            {{- block('form_help') -}}
+        {% endwith %}
+    </div>
+    {%- if conditionalFormItem -%}
+        <div class="{{ classPrefix }}__conditional {{ classPrefix }}__conditional--hidden" id="conditional-{{ child.vars.id }}">
+            {{- form_row(form.parent.children[conditionalFormItem]) -}}
+        </div>
+    {%- endif -%}
+{% endblock %}
+
+{%- block gds_radio_label -%}
+    {%- set label_attr = label_attr|merge({'class': ('govuk-radios__label ' ~ label_attr.class|default(''))|trim}) -%}
+    {{- block('form_label') -}}
+{%- endblock -%}
+
+{%- block gds_radio_widget -%}
+    {%- set attr = attr|merge({
+        class: ('govuk-radios__input ' ~
+        attr.class|default(''))|trim
+    }) -%}
+    {% set ignoreForCodeAnalysisWarning %}<label>{% endset %}
+    <input type="radio" {{ block('widget_attributes') }}{% if value is defined %} value="{{ value }}"{% endif %}{% if checked %} checked="checked"{% endif %} />
+{%- endblock -%}
+
+{%- block gds_checkbox_label %}
+    {{- block('gds_checkbox_inner_label') -}}
+{%- endblock -%}
+
+{%- block gds_checkbox_row %}
+    {%- set widget_context_overrides = {} -%}
+    {%- if help is not empty or errors is not empty -%}
+        {%- set widget_context_overrides = attr|merge({
+            attr: {
+                'aria-describedby': (
+                (help is not empty ? id ~"-hint " : '') ~
+                (errors is not empty ? id ~"-error " : '') ~
+                attr['aria-describedby']|default('')
+                ) | trim
+            }
+        }) -%}
+    {%- endif -%}
+    <div{% with {
+        attr: row_attr|merge({
+            'class': (
+            'govuk-form-group ' ~
+            (errors is not empty ? 'govuk-form-group--error ' : '') ~
+            row_attr.class|default('')
+            ) | trim
+        })
+    } %}{{ block('attributes') }}{% endwith %}>
+        {{- form_errors(form) -}}
+        <div class="govuk-checkboxes{% if small %} govuk-checkboxes--small{% endif %}" data-module="govuk-checkboxes">
+            <div class="govuk-checkboxes__item">
+                {{- block('gds_checkbox_inner_widget') -}}
+                {{- block('gds_checkbox_inner_label') -}}
+                {%- with {help_attr: help_attr | merge({
+                    class: ((help_attr.class ?? '') ~ ' govuk-checkboxes__hint') | trim,
+                })} -%}
+                    {{- block('form_help') -}}
+                {%- endwith -%}
+            </div>
+        </div>
+    </div>
+{%- endblock -%}
+
+{%- block gds_checkbox_inner_label -%}
+    {%- set label_attr = label_attr|merge({'class': ('govuk-checkboxes__label ' ~ label_attr.class|default(''))|trim}) -%}
+    {{- block('form_label') -}}
+{%- endblock -%}
+
+{%- block gds_checkbox_inner_widget -%}
+    {%- set attr = attr|merge({
+        class: ('govuk-checkboxes__input ' ~
+        attr.class|default(''))|trim
+    }) -%}
+    {% set ignoreForCodeAnalysisWarning %}<label>{% endset %}
+    <input type="checkbox" {{ block('widget_attributes') }}{% if value is defined %} value="{{ value }}"{% endif %}{% if checked | default(false) %} checked="checked"{% endif %} />
+{%- endblock -%}
+
+{%- block gds_button_row -%}
+    {{- form_widget(form) -}}
+{%- endblock -%}
+
+{%- block gds_button_widget -%}
+    {%- set attr = attr|merge({
+        'class': ('govuk-button ' ~ attr.class|default(''))|trim,
+        'data-module': 'govuk-button'
+    }) -%}
+    {{ block('button_widget') }}
+{%- endblock -%}
+
+{%- block button_widget -%}
+    {%- if label is empty -%}
+        {%- if label_format is not empty -%}
+            {% set label = label_format|replace({
+                '%name%': name,
+                '%id%': id,
+            }) %}
+        {%- elseif label is not same as(false) -%}
+            {% set label = name|humanize %}
+        {%- endif -%}
+    {%- endif -%}
+    <button {% if type | default(false) %}type="{{ type }}"{% endif %} {{ block('button_attributes') }}>
+        {{- block('form_label_inner_content') -}}
+        {%- if form.vars.is_start_button ?? null -%}
+            <svg class="govuk-button__start-icon" xmlns="http://www.w3.org/2000/svg" width="17.5" height="19" viewBox="0 0 33 40" aria-hidden="true" focusable="false">
+                <path fill="currentColor" d="M0 0h13l20 20-20 20H0l20-20z" />
+            </svg>
+        {%- endif -%}
+    </button>
+{%- endblock button_widget -%}
+
+{%- block button_attributes -%}{# Adds aria-disabled if field disabled -#}
+    id="{{ id }}" name="{{ full_name }}"{% if disabled %} disabled="disabled" aria-disabled="true"{% endif -%}
+    {{ block('attributes') }}
+{%- endblock button_attributes -%}
+
+{%- block gds_date_row -%}
+    {{- block('gds_row_wrapped_in_fieldset') -}}
+{%- endblock -%}
+
+{%- block gds_date_widget -%}
+    {%- import _self as s -%}
+    {%- set attr = attr|merge({
+        class: ('govuk-date-input ' ~
+        attr.class|default(''))|trim
+    }) -%}
+    {%- set hasError = form.vars.errors | length > 0 -%}
+    <div {{ block('widget_container_attributes') }}>
+        {{- date_pattern|replace({
+            '{{ year }}':  s.gds_date_widget_input(form.year, 4, hasError),
+            '{{ month }}': s.gds_date_widget_input(form.month, 2, hasError),
+            '{{ day }}':   s.gds_date_widget_input(form.day, 2, hasError),
+        })|raw -}}
+    </div>
+{%- endblock -%}
+
+{%- macro gds_date_widget_input(form, width, hasError) -%}
+    {%- import _self as s -%}
+    <div class="govuk-date-input__item">
+        {%- set label_attr = form.vars.label_attr|merge({
+            'class': (
+                'govuk-date-input__label ' ~
+                form.vars.label_attr.class|default('')
+            )|trim,
+        }) -%}
+        {%- set attr = form.vars.attr|merge({
+            'class': (
+                'govuk-input govuk-date-input__input ' ~
+                'govuk-input--width-' ~ width ~ ' ' ~
+                (hasError ? 'govuk-input--error ' : '') ~
+                form.vars.attr.class|default('')
+            )|trim,
+            'pattern': '[0-9]*',
+            'inputmode': 'numeric'
+        }) -%}
+        {{- form_row(form, {'label_attr': label_attr, 'attr': attr}) -}}
+    </div>
+{%- endmacro -%}
+
+{%- block gds_time_row -%}
+    {{- block('gds_row_wrapped_in_fieldset') -}}
+{%- endblock -%}
+
+{%- block gds_time_widget -%}
+    {%- import _self as s -%}
+    {%- set attr = attr|merge({
+        class: ('govuk-time-input ' ~
+        attr.class|default(''))|trim
+    }) -%}
+    {%- set hasError = form.vars.errors | length > 0 -%}
+    <div {{ block('widget_container_attributes') }}>
+        {{ s.gds_time_widget_input(form.hour, 2, hasError) }}
+        <span class="govuk-time-input__colon">:</span>
+        {{ s.gds_time_widget_input(form.minute, 2, hasError) }}
+        {{ s.gds_time_widget_am_or_pm(form.am_or_pm, 2, hasError) }}
+    </div>
+{%- endblock -%}
+
+{%- macro gds_time_widget_input(form, width, hasError) -%}
+    {%- import _self as s -%}
+    <div class="govuk-time-input__item">
+        {%- set label_attr = form.vars.label_attr|merge({
+            'class': (
+            'govuk-time-input__label ' ~
+            form.vars.label_attr.class|default('')
+            )|trim,
+        }) -%}
+        {%- set attr = form.vars.attr|merge({
+            'class': (
+            'govuk-input govuk-time-input__input ' ~
+            'govuk-input--width-' ~ width ~ ' ' ~
+            (hasError ? 'govuk-input--error ' : '') ~
+            form.vars.attr.class|default('')
+            )|trim,
+            'pattern': '[0-9]*',
+            'inputmode': 'numeric'
+        }) -%}
+        {{- form_row(form, {'label_attr': label_attr, 'attr': attr}) -}}
+    </div>
+{%- endmacro -%}
+
+{%- macro gds_time_widget_am_or_pm(form, width, hasError) -%}
+    {%- import _self as s -%}
+    <div class="govuk-time-input__item">
+        {%- set label_attr = form.vars.label_attr|merge({
+            'class': (
+            'govuk-time-input__label ' ~
+            form.vars.label_attr.class|default('')
+            )|trim,
+        }) -%}
+        {%- if form.vars.expanded -%}
+            {#- Radios -#}
+            {%- set attr = form.vars.attr|merge({
+                'class': (
+                'govuk-time-input__radios ' ~
+                (hasError ? 'govuk-radios__error ' : '') ~
+                form.vars.attr.class|default('')
+                )|trim,
+            }) -%}
+        {%- else -%}
+            {#- Select -#}
+            {%- set attr = form.vars.attr|merge({
+                'class': (
+                'govuk-select govuk-time-input__select ' ~
+                'govuk-select--width-' ~ width ~ ' ' ~
+                (hasError ? 'govuk-select--error ' : '') ~
+                form.vars.attr.class|default('')
+                )|trim,
+            }) -%}
+        {%- endif -%}
+        {{- form_row(form, {'label_attr': label_attr, 'attr': attr}) -}}
+    </div>
+{%- endmacro -%}
+
+{% block gds_fieldset_row %}
+    {% set fieldsetDescribedBy = ((help is not empty ? id ~"-hint " : '') ~ (errors is not empty ? id ~"-error " : ''))|trim -%}
+    <div{% with {
+        attr: row_attr|merge({
+            'class': (
+            'govuk-form-group ' ~
+            (errors is not empty ? 'govuk-form-group--error ' : '') ~
+            row_attr.class|default('')
+            ) | trim
+        })
+        } %}{{ block('attributes') }}{% endwith %}>
+        <fieldset {% with {attr: fieldset_attr ?? {}} %}{{ block('attributes') }}{% endwith %} class="govuk-fieldset {{ attr.class | default('') }}" role="group"{% if fieldsetDescribedBy is not empty %} aria-describedby="{{ fieldsetDescribedBy }}"{% endif %}>
+            {{- form_label(form, null, {element: 'legend'}) }}
+            {{- form_help(form) -}}
+            {{- form_errors(form) -}}
+            {# only render children that have not already been rendered #}
+            {%- for child in form | filter(child => not child.rendered) -%}
+                {{- form_row(child) -}}
+            {%- endfor -%}
+        </fieldset>
+    </div>
+{% endblock %}
+
+{%- block gds_link_row -%}
+    <a {{ block('attributes') }}>{{ block('form_label_inner_content') }}</a>
+{%- endblock -%}

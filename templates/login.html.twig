@@ -1,0 +1,9 @@
+{% extends 'base.html.twig' %}
+
+{% block content %}
+    {{ form(form) }}
+
+    <p class="govuk-body">
+        <a class="govuk-link" href="{{ path('auth_forgotten_password') }}">I have forgotten my password</a>
+    </p>
+{% endblock %}

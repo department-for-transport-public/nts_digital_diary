@@ -1,0 +1,12 @@
+{% extends 'base.html.twig' %}
+
+{% set title_translation_key = "privacy-statement.page-title" %}
+{% set translation_parameters = {hostname: hostnames.frontend} %}
+
+{% block content %}
+    <div class="govuk-grid-row">
+        <div class="govuk-grid-column-two-thirds prose-scope">
+            {{ include('frontend/privacy-statement.md.twig')|markdown_to_html }}
+        </div>
+    </div>
+{% endblock %}

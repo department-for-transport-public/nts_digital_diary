@@ -1,0 +1,18 @@
+@import "node_modules/govuk-frontend/govuk/settings/colours-applied";
+@import "node_modules/govuk-frontend/govuk/helpers/links";
+
+$govuk-warning-colour: govuk-colour('orange');
+
+.govuk-notification-banner--warning {
+  border-color: $govuk-warning-colour;
+
+  background-color: $govuk-warning-colour;
+
+  .govuk-notification-banner__link {
+    @include govuk-link-style-success;
+  }
+}
+
+.govuk-notification-banner__content > * {
+  max-width: none;
+}

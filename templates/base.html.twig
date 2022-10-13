@@ -1,0 +1,111 @@
+{% extends "base_common.html.twig" %}
+
+{%- from '@GhostGovUkFrontend/components/macros.html.twig' import header as govukHeader, footer as govukFooter, errorSummary -%}
+
+{% block head -%}
+    {{ encore_entry_link_tags('app') }}
+    <meta name="robots" content="noindex,nofollow">
+    {% if env_google_site_verification ?? false %}<meta name="google-site-verification" content="{{ env_google_site_verification }}" />{% endif %}
+{%- endblock %}
+
+{% block headerBar %}
+    <style nonce="{{ csp_inline_script_helper.nonce('env-label') }}">
+        #envLabel {
+            {% if env_label_colour ?? false %}color: {{ env_label_colour }};{% endif %}
+            {% if env_label_background ?? false %}background: {{ env_label_background }};{% endif %}
+        }
+        #session-reminder {display:none;}
+    </style>
+    {% if env_label_frontend %}
+        <div class="govuk-warning-header" id="envLabel">
+            {{ env_label_frontend | raw }}
+        </div>
+    {% endif %}
+    {%- set defaultNavigation = (is_granted('ROLE_USER') ? [{href: logout_path(), text: 'logout' | trans}] : false) -%}
+    {#- N.B. {suppressMenuButtonLabel: true} relates to DAC_Label_In_Name_01 -#}
+    {{ govukHeader({
+        homepageUrl: 'https://www.gov.uk/',
+        serviceName: ('service.name' | trans),
+        serviceUrl: '/',
+        navigation: navigation ?? defaultNavigation,
+        suppressMenuButtonLabel: true
+    }) }}
+{% endblock %}
+
+{% block beforeMain %}
+    {% block sessionWarning %}
+        {%- if app.user -%}
+            {#- Re: role="alert" -
+                https://developer.mozilla.org/en-US/docs/Web/Accessibility/ARIA/Roles/alert_role#example_4_making_an_element_with_an_alert_role_visible
+            -#}
+            <div role="alert" data-warning="{{ sessionWarningTime() }}" data-expiry="{{ sessionExpiryTime() }}" class="govuk-width-container {{ containerClasses | default('') }}" id="session-reminder">
+                {% set rememberMeEnabled = not (app.request.cookies.get('REMEMBERME') is empty) %}
+                <span class="extend">Your session will time out soon. <a href="{{ path('app_refresh_session') }}" class="govuk-link">Click here to extend your session.</a></span>
+                <span class="expired">{% block sessionExpired %}Your session has expired. Any unsaved data has been lost. <a href="{{ app.request.requestUri }}" class="govuk-link">{{ rememberMeEnabled ? "Click here to start a new session." : "Click here to login." }}</a>{% endblock %}</span>
+            </div>
+        {%- endif -%}
+    {% endblock %}
+{% endblock %}
+
+{% block main %}
+    <div class="govuk-width-container {{ containerClasses | default('') }}">
+        {% block beforeContent -%}
+            {{ parent() }}
+        {%- endblock %}
+        <main class="govuk-main-wrapper {{ mainClasses | default('') }}" id="main-content" role="main"{% if mainLang | default(false) %} lang="{{ mainLang }}"{% endif %}>
+            {%- from '@GhostGovUkFrontend/components/macros.html.twig' import flashNotificationBanners -%}
+            {{ flashNotificationBanners() }}
+
+            {{ _self.displayErrorSummary(_context) }}
+
+            {%- block pageHeading -%}
+                {% if title_translatable_message is defined %}
+                    <h1 class="{{ heading_class ?? "govuk-heading-l" }}">
+                        {{ title_translatable_message | trans }}
+                    </h1>
+                {% else %}
+                    {% set title_translation_key = title_translation_key ?? 'page-title' %}
+                    {# if title_translation_key contains a dot, assume it's been defined as a complete key #}
+                    {%- if (title_translation_key | split('.') | first) == title_translation_key -%}
+                        {%- set title_translation_key =
+                            (title_translation_prefix ?? translation_prefix ?? 'title_translation_prefix')
+                            ~ "." ~ title_translation_key
+                        -%}
+                    {% endif %}
+                    <h1 class="{{ heading_class ?? "govuk-heading-l" }}">
+                        {{- title_translation_key | trans(
+                            title_translation_parameters ?? translation_parameters ?? {},
+                            title_translation_domain ?? translation_domain ?? null)
+                        -}}
+                    </h1>
+                {% endif %}
+            {% endblock %}
+
+            {% block content %}{% endblock %}
+        </main>
+    </div>
+{% endblock %}
+
+{% block bodyEnd %}
+    {{ encore_entry_script_tags('app') }}
+    {{ include('includes/smartlook-session-recording.html.twig') }}
+{% endblock %}
+
+{% macro displayErrorSummary(context) %}
+    {%- set erroringForms = context | filter(item => not (item.vars.errors.form.getErrors(true) ?? []) is empty) -%}
+    {%- if erroringForms is not empty -%}
+        {{ errorSummary({
+            titleText: 'error-summary.problem' | trans,
+            errorList: erroringForms | form_views_to_errors,
+        }) }}
+    {% endif %}
+{% endmacro %}
+
+{% block footer %}
+    {{ govukFooter({
+        meta: {items: [
+            {href: path('app_frontend_accessibilitystatement'), text: 'Accessibility'},
+            {href: path('app_frontend_privacystatement'), text: 'Privacy'},
+        ]}
+    }) }}
+{% endblock %}

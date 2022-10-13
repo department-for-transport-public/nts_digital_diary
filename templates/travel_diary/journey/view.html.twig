@@ -1,0 +1,120 @@
+{% extends 'travel_diary/dashboard/base.html.twig' %}
+{% trans_default_domain 'travel-diary' %}
+
+{% set title_translation_key = "journey.view.page-title" %}
+{% set title_translation_parameters = {
+    startLocation: journey.startLocationForDisplay,
+    endLocation: journey.endLocationForDisplay,
+    day: journey.diaryDay.number,
+    time: journey.startTime | date(format_time_short),
+} %}
+{% set heading_class = "govuk-heading-xl" %}
+
+{% set breadcrumb_translation_parameters = {
+    diary_keeper_name: diaryKeeper | diary_keeper_display_name,
+} %}
+
+{% if sharedFromName is not null or sharedToNames is not null %}
+    {% set mainClasses = 'header-with-following-tag' %}
+{% endif %}
+
+{% block content %}
+    {%- from "travel_diary/journey/macros.html.twig" import showJourney, showStages -%}
+    {%- from _self import journeyButtons, stagesButtons -%}
+    {%- import "@GhostGovUkFrontend/components/macros.html.twig" as m -%}
+
+    {% if sharedFromName is not null %}
+        {{ m.tag({
+            text: 'journey.view.shared-from' | trans({name: sharedFromName}),
+            classes: 'govuk-tag--purple',
+        }) }}
+    {% endif %}
+    {% if sharedToNames is not null %}
+        {{ m.tag({
+            text: 'journey.view.shared-to' | trans({names: sharedToNames}),
+            classes: 'govuk-tag--pink',
+        }) }}
+    {% endif %}
+
+    {{ showJourney(journey) }}
+
+    <h2 class="govuk-heading-l">Stages</h2>
+    {% if journey.stages | length == 0 %}
+        {{ m.warningText("journey.view.no-stages-warning" | trans) }}
+    {% endif %}
+
+    {{ showStages(journey.stages, {showHeadings: false}) }}
+    {{ stagesButtons(journey, day) }}
+    <hr class="govuk-section-break govuk-section-break--m govuk-section-break--visible">
+    {{ journeyButtons(journey, day) }}
+{% endblock %}
+
+{% macro journeyButtons(journey, day) %}
+    {%- set translation_prefix = "journey.view" -%}
+
+    <h2 class="govuk-heading-m">{{ 'journey.view.next-steps.title' | trans }}</h2>
+    <p class="govuk-body">{{ 'journey.view.next-steps.intro' | trans }}</p>
+    <ul class="govuk-list">
+{#
+        {% if journey.isPartial and journey.stages | length > 0 %}
+            <li>
+            <form method="POST" action="{{ path('traveldiary_journey_complete', {journeyId: journey.id}) }}">
+                <button type="submit" class="govuk-button">{{ "journey.view.complete-journey" | trans }}</button>
+            </form>
+            </li>
+        {% endif %}
+#}
+        {%- if is_granted('CAN_SHARE_JOURNEYS') -%}
+        <li>
+            <a class="govuk-link" href="{{ path('traveldiary_share_journey_wizard_start', {journeyId: journey.id}) }}">
+                {{- "journey.view.share-journey" | trans -}}
+            </a>
+        </li>
+        {%- endif %}
+        {%- set day_parameters = { dayNumber: day.number } -%}
+        <li><a class="govuk-link" href="{{ path('traveldiary_return_journey_wizard_start', {journeyId: journey.id}) }}">{{- "journey.view.return-journey" | trans -}}</a></li>
+        <li><a class="govuk-link" href="{{ path('traveldiary_repeat_journey_wizard_source_journey', {journeyId: journey.id}) }}">{{- "journey.view.repeat-journey" | trans -}}</a></li>
+
+        <li>
+            <a class="govuk-link" href="{{ path('traveldiary_journey_delete', {journeyId: journey.id}) }}">
+                {{- "journey.view.delete-journey" | trans -}}
+            </a>
+        </li>
+    </ul>
+
+
+    <hr class="govuk-section-break govuk-section-break--m govuk-section-break--visible">
+    <h2 class="govuk-heading-m">{{ 'journey.view.finally.title' | trans }}</h2>
+    <p class="govuk-body">{{ 'journey.view.finally.intro' | trans }}</p>
+
+    <ul class="govuk-list govuk-!-margin-bottom-8">
+        <li><a class="govuk-link" href="{{ path('traveldiary_dashboard_day', day_parameters) }}">{{ "journey.view.back" | trans(day_parameters) }}</a></li>
+    </ul>
+{% endmacro %}
+
+{% macro stagesButtons(journey, day) %}
+    {%- set translation_prefix = "journey.view" -%}
+
+    {% if journey.stages | length == 0 %}
+        <div class="govuk-button-group">
+            <a class="govuk-button" href="{{ path('traveldiary_stage_wizard_start', {journeyId: journey.id}) }}">
+                {{- "journey.view.add-stage" | trans -}}
+            </a>
+        </div>
+    {% else %}
+        <ul class="govuk-list">
+            <li>
+                <a class="govuk-link" href="{{ path('traveldiary_stage_wizard_start', {journeyId: journey.id}) }}">
+                    {{- "journey.view.add-stage" | trans -}}
+                </a>
+            </li>
+            {%- if journey.stages | length > 1 -%}
+                <li>
+                    <a class="govuk-link" href="{{ path('traveldiary_journey_reorder_stages', {journeyId: journey.id}) }}">
+                        {{- "journey.view.reorder-stages" | trans -}}
+                    </a>
+                </li>
+            {%- endif -%}
+        </ul>
+    {% endif %}
+{% endmacro %}

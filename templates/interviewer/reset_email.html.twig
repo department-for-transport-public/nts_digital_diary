@@ -1,0 +1,10 @@
+{% extends "interviewer/dashboard/base.html.twig" %}
+
+{% trans_default_domain "auth" %}
+{% set translation_domain = "auth" %}
+{% set translation_prefix = "change-email" %}
+{% set translation_parameters = {name: diaryKeeper.name} %}
+
+{% block content %}
+    {{ form(form) }}
+{% endblock %}

@@ -1,0 +1,21 @@
+.govuk-fieldset--inline, .govuk-form-group--inline {
+  .govuk-form-group {
+    display: inline-block;
+    margin-right: 60px;
+    vertical-align: top;
+    margin-bottom: 0;
+
+    + .govuk-form-group {
+      margin-right: 0;
+    }
+
+    .govuk-radios__item {
+      margin-right: 30px;
+      margin-bottom: 0;
+    }
+
+    .govuk-label {
+      margin-bottom: 10px;
+    }
+  }
+}

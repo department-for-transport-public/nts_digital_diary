@@ -1,0 +1,31 @@
+@import "node_modules/govuk-frontend/govuk/core/typography";
+@import "node_modules/govuk-frontend/govuk/core/lists";
+@import "node_modules/govuk-frontend/govuk/core/links";
+
+.prose-scope {
+  h1 {
+    @extend .govuk-heading-l;
+  }
+  h2 {
+    @extend .govuk-heading-m;
+  }
+  h3 {
+    @extend .govuk-heading-s;
+  }
+
+  p {
+    @extend .govuk-body;
+  }
+  a {
+    @extend .govuk-link;
+  }
+  ul, ol {
+    @extend .govuk-list;
+  }
+  ul {
+    @extend .govuk-list--bullet;
+  }
+  ol {
+    @extend .govuk-list--number;
+  }
+}

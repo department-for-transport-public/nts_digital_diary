@@ -1,0 +1,620 @@
+descriptions:
+  day: &dayDescription >-
+    {dayNumber, select,
+       0     {Practice day}
+       other {Day {dayNumber} — {date}}
+    }
+  journey: From {startLocation} to {endLocation}
+  stage: "#{number} — {method}, {travelTime} mins"
+
+breadcrumbs:
+  dashboard: &pageTitle >-
+    {diary_keeper_name, select,
+          My    {{diary_keeper_name}}
+          other {{diary_keeper_name}'s}
+    } travel diary
+  day: *dayDescription
+  delete-journey: Delete journey
+  delete-stage: Delete stage
+  diary-keeper-notes: Notes
+  interviewer-notes: Interviewer notes
+  mark-as-complete: Mark diary as complete
+  stage: Stage {stageNumber}
+  start-to-end: "{time}: {startLocation} to {endLocation}"
+
+approved:
+  page-title: Travel Diary completed
+
+  copy: Thank you for participating!
+  heading: Travel Diary completed
+
+days:
+  page-title: *pageTitle
+  intro: This is an overview of your travel week. You can view a day’s journeys or add new journeys from here.
+  add-journey: "Add journey"
+  add-journey-sr-hidden-suffix: to day {dayNumber}
+  switch-user: Switch to {diary_keeper_name, select,
+    My    {{diary_keeper_name}}
+    other {{diary_keeper_name}'s}
+    } travel diary
+  diary-week: >-
+    {diary_keeper_name, select,
+              My    {{diary_keeper_name}}
+              other {{diary_keeper_name}'s}
+        } diary week
+  list:
+    name: Name
+    serial: Serial number
+    state: Diary status
+  other-members-of-my-household: Other members of my household
+  practice-day:
+    heading: Practice diary
+    link: View practice diary
+  view: View
+  view-sr-hidden-suffix: Day {dayNumber}
+  x-journeys: >-
+    {journeyCount, plural,
+        =0    {}
+        one   {1 journey}
+        other {# journeys}
+    }
+
+day:
+  page-title: *dayDescription
+
+  add-journey: Add journey
+  add-journey-sr-hidden-suffix: on this day
+  back: Back to diary overview
+  no-journeys: No journeys
+  journey:
+    description: "{startLocation} to {endLocation}, {stageCount, plural,
+                =0    {No stages}
+                one   {1 stage}
+                other {# stages}
+            }"
+    time: "{time}"
+
+  notes:
+    heading: Notes
+    guidance: If there’s anything you’d like to tell us about the journeys you made on this day, please add a note below.
+    heading-diary-keeper: My Notes
+
+    add-notes: Add notes
+    diary-keepers-notes: Diary keeper's notes
+    edit-notes: Edit notes
+    interviewers-notes: Interviewer's notes
+    notes: My notes
+    no-notes: No notes
+
+  practice:
+    help: Enter some practice journeys and stages in the practice day. Anything you enter here will not be used as part of your travel diary.
+    help-details:
+      text: Help with filling in your travel diary
+      content: Watch this video to see examples of how to add a journey, a return journey, and how stages within your journey works.
+
+  repeat-a-journey: Repeat a journey
+  view: View
+  view-sr-hidden-suffix: journey from {startLocation} to {endLocation}
+
+day.diary-keeper-notes:
+  page-title: Notes for {dayNumber, select,
+      0     {practice day}
+      other {day {dayNumber}}
+    }
+
+  notes: Notes
+  save: Save notes
+
+day.interviewer-notes:
+  page-title: >-
+    Interviewer notes for {dayNumber, select,
+      0     {practice day}
+      other {day {dayNumber}}
+    }
+
+  notes: Notes
+  save: Save notes
+
+journey.delete:
+  page-title: Delete journey from {startLocation} to {endLocation}?
+
+  confirm-label: Yes, delete journey
+  confirmed-notification:
+    heading: "Journey deleted"
+    content: "The journey from {startLocation} to {endLocation} at {time} has been deleted"
+
+journey.locations:
+  page-title: Tell us where you were travelling from and to
+  help: For round trips, please record it as two separate journeys using the furthest point as your destination.
+  choices:
+    home: Home
+    other: Somewhere else
+  common-other:
+    help: |-
+      - Give the name of the village, town or area.
+      - If this was a large town or city, give the name of the area.
+      - If you went to a shopping centre or visitor attraction, please enter its name.
+  end-choice:
+    label: Where did you go?
+    help: ''
+  end-other:
+    label: Specify where you went
+  start-choice:
+    label: Where did the journey start?
+    help: ''
+  start-other:
+    label: Specify where you started your journey
+
+journey.purpose:
+  label: What was the main purpose of this journey?
+  help: 'Describe the **main** purpose of the journey. For example "to go to main place of work", "to go shopping for groceries" or "to take children to school"'
+  not-selected: Not selected
+
+journey.side:
+  stage: >-
+    { argState, select,
+      empty {This stage}
+      noTravelTime {{method}}
+      other {{method} ({travelTime} mins)}
+    }
+  title:
+    end: End
+    journey: The journey so far
+    purpose: Main purpose
+    stages: Stages
+    start: Start
+
+journey.times:
+  page-title: Tell us about the travel times
+  start:
+    label: What time did you start the journey?
+    help: Use a 12 hour format. For example, 7:30am or 10:15pm
+  end:
+    label: What time did you finish the journey?
+    help: Use a 12 hour format. For example, 7:30am or 10:15pm
+
+journey.view:
+  page-title: "{startLocation} to {endLocation} (Day {day}, {time})"
+
+  no-stages-warning: |-
+    This journey does not have any stages.
+    Use the "Add a stage" link to add one or more stages to this journey.
+  add-stage: Add a stage
+  back: >-
+    {dayNumber, select,
+      0     {Back to practice day}
+      other {Back to day {dayNumber}}
+    }
+  change: Change
+  complete-journey: Mark journey as complete
+  delete-journey: Delete this journey
+  return-journey: Make a return of this journey
+  repeat-journey: Make this journey again
+  delete-stage: Delete this stage
+  delete-stage-sr-hidden-suffix: >-
+    : {stageNumber, selectordinal,
+      one   {#st}
+      two   {#nd}
+      few   {#rd}
+      other {#th}
+    } stage ({method}, {travelTime} mins)
+  end-location-time:
+    change-sr-hidden-suffix: end location and time
+    key: End Location / Time
+  location-and-time: "{location} ({time})"
+  purpose:
+    key: Journey purpose
+    change-sr-hidden-suffix: Journey purpose
+  reorder-stages: Re-order stages
+  shared-from: Journey shared by {name}
+  shared-to: Journey shared with {names}
+  share-journey: Share this journey
+  start-location-time:
+    change-sr-hidden-suffix: start location and time
+    key: Start Location / Time
+  stage-x: Stage {number}
+  tabs.title: Journey stages
+
+  next-steps:
+    title: Next steps
+    intro: Use these links to do more with this journey
+  finally:
+    title: Finally
+    intro: Have you have finished working with this journey?
+
+
+mark-as-complete:
+  page-title: Mark diary as complete
+  copy: |-
+    This allows you to notify the interviewer that your travel diary is complete.
+    
+    You will still be able to edit your travel diary after doing this. 
+
+    If you do so, your diary will again be marked as "in progress".
+  form:
+    mark-as-complete: Mark travel diary as complete
+
+
+stage.delete:
+  page-title: >-
+    Delete {stageNumber, selectordinal,
+      one   {#st}
+      two   {#nd}
+      few   {#rd}
+      other {#th}
+    } stage?
+  confirm-label: Yes, delete stage
+  confirmed-notification:
+    heading: "Stage deleted"
+    content: "The stage has been deleted"
+
+stage.details:
+  page-title: Provide more details about stage {stage_number} of the journey
+  adult-count:
+    label: 'Adults'
+    help: ''
+  child-count:
+    label: 'Children'
+    help: ''
+  companions:
+    label: 'How many people were travelling?'
+    help: "- Enter the number of people, **including you**, who set out together.\n- Only include people who were with you for at least half the distance of the journey."
+  distance-travelled:
+    label: 'How far did you travel on this stage of the journey?'
+    help: "- Provide the distance you travelled in miles or metres.\nFor example 3 miles, 0.5 miles, 300 metres.\n- If unsure, please estimate the distance."
+  travel-time:
+    label: 'How long did you spend travelling, in minutes?'
+    help: >-
+      Enter the time in minutes. Do not include any time spent {method_type, select,
+          public  {waiting for public transport or }
+          other   {}
+      }
+      during stop-offs on route.
+    units: minutes
+
+stage.driver-and-parking:
+  page-title: Tell us about parking costs and whether you were driving in stage {stage_number}
+  driver-or-passenger:
+    label: Were you the driver or a passenger?
+    help: ''
+    choices: &driverOrPassengerChoices
+      driver: Driver
+      passenger: Passenger
+  parking-cost:
+    label: &parkingCostLabel How much did you pay for parking, in pounds? (optional)
+    help: &parkingCostHelp |-
+      Enter a value in pounds. For example, £3.50.<br>
+      Leave this box empty if **you** did not pay anything.
+
+stage.intermediary:
+  page-title: "{journeyStartLocation} to {journeyEndLocation} - Add stages"
+  pre-form:
+    intro: Next, you need to provide details of each stage of this journey. A stage is where you change from one method of transport to another.
+    example:
+      intro: For example, a journey may consist of three stages
+      stage-1: Driving a car from home to the train station
+      stage-2: Taking a train to a nearby town
+      stage-3: Taking a bus from the train station to shops
+
+stage.method:
+  page-title: What method of transport did you use in stage {stage_number}?
+  label: ''
+  help: Select how you travelled for this stage of your journey.
+  choices:
+    walk: Walk or run
+    walk.help: >-
+      {dayNumber, select,
+          0       {}
+          1       {This journey is on day 1. Include all walks and runs}
+          other   {This journey is on day {dayNumber}. Only include walks or runs of 1 mile or more}
+      }
+    bicycle: Bicycle
+    car: Car
+    e-bike: eBike
+    e-scooter: eScooter
+    mobility-scooter: Mobility scooter
+    motorcycle: Motorcycle
+    van-or-lorry: Van or lorry
+    other-private: Other private transport
+    other-private-other: "Other private transport: {other}"
+
+    bus-or-coach: Bus/Coach
+    bus-or-coach-other: "Bus/Coach: {other}"
+    ferry: Ferry
+    light-rail: Tram or Light rail
+    london-underground: London Underground
+    taxi: Taxi/minicab/private hire vehicle
+    train: Train
+    other-public: Other public transport
+    other-public-other: "Other public transport: {other}"
+  groups:
+    private: Private transport
+    public: Public transport
+  other.bus-or-coach:
+    label: 'Give details about the bus you used.'
+    help: 'For example, was it a local bus, a long distance bus or a tour/excursion coach?'
+  other.other-private:
+    label: 'Give details of the private transport you used'
+    help: ''
+  other.other-public:
+    label: 'Give details of the public transport you used'
+    help: ''
+
+stage.reorder:
+  page-title: Re-order stages
+
+  copy: "{method}"
+  save: Save order
+  srHiddenSuffix: >-
+    Stage {number}: {method} ({travelTime, select,
+      1 {1 minute}
+      other {{travelTime} minutes}
+    })
+  time: >-
+    {travelTime, select,
+      1 {1 minute}
+      other {{travelTime} minutes}
+    }
+
+stage.side:
+  title:
+    distance-and-time: Distance / Time
+    driver-or-passenger: Driver or passenger?
+    method: Method
+    parking-cost: Parking cost
+    people-travelling: People travelling
+    stage: Stage
+
+    vehicle: Vehicle
+
+stage.ticket:
+  page-title: Tell us about the ticket you used in stage {stage_number}
+  ticket-type:
+    help: "Provide information about your ticket, including:\n
+          - The type of ticket (for example, single or return)\n
+          - If you were able to buy a ticket at a discounted rate\n
+          - If you used reduced or free tickets, or a concessionary pass that allows you to travel for free\n
+          - If you used an Oyster card, specify if it was a pre-pay or season ticket\n
+          "
+
+stage.ticket-cost-and-boardings:
+  page-title: Ticket cost and boardings in stage {stage_number}
+  boarding-count:
+    label: How many times did you board?
+    help: |-
+        Enter the number of different trains or buses you used on this stage of your journey.
+  ticket-cost:
+    label: &ticketCostLabel How much did you pay for your ticket, in pounds? (optional)
+    help: &ticketCostHelp |-
+        * Tell us the amount you actually paid
+        * If this was a *one-day travelcard* or a *return ticket* and you have already entered the cost on a previous journey, leave this field blank
+        * If you used a *season ticket*, leave this field blank
+
+stage.vehicle:
+  page-title: Which vehicle did you use for this stage of your journey?
+  vehicle:
+    label: Which vehicle did you use for stage {stage_number} of your journey?
+    help: ''
+    other: Other
+  vehicle-other:
+    label: Describe the vehicle you used
+    help: For example "Company car" or "Blue Volvo". If you travelled in someone else's vehicle, please tell us that (for example "friend's car")
+
+stage.view:
+  stage-description: >-
+    {stageNumber, selectordinal,
+      one   {#st}
+      two   {#nd}
+      few   {#rd}
+      other {#th}
+    } stage, {method}, {travelTime} mins
+  boarding-count:
+    change-sr-hidden-suffix: How many times you boarded ({stageDescription})
+    key: How many times did you board?
+  companion-count:
+    key: Number of people travelling
+    change-sr-hidden-suffix: Number of people travelling ({stageDescription})
+    value: >-
+      {adultCount, select,
+        0 {{childCount, plural,
+            =0    {None}
+            =1    {{count} (1 child)}
+            other {{count} (# children)}
+          }}
+        1 {{childCount, plural,
+            =0    {{count} (1 adult)}
+            =1    {{count} (1 adult, 1 child)}
+            other {{count} (1 adult, # children)}
+          }}
+        other {{childCount, plural,
+            =0    {{count} ({adultCount} adults)}
+            =1    {{count} ({adultCount} adults, 1 child)}
+            other {{count} ({adultCount} adults, # children)}
+          }}
+      }
+  distance:
+    key: Distance
+    change-sr-hidden-suffix: Distance ({stageDescription})
+  driver-or-passenger:
+    driver: Driver
+    key: Driver or passenger?
+    change-sr-hidden-suffix: if you were the driver or a passenger ({stageDescription})
+    passenger: Passenger
+  is-ticket-adult:
+    key: Was it an adult or child ticket?
+  method:
+    key: Transport method
+    other: "Other: {method}"
+  parking-cost:
+    key: Parking cost
+    change-sr-hidden-suffix: Parking cost ({stageDescription})
+    value: "{cost, number, currency}"
+  time:
+  ticket-cost:
+    key: Ticket cost
+    change-sr-hidden-suffix: Ticket cost ({stageDescription})
+    value: "{cost, number, currency}"
+  ticket-type:
+    key: Ticket type
+    change-sr-hidden-suffix: Ticket type ({stageDescription})
+  travel-time:
+    key: Time spent travelling
+    change-sr-hidden-suffix: Time spent travelling ({stageDescription})
+    value: >-
+      {minutes, plural,
+        one   {1 minute}
+        other {# minutes}
+      }
+    value-short: >-
+      {minutes, plural,
+        one   {1 min}
+        other {# mins}
+      }
+  vehicle:
+    key: Vehicle
+    change-sr-hidden-suffix: Vehicle ({stageDescription})
+    unknown: Unknown vehicle
+  x-ordinal: >-
+    {number, selectordinal,
+      one   {#st}
+      two   {#nd}
+      few   {#rd}
+      other {#th}
+    } stage
+
+
+repeat-journey.full-introduction:
+  page-title: Repeat a previous journey
+  pre-form: This form will enable you to copy/duplicate a previous journey.
+repeat-journey.alt-introduction:
+  page-title: Repeat a previous journey
+  pre-form: This form will enable you to copy/duplicate the journey from {startLocation} to {endLocation}.
+
+repeat-journey.select-source-day:
+  choice-label: "{dayNumber, select,
+      0 {Practice day}
+      other {Day {dayNumber} — {date}}
+    } ({journeyCount, select, 0 {no journeys} 1 {1 journey} other {{journeyCount} journeys}})"
+  label: On which day was the journey that you want to repeat?
+  help: ''
+
+repeat-journey.select-journey:
+  label: Which journey do you want to repeat?
+  help: ''
+  choice:
+    label: "From {startLocation} to {endLocation} ({purpose}), at {time}"
+
+repeat-journey.select-target-day:
+  choice-label: "{dayNumber, select,
+      0 {Practice day}
+      other {Day {dayNumber} — {date}}
+    }"
+  label: On which day do you want to add the new journey?
+  help: ''
+
+repeat-journey.purpose:
+  label: What was the main purpose of this journey?
+
+repeat-journey.adjust-times:
+  page-title: What time did you make the journey?
+  help: Adjust the times from the original journey as necessary.
+
+repeat-journey.stage-details:
+  page-title: "Details for stage #{number} ({method})"
+
+repeat-journey.summary:
+  page-title: "Summary: repeat a previous journey"
+
+
+return-journey.introduction:
+  page-title: Make a return journey (from {startLocation} to {endLocation})
+  pre-form: >-
+    This will create a journey from {startLocation} to {endLocation}, {stageCount, select,
+      0     {with no stages.}
+      other {with the following stages:}
+    }
+
+return-journey.purpose:
+  label: What was the main purpose of this return journey?
+  help: 'Describe the **main** purpose of the journey. For example "to go to main place of work", "to go shopping for groceries" or "to take children to school"'
+
+return-journey.select-day:
+  label: On which day did you make the return journey?
+  help: ''
+  choice-label: "{dayNumber, select,
+      0 {Practice day}
+      other {Day {dayNumber} — {date}{index, select, 0 { (The same day)} other {}}}
+    }"
+
+return-journey.journey-times:
+  page-title: 'When did the return journey start and end?'
+  help: ''
+
+return-journey.stage-details:
+  page-title: "Details for return stage #{number} ({method})"
+  ticket-cost:
+    label: *ticketCostLabel
+    help: *ticketCostHelp
+  parking-cost:
+    label: *parkingCostLabel
+    help: *parkingCostHelp
+
+share-journey:
+  context-header: Journey details
+  
+  introduction:
+    page-title: 'Sharing a journey'
+    pre-form: |-
+      If other members of your household were on this journey with you, you can share the travel details with them to be copied into their diaries.
+      
+      Some details of the journey may be different for each household member. Please review these details before saving.
+      
+      To share a journey with another member of your household, you must have been on the **whole** journey together. If they were only with you for part of the way, then they must add that journey to their diaries separately.
+
+  cannot-share:
+    pre-form: |-
+      This journey cannot be shared. A journey can only be shared if:
+      
+      * It has at least one stage.
+      * It has not been shared before.
+      * There were at least two people (including you) travelling together for the **whole** journey.
+    submit.label: Finish
+
+  purposes:
+    page-title: 'Journey purposes'
+    purpose.label: "Purpose of journey for {name}"
+    pre-form: |-
+      Please add the reason for each household member’s journey below. This may not be the same as your journey purpose.
+
+      For example, if you were taking a child to school, your purpose will be ‘to take someone to school’, while the child’s purpose will be ‘to go to school’.
+
+  stage-details:
+    private:
+      page-title: Driver and parking cost details for stage {stage_number} of the journey
+      source-was-driver-introduction: Since you were the driver for this stage of the journey, these diary keepers have been marked as passengers.
+    public:
+      page-title: Ticket details for stage {stage_number} of the journey
+      introduction: Please add the ticket types for each household member who was on this journey with you. Ticket types may vary from passenger to passenger.
+
+    driver-or-passenger:
+      label: Was {name} the driver or a passenger?
+      help: ''
+      choices: *driverOrPassengerChoices
+    parking-cost:
+      label: Parking costs paid by {name}
+    participant:
+      label: Details for {name}
+    ticket-cost:
+      label: Ticket cost for {name}
+    ticket-type:
+      label: Ticket type for {name}
+      help-summary: Help with ticket type
+
+  who-with:
+    page-title: 'Who would you like to share this journey with?'
+
+    choice.label: "{name}{canShare, select,
+      0   { (Sharing not allowed)}
+      other {}
+    }"
+    sharing-help: You can only share journeys with other household members for whom you are acting as a proxy

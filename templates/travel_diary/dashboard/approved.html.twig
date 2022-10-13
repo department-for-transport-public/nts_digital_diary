@@ -1,0 +1,20 @@
+{% extends 'travel_diary/base.html.twig' %}
+{% trans_default_domain 'travel-diary' %}
+
+{% set title_translation_key = "approved.page-title" %}
+{% set heading_class = "govuk-heading-xl" %}
+
+{% block pageHeading %}{% endblock %}
+
+{% block content %}
+    {%- import "@GhostGovUkFrontend/components/macros.html.twig" as m -%}
+    {%- set household = diaryKeeper.household -%}
+    {%- set areaPeriod = household.areaPeriod -%}
+
+    <div class="govuk-panel govuk-panel--confirmation">
+        <h1 class="govuk-panel__title">{{ 'approved.heading' | trans }}</h1>
+        <div class="govuk-panel__body">
+            {{ 'approved.copy' | trans }}
+        </div>
+    </div>
+{% endblock %}

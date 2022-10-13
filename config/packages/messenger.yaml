@@ -1,0 +1,34 @@
+# messenger worker restart sugnal cache configured in cache.yaml
+
+framework:
+    messenger:
+        # Uncomment this (and the failed transport below) to send failed messages to this transport for later handling.
+        failure_transport: failed
+
+        # https://symfony.com/blog/new-in-symfony-5-4-messenger-improvements
+        reset_on_message: true
+
+        transports:
+            # https://symfony.com/doc/current/messenger.html#transport-configuration
+            # async: '%env(MESSENGER_TRANSPORT_DSN)%'
+            async: 'doctrine://default'
+            async_notify:
+                dsn: 'doctrine://default?queue_name=govuk-notify'
+                retry_strategy:
+                    # 30 min delay first time
+                    delay: 1800000
+                    # double the delay for each retry
+                    multiplier: 2
+                    # max delay 2 hours
+                    max_delay: 7200000
+            async_property_change:
+                dsn: 'doctrine://default?queue_name=property-change'
+            failed: 'doctrine://default?queue_name=failed'
+            sync: 'sync://'
+
+        routing:
+            # Route your messages to the transports
+            # 'App\Message\YourMessage': async
+
+            'App\Messenger\AlphagovNotify\AbstractMessage': async_notify
+            'App\Messenger\PropertyChange\AbstractMessage': async_property_change

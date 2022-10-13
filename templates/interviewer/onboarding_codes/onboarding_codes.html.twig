@@ -1,0 +1,35 @@
+{% extends "interviewer/dashboard/base.html.twig" %}
+
+{% trans_default_domain "interviewer" %}
+
+{% set serial = areaPeriod.area %}
+{% set title_translation_key = "onboarding-codes.page-title" %}
+{% set title_translation_parameters = {serial: serial} %}
+
+{% block content %}
+    {%- import "@GhostGovUkFrontend/components/macros.html.twig" as m -%}
+    <h2 class="govuk-heading-m">{{ "onboarding-codes.codes" | trans }}</h2>
+
+    <div class="onboarding-codes">
+    {%- for code in codes -%}
+        <div class="onboarding-codes__code-pair">
+            <div class="onboarding-codes__title">{{ "onboarding-codes.title" | trans({area: areaPeriod.area}) }}</div>
+            <div class="onboarding-codes__url">{{ url('onboarding_dashboard') }}</div>
+            <div class="onboarding-codes__id">
+                <span>{{ "onboarding-codes.passcode-1" | trans }}:</span> {{ code.id }}
+            </div>
+            <div class="onboarding-codes__code">
+                <span>{{ "onboarding-codes.passcode-2" | trans }}:</span> {{ code.code }}
+            </div>
+        </div>
+    {%- else -%}
+        <div class="onboarding-codes__no-codes govuk-body">
+            {{ "onboarding-codes.no-codes" | trans }}
+        </div>
+    {%- endfor -%}
+    </div>
+
+    <div class="govuk-button-group">
+        <a href="{{ path('interviewer_dashboard_area', {areaPeriod: areaPeriod.id}) }}" class="govuk-link">{{ "onboarding-codes.back" | trans }}</a>
+    </div>
+{% endblock %}

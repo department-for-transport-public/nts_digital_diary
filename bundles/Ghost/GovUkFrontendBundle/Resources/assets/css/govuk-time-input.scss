@@ -1,0 +1,43 @@
+@import "node_modules/govuk-frontend/govuk/settings/colours-applied";
+@import "node_modules/govuk-frontend/govuk/settings/media-queries";
+
+.govuk-time-input {
+    display: flex;
+    flex-wrap: wrap;
+}
+
+.govuk-time-input__item {
+    display: inline-block;
+    margin-right: 20px;
+    margin-bottom: 0;
+}
+
+.govuk-time-input__colon {
+    display: inline-block;
+    margin-left: -10px;
+    margin-right: 10px;
+    font-weight: bold;
+}
+
+.govuk-time-input__radios {
+    display: flex;
+}
+
+.govuk-time-input .govuk-fieldset__legend {
+    margin-bottom: 5px;
+}
+
+.govuk-time-input .govuk-radios__error {
+    .govuk-radios__label:before,
+    .govuk-radios__label:after {
+        border-color: $govuk-error-colour;
+    }
+}
+
+@include govuk-media-query($until: tablet) {
+  .govuk-time-input__radios {
+      label {
+          padding: 8px 8px 5px;
+      }
+  }
+}

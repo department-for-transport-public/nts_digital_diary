@@ -1,0 +1,6 @@
+{% extends 'base.html.twig' %}
+
+{% block beforeContent -%}
+    {% include 'includes/impersonation-banner.html.twig' %}
+    {{- parent() -}}
+{%- endblock %}

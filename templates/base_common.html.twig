@@ -1,0 +1,47 @@
+{% extends "@GhostGovUkFrontend/template.html.twig" %}
+
+{% block pageTitle -%}
+    {%- block pageTitleErrorPrefix -%}
+        {#- Search the context for invalid forms, in order to add "Error: " to title -#}
+        {%- if (_context | filter(item => not (item.vars.errors.form.getErrors(true) ?? []) is empty)) %}Error: {% endif -%}
+    {%- endblock -%}
+
+    {%- block pageTitlePrefix -%}
+        {#
+            Normally the page title will be set by defining a translation key at:
+              {translation_prefix}.page-title
+
+            The key for this translation can be overridden by defining "title_translation_key":
+              {translation_prefix}.{title_translation_key}
+
+            (Translation parameters for both of these can be specified as "title_translation_parameters")
+        #}
+        {%- if title_translatable_message is defined -%}
+            {{- title_translatable_message | trans -}}
+        {%- else -%}
+            {%- set title_translation_key = title_translation_key ?? 'page-title' -%}
+            {# if title_translation_key contains a dot, assume it's been defined as a complete key #}
+            {%- if (title_translation_key | split('.') | first) == title_translation_key -%}
+                {%- set title_translation_key =
+                    (title_translation_prefix ?? translation_prefix ?? 'title-translation-prefix')
+                    ~ "." ~ title_translation_key
+                -%}
+            {%- endif -%}
+            {{- title_translation_key | trans(
+                title_translation_parameters ?? translation_parameters ?? {},
+                title_translation_domain ?? translation_domain ?? null)
+            -}}
+        {%- endif -%}
+        {{- " - " -}}
+    {%- endblock -%}
+
+    {{- 'service.name' | trans }} - GOV.UK
+{%- endblock %}
+
+{% block beforeContent -%}
+    {%- block backLink -%}
+        {%- if (show_formwizard_backlink ?? true) and (formWizardState ?? false) and formWizardState.previousHistoryPlace -%}
+            <a href="{{ url(app.request.get('_route'), app.request.get('_route_params') | default({}) | merge(formWizardState.previousHistoryPlaceRouteParameters)) }}" class="govuk-back-link">Back</a>
+        {%- endif -%}
+    {%- endblock -%}
+{%- endblock %}

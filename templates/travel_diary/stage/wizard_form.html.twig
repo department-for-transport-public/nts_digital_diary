@@ -1,0 +1,22 @@
+{%- extends 'travel_diary/base_form.html.twig' -%}
+
+{%- trans_default_domain 'travel-diary' -%}
+
+{%- set stage = subject -%}
+
+{%- set translation_parameters = (translation_parameters ?? {}) | merge({
+    stage_number: stage.number,
+}) -%}
+
+{%- block formContext -%}
+    {%- import "travel_diary/stage/macros_sidebar.html.twig" as st -%}
+    {%- import "travel_diary/journey/macros_sidebar.html.twig" as j -%}
+    {%- set journey = stage.journey -%}
+
+    {# Removed as it was more confusing than anything else {{- st.stageSidebar(stage) -}} #}
+    {{- j.journeySidebar(journey, {
+        currentStageId: stage.id,
+        isAdd: isAdd ?? false,
+        stageInProgress: stage,
+    }) -}}
+{%- endblock -%}

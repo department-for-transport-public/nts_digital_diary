@@ -1,0 +1,158 @@
+breadcrumbs:
+  dashboard: Dashboard
+
+  area-subscribe:
+    subscribe: Subscribe to area
+    unsubscribe: Unsubscribe from area
+
+
+diary-keeper.states:
+  new: New
+  in-progress: In progress
+  completed: Completed
+  approved: Approved
+  submitted: Submitted
+
+
+diary-keeper:
+  page-title: Diary summary for {name}
+
+  back: Back to household
+  mark-as-approved: Mark diary as approved
+  undo-approval: Unapprove diary
+
+  no-journeys: No journeys
+  no-stages: No stages
+
+  boardings: Boardings
+  day: Day {dayNumber} — {date}
+  destination : Destination
+  distance: Distance
+  driver: Driver?
+  duration: Duration
+  journeys: Journeys
+  method: Method
+  parking-cost: Parking cost
+  passengers: Passengers
+  purpose: Purpose
+  stages: Stages
+  start: Start
+  ticket-cost: Ticket cost
+  ticket-type: Ticket type
+  vehicle: Vehicle
+
+
+household:
+  page-title: "Household: {serial}"
+
+  back: Back to survey area
+  diary-keeper-summary: View / approve
+  diary-keeper-summary-sr-hidden-suffix: " diary for {name}"
+  diary-keepers: Diary keepers
+  diary-week-start-date: Diary week start date
+  journey-sharing: Journey sharing enabled?
+
+  help-details:
+    text: Help with editing and amending a travel diary
+    content: Watch this video to see how to edit and amend a travel diary
+
+  impersonate: Impersonate
+  impersonate-sr-hidden-suffix: "{name}"
+  no-diary-keepers: No diary keepers
+  proxied-by: Proxied by {proxyNames}
+
+  submitted-for-processing: Submitted for processing
+
+  table:
+    has-login: Login?
+    number: '#'
+    name: Name
+    state: State
+    type: Type
+
+  type:
+    adult: Adult
+    child: Child
+
+household.submit:
+  submit-button: Submit for processing
+  page-title: "Submit household: {serial}"
+  breadcrumb: Submit household
+  copy: Submit this household to indicate that it is ready to be processed. This is the digital equivalent of posting the completed diaries.
+  warning: This process cannot be un-done
+  confirm-label: Confirm submission
+  confirmed-notification:
+    heading: Household submitted
+    content: The household with serial {serial} has been submitted for processing
+
+mark-as-approved:
+  page-title: Mark diary as approved?
+  breadcrumb: Mark diary as approved
+
+  copy: Marking this diary as approved will disallow the diary keeper from further accessing the diary, and will also make the diary eligible to be exported.
+  confirm: Mark diary as approved
+
+onboarding-codes:
+  page-title: Onboarding codes for {serial}
+
+  back: Back to survey area
+  codes: Codes
+
+  no-codes: No codes available
+
+  passcode-1: Passcode 1
+  passcode-2: Passcode 2
+  title: NTS Onboarding code — Area {area}
+
+subscribe.subscribe:
+  page-title: "Subscribe to area"
+
+  form:
+    area:
+      label: Area ID
+      help: An Area ID is a 6 digit number consisting of 2 year digits, 2 month digits and 2 sample point digits.
+    subscribe: Subscribe
+
+subscribe.unsubscribe:
+  page-title: "Unsubscribe from area {area}?"
+
+  form:
+    unsubscribe: Unsubscribe
+
+survey-area:
+  page-title: "Area: {area}"
+
+  back: Back to dashboard
+  diary-keepers: Diary keepers
+  households: Households
+  no-households: No households in this area
+  onboarding-codes: View Onboarding Codes
+  unsubscribe: Unsubscribe from this area
+  view: View
+  view-sr-hidden-suffix: Address number {address}, household {household}
+
+  table:
+    diary-keepers: Diary keepers
+    diary-week-start-date: Diary week start date
+    serial: Serial
+    state: State
+
+survey-areas:
+  page-title: Interviewer dashboard ({name})
+
+  no-active-areas: No active areas
+  subscribe-to-new-area: Subscribe to new area
+
+  view: View
+  view-sr-hidden-suffix: "area {area}"
+
+  table:
+    active-households: Active households
+    area: Area ID
+
+undo-approval:
+  page-title: Unapprove diary?
+  breadcrumb: Unapprove diary
+
+  copy: Unapproving this diary will allow the diary keeper to again access the diary, and the diary will no longer be eligible for export.
+  confirm: Unapprove diary

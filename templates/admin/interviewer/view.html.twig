@@ -1,0 +1,45 @@
+{% extends 'admin/base.html.twig' %}
+
+{% trans_default_domain 'admin' %}
+{% set title_translation_prefix = 'interviewer.view' %}
+{% set title_translation_domain = 'admin' %}
+{% set translation_parameters = {
+    name: interviewer.name,
+    email: interviewer.user.userIdentifier
+} %}
+
+{% block content %}
+    {% from '@GhostGovUkFrontend/components/macros.html.twig' import tableCell, tableRowComplex, actionLinks, actionlessSummaryListRow %}
+    <dl class="govuk-summary-list">
+        {{ actionlessSummaryListRow('Name', interviewer.name) }}
+        {{ actionlessSummaryListRow('Serial/ID', interviewer.serialId) }}
+        {{ actionlessSummaryListRow('Email address', interviewer.user.userIdentifier) }}
+    </dl>
+    <div class="govuk-button-group">
+        <a class="govuk-button govuk-button--warning" href="{{ path('admin_interviewers_delete', {id: interviewer.id}) }}">{{ 'interviewer.view.delete-button' | trans }}</a>
+    </div>
+
+    <ul class="govuk-list govuk-!-margin-bottom-8">
+        <li><a class="govuk-link" href="{{ path('admin_interviewers_list') }}">{{ 'interviewer.view.back-link' | trans }}</a></li>
+        <li><a class="govuk-link" href="{{ path('admin_interviewers_allocate', {id: interviewer.id}) }}">{{ 'interviewer.view.allocate-link' | trans }}</a></li>
+    </ul>
+
+    <h2 class="govuk-heading-m">{{ 'interviewer.view.areas-title' | trans }}</h2>
+
+    {%- from 'macros/list-page.html.twig' import listTableStart, listTableEnd -%}
+    {{ listTableStart(areas, areaForm) }}
+    {% for area in areas.entities %}
+        {# @var area \App\Entity\AreaPeriod #}
+        <tr class="govuk-table__row">
+            {{ tableCell(area.area ?? '-') }}
+            {{ tableCell(area.year) }}
+            {{ tableCell(area.month) }}
+            {{ tableCell(area.households | length, {numeric: true}) }}
+            {{ tableCell(actionLinks({(path('admin_interviewers_deallocate', {id: interviewer.id, area: area.id})): {label: 'Deallocate', srHiddenSuffix: "area #{area.area}"} }), {numeric: true}) }}
+        </tr>
+    {% else %}
+        {{ tableRowComplex({"No results": {colSpan: areas.fields|length + 1}}) }}
+    {% endfor %}
+    {{ listTableEnd(areas, areaForm) }}
+
+{% endblock %}

@@ -1,0 +1,13 @@
+@import "node_modules/govuk-frontend/govuk/base";
+
+$gutter: 15px;
+
+html.govuk-full-width {
+  background-color: #fff;
+
+  .govuk-width-container {
+    max-width: none;
+    margin-left: $gutter;
+    margin-right: $gutter;
+  }
+}

@@ -1,0 +1,17 @@
+## GCP AppEngine config
+runtime: php74
+entrypoint: serve public/index.php
+instance_class: B2
+service: admin
+
+manual_scaling:
+  instances: 1
+
+handlers:
+  - url: /build
+    static_dir: public/build
+  - url: /.*
+    script: auto
+
+inbound_services:
+  - warmup

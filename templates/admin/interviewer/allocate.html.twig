@@ -1,0 +1,14 @@
+{% extends 'admin/base.html.twig' %}
+
+{% trans_default_domain 'admin' %}
+{% set title_translation_domain = 'admin' %}
+{% set translation_parameters = {
+    name: interviewer.name,
+    email: interviewer.user.userIdentifier
+} %}
+{% set translation_prefix = "interviewer.allocate" %}
+
+
+{% block content %}
+    {{ form(form) }}
+{% endblock %}

@@ -1,0 +1,10 @@
+Area Code,Passcode 1, Passcode 2
+{{- "\n" -}}
+{%- for area in areas -%}
+    {%- for user in area.otpUsers -%}
+        {{- area.area -}},
+        {{- user.userIdentifier -}},
+        {{- passcodeGenerator.passwordForUserIdentifier(user.userIdentifier) -}}
+        {{- "\n" -}}
+    {%- endfor -%}
+{%- endfor -%}

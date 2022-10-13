@@ -1,0 +1,9 @@
+{%- extends 'travel_diary/share_journey/base_form.html.twig' -%}
+
+{%- trans_default_domain 'travel-diary' -%}
+
+{% block preFormContent %}
+    <div class="prose-scope">
+        {{ 'share-journey.purposes.pre-form' | trans(translation_parameters) | markdown_to_html }}
+    </div>
+{% endblock %}

@@ -1,0 +1,18 @@
+{%- extends 'travel_diary/base_form.html.twig' -%}
+
+{%- block formContext -%}
+    {%- import "travel_diary/stage/macros_sidebar.html.twig" as st -%}
+    {%- import "travel_diary/journey/macros_sidebar.html.twig" as j -%}
+
+    {% set journey = subject %}
+
+    {{- j.journeySidebar(journey, {
+        isAdd: false,
+        currentStageId: current_stage is defined ? current_stage.id : null,
+        header_translation_key: "share-journey.context-header",
+    }) -}}
+
+{#    {% if current_stage is defined %}#}
+{#        {{- st.stageSidebar(current_stage) -}}#}
+{#    {% endif %}#}
+{%- endblock -%}

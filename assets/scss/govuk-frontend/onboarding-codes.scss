@@ -1,0 +1,35 @@
+@import "node_modules/govuk-frontend/govuk/helpers/colour";
+@import "node_modules/govuk-frontend/govuk/helpers/spacing";
+@import "node_modules/govuk-frontend/govuk/helpers/typography";
+
+.onboarding-codes {
+  border-bottom: 1px dashed govuk-colour('dark-grey');
+  @include govuk-responsive-margin(6, "bottom");
+
+  &__code-pair {
+    border-top: 1px dashed govuk-colour('dark-grey');
+    @include govuk-responsive-padding(4);
+  }
+
+  &__title {
+    @include govuk-font($size: 24);
+    @include govuk-responsive-padding(4, "bottom");
+  }
+
+  &__url {
+    @include govuk-font($size: 19);
+    @include govuk-responsive-padding(3, "bottom");
+  }
+
+  &__id,
+  &__code {
+    @include govuk-font($size: 24, $tabular: true);
+
+    span {
+      @include govuk-font($size: 24, $tabular: true, $weight: 'bold');
+    }
+
+    @include govuk-responsive-padding(1, "top");
+    @include govuk-responsive-padding(1, "bottom");
+  }
+}

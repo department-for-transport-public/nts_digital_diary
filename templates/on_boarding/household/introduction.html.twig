@@ -1,0 +1,12 @@
+{% extends 'base.html.twig' %}
+{% trans_default_domain 'on-boarding' %}
+
+{% block content %}
+    <div class="prose-scope">
+        {{- 'household.introduction.introduction' | trans({
+            area: app.user.areaPeriod.area,
+        }) | markdown_to_html -}}
+    </div>
+
+    {{ form(form) }}
+{% endblock %}

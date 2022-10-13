@@ -1,0 +1,277 @@
+{% macro attributes(attr) -%}
+    {{- block('attributes', 'form_div_layout.html.twig') -}}
+{%- endmacro %}
+
+{% macro breadcrumbs(params) -%}
+    {%- strict false -%}
+        {%- include '@GhostGovUkFrontend/components/breadcrumbs/template.html.twig' -%}
+    {% endstrict -%}
+{%- endmacro %}
+
+{% macro details(params) -%}
+    {%- strict false -%}
+        {%- include '@GhostGovUkFrontend/components/details/template.html.twig' -%}
+    {% endstrict -%}
+{%- endmacro %}
+
+{% macro errorSummary(params) -%}
+    {%- strict false -%}
+        {%- include '@GhostGovUkFrontend/components/error-summary/template.html.twig' -%}
+    {% endstrict -%}
+{%- endmacro %}
+
+{% macro footer(params) -%}
+    {%- strict false -%}
+        {%- include '@GhostGovUkFrontend/components/footer/template.html.twig' -%}
+    {% endstrict -%}
+{%- endmacro %}
+
+{% macro header(params) -%}
+    {%- strict false -%}
+        {%- include '@GhostGovUkFrontend/components/header/template.html.twig' -%}
+    {% endstrict -%}
+{%- endmacro %}
+
+{% macro phaseBanner(params) -%}
+    {%- strict false -%}
+        {%- include '@GhostGovUkFrontend/components/phase-banner/template.html.twig' -%}
+    {% endstrict -%}
+{%- endmacro %}
+
+{% macro skipLink(params) -%}
+    {%- strict false -%}
+        {%- include '@GhostGovUkFrontend/components/skip-link/template.html.twig' -%}
+    {% endstrict -%}
+{%- endmacro %}
+
+{% macro tag(params) -%}
+    {%- strict false -%}
+        {%- include '@GhostGovUkFrontend/components/tag/template.html.twig' -%}
+    {% endstrict -%}
+{%- endmacro %}
+
+{% macro buttonLink(href, text, options) -%}
+    <a href="{{ href }}" role="button" draggable="false" class="govuk-button {{ options.class | default("") }}" data-module="govuk-button">
+        {{- text -}}
+    </a>
+{%- endmacro %}
+
+{% macro optionalActionsSummaryListRow(showActions, key, value, actions, options) -%}
+    {%- if showActions -%}
+        {{- _self.summaryListRow(key, value, actions, options) -}}
+    {%- else -%}
+        {{- _self.actionlessSummaryListRow(key, value, options) -}}
+    {%- endif -%}
+{%- endmacro %}
+
+{% macro actionlessSummaryListRow(key, value, options) -%}
+    {{- _self.summaryListRow(key, value, null, options | default({}) | merge({hideActions: true})) -}}
+{%- endmacro %}
+
+{% macro summaryListRow(key, value, actions, options) -%}
+    <div class="govuk-summary-list__row {{ options.row_class | default('') }}">
+        <dt class="govuk-summary-list__key">{{ key | nl2br }}</dt>
+        <dd class="govuk-summary-list__value">{{ value | nl2br }}</dd>
+        {% if not (options.hideActions | default(false)) %}
+            <dd class="govuk-summary-list__actions">
+                {{- _self.actionLinks(actions) -}}
+            </dd>
+        {% endif %}
+    </div>
+{%- endmacro %}
+
+{% macro actionLinks(actionLinks, options) %}
+    {%- if actionLinks | length == 1 -%}
+        {{- _self.actionLink((actionLinks | keys) | first, actionLinks | first) -}}
+    {%- else -%}
+        {% set options = options | default({}) %}
+        {%- with {
+            cssBlock: options.cssBlock | default('govuk-summary-list')
+        } -%}
+            <ul class="{{ cssBlock }}__actions-list">
+                {%- for url, action in actionLinks -%}
+                    <li class="{{ cssBlock }}__actions-list-item">
+                        {{- _self.actionLink(url, action) -}}
+                    </li>
+                {%- endfor -%}
+            </ul>
+        {%- endwith -%}
+    {%- endif -%}
+{% endmacro %}
+
+{# action can either be string with action, or array [action, actionHidden, (options)] #}
+{% macro actionLink(url, action) -%}
+    {%- if action | default(false) -%}
+        {# if action is iterable, it contains the options #}
+        {%- set options = action is iterable ? action : {label: action} -%}
+        {%- set attributes = options.attributes ?? {} -%}
+        {%- with {
+            label: options.label ?? '',
+            options: options,
+            attributes: attributes | merge({
+                class: (
+                    "govuk-link "
+                    ~ (attributes.class ?? '')
+                ) | trim,
+                href: url
+            }),
+        } -%}
+            <a {{- _self.attributes(attributes) -}}>
+                {{- label | trans(options.labelParams ?? {}, options.labelDomain ?? null) -}}
+                {%- if options.srHiddenSuffix ?? null -%}
+                    <span class="govuk-visually-hidden">{{ (options.srHiddenSuffixSplitContext ?? true) ? ':' : '' }} {{ options.srHiddenSuffix | trans(options.srHiddenSuffixParams ?? {}, options.srHiddenSuffixDomain ?? null) }}</span>
+                {%- endif -%}
+            </a>
+        {%- endwith -%}
+    {%- endif -%}
+{%- endmacro %}
+
+
+{# Takes a simple array of headings as strings, eg ['Id', 'Name'] #}
+{% macro tableHead(caption, columnHeadings, options) -%}
+    {%- set columnDefinitions = {} -%}
+    {%- for value in columnHeadings -%}
+        {%- set columnDefinitions = columnDefinitions | merge({(value): {}}) -%}
+    {%- endfor -%}
+
+    {{ _self.tableHeadComplex(caption, columnDefinitions, options) }}
+{%- endmacro %}
+
+{# Takes an object (heading => options) , eg {'Id': {}, 'Age': {numeric: true} #}
+{% macro tableHeadComplex(caption, columnDefinitions, options) -%}
+    {%- set options = options | default({}) -%}
+    {%- set translate = options.translate ?? true -%}
+
+    {%- if caption | default(false) %}<caption class="govuk-table__caption">{{ translate ? (caption|trans) : caption }}</caption>{% endif -%}
+    <thead class="govuk-table__head">
+        {{ _self.tableRowComplex(columnDefinitions, {commonCellOptions: {element: 'th', translate: translate}}) }}
+    </thead>
+{%- endmacro %}
+
+{% macro tableRowComplex(columnDefinitions, options) -%}
+    <tr class="govuk-table__row">
+        {%- for content, cellOptions in columnDefinitions -%}
+            {{ _self.tableCell(content, (options.commonCellOptions | default({})) | merge(cellOptions)) }}
+        {%- endfor -%}
+    </tr>
+{%- endmacro %}
+
+{% macro tableCell(value, options) -%}
+    {% set element = options.element | default('td') %}
+    {% set baseClass = ((element == 'td') ? 'govuk-table__cell' : 'govuk-table__header') %}
+    {%- with {
+        options: (options | default({})) | merge({
+        }),
+        attributes: options.attributes | default({}) | merge({
+            scope: (element == 'th') ? (options.scope | default('col')) : false,
+            class: ("#{baseClass} "
+                ~ ((options.actions | default(false)) or (options.numeric | default(false)) ? "#{baseClass}--numeric " : '')
+                ~ (options.class | default(''))
+            ) | trim,
+            colspan: options.colSpan | default(false),
+            rowspan: options.rowSpan | default(false),
+        }),
+    } -%}
+    <{{ element }} {{ _self.attributes(attributes) }}>
+            {%- if options.html ?? false -%}
+                {{ options.content | default(value) | raw }}
+            {%- else -%}
+                {{ options.content | default(value) | nl2br }}
+            {%- endif -%}</{{ element }}>
+        {%- endwith -%}
+{%- endmacro %}
+
+
+{% macro tabsHead(tabs, options) -%}
+    {%- set options = {
+        selected: (tabs | keys | first) | default(''),
+    } | merge(options | default({})) -%}
+    <h2 class="govuk-tabs__title">
+        Contents
+    </h2>
+    <ul class="govuk-tabs__list">
+        {%- for label, tab in tabs -%}
+            {%- set tabId = (tab is iterable) ? tab.id : tab -%}
+            {%- set tabOptions = (tab is iterable) ? tab.options : {} -%}
+            <li class="govuk-tabs__list-item {% if label == options.selected %}govuk-tabs__list-item--selected{% endif %}">
+                <a class="govuk-tabs__tab" href="#{{ tabId }}">
+                    {{- label -}}
+                </a>
+            </li>
+        {%- endfor -%}
+    </ul>
+{%- endmacro %}
+
+{% macro flashNotificationBanners() %}
+    {% for message in app.flashes(constant('\\Ghost\\GovUkFrontendBundle\\Model\\NotificationBanner::FLASH_BAG_TYPE')) %}
+        {{ _self.notificationBanner(message, {alert: true}) }}
+    {% endfor %}
+{% endmacro %}
+
+{% macro notificationBanner(notification, additionalOptions) -%}
+    {% set options = (additionalOptions ?? {}) | merge(notification.options ?? {}) %}
+    {%- with {
+        attr: {
+            class: ("govuk-notification-banner"
+                ~ ((options.style | default(false)) ? " govuk-notification-banner--#{options.style}" : "")
+                ~ (" #{options.class ?? ''}")
+            ) | trim,
+            role: (options.alert ?? false) ? 'alert' : null,
+            'aria-labelledby': "govuk-notification-banner-title",
+            'data-module': "govuk-notification-banner",
+        },
+    } -%}
+        <div {{ _self.attributes(attr) -}}>
+            <div class="govuk-notification-banner__header{{ notification.header_class is defined ? (' ' ~ notification.header_class) : '' }}">
+                <h2 class="govuk-notification-banner__title" id="govuk-notification-banner-title">
+                    {%- set domain = notification.title_translation_domain ?? notification.translation_domain ?? null -%}
+                    {{- notification.title | trans({}, domain) -}}
+                </h2>
+            </div>
+            <div class="govuk-notification-banner__content{{ notification.content_class is defined ? (' ' ~ notification.content_class) : '' }}">
+                {% if notification.heading ?? false %}
+                    <p class="govuk-notification-banner__heading">
+                        {%- set domain = notification.heading_translation_domain ?? notification.translation_domain ?? null -%}
+                        {{- notification.heading | trans({}, domain) -}}
+                    </p>
+                {% endif %}
+                {% if notification.content ?? false %}
+                    {%- if (options.html_content ?? false) is same as true -%}
+                        {{ notification.content | raw }}
+                    {%- elseif (options.html_content ?? false) is same as 'markdown' -%}
+                        {{ notification.content | markdown_to_html }}
+                    {%- else -%}
+                        {%- set domain = notification.content_translation_domain ?? notification.translation_domain ?? null -%}
+                        {{ notification.content | trans }}
+                    {%- endif -%}
+                {% endif %}
+            </div>
+        </div>
+    {% endwith %}
+{%- endmacro %}
+
+{% macro warningText(content, options) -%}
+    {%- with {
+        class: ('govuk-warning-text '
+            ~ (options.class ?? '')
+        ) | trim,
+    } -%}
+    <div class="{{ class }}">
+        <span class="govuk-warning-text__icon" aria-hidden="true">!</span>
+        <strong class="govuk-warning-text__text">
+            <span class="govuk-warning-text__assistive">{{ 'notification.warning'|trans }}</span>
+            {{- content|nl2br -}}
+        </strong>
+    </div>
+    {%- endwith -%}
+{%- endmacro %}
+
+
+{% macro startNow(url, text) -%}
+    <a href="{{ url }}" role="button" draggable="false" class="govuk-button govuk-!-margin-bottom-1 govuk-button--start" data-module="govuk-button">
+        {{ text ?? ("start-now" | trans) }}
+        <svg class="govuk-button__start-icon" xmlns="http://www.w3.org/2000/svg" width="17.5" height="19" viewBox="0 0 33 40" aria-hidden="true" focusable="false">
+            <path fill="currentColor" d="M0 0h13l20 20-20 20H0l20-20z" />
+        </svg>
+    </a>
+{%- endmacro %}

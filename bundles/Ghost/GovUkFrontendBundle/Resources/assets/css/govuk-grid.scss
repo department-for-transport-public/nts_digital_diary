@@ -1,0 +1,22 @@
+@import "node_modules/govuk-frontend/govuk/base";
+
+/* The original mixin "govuk-grid-column" specifies width: 100% for the default, meaning
+ * we can't add these breakpoints on top of others.
+ */
+@mixin govuk-grid-column-extra($width: full, $float: left, $at: tablet) {
+  box-sizing: border-box;
+  padding: 0 $govuk-gutter-half;
+  @include govuk-media-query($from: $at) {
+    width: govuk-grid-width($width);
+    float: $float;
+  }
+}
+
+@include govuk-exports("govuk/objects/grid-extra") {
+  @each $width in map-keys($govuk-grid-widths) {
+    .govuk-grid-column-#{$width}-from-wide {
+      /* 'wide' seems to be a valid option in $mq-breakpoints, but using it breaks encore build, so specifying px */
+      @include govuk-grid-column-extra($width, $at: 1300px);
+    }
+  }
+}

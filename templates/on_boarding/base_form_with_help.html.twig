@@ -1,0 +1,7 @@
+{% extends 'base.html.twig' %}
+{% trans_default_domain translation_domain %}
+
+{% block content %}
+    <p class="govuk-body">{{ "#{translation_prefix}.help" | trans | nl2br }}</p>
+    {{ form(form) }}
+{% endblock %}

@@ -1,0 +1,42 @@
+{%- extends 'base.html.twig' -%}
+
+{%- trans_default_domain 'on-boarding' -%}
+{%- set translation_prefix = "submit" -%}
+
+{%- block content -%}
+    <p class="govuk-body">{{ 'submit.intro' | trans }}</p>
+
+    {% from 'on_boarding/macros.html.twig' import showHouseholdDetails, showHouseholdVehicles %}
+    {{ showHouseholdDetails({showActions: false}) }}
+
+    <h2 class="govuk-heading-m govuk-!-margin-top-8" id="vehicles">{{ "dashboard.household-vehicles" | trans }}</h2>
+    {{ showHouseholdVehicles({showActions: false}) }}
+
+    <table class="govuk-table">
+        <caption class="govuk-table__caption govuk-table__caption--m">{{ "dashboard.diary-keepers" | trans }}</caption>
+        <thead class="govuk-table__head">
+            <tr class="govuk-table__row">
+                <th scope="col" class="govuk-table__header">{{ "diary-keeper.view.summary.capi" | trans }}</th>
+                <th scope="col" class="govuk-table__header">{{ "diary-keeper.view.summary.name" | trans }}</th>
+                <th scope="col" class="govuk-table__header">{{ "diary-keeper.view.summary.email" | trans }}</th>
+                <th scope="col" class="govuk-table__header">{{ "diary-keeper.view.summary.is-adult" | trans }}</th>
+                <th scope="col" class="govuk-table__header">{{ "diary-keeper.view.summary.proxied-by" | trans }}</th>
+            </tr>
+        </thead>
+        <tbody class="govuk-table__body">
+            {% for diaryKeeper in app.user.household.diaryKeepers %}
+                {# @var diaryKeeper \App\Entity\DiaryKeeper #}
+                {%- set proxyNames = diaryKeeper.proxyNames -%}
+                <tr class="govuk-table__row">
+                    <th scope="row" class="govuk-table__cell">{{ diaryKeeper.number }}</th>
+                    <td class="govuk-table__cell">{{ diaryKeeper.name }}</td>
+                    <td class="govuk-table__cell">{{ diaryKeeper.hasValidIdentifierForLogin ? diaryKeeper.user.userIdentifier : '-' }}</td>
+                    <td class="govuk-table__cell">{{ diaryKeeper.isAdult | format_bool | trans }}</td>
+                    <td class="govuk-table__cell">{{ proxyNames is not empty ? (proxyNames | join(', ')) : '-' }}</td>
+                </tr>
+            {% endfor %}
+        </tbody>
+    </table>
+
+    {{ form(form) }}
+{%- endblock -%}

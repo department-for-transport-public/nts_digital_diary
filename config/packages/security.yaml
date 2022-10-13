@@ -1,0 +1,109 @@
+parameters:
+    regex.frontend_host: ^(?!admin(\.|-dot-))
+    regex.admin_host: ^admin(\.|-dot-)
+
+security:
+    enable_authenticator_manager: true
+    # https://symfony.com/doc/current/security.html#registering-the-user-hashing-passwords
+    password_hashers:
+        Symfony\Component\Security\Core\User\PasswordAuthenticatedUserInterface: 'auto'
+    # https://symfony.com/doc/current/security.html#loading-the-user-the-user-provider
+
+    providers:
+        db:
+            entity:
+                class: App\Entity\User
+        otp:
+            entity:
+                class: App\Entity\OtpUser
+        hmac:
+            entity:
+                class: App\Entity\ApiUser
+
+    firewalls:
+        dev:
+            pattern: ^/(_(profiler|wdt)|css|images|js)/
+            security: false
+
+        onboarding:
+            pattern: ^/onboarding
+            host: '%regex.frontend_host%'
+            provider: otp
+            entry_point: App\Security\OneTimePassword\FormAuthenticator
+            custom_authenticators:
+                - App\Security\OneTimePassword\FormAuthenticator
+            logout:
+                path: onboarding_logout
+                target: onboarding_login
+                csrf_token_generator: security.csrf.token_manager
+            login_throttling:
+                limiter: 'limiter.login'
+        api:
+            pattern: ^/api
+            host: '%regex.frontend_host%'
+            provider: hmac
+            stateless: true
+            custom_authenticators:
+                - App\Security\HmacAuth\HmacAuthenticator
+            login_throttling:
+                limiter: 'limiter.api'
+
+        admin:
+            pattern: ^/
+            host: '%regex.admin_host%'
+            stateless: true
+            provider: hmac # this is not used, but symfony tells us to specify one anyway (deprecation warning)
+            custom_authenticators:
+                - App\Security\GoogleIap\IapAuthenticator
+
+        main:
+            pattern: ^/ #(login|logout|travel-diary|interviewer)
+            host: '%regex.frontend_host%'
+            provider: db
+            switch_user: { role: CAN_IMPERSONATE_USER }
+            login_throttling:
+                limiter: 'limiter.login'
+            remember_me:
+                secret: '%kernel.secret%'
+                lifetime: 1209600 # 2 weeks
+                remember_me_parameter: user_login[remember_me]
+                signature_properties: ['password']
+            form_login:
+                login_path: app_login
+                check_path: app_login
+                username_parameter: user_login[group][email]
+                password_parameter: user_login[group][password]
+                enable_csrf: true
+                csrf_parameter: user_login[_token]
+                ## Always redirect to homepage, regardless of what the user requested before being redirected to login
+                ## We do this because of issue with impersonation
+                always_use_default_target_path: true
+            logout:
+                path: app_logout
+                csrf_token_generator: security.csrf.token_manager
+
+    role_hierarchy:
+        ROLE_INTERVIEWER: ROLE_USER
+        ROLE_DIARY_KEEPER: ROLE_USER
+        ROLE_ON_BOARDING: ROLE_USER
+
+    # Easy way to control access for large sections of your site
+    # Note: Only the *first* access control that matches will be used
+    access_control:
+
+        ## Frontend / un-secured
+        - { path: ^/onboarding/login, host: '%regex.frontend_host%', requires_channel: '%env(SECURE_SCHEME)%' }
+        ## Frontend / secured
+        - { path: ^/interviewer, host: '%regex.frontend_host%', roles: ROLE_INTERVIEWER, requires_channel: '%env(SECURE_SCHEME)%' }
+        - { path: ^/travel-diary, host: '%regex.frontend_host%', roles: ROLE_DIARY_KEEPER, requires_channel: '%env(SECURE_SCHEME)%' }
+        - { path: ^/onboarding, host: '%regex.frontend_host%', roles: ROLE_ON_BOARDING, requires_channel: '%env(SECURE_SCHEME)%' }
+        - { path: ^/api, host: '%regex.frontend_host%', roles: ROLE_API_USER, requires_channel: '%env(SECURE_SCHEME)%' }
+        ## everything else frontend
+        - { path: ^/logout, host: '%regex.frontend_host%', roles: ROLE_USER, requires_channel: '%env(SECURE_SCHEME)%' }
+        - { path: ^/cron, host: '%regex.frontend_host%'} # don't force https, as it means we get a redirect
+        - { path: ^/_ah } # don't force https, as it means we get a redirect
+
+        - { host: '%regex.frontend_host%', requires_channel: '%env(SECURE_SCHEME)%' }
+
+        ## Admin host
+        - { host: '%regex.admin_host%', roles: ROLE_ADMIN, requires_channel: '%env(SECURE_SCHEME)%' }

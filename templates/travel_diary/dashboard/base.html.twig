@@ -1,0 +1,76 @@
+{%- extends "travel_diary/base.html.twig" -%}
+
+{% trans_default_domain "travel-diary" %}
+
+{%- block beforeContent -%}
+    {{- parent() -}}
+
+    {% set breadcrumb_translation_parameters = breadcrumb_translation_parameters ?? {} %}
+
+    {%- from '@GhostGovUkFrontend/components/macros.html.twig' import breadcrumbs -%}
+    {%- set breadcrumbItems = [
+        {
+            href: path('traveldiary_dashboard'),
+            text: 'breadcrumbs.dashboard' | trans(breadcrumb_translation_parameters),
+        }
+    ] -%}
+    {# @var day \App\Entity\DiaryDay #}
+    {%- if day is defined %}{% set breadcrumbItems = breadcrumbItems | merge([
+        {
+            href: path('traveldiary_dashboard_day', {dayNumber: day.number}),
+            text: 'breadcrumbs.day' | trans({dayNumber: day.number, date: day.date | date(format_date_with_dow)} | merge(breadcrumb_translation_parameters)),
+        }
+    ]) %}{% endif -%}
+    {%- if journey is defined %}
+        {% set breadcrumbItems = breadcrumbItems | merge([
+            {
+                href: path('traveldiary_journey_view', {journeyId: journey.id}),
+                text: 'breadcrumbs.start-to-end' | trans({
+                    startLocation: journey.startLocationForDisplay,
+                    endLocation: journey.endLocationForDisplay,
+                    time: journey.startTime | date(format_time_short),
+                } | merge(breadcrumb_translation_parameters)),
+            }
+        ]) %}
+    {%- endif -%}
+
+    {%- if action is defined and action == 'mark-as-complete' -%}
+        {% set breadcrumbItems = breadcrumbItems | merge([
+            {
+                href: path('traveldiary_mark_as_complete'),
+                text: "breadcrumbs.mark-as-complete" | trans,
+            }
+        ]) %}
+    {%- endif -%}
+    {%- if action is defined and action == 'delete-stage' -%}
+        {% set breadcrumbItems = breadcrumbItems | merge([
+            {
+                href: path('traveldiary_journey_view', {journeyId: journey.id}) ~ '#stage-' ~ stage.number,
+                text: "breadcrumbs.stage" | trans({stageNumber: stage.number})
+            },
+            {
+                href: path('traveldiary_stage_delete', {stageId: stage.id}),
+                text: "breadcrumbs.delete-stage" | trans,
+            }
+        ]) %}
+    {%- endif -%}
+    {%- if action is defined and action == 'delete-journey' -%}
+        {% set breadcrumbItems = breadcrumbItems | merge([
+            {
+                href: path('traveldiary_journey_delete', {journeyId: journey.id}),
+                text: "breadcrumbs.delete-journey" | trans,
+            }
+        ]) %}
+    {%- endif -%}
+    {%- if action is defined and field is defined and day is defined -%}
+        {%- set route = "traveldiary_day_#{field == 'diaryKeeperNotes' ? 'diary_keeper' : 'interviewer'}_notes" -%}
+        {% set breadcrumbItems = breadcrumbItems | merge([
+            {
+                href: path(route, {dayNumber: day.number}),
+                text: "breadcrumbs.#{field == 'diaryKeeperNotes' ? 'diary-keeper' : 'interviewer'}-notes" | trans,
+            }
+        ]) %}
+    {%- endif -%}
+
+    {{- breadcrumbs({items: breadcrumbItems}) -}}
+{%- endblock -%}

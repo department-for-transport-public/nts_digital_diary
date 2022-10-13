@@ -1,0 +1,73 @@
+{% extends 'travel_diary/dashboard/base.html.twig' %}
+
+{% set translation_prefix = 'stage.reorder' %}
+{% set heading_class = "govuk-heading-xl" %}
+{% trans_default_domain "travel-diary" %}
+{% set breadcrumb_translation_parameters = {
+    diary_keeper_name: diaryKeeper.name,
+} %}
+
+{% block content %}
+    <div class="govuk-grid-row">
+        <div class="govuk-grid-column-two-thirds">
+            {{ _self.sortForm(form, journey, mapping, sortedActions) }}
+        </div>
+        <div class="govuk-grid-column-one-third">
+            {%- import "travel_diary/journey/macros_sidebar.html.twig" as m -%}
+            {{ m.journeySidebar(journey) }}
+        </div>
+    </div>
+{% endblock %}
+
+{% macro sortForm(form, journey, mapping, sortedStages) %}
+    {%- import _self as s -%}
+
+    <dl class="govuk-summary-list govuk-summary-list-reorder govuk-!-margin-bottom-9" id="order-list">
+        {%- set reorderRoute = app.request.attributes.get('_route') -%}
+        {%- for stage in sortedStages -%}
+            {%- set moveUpLink = url(reorderRoute, reorderRouteExtraParams|default({})|merge({
+                journeyId: journey.id, mapping: shiftMapping(mapping, loop.index0, 'up')|join(',')
+            })) -%}
+            {%- set moveDownLink = url(reorderRoute, reorderRouteExtraParams|default({})|merge({
+                journeyId: journey.id, mapping: shiftMapping(mapping, loop.index0, 'down')|join(',')
+            })) -%}
+            {%- set method = stage.methodOther is not null ?
+                stage.methodOther :
+                "stage.method.choices.#{stage.method.descriptionTranslationKey}" | trans
+            -%}
+            {%- set value -%}
+                {{ method }}
+                {{ 'stage.reorder.time' | trans({travelTime: stage.travelTime}) }}
+            {%- endset -%}
+
+            {%- set srHiddenSuffix = 'stage.reorder.srHiddenSuffix' -%}
+            {%- set srHiddenSuffixParams = {
+                number: stage.number,
+                method: method,
+                travelTime: stage.travelTime,
+            } -%}
+            {%- set disabledAttributes = {class: 'govuk-summary-list-reorder__link_hidden', 'aria-hidden': 'true', 'tabIndex': '-1'} -%}
+            {%- set links = {
+                (loop.first ? '#' : moveUpLink): {
+                    label: 'actions.move-up',
+                    srHiddenSuffix: loop.first ? {} : srHiddenSuffix,
+                    srHiddenSuffixParams: srHiddenSuffixParams,
+                    srHiddenSuffixDomain: "travel-diary",
+                    attributes: loop.first ? disabledAttributes : {},
+                },
+                (loop.last ? '#' : moveDownLink): {
+                    label: 'actions.move-down',
+                    srHiddenSuffix: loop.last ? {} : srHiddenSuffix,
+                    srHiddenSuffixParams: srHiddenSuffixParams,
+                    srHiddenSuffixDomain: "travel-diary",
+                    attributes: loop.last ? disabledAttributes : {},
+                }
+            } -%}
+
+            {%- import '@GhostGovUkFrontend/components/macros.html.twig' as m -%}
+            {{- m.summaryListRow("#{stage.number}.", value, links) -}}
+        {%- endfor -%}
+    </dl>
+
+    {{ form(form) }}
+{% endmacro %}

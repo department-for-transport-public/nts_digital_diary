@@ -1,0 +1,83 @@
+###
+# Wildcard routing configuration should not be added for the root of the `src/Controller` folder.
+# Instead, add controllers to sub folders and add a configuration here for each sub folder.
+# We've done this in order to:
+#  - keep controllers compartmentalised
+#  - retain consistency of URL and route name prefixes (avoiding the default `app_` prefix)
+#  - avoid code duplication
+###
+
+core:
+    resource: ../../src/Controller/FrontendController.php
+    type: annotation
+    host: '%hostnames.frontend%'
+
+session:
+    resource: ../../src/Controller/CommonController.php
+    type: annotation
+
+travel_diary:
+    resource: '../../src/Controller/TravelDiary/**/*'
+    type: annotation
+    host: '%hostnames.frontend%'
+    name_prefix: traveldiary_
+    prefix: /travel-diary
+    trailing_slash_on_root: false
+
+interviewer:
+    resource: '../../src/Controller/Interviewer/**/*'
+    type: annotation
+    host: '%hostnames.frontend%'
+    name_prefix: interviewer_
+    prefix: /interviewer
+    trailing_slash_on_root: false
+
+auth:
+    resource: '../../src/Controller/Auth/**/*'
+    type: annotation
+    host: '%hostnames.frontend%'
+    name_prefix: auth_
+    prefix: /auth
+
+onboarding:
+    resource: '../../src/Controller/OnBoarding/**/*'
+    type: annotation
+    host: '%hostnames.frontend%'
+    name_prefix: onboarding_
+    prefix: /onboarding
+    trailing_slash_on_root: false
+
+admin:
+    resource: '../../src/Controller/Admin/**/*'
+    type: annotation
+    host: '%hostnames.admin%'
+    name_prefix: admin_
+
+export_api:
+    resource: '../../src/Controller/ExportApi/**/*'
+    type: annotation
+    host: '%hostnames.frontend%'
+    name_prefix: exportapi_
+    prefix: /api/v{version}
+    format: json
+    requirements:
+        version: "1"
+
+cron:
+    resource: '../../src/Controller/Cron/**/*'
+    type: annotation
+#    host: '%hostnames.frontend%'
+    name_prefix: 'cron_'
+    prefix: /cron
+    condition: "(request.headers.get('X-Appengine-Cron') === 'true') or (request.headers.get('X-Cloudscheduler') === 'true')"
+
+gcp:
+    resource: ../../src/Controller/GcpController.php
+    type: annotation
+    name_prefix: 'gcp_'
+    prefix: /_ah
+    condition: "(not request.headers.has('X-GOOG-IAP-JWT-ASSERTION')) and (request.headers.get('X-GOOGLE-INTERNAL-SKIPADMINCHECK') === 'true')"
+
+kernel:
+    resource: ../../src/Kernel.php
+    type: annotation

@@ -1,0 +1,47 @@
+@import "node_modules/govuk-frontend/govuk/core/lists";
+
+.govuk-confirmation {
+    @include govuk-text-colour;
+    @include govuk-responsive-padding(4);
+    @include govuk-responsive-margin(8, "bottom");
+
+    border: $govuk-border-width solid $govuk-error-colour;
+
+    &:focus {
+        outline: $govuk-focus-width solid $govuk-focus-colour;
+    }
+
+    &--primary {
+        border: $govuk-border-width solid govuk-colour("green", $legacy: #00823b);
+    }
+
+    &--orange {
+        border: $govuk-border-width solid govuk-colour("orange", $legacy: #f47738);
+    }
+
+    &--grey {
+        border: $govuk-border-width solid govuk-colour("mid-grey", $legacy: #b1b4b6);
+    }
+
+    &__title {
+        @include govuk-font($size: 24, $weight: bold);
+
+        margin-top: 0;
+        @include govuk-responsive-margin(4, "bottom");
+    }
+
+    &__body {
+        @include govuk-font($size: 19);
+
+        p {
+            margin-top: 0;
+            @include govuk-responsive-margin(4, "bottom");
+        }
+
+        .govuk-button {
+            @include govuk-media-query(mobile) {
+                @include govuk-responsive-margin(2, "bottom");
+            }
+        }
+    }
+}

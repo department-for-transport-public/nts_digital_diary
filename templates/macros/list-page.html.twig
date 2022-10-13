@@ -1,0 +1,84 @@
+{%- macro listTableStart(data, form) -%}
+    {{ form_start(form) }}
+    <table class="govuk-table list-table">
+        {{ _self.tableHeader(data, form) }}
+        <tbody class="govuk-table__body">
+{%- endmacro -%}
+
+{%- macro listTableEnd(data, form) -%}
+        </tbody>
+    </table>
+    {{ form_end(form) }}
+    {{ _self.pagination(data) }}
+{%- endmacro -%}
+
+{%- macro tableHeader(data, form) -%}
+    {% from '@GhostGovUkFrontend/components/macros.html.twig' import tableCell %}
+    <thead class="govuk-table__head">
+    <tr class="govuk-table__row">
+        {%- for field in data.fields -%}
+            {%- set contents -%}
+            {%- autoescape false -%}
+                <div>
+                    {%- if form[field.id] is defined -%}
+                        {{- form_label(form[field.id]) -}}
+                        {{- form_widget(form[field.id]) -}}
+                    {%- else -%}
+                        {{- field.label|e|nl2br -}}
+                    {%- endif -%}
+                    {%- if field.getSortable -%}
+                        {%- set upActive = (data.order == field.id) and (data.orderDirection == 'ASC') -%}
+                        <a href="{{ data.callOrderUrlGenerator(field.id, 'ASC') }}" class="list-table__order--up{{ upActive ? ' list-table__order--active' : '' }}">
+                            <span class="govuk-visually-hidden">Order by {{ field.label }}, ascending{{ upActive ? ' (currently active)' : '' }}</span>
+                        </a>
+
+                        {%- set downActive = (data.order == field.id) and (data.orderDirection == 'DESC') -%}
+                        <a href="{{ data.callorderUrlGenerator(field.id, 'DESC') }}" class="list-table__order--down{{ downActive ? ' list-table__order--active' : '' }}">
+                            <span class="govuk-visually-hidden">Order by {{ field.label }}, descending{{ downActive ? ' (currently active)' : '' }}</span>
+                        </a>
+                    {% endif %}
+                </div>
+            {%- endautoescape -%}
+            {%- endset -%}
+
+            {{- tableCell(contents, field.getCellOptions|merge({element: 'th', html: true})) -}}
+        {%- endfor -%}
+        {{- tableCell('<div class="list-table--buttons">' ~ form_rest(form) ~ '</div>', {element: 'th', html: true}) -}}
+    </tr>
+    </thead>
+{%- endmacro -%}
+
+{%- macro page(page) -%}
+    <span class="govuk-visually-hidden">Page </span>{{ page }}
+{%- endmacro -%}
+
+{%- macro pagination(data) -%}
+    <nav class="govuk-pagination__container" aria-label="Pagination">
+        <div class="previous">
+            {% if data.previousUrl %}<a class="govuk-link" href="{{ data.previousUrl }}">Previous page</a>{% endif %}
+        </div>
+        <div class="govuk-pagination">
+            <ul>
+                {%- for entry in data.paginationUrls -%}
+                    {%- set page = entry[0] -%}
+                    {%- set url = entry[1] -%}
+                    {%- set isCurrent = page == data.page -%}
+                    <li{% if isCurrent %} class="govuk-pagination__active"{% endif %}>
+                        {%- if page == '...' -%}
+                            ...
+                        {%- else -%}
+                            {%- if isCurrent -%}
+                                {{ _self.page(page) }}
+                            {%- else -%}
+                                <a class="govuk-link" href="{{ url }}">{{ _self.page(page) }}</a>
+                            {%- endif -%}
+                        {%- endif -%}
+                    </li>
+                {% endfor %}
+            </ul>
+        </div>
+        <div class="next">
+            {% if data.nextUrl %}<a class="govuk-link" href="{{ data.nextUrl }}">Next page</a>{% endif %}
+        </div>
+    </nav>
+{%- endmacro -%}

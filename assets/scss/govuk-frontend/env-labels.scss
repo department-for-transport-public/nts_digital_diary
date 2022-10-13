@@ -1,0 +1,10 @@
+@import "node_modules/govuk-frontend/govuk/helpers/colour";
+@import "node_modules/govuk-frontend/govuk/helpers/spacing";
+@import "node_modules/govuk-frontend/govuk/helpers/typography";
+
+.govuk-warning-header {
+  background: govuk-colour("white");
+  color: govuk-colour("black");
+  padding: govuk-spacing(2);
+  @include govuk-font(16);
+}

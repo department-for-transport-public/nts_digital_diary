@@ -1,0 +1,172 @@
+The CSRF token is invalid. Please try to resubmit the form.: Timeout error. Try submitting the form again.
+
+common:
+  choice:
+    invalid: Choose a valid option
+  date:
+    invalid: Enter a valid date
+  email:
+    already-used: This email address is already in use
+  number:
+    invalid: Enter a number
+    not-null: Enter a number
+    max: "Cannot be more than {limit}"
+    positive: Enter a positive number
+    positive-or-zero: Enter a positive number or zero
+  password:
+    not-complex-enough: Enter a password at least 8 characters long. It must contain an uppercase letter, a lowercase letter and a number.
+  string:
+    invalid: Enter a valid value
+    max-length: Enter {limit} characters or fewer
+
+change-email:
+  email.not-blank: Enter an email address
+
+forgotten-password:
+  email.not-blank: Enter an email address
+  too-many-submissions: >-
+    Too many form submissions. Try again in {minutes, plural,
+      one     {1 minute}
+      other   {# minutes}
+    }
+
+security:
+  main:
+    csrf-error: Timeout error. Try logging in again
+    invalid-credentials: Incorrect username or password
+    too-many-attempts: &tooManyAttempts >-
+      Too many failed login attempts. Try again in {minutes, plural,
+        one     {1 minute}
+        other   {# minutes}
+      }
+  otp:
+    csrf-error: Timeout error. Try logging in again
+    invalid-credentials: Incorrect passcodes
+    too-many-attempts: *tooManyAttempts
+
+setup:
+  password:
+    not-blank: Enter a password
+    must-match: This password must match the first
+
+allocate-area:
+  area:
+    not-blank: Enter an Area ID
+    valid: Enter a valid Area ID
+    range: Area ID must be 6 digits
+
+admin:
+  area:
+    valid: Area code {value} is not valid
+    unique: An area with code "{value}" already exists for this year
+
+wizard.diary-keeper:
+  is-adult.not-null: You must indicate if this person is an adult
+  is-proxied.not-null: You must indicate if this person needs a proxy
+  add-another.not-null: Choose if you need to add another diary keeper
+  consent:
+    not-null: The diary keeper must agree to the conditions in order to participate
+  name:
+    not-null: Enter a name
+    unique: A diary keeper with this name already exists
+  number:
+    not-null: Enter a number
+    not-in-range: The number must be between 1 and 99 inclusive
+    unique: A diary keeper with this number already exists
+  proxy.not-null: You must select who will act as proxy
+  user-identifier:
+    email: The email address is not valid
+    not-blank: You must provide an email address
+
+wizard.journey:
+  end-choice.not-null: Choose the end location
+  end-other.not-null: Specify the finish location
+  end-time.not-null: Enter the finish time
+  purpose.not-null: Enter the purpose of the journey
+  purpose-other.not-null: Provide details of the purpose
+  simple-purpose.not-null: Enter the purpose of the journey
+  start-choice.not-null: Choose the start location
+  start-other.not-null: Specify the start location
+  start-time.not-null: Enter the start time
+
+wizard.on-boarding:
+  diary-keeper:
+    identity:
+      at-least-one: Enter an email address or choose a proxy for this diary keeper
+      enter-email: Enter an email address
+      not-empty-when-acting-as-a-proxy: "Email address cannot be removed while this Diary Keeper is acting as a proxy for others ({names})"
+  household:
+    unique-in-area-period: A household with this address number and household number already exists within this area
+    address-number:
+      not-blank: Enter the address number
+      not-in-range: The address number must be between 1 and 99 inclusive
+    check-letter:
+      not-null: Enter the check letter
+      invalid: Enter the correct check letter. Are the address and household number correct?
+      too-long: Enter a single character
+    household-number:
+      not-blank: Enter the household number
+      not-in-range: The household number must be between 1 and 99 inclusive
+    start-date.not-blank: Enter the diary week start date
+    purpose-form-group.not-blank: Select a test group
+  vehicle:
+    name.not-blank: Enter a name for the vehicle
+    method.not-blank: Choose the type of vehicle
+
+wizard.share-journey:
+  who-with.not-blank: Choose who to share the journey with
+  is-driver:
+    not-blank: Choose whether {name} was the driver or passenger
+    not-multiple: Choose only one person as the driver
+  purposes.not-null: Enter the purpose of this journey
+  share-to.count: "Select fewer people. This journey can be shared with a maximum of {max} other {max, select,
+      1     {person}
+      other {people}
+    } because only {minStageTravellerCount} people (including you) were present on all stages"
+
+wizard.stage:
+  adult-count:
+    at-least-1: The number of adults must be 1 or more
+    not-blank: Enter the number of adults
+    positive-or-zero: The number of adults must not be negative
+  boarding-count:
+    not-blank: Enter the number of times you boarded the vehicle
+    positive: Enter a positive number of times you boarded the vehicle
+  child-count:
+    at-least-1: The number of children must be 1 or more
+    not-blank: Enter the number of children
+    positive-or-zero: The number of children must not be negative
+  distance-travelled:
+    value:
+      not-blank: Enter the distance travelled
+      positive: Distance travelled must be more than zero
+      too-big: "Distance travelled must be less than {max, number}"
+      too-many-places: >-
+        Distance travelled cannot have more than {scale, plural,
+          one     {1 decimal place}
+          other   {# decimal places}
+        }
+    unit.not-blank: Choose the unit for distance travelled
+  driver-or-passenger.not-null: Indicate whether you were driving or not
+  is-adult-ticket.not-null: Choose adult or child ticket
+  method.not-null: Select a method of transport
+  method-other:
+    bus-or-coach.not-empty: Provide details of the bus or coach
+    other-private.not-empty: Provide details of the private method of transport
+    other-public.not-empty: provide details of the public method of transport
+  parking-cost.positive-or-zero: Please enter a positive amount or leave the box empty
+  ticket-cost.positive-or-zero: Enter a positive ticket cost or leave the box empty
+  ticket-type.not-null: Enter ticket details
+  travel-time:
+    positive: Travel time must be greater than zero
+  vehicle:
+    vehicle.not-empty: Choose a vehicle
+    vehicle-other.not-empty: Enter a description of the vehicle you used
+
+wizard.repeat-journey:
+  source-day.not-null: Select a day
+  source-journey.not-null: Select a journey
+  target-day.not-null: Select a day
+
+wizard.return-journey:
+  diary-day.not-null: Select a day

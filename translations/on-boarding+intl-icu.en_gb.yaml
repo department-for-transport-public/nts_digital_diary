@@ -1,0 +1,183 @@
+login:
+  page-title: Sign in with a one-time password
+  group:
+    label: Enter your codes to sign in
+    help: ''
+  identifier:
+    label: First passcode
+    help: ''
+  password:
+    label: Second passcode
+    help: ''
+  sign-in:
+    label: Sign in
+
+dashboard:
+  page-title: Household summary
+
+  add-diary-keeper: Add a diary keeper
+  add-vehicle: Add a vehicle
+  complete-onboarding: Submit household
+  diary-keepers: Diary Keepers
+  household-vehicles: Household vehicles
+  no-diary-keepers: No diary keepers
+  no-vehicles: No vehicles
+
+diary-keeper:
+  added.notification-banner:
+    title: Added Diary Keeper
+    heading: Added Diary Keeper
+    content: "Diary Keeper #{number} {name} successfully added"
+  capi-number: 'CAPI #: {number}'
+  label: >-
+    {hasEmail, select,
+        1     {{name} ({username})}
+        other {{name} (No email address)}
+    }
+
+diary-keeper.add-another:
+  page-title: Do you need to add another diary keeper?
+  label: ''
+  help: You can still add more later even if you select 'No'
+
+diary-keeper.delete:
+  page-title: Delete diary keeper - {name}
+  delete-action-suffix: "{name}"
+  confirm-label: "Delete {name}"
+  confirmed-notification:
+    heading: "Diary keeper deleted"
+    content: "The diary keeper {name} has been deleted"
+  warning-notification:
+    title: Warning
+    heading: Cannot delete Diary Keeper
+    content:
+      header: '"{deleteTargetName}" cannot be deleted as it would leave the following Diary Keepers inaccessible:'
+      footer: You will need to either add additional access methods to these Diary Keepers, or remove them first.
+
+diary-keeper.details:
+  page-title: >-
+    {activity, select,
+        editing     {Edit diary keeper details}
+        other       {Add diary keeper details}
+    }
+  name:
+    label: Name
+    help: A name to identify each diary keeper within the household, e.g. first name
+  number:
+    label: Number
+    help: The CAPI person number
+  is-adult:
+    label: Is this person an adult?
+    help: Anyone 16 or above is an adult
+
+diary-keeper.user-identifier:
+  page-title: >-
+    {activity, select,
+        editing     {Edit diary keeper identity}
+        other       {Add diary keeper identity}
+    }
+  consent:
+    label: This diary keeper is over 12 years old and consents to receive notifications in relation to this survey
+    help: ''
+  help: Each household member must have their own travel diary, accessed via their own email address and login, or via a proxy. Some householders may require assistance, in which case they can have both their own login and a proxy.
+  user-identifier:
+    label: >-
+      Enter their email address
+      {onlyDiaryKeeper, select,
+        1  {}
+        other {(optional)}
+      }
+    help: >-
+      Enter the email address that this diary keeper will use to sign in to the travel diary.
+      {onlyDiaryKeeper, select,
+        1  {}
+        other {If they will not be filling in their own diary, this field can be left blank.}
+      }
+  proxy:
+    label: 'Choose proxies (optional)'
+    help: Select who will act as a proxy for this diary keeper. Anyone acting as a proxy will be able to access this diary through their own login.
+
+diary-keeper.view:
+  page-title: "Diary Keeper #{number} - {name}"
+  back: Back to summary
+  summary:
+    name: Name
+    capi: CAPI number
+    email: Email
+    is-adult: Is an adult
+    user-identifier: Email address
+    proxied-by: Proxied by
+  change-action-suffix:
+    name: Name for {name}
+    capi: CAPI number for {name}
+    is-adult: Adult status for {name}
+    is-proxied: Proxy status for {name}
+    user-identifier: Email address for {name}
+    proxied-by: Proxy for {name}
+
+household.details:
+  page-title: Household details
+  help: "These details are extremely important and are used to match your travel diaries to your interview data. You must ensure that these details have been confirmed by your interviewer."
+  change-action-suffix: household details
+  address-number:
+    label: Address number
+    help: ''
+  check-letter:
+    label: Check letter
+    help: This is the letter that you would have previously entered into the CL box on the paper diary
+  household-number:
+    label: Household number
+    help: ''
+  diary-start:
+    label: Diary week start date
+    help: ''
+  purpose-form-group:
+    label: Purpose form group
+    help: 'Used for user testing of journey purpose forms'
+    choices:
+      a: Group A
+      b: Group B
+
+household.introduction:
+  page-title: Setting up the household
+  introduction: |-
+    Area: {area}
+
+    **Thank you for agreeing to take part in the National Travel Survey.**
+    
+    To help with our research, we are asking each member of your household to keep a week-long travel diary. Everyone will have their own online travel diary to complete.
+    
+    If you need to complete the diaries for other members of your household, please let your NatCen interviewer know and they will show you how to do this.
+vehicle.add:
+  page-title: Add vehicle
+
+vehicle.delete:
+  page-title: 'Delete vehicle: "{name}"?'
+  delete-action-suffix: "{name}"
+  confirm-label: "Delete {name}"
+  confirmed-notification:
+    heading: "Vehicle deleted"
+    content: 'The vehicle "{name}" has been deleted'
+  warning: 'Are you sure you want to delete this vehicle?'
+
+submit:
+  page-title: Submit household information
+  cancel: Cancel
+  journey-sharing: Enable journey sharing for the household
+  confirm-and-submit: Confirm details and submit
+  intro: To finish setting up the household, check the following details carefully before submitting them.
+
+submitted:
+  page-title: Onboarding complete
+
+vehicle.edit:
+  page-title: Edit vehicle
+
+vehicle.form:
+  submit: Save vehicle
+  name:
+    label: Name
+    help: e.g. "Fred's car" or "Blue Micra"
+  method:
+    label: Vehicle type
+    help: ''

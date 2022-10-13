@@ -1,0 +1,18 @@
+<details {%- if params.id ?? null %} id="{{params.id}}"{% endif %} class="govuk-details {%- if params.classes ?? null %} {{ params.classes }}{% endif %}" data-module="govuk-details" {%- for attribute, value in params.attributes ?? [] %} {{attribute}}="{{value}}"{% endfor %} {%- if params.open is defined and params.open %} open{% endif %}>
+    <summary class="govuk-details__summary">
+        <span class="govuk-details__summary-text">
+            {%- if params.summaryHtml is defined -%}
+                {{- params.summaryHtml | raw }}
+            {%- else -%}
+                {{- params.summaryText -}}
+            {%- endif -%}
+        </span>
+    </summary>
+    <div class="govuk-details__text">
+        {%- if params.html is defined -%}
+            {{- params.html | raw }}
+        {%- else -%}
+            {{- params.text -}}
+        {%- endif -%}
+    </div>
+</details>

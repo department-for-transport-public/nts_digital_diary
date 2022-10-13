@@ -1,0 +1,11 @@
+{% extends 'base.html.twig' %}
+{% set translation_domain = 'auth' %}
+{% set translation_prefix = 'setup' %}
+
+{% block content %}
+    <div class="govuk-grid-row">
+        <div class="govuk-grid-column-two-thirds">
+            {{ form(form) }}
+        </div>
+    </div>
+{% endblock %}

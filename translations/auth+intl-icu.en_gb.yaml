@@ -1,0 +1,61 @@
+link-invalid:
+  flash-notification:
+    title: 'Invalid/expired link'
+    heading: ''
+    content: 'The link you followed was either invalid or has expired.'
+
+change-email:
+  page-title: Change email address for {name}
+  breadcrumb: Change email address for {name}
+  change-email: Change email address
+  email:
+    label: New email address
+    help: ''
+
+  success-banner:
+    heading: "Email address changed"
+    content: "The user's email address has been successfully changed."
+
+change-password:
+  page-title: Reset password
+
+  change-password: Reset password
+  access-denied: Access denied
+
+  logged-in-as-another-user: >-
+    Cannot reset password whilst logged in as another user.  
+      
+    [Log out]({url}) and then try again.
+
+  success-banner:
+    heading: "Password reset"
+    content: "Your password has been successfully changed."
+
+forgotten-password:
+  page-title: Forgotten password
+
+  email:
+    label: Enter your email address
+    help: ''
+
+  reset-password: Reset password
+
+  success-banner:
+    heading: "Password reset request submitted"
+    content: "If your email address was valid, an email will be sent to you."
+
+setup:
+  page-title: Set password for Travel Diary account
+
+  create-account: Create account
+  password:
+    password-1:
+      label: Choose a password
+      help: Your password must be at least 8 characters long, and must contain an uppercase letter, a lowercase letter and a number.
+    password-2:
+      label: Repeat the password
+      help: ''
+
+  success-banner:
+    heading: "Setup complete"
+    content: "Your password was successfully set."

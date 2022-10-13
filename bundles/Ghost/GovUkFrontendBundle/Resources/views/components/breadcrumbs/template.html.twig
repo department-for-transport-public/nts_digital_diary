@@ -1,0 +1,29 @@
+{%- from "@GhostGovUkFrontend/components/macros.html.twig" import attributes -%}
+{%- set classNames ='govuk-breadcrumbs' %}
+
+{%- set lastItemIsCurrentPage = params.lastItemIsCurrentPage ?? true -%}
+
+{%- if params.classes ?? null -%}
+    {%- set classNames = "#{classNames} #{params.classes}" -%}
+{%- endif -%}
+
+
+{% if params.collapseOnMobile ?? false %}
+    {% set classNames = "#{classNames} govuk-breadcrumbs--collapse-on-mobile" %}
+{% endif -%}
+
+<div class="{{ classNames }}" {{- attributes(params.attributes) -}}>
+<ol class="govuk-breadcrumbs__list">
+    {% for item in params.items %}
+        {% if item.href is defined and (not lastItemIsCurrentPage or not loop.last) %}
+            <li class="govuk-breadcrumbs__list-item">
+                <a class="govuk-breadcrumbs__link" href="{{ item.href }}" {{- attributes(item.attributes) -}}>
+                    {{- item.html ? (item.html | raw) : item.text -}}
+                </a>
+            </li>
+        {% else %}
+            <li class="govuk-breadcrumbs__list-item" aria-current="page">{{ item.html ? (item.html | raw) : item.text }}</li>
+        {% endif %}
+    {% endfor %}
+</ol>
+</div>

@@ -1,0 +1,17 @@
+{%- extends 'base.html.twig' -%}
+
+{%- set navigation = [
+    {
+        href: path('admin_interviewers_list'),
+        text: 'admin.menu.interviewers' | trans
+    },
+] -%}
+
+{%- block head -%}
+    {{ parent() }}
+    {{ encore_entry_link_tags('admin') }}
+{%- endblock -%}
+
+{%- block sessionExpired -%}
+    Your session has expired. Any unsaved data will be lost. Refresh the page or <a href="{{ path('admin_dashboard') }}" class="govuk-link">go to the dashboard.</a>
+{%- endblock %}

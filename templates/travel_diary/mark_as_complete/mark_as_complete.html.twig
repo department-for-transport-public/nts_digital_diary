@@ -1,0 +1,15 @@
+{% extends 'travel_diary/dashboard/base.html.twig' %}
+{% trans_default_domain 'travel-diary' %}
+
+{% set title_translation_key = "mark-as-complete.page-title" %}
+{% set heading_class = "govuk-heading-xl" %}
+{% set breadcrumb_translation_parameters = {
+    diary_keeper_name: diaryKeeper.name,
+} %}
+
+{% block content %}
+    <p class="govuk-body govuk-!-margin-bottom-6">
+        {{- 'mark-as-complete.copy' | trans | nl2br -}}
+    </p>
+    {{ form(form) }}
+{% endblock %}

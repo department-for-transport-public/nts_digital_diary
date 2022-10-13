@@ -1,0 +1,50 @@
+interviewer.list:
+  page-title: Interviewers
+  add-button: Add
+
+interviewer.view:
+  page-title: 'Interviewer: {name}'
+  delete-button: 'Delete interviewer'
+  back-link: 'Back to interviewers list'
+  allocate-link: 'Allocate to area'
+  areas-title: 'Allocated areas'
+
+interviewer.edit:
+  page-title: Edit interviewer
+  name.label: Name
+  serial-id.label: Serial/ID
+  email.label: Email
+  save.label: Save
+interviewer.add:
+  page-title: Add interviewer
+  success-notification:
+    heading: Interviewer added
+    content: The interviewer (Serial/ID {serialId}) was successfully added. They should receive an email shortly with instructions for setting a password and accessing the system.
+
+interviewer.delete:
+  page-title: 'Delete interviewer'
+  warning: 'Are you sure you want to delete the interviewer {email} ({name})'
+  confirmed-notification:
+    heading: 'Interviewer deleted'
+    content: 'The interviewer {email} ({name}) was successfully deleted'
+
+interviewer.deallocate:
+  page-title: 'Deallocate from area'
+  warning: 'Are you sure you want to deallocate the interviewer {email} ({name}) from the area {area}?'
+  confirmed-notification:
+    heading: 'Deallocated from area'
+    content: 'The interviewer {email} ({name}) has been deallocated from the area {area}'
+
+interviewer.allocate:
+  page-title: 'Allocate to area'
+  form:
+    area:
+      label: Area
+      help: An Area is a 6 digit number and is the first 6 digits of the serial number, consisting of 2 year digits, 2 month digits and 2 sample point digits.
+    allocate: Allocate to area
+
+sample-import.form:
+  page-title: Sample Import
+  areas.label: Area sample import file
+  import.label: Import sample
+

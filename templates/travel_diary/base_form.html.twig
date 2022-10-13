@@ -1,0 +1,76 @@
+{% extends 'travel_diary/base.html.twig' %}
+{% trans_default_domain 'travel-diary' %}
+
+{% set hasLabelHeading = (form.children | first).vars.label_is_page_heading ?? false %}
+{% if hasLabelHeading %}
+    {% set title_translation_key = (form.children | first).vars.label %}
+{% endif %}
+{%- block pageHeading -%}
+    {{- hasLabelHeading ? '' : parent() -}}
+{%- endblock -%}
+
+{% block content %}
+    {% if block('formContext') is defined %}
+        {% if hasLabelHeading %}
+            {% set firstChild = form.children | first %}
+            {{ form_start(form) }}
+            {{ form_label(firstChild) }}
+            <div class="govuk-grid-row">
+                <div class="govuk-grid-column-two-thirds">
+                    {{ block('preFormContent') ?? null }}
+                    {% form_theme firstChild _self %}
+                    {{ form_errors(form) }}
+                    {{ form_row(firstChild) }}
+                    {% for child in form.children | filter(c => not c.rendered) %}
+                        {{ form_row(child) }}
+                    {% endfor %}
+                </div>
+                <div class="govuk-grid-column-one-third">{{ block('formContext') }}</div>
+            </div>
+            {{ form_end(form) }}
+        {% else %}
+            <div class="govuk-grid-row">
+                <div class="govuk-grid-column-two-thirds">
+                    {{ block('preFormContent') ?? null }}
+                    {{ form(form) }}
+                </div>
+                <div class="govuk-grid-column-one-third">{{ block('formContext') }}</div>
+            </div>
+        {% endif %}
+    {% else %}
+        {{ block('preFormContent') ?? null }}
+        {{ form(form) }}
+    {% endif %}
+{% endblock %}
+
+{% block label_is_page_heading_row %}
+    {% set label_rendered = true %}
+    {{ block('form_row') }}
+{% endblock %}
+
+{% block _method_method_widget %}
+    {%- set blockPrefix = 'gds_radio' -%}
+    {%- set classPrefix = 'govuk-radios' -%}
+    {%- set dataModuleAttr = {'data-module': 'govuk-radios'} -%}
+    {%- set attr = attr | merge({
+        class: (classPrefix ~ ' ' ~ attr.class|default('') ~ (has_conditional ? " #{classPrefix}--conditional" : '')) | trim
+    }) | merge(dataModuleAttr) -%}
+    <div {{ block('widget_container_attributes') }}>
+        <div class="govuk-grid-row">
+            {%- for group in form.vars.choices %}
+                <div class="govuk-grid-column-one-half govuk-!-margin-top-3 govuk-!-margin-bottom-3">
+                    {% with {elem: group.labelHeadingElement, attr: group.labelAttr ?? label_attr ?? null} %}
+                        <{{ elem ?? 'h2' }}{% if attr %}{{ block('attributes') }}{% endif %}>{{ group.label | trans }}</{{ elem }}>
+                    {% endwith %}
+                    {%- for idx, choice in group.choices %}
+                        {% with {
+                            child: form[idx],
+                        } %}
+                            {{ block('gds_choice_widget_expanded_item') }}
+                        {% endwith %}
+                    {% endfor -%}
+                </div>
+            {%- endfor -%}
+        </div>
+    </div>
+{% endblock %}

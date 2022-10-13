@@ -1,0 +1,24 @@
+@import "node_modules/govuk-frontend/govuk/components/button";
+
+form[data-prevent-double-click-submission='true'] {
+  .govuk-button[data-prevent-double-click="true"] {
+    @extend .govuk-button--disabled;
+    pointer-events: none;
+    user-select: none;
+  }
+
+  /**
+   * need to redeclare button sub-styles here otherwise our re-declared disabled class takes precedence.
+   */
+  .govuk-button--secondary {
+    @extend .govuk-button--secondary;
+  }
+
+  .govuk-button--warning {
+    @extend .govuk-button--warning;
+  }
+}
+
+.govuk-button-group > form {
+  display: inherit;
+}

@@ -1,0 +1,87 @@
+# This file is the entry point to configure your own services.
+# Files in the packages/ subdirectory configure your dependencies.
+
+imports:
+    - { resource: 'form_wizards/**/*.php' }
+    - { resource: 'workflows/**/*.php' }
+
+# Put parameters here that don't need to change on each machine where the app is deployed
+# https://symfony.com/doc/current/best_practices.html#use-parameters-for-application-configuration
+parameters:
+    # see https://symfony.com/doc/current/performance.html#dump-the-service-container-into-a-single-file
+    container.dumper.inline_factories: true
+
+    empty_string: ''
+    'false': false
+
+    alphagov_notify_api_key: '%env(string:ALPHAGOV_NOTIFY_API_KEY)%'
+    domain_name: '%env(string:DOMAIN_NAME)%'
+    default_host_separator: '.'
+    hostnames.frontend: '%domain_name%'
+    hostnames.admin: 'admin%env(default:default_host_separator:string:APP_HOSTNAME_SEPARATOR)%%domain_name%'
+
+services:
+    # default configuration for services in *this* file
+    _defaults:
+        autowire: true      # Automatically injects dependencies in your services.
+        autoconfigure: true # Automatically registers your services as commands, event subscribers, etc.
+        bind:
+            $appEnvironment: '%env(APP_ENV)%'
+            $secret: '%env(APP_SECRET)%'
+            $webRootDir: "%kernel.project_dir%/public"
+
+    # makes classes in src/ available to be used as services
+    # this creates a service per class whose id is the fully-qualified class name
+    App\:
+        resource: '../src/'
+        exclude:
+            - '../src/DependencyInjection/'
+            - '../src/FormWizard/Place.php'
+            - '../src/Entity/'
+            - '../src/Kernel.php'
+            - '../src/Tests/'
+
+    _instanceof:
+        App\Controller\FormWizard\AbstractFormWizardController:
+            calls:
+                - setEventDispatcher: ['@event_dispatcher']
+        App\ExpressionLanguage\WorkflowFunctionProviderInterface:
+            tags: [ 'workflow.expression_language_provider' ]
+        App\FormWizard\FormWizardStateInterface:
+            tags: [ 'app.form_wizard.state' ]
+        Doctrine\Common\EventSubscriber:
+            tags: [ 'doctrine.event_subscriber' ]
+        Symfony\Component\ExpressionLanguage\ExpressionFunctionProviderInterface:
+            tags:
+                - { name: 'security.expression_language_provider' }
+                - { name: 'router.expression_language_provider' }
+                - { name: 'workflow.expression_language_provider' }
+                - { name: 'validator.expression_language_provider' }
+
+    App\FormWizard\LocatorService:
+        arguments:
+            $workflowConfigurations: !tagged_iterator app.form_wizard.workflow
+
+    App\EventSubscriber\RedirectAnnotationSubscriber:
+        arguments:
+            $argumentNameConverter: '@framework_extra_bundle.argument_name_convertor'
+            $language: '@sensio_framework_extra.security.expression_language.default'
+            $trustResolver: '@security.authentication.trust_resolver'
+
+    App\FormWizard\FormWizardManager:
+        arguments:
+            $expressionLanguage: '@workflow.security.expression_language'
+
+    App\Serializer\ExportApi\HistoryValueResolver:
+        # Lazy to avoid early database calls which were upsetting cloud build deployment
+        lazy: true
+
+    App\Utility\UrlSigner:
+        arguments:
+            $secret: "%env(APP_SECRET)%"
+
+    Alphagov\Notifications\Client:
+        factory: '@App\Utility\AlphagovNotify\ClientFactory'
+        arguments:
+            $apiKey: '%alphagov_notify_api_key%'
+

@@ -1,0 +1,15 @@
+{%- extends 'travel_diary/stage/wizard_form.html.twig' -%}
+
+{%- trans_default_domain 'travel-diary' -%}
+
+{% block preFormContent %}
+    <p class="govuk-body">{{ 'stage.intermediary.pre-form.intro' | trans }}</p>
+    <div class="govuk-inset-text">
+        <p class="govuk-body">{{ 'stage.intermediary.pre-form.example.intro' | trans }}</p>
+        <ul class="govuk-list govuk-list--bullet">
+            <li>{{ 'stage.intermediary.pre-form.example.stage-1' | trans }}</li>
+            <li>{{ 'stage.intermediary.pre-form.example.stage-2' | trans }}</li>
+            <li>{{ 'stage.intermediary.pre-form.example.stage-3' | trans }}</li>
+        </ul>
+    </div>
+{% endblock %}

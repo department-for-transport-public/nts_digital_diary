@@ -1,0 +1,69 @@
+{%- extends "base.html.twig" -%}
+
+{% trans_default_domain "interviewer" %}
+
+{%- block beforeContent -%}
+    {{- parent() -}}
+
+    {%- from '@GhostGovUkFrontend/components/macros.html.twig' import breadcrumbs -%}
+    {%- set breadcrumbItems = [
+        {
+            href: path('interviewer_dashboard'),
+            text: 'breadcrumbs.dashboard' | trans,
+        }
+    ] -%}
+    {%- if areaPeriod is defined %}{% set breadcrumbItems = breadcrumbItems | merge([
+        {
+            href: path('interviewer_dashboard_area', {areaPeriod: areaPeriod.id}),
+            text: areaPeriod.area,
+        }
+    ]) %}{% endif -%}
+    {%- if household is defined %}{% set breadcrumbItems = breadcrumbItems | merge([
+        {
+            href: path("interviewer_dashboard_household", {household: household.id}),
+            text: "#{household.addressNumber} / #{household.householdNumber}",
+        }
+    ]) %}{% endif -%}
+    {%- if diaryKeeper is defined %}{% set breadcrumbItems = breadcrumbItems | merge([
+        {
+            href: path("interviewer_dashboard_diary_keeper", {diaryKeeper: diaryKeeper.id}),
+            text: "#{diaryKeeper.name}",
+        }
+    ]) %}{% endif -%}
+    {%- if action is defined and action == 'change-email' -%}
+        {% set breadcrumbItems = breadcrumbItems | merge([
+            {
+                href: path("interviewer_change_email", {diaryKeeper: diaryKeeper.id}),
+                text: 'change-email.breadcrumb' | trans({
+                    name: diaryKeeper.name,
+                }, 'auth'),
+            }
+        ]) %}
+    {%- endif -%}
+    {%- if action is defined and action == 'mark-as-approved' -%}
+        {% set breadcrumbItems = breadcrumbItems | merge([
+            {
+                href: path("interviewer_mark_as_approved", {diaryKeeper: diaryKeeper.id}),
+                text: 'mark-as-approved.breadcrumb' | trans,
+            }
+        ]) %}
+    {%- endif -%}
+    {%- if action is defined and action == 'undo-approval' -%}
+        {% set breadcrumbItems = breadcrumbItems | merge([
+            {
+                href: path("interviewer_undo_approval", {diaryKeeper: diaryKeeper.id}),
+                text: 'undo-approval.breadcrumb' | trans,
+            }
+        ]) %}
+    {%- endif -%}
+    {%- if action is defined and action == 'submit-household' -%}
+        {% set breadcrumbItems = breadcrumbItems | merge([
+            {
+                href: path("interviewer_household_submit", {household: household.id}),
+                text: 'household.submit.breadcrumb' | trans,
+            }
+        ]) %}
+    {%- endif -%}
+
+    {{- breadcrumbs({items: breadcrumbItems}) -}}
+{%- endblock -%}

@@ -1,0 +1,30 @@
+@import "../../bundles/Ghost/GovUkFrontendBundle/Resources/assets/css/ghost-frontend";
+
+@import "govuk-frontend/env-labels";
+@import "govuk-frontend/grid";
+@import "govuk-frontend/hint";
+@import "govuk-frontend/impersonation";
+@import "govuk-frontend/inline-groups";
+@import "govuk-frontend/input";
+@import "govuk-frontend/notification-banner";
+@import "govuk-frontend/onboarding-codes";
+@import "govuk-frontend/pagination";
+@import "govuk-frontend/stagelist";
+@import "govuk-frontend/summary-list-reorder";
+@import "govuk-frontend/warning-text";
+
+.govuk-visually-hidden-when-larger-than-mobile {
+  @include govuk-media-query($from: tablet) {
+    @include govuk-visually-hidden;
+  }
+}
+
+.govuk-input:disabled {
+  background: #aaa;
+}
+
+.govuk-button-group {
+  .govuk-button + .govuk-button {
+    margin-left: 0;
+  }
+}

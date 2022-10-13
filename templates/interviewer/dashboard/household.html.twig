@@ -1,0 +1,107 @@
+{% extends "interviewer/dashboard/base.html.twig" %}
+
+{% set areaPeriod = household.areaPeriod %}
+
+{% trans_default_domain "interviewer" %}
+
+{% set title_translation_key = "household.page-title" %}
+{% set title_translation_parameters = {
+    serial: household.serialNumber
+} %}
+
+{% block content %}
+    {%- from "@GhostGovUkFrontend/components/macros.html.twig" import actionlessSummaryListRow, actionLinks, details -%}
+
+    {% set htmlContent %}
+        <p class="govuk-body">{{ 'household.help-details.content' | trans }}</p>
+        <div class="video-container">
+            <iframe src="https://player.vimeo.com/video/715584858?h=a79e20e754&badge=0&autopause=0&player_id=0&app_id=58479&byline=0&dnt=1&title=0" frameborder="0" allow="fullscreen; picture-in-picture" allowfullscreen title="{{ 'household.help-details.text' | trans }}"></iframe>
+        </div>
+    {% endset %}
+    {{ details({
+        summaryText: 'household.help-details.text' | trans,
+        html: htmlContent,
+    }) }}
+
+    <dl class="govuk-summary-list">
+        {{ actionlessSummaryListRow(
+            "household.diary-week-start-date" | trans,
+            household.diaryWeekStartDate|date(format_date_default),
+        ) }}
+        {{ actionlessSummaryListRow(
+            "household.journey-sharing" | trans,
+            ("boolean." ~ (household.journeySharingEnabled ? 'true' : 'false')) | trans([], 'messages'),
+        ) }}
+        {% if household.isSubmitted %}
+            {{ actionlessSummaryListRow(
+                "household.submitted-for-processing" | trans,
+                household.submittedAt | date(format_date_default ~ " " ~ format_time_short)
+                ~ "\n" ~ household.submittedBy,
+            ) }}
+        {% endif %}
+    </dl>
+
+    <table class="govuk-table">
+        <caption class="govuk-table__caption govuk-table__caption--m">{{ "household.diary-keepers" | trans }}</caption>
+        <thead class="govuk-table__head">
+        <tr class="govuk-table__row">
+            <th scope="col" class="govuk-table__header">{{ "household.table.number" | trans }}</th>
+            <th scope="col" class="govuk-table__header">{{ "household.table.name" | trans }}</th>
+            <th scope="col" class="govuk-table__header">{{ "household.table.has-login" | trans }}</th>
+            <th scope="col" class="govuk-table__header">{{ "household.table.type" | trans }}</th>
+            <th scope="col" class="govuk-table__header">{{ "household.table.state" | trans }}</th>
+            <th scope="col" class="govuk-table__header"><span class="govuk-visually-hidden">{{ 'table.action-links'|trans({}, 'messages') }}</span></th>
+        </tr>
+        </thead>
+        <tbody class="govuk-table__body">
+        {%- for diaryKeeper in household.diaryKeepers -%}
+            {# @var diaryKeeper DiaryKeeper #}
+            <tr class="govuk-table__row">
+                <th scope="row" class="govuk-table__cell">{{ diaryKeeper.number }}</th>
+                <td class="govuk-table__cell">{{ diaryKeeper.name }}{%- if diaryKeeper.proxies | length > 0 %}<br>({{ "household.proxied-by" | trans({proxyNames: diaryKeeper.proxyNames | join(', ')}) }}){% endif %}</td>
+                <td class="govuk-table__cell">{{ "boolean.#{diaryKeeper.hasValidIdentifierForLogin ? 'true' : 'false'}" | trans({}, 'messages') }}</td>
+                <td class="govuk-table__cell">{{ "household.type.#{diaryKeeper.isAdult ? 'adult' : 'child'}" | trans }}</td>
+                <td class="govuk-table__cell">{{ ("diary-keeper.states." ~ (diaryKeeper.diaryState ?? 'new')) | trans }}</td>
+                <td class="govuk-table__cell govuk-table__cell--numeric">
+                    {% set actions = is_granted('EMAIL_CHANGE', diaryKeeper.user)
+                        ? {(path('interviewer_change_email', {diaryKeeper: diaryKeeper.id})): {label: 'Change email'}}
+                        : {}
+                    %}
+                    {% set testingActions = is_feature_enabled(constant('App\\Features::USER_TESTING'))
+                        ? {(url_signer.sign(url('auth_account_setup', {userId: diaryKeeper.user.id | lower}), constant('App\\Utility\\AlphagovNotify\\Reference::ACCOUNT_CREATION_LINK_EXPIRY'))): {label: 'Invite link'}}
+                        : {}
+                    %}
+
+                    {{ actionLinks(actions | merge(testingActions) | merge({
+                        (path('interviewer_dashboard_diary_keeper', {diaryKeeper: diaryKeeper.id})): {
+                            label: "household.diary-keeper-summary",
+                            labelDomain: 'interviewer',
+                            srHiddenSuffix: "household.diary-keeper-summary-sr-hidden-suffix",
+                            srHiddenSuffixDomain: "interviewer",
+                            srHiddenSuffixParams: {name: diaryKeeper.name},
+                        },
+                        (path('app_home', {_switch_user: diaryKeeper.user.userIdentifier})): {
+                            label: "household.impersonate",
+                            labelDomain: 'interviewer',
+                            srHiddenSuffix: "household.impersonate-sr-hidden-suffix",
+                            srHiddenSuffixDomain: "interviewer",
+                            srHiddenSuffixParams: {name: diaryKeeper.name},
+                        },
+                    })) }}
+                </td>
+            </tr>
+        {%- else -%}
+            <tr>
+                <td colspan="3" class="govuk-table__cell">{{ "household.no-diary-keepers" | trans }}</td>
+            </tr>
+        {%- endfor -%}
+        </tbody>
+    </table>
+
+    <div class="govuk-button-group">
+        {% if is_granted('SUBMIT_HOUSEHOLD', household) %}
+            <a href="{{ path('interviewer_household_submit', {household: household.id}) }}" class="govuk-button">{{ "household.submit.submit-button" | trans }}</a>
+        {% endif %}
+        <a href="{{ path('interviewer_dashboard_area', {areaPeriod: areaPeriod.id}) }}" class="govuk-link">{{ "household.back" | trans }}</a>
+    </div>
+{% endblock %}

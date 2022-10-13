@@ -1,0 +1,9 @@
+{%- trans_default_domain 'on-boarding' -%}
+{%- set prefix = 'diary-keeper.delete.warning-notification.' -%}
+<p class="govuk-body">{{ (prefix ~ 'content.header') | trans({ deleteTargetName: diaryKeeper.name }) }}</p>
+<ul class="govuk-list govuk-list--bullet">
+    {%- for inaccessibleDiaryKeeper in inaccessibleDiaryKeepers -%}
+    <li>{{ inaccessibleDiaryKeeper.name }}</li>
+    {%- endfor -%}
+</ul>
+<p class="govuk-body">{{ (prefix ~ 'content.footer') | trans }}</p>

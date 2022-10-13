@@ -1,0 +1,11 @@
+@import "node_modules/govuk-frontend/govuk/helpers/colour";
+
+.govuk-warning-text.govuk-warning-text__orange {
+    .govuk-warning-text__icon {
+        background: govuk-colour('orange');
+        border-color: govuk-colour('orange');
+    }
+    .govuk-warning-text__text {
+        color: govuk-colour('orange');
+    }
+}

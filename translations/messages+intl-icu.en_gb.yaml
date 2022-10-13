@@ -1,0 +1,141 @@
+service:
+  name: National Travel Survey
+
+actions:
+  cancel: Cancel
+  change: Change
+  confirm: Confirm
+  continue: Continue
+  delete: Delete
+  move-up: Move up
+  move-down: Move down
+  save-and-continue: Save and continue
+  view: View
+
+admin:
+  menu:
+    interviewers: Interviewers
+
+boolean:
+  'true': Yes
+  'false': No
+
+date:
+  year: Year
+  month: Month
+  day: Day
+
+distance:
+  metres: >-
+    {value, plural,
+      one {1.0 metre}
+      other {{value, number} metres}
+    }
+  miles: >-
+    {value, plural,
+      one {1.0 mile}
+      other {{value, number} miles}
+    }
+
+error-summary:
+  problem: There is a problem
+
+errors:
+  http-not-found:
+    title: Page not found
+    heading: Page not found
+    copy: |-
+      If you typed the web address, check it is correct.
+
+      If you pasted the web address, check you copied the entire address.
+  internal-server-error:
+    title: Sorry, there is a problem with the service
+    heading: Sorry, there is a problem with the service
+    copy: |-
+      Try again later.
+  unavailable:
+    title: Sorry, the service is unavailable
+    heading: Sorry, the service is unavailable
+    copy: |-
+      Try again later.
+  forbidden:
+    title: Access denied
+    heading: Access denied
+    copy: |-
+      Sorry - you do not have permission to access this page
+  unauthorised:
+    title: Unauthorised
+    heading: Unauthorised
+    copy: |-
+      You need to be logged in to access this page
+
+  maintenance:
+    title: Scheduled maintenance - Service unavailable
+    heading: |- 
+      Scheduled maintenance -
+      Service unavailable
+    copy: |-
+      The service is undergoing scheduled maintenance, and is not available. Check back in 15 minutes.
+
+format: # Unused??
+  date:
+    default: 'd/m/Y'
+
+home:
+  page-title: National Travel Diary
+  intro: Use this service to complete your travel diary.
+  session:
+    copy: Sessions expire after 1 hour of inactivity. A warning will be displayed after 55 minutes of inactivity, prompting you to extend the session by another hour.
+    title: Session expiry
+  sign-in: Sign in
+
+privacy-statement:
+  page-title: Privacy statement for {hostname}
+
+accessibility-statement:
+  page-title: Accessibility statement for {hostname}
+
+login:
+  page-title: Sign in
+  group:
+    label: Enter your email and password to sign in
+    help: ''
+  email:
+    label: Email
+    help: ''
+  password:
+    label: Password
+    help: ''
+  remember-me:
+    label: Remember me
+    help: Selecting this will allow you to remain logged in for 2 weeks. You shouldn't enable this if you are using a shared computer or device.
+  sign-in:
+    label: Sign in
+
+logout: Logout
+
+notification:
+  important: Important
+  success: Success
+  warning: Warning
+  user-impersonation: User impersonation
+
+start-now : Start now
+
+table:
+  action-links: Action links
+
+time:
+  hour.label: Hour
+  minute.label: Minute
+  meridiem:
+    label: am or pm
+    am.label: am
+    pm.label: pm
+  help: For example, 11:36am or 2:11pm
+
+unit.distance:
+  miles: Miles
+  metres: Metres
+  value.label: Distance
+  unit.label: Unit

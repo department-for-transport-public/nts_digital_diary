@@ -1,0 +1,25 @@
+{%- extends 'travel_diary/base_form.html.twig' -%}
+
+{%- trans_default_domain 'travel-diary' -%}
+
+{% block preFormContent %}
+    {# @var subject \App\Entity\Journey\Journey #}
+    <p class="govuk-body">
+        {{- 'return-journey.introduction.pre-form' | trans({
+            startLocation: subject.startLocationForDisplay,
+            endLocation: subject.endLocationForDisplay,
+            stageCount: subject.stages | length
+        }) -}}
+    </p>
+    <ul class="govuk-list govuk-list--bullet">
+        {%- for stage in subject.stages -%}
+            <li>
+                {{- 'descriptions.stage' | trans({
+                    number: stage.number,
+                    method: stage.methodForDisplay | trans,
+                    travelTime: stage.travelTime,
+                }) -}}
+            </li>
+        {%- endfor -%}
+    </ul>
+{% endblock %}

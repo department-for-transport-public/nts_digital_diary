@@ -1,0 +1,7 @@
+{%- extends 'travel_diary/base_form.html.twig' -%}
+
+{%- trans_default_domain 'travel-diary' -%}
+
+{% block preFormContent %}
+    <p class="govuk-body">{{ 'repeat-journey.alt-introduction.pre-form' | trans(translation_parameters) }}</p>
+{% endblock %}

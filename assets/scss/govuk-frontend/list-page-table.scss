@@ -1,0 +1,68 @@
+@import "node_modules/govuk-frontend/govuk/base";
+
+.list-table {
+  .govuk-table__header {
+    vertical-align: middle;
+    > div {
+      display: flex;
+      align-items: center;
+    }
+
+    .list-table--buttons {
+      white-space: nowrap;
+
+      > .govuk-button:first-child {
+        margin-left: auto;
+      }
+    }
+
+    .govuk-button {
+      margin-bottom: 0;
+    }
+
+    color: govuk-colour('dark-grey');
+
+    input,
+    input[type="text"]::placeholder,
+    select {
+      font-weight: bold;
+      color: govuk-colour('dark-grey');
+
+      border-color: govuk-colour('mid-grey');
+    }
+
+    &.govuk-table__header--numeric {
+      input,
+      select {
+        text-align: right;
+      }
+    }
+
+    a {
+      color: govuk-colour('mid-grey');
+      margin-left: govuk-spacing(1);
+
+      &.list-table__order--up {
+        @include govuk-shape-arrow('up', 0.8rem);
+      }
+
+      &.list-table__order--down {
+        @include govuk-shape-arrow('down', 0.8rem);
+      }
+
+      &.list-table__order--active {
+        color: govuk-colour('blue');
+      }
+    }
+  }
+
+  #week .govuk-form-group {
+    width: calc(50% - 2.5px);
+    display: inline-block;
+    margin-bottom: 0;
+
+    + .govuk-form-group {
+      margin-left: 5px;
+    }
+  }
+}
