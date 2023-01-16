@@ -99,6 +99,7 @@ class PropertyChangeLogEventSubscriber implements EventSubscriber
 
         foreach($changeSet as $field => [$oldValue, $newValue]) {
             $fieldsChanged[] = $field;
+
             $changeLogEntities[] = (clone $changeLogTemplate)
                 ->setPropertyName($field)
                 ->setPropertyValue($newValue);

@@ -2,19 +2,43 @@
 
 namespace App\Entity;
 
+use ApiPlatform\Metadata\GetCollection;
+use ApiPlatform\Metadata\Post;
+use ApiPlatform\Metadata\Get;
+use ApiPlatform\Metadata\Delete;
+use ApiPlatform\Metadata\ApiResource;
+use ApiPlatform\Doctrine\Orm\Filter\SearchFilter;
+use ApiPlatform\Metadata\ApiFilter;
+use App\ApiPlatform\Doctrine\Orm\Filter\MappedPropertySearchFilter;
 use App\Repository\InterviewerRepository;
 use Doctrine\Common\Collections\ArrayCollection;
 use Doctrine\Common\Collections\Collection;
 use Doctrine\ORM\Mapping as ORM;
 use Symfony\Bridge\Doctrine\Validator\Constraints\UniqueEntity;
 use Symfony\Component\Validator\Constraints as Assert;
-
+use App\Annotation\ApiViolationMap;
+use App\Controller\Api\AreaAllocationController;
+use App\Controller\Api\AreaDeallocationController;
 /**
- * @ORM\Entity(repositoryClass=InterviewerRepository::class)
- * @UniqueEntity("serialId", groups={"admin.interviewer"})
+ * @ORM\Entity (repositoryClass=InterviewerRepository::class)
+ * @UniqueEntity ("serialId", groups={"admin.interviewer", "api.interviewer"})
+ * @ApiViolationMap ({"user.username"="email"})
  */
+#[ApiResource(
+    operations: [
+        new Get(),
+        new GetCollection(),
+        new Post(),
+        new Delete(),
+        new Post(uriTemplate: '/interviewers/{interviewer}/allocate/{areaPeriod}', controller: AreaAllocationController::class, read: false, deserialize: false),
+        new Post(uriTemplate: '/interviewers/{interviewer}/deallocate/{areaPeriod}', controller: AreaDeallocationController::class, read: false, deserialize: false),
+    ],
+    validationContext: ['groups' => ['api.interviewer']],
+    filters: ['api.interviewer.search_filter', 'api.interviewer.mapped_property_filter'],
+)]
 class Interviewer implements UserPersonInterface
 {
+
     use IdTrait;
 
     /**
@@ -23,20 +47,20 @@ class Interviewer implements UserPersonInterface
     private Collection $areaPeriods;
 
     /**
-     * @ORM\Column(type="string", length=255)
-     * @Assert\NotNull(groups="admin.interviewer")
+     * @ORM\Column(type="string", length=255, nullable=false)
+     * @Assert\NotBlank(groups={"admin.interviewer", "api.interviewer"})
      */
     private ?string $name = null;
 
     /**
-     * @ORM\OneToOne(targetEntity=User::class, mappedBy="interviewer", cascade={"persist"})
-     * @Assert\Valid(groups={"admin.interviewer"})
+     * @ORM\OneToOne(targetEntity=User::class, mappedBy="interviewer", cascade={"persist", "remove"})
+     * @Assert\Valid(groups={"admin.interviewer", "api.interviewer"})
      */
     private ?User $user = null;
 
     /**
-     * @ORM\Column(type="string", length="10", unique=true)
-     * @Assert\NotNull(groups="admin.interviewer")
+     * @ORM\Column(type="string", length="10", unique=true, nullable=false)
+     * @Assert\NotBlank(groups={"admin.interviewer", "api.interviewer"})
      */
     private ?string $serialId;
 

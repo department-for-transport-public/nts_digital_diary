@@ -86,7 +86,7 @@ class AppExtension extends AbstractExtension implements GlobalsInterface
         ];
 
         if ($this->requestStack->getCurrentRequest()) {
-            $route = $this->requestStack->getCurrentRequest()->attributes->get('_route');
+            $route = $this->requestStack->getCurrentRequest()->attributes->get('_route', "");
             if (preg_match('/^(?<prefix>[^_]+)/', $route, $matches)) {
                 return $routeTranslationMap[$matches['prefix']] ?? null;
             }

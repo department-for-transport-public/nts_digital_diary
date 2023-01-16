@@ -25,7 +25,7 @@ class DashboardTest extends AbstractFunctionalTestCase
 
         $this->assertEquals('2021', $this->getTableCaption());
         $this->assertCount(1, $tableData, 'Expected table to have one row');
-        $this->assertEquals(111984, $tableData[0][0], 'Expected area number to be 111984');
+        $this->assertEquals("111984", $tableData[0][0], 'Expected area number to be 111984');
         $this->assertEquals(1, $tableData[0][1], 'Expected number of active households to be 1');
     }
 

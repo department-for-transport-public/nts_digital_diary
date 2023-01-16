@@ -34,7 +34,7 @@ class HistoryNormalizer implements ContextAwareNormalizerInterface, NormalizerAw
      * @param DiaryKeeper $object
      * @throws ExceptionInterface
      */
-    public function normalize($object, string $format = null, array $context = [])
+    public function normalize($object, string $format = null, array $context = []): array
     {
         $changes = $this->changeLogRepository->getLogsForJourneysAndStagesBelongingTo($object);
 

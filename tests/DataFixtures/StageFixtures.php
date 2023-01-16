@@ -21,7 +21,7 @@ class StageFixtures extends AbstractFixture implements DependentFixtureInterface
         $methodRepo = $manager->getRepository(Method::class);
         $vehicleRepo = $manager->getRepository(Vehicle::class);
 
-        foreach(JourneyFixtures::getJourneyDefinitions() as $name => $definition) {
+        foreach(JourneyFixtures::getAllJourneyDefinitions() as $name => $definition) {
             /** @var Journey $journey */
             $journey = $this->getReference($name);
 

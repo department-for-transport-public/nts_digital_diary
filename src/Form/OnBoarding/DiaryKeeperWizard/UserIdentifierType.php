@@ -59,7 +59,7 @@ class UserIdentifierType extends AbstractType
                 $choices = $this->diaryKeeperRepository->getOnBoardingProxyChoices($data);
                 $choiceOpts = [];
                 foreach($choices as $key => $choice) {
-                    $choiceOpts[$key] = $choice->hasValidIdentifierForLogin() ? [] : ['disabled' => true];
+                    $choiceOpts[$key] = $choice->hasIdentifierForLogin() ? [] : ['disabled' => true];
                 }
 
                 if (count($choices) > 0) {
@@ -79,7 +79,7 @@ class UserIdentifierType extends AbstractType
                                 return [
                                     'name' => $choice->getName(),
                                     'username' => $choice->getUser() ? $choice->getUser()->getUsername() : 'none',
-                                    'hasEmail' => $choice->hasValidIdentifierForLogin() ? 1 : 0,
+                                    'hasEmail' => $choice->hasIdentifierForLogin() ? 1 : 0,
                                 ];
                             },
                             'choices' => $choices,

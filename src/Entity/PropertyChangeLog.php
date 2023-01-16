@@ -89,6 +89,14 @@ class PropertyChangeLog
 
     public function setPropertyValue($propertyValue): self
     {
+        if (is_array($propertyValue) || (is_object($propertyValue) && !$propertyValue instanceof \JsonSerializable)) {
+            $propertyName = $this->propertyName ?? '<null>';
+            $entityId = $this->entityId ?? '<null>';
+            $entityClass = $this->entityClass ?? '<null>';
+
+            throw new \RuntimeException("Non-primitive / non-json-serializable value emitted from ChangeSetNormalizer (class: {$entityClass}, id: {$entityId}, property: {$propertyName}");
+        }
+
         $this->propertyValue = $propertyValue;
         return $this;
     }

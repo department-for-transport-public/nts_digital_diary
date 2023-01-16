@@ -63,6 +63,9 @@ class MaintenanceLockSubscriber implements EventSubscriberInterface
     protected function isWhitelistedRoute(RequestEvent $event): bool
     {
         $routeName = $event->getRequest()->attributes->get('_route');
+        if ($routeName === null) {
+            return false;
+        }
 
         if ($routeName === '_wdt') {
             return true;

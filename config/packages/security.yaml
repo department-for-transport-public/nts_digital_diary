@@ -39,7 +39,7 @@ security:
             login_throttling:
                 limiter: 'limiter.login'
         api:
-            pattern: ^/api
+            pattern: ^/api/
             host: '%regex.frontend_host%'
             provider: hmac
             stateless: true
@@ -97,7 +97,7 @@ security:
         - { path: ^/interviewer, host: '%regex.frontend_host%', roles: ROLE_INTERVIEWER, requires_channel: '%env(SECURE_SCHEME)%' }
         - { path: ^/travel-diary, host: '%regex.frontend_host%', roles: ROLE_DIARY_KEEPER, requires_channel: '%env(SECURE_SCHEME)%' }
         - { path: ^/onboarding, host: '%regex.frontend_host%', roles: ROLE_ON_BOARDING, requires_channel: '%env(SECURE_SCHEME)%' }
-        - { path: ^/api, host: '%regex.frontend_host%', roles: ROLE_API_USER, requires_channel: '%env(SECURE_SCHEME)%' }
+        - { path: ^/api/v[\d]/, host: '%regex.frontend_host%', roles: ROLE_API_USER, requires_channel: '%env(SECURE_SCHEME)%' }
         ## everything else frontend
         - { path: ^/logout, host: '%regex.frontend_host%', roles: ROLE_USER, requires_channel: '%env(SECURE_SCHEME)%' }
         - { path: ^/cron, host: '%regex.frontend_host%'} # don't force https, as it means we get a redirect

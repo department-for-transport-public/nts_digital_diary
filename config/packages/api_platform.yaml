@@ -1,0 +1,39 @@
+api_platform:
+    metadata_backward_compatibility_layer: false
+    mapping:
+        paths: ['%kernel.project_dir%/src/Entity']
+    patch_formats:
+        json: ['application/merge-patch+json']
+    swagger:
+        versions: [3]
+    enable_swagger_ui: true
+    formats:
+        json:
+            mime_types: ['application/json']
+        html:
+            mime_types: ['text/html']
+#        jsonld:
+#            mime_types: ['application/ld+json']
+
+    defaults:
+        pagination_enabled: false
+
+services:
+    ## filters
+    api.interviewer.search_filter:
+        parent: ApiPlatform\Doctrine\Orm\Filter\SearchFilter
+        arguments:
+            $properties: {name: 'partial', serialId: 'exact'}
+        tags: ['api_platform.filter']
+    api.interviewer.mapped_property_filter:
+        parent: App\ApiPlatform\Doctrine\Orm\Filter\MappedPropertySearchFilter
+        arguments:
+            $properties: {email: "user.username::partial", areaPeriods: "areaPeriods.id::exact"}
+        tags: ['api_platform.filter']
+
+
+    ## clearing deprecations from 2.7?!
+    api_platform.iri_converter:
+        class: ApiPlatform\Symfony\Routing\IriConverter
+        arguments:
+          [ '@api_platform.state_provider', '@api_platform.router', '@api_platform.api.identifiers_extractor', '@api_platform.resource_class_resolver', '@api_platform.metadata.resource.metadata_collection_factory' ]

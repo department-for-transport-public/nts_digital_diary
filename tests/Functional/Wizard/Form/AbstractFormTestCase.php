@@ -17,7 +17,7 @@ abstract class AbstractFormTestCase
         $this->skipPageUrlChangeCheck = $skipPageUrlChangeCheck;
     }
 
-    public function getExpectedErrorIds(): array
+    public function getExpectedErrorIds(Context $context): array
     {
         return $this->expectedErrorIds;
     }

@@ -128,8 +128,8 @@ class Method implements \JsonSerializable
 
     // -----
 
-    public function jsonSerialize(): ?string
+    public function jsonSerialize(): ?int
     {
-        return $this->id;
+        return $this->code;
     }
 }

@@ -11,9 +11,9 @@ use Symfony\Component\Security\Core\Authorization\AuthorizationCheckerInterface;
 
 class EmailChangeVoterTest extends WebTestCase
 {
-    public function generateData(bool $withValidIdentifierForLogin): array
+    public function generateData(bool $withIdentifierForLogin): array
     {
-        $userName = fn(string $email) => $withValidIdentifierForLogin ? $email : ('no-login:'.md5($email));
+        $userName = fn(string $email) => $withIdentifierForLogin ? $email : ('no-login:'.md5($email));
 
         $household = (new Household())
             ->setIsOnboardingComplete(true);
@@ -59,8 +59,8 @@ class EmailChangeVoterTest extends WebTestCase
             ->setPassword('this-is-a-password-hash');
         $nonProxiedDiaryKeeperWithoutPw->addActingAsProxyFor($proxiedDiaryKeeperWithPassword);
 
-        $loginStr = $withValidIdentifierForLogin ? 'login identifier' : 'no login identifier';
-        $expectedResult = fn(bool $expectation) => $withValidIdentifierForLogin ? $expectation : false;
+        $loginStr = $withIdentifierForLogin ? 'login identifier' : 'no login identifier';
+        $expectedResult = fn(bool $expectation) => $withIdentifierForLogin ? $expectation : false;
 
         return [
             "User DK / subject DK, no proxy, {$loginStr}, no password" => [$diaryKeeperUser, $nonProxiedDiaryKeeperUserWithoutPw, $expectedResult(false)],

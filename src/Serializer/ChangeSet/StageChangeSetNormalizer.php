@@ -5,7 +5,7 @@ namespace App\Serializer\ChangeSet;
 use App\Entity\Journey\Stage;
 use App\Entity\Vehicle;
 
-class StageChangeSetNormalizer extends BasicMetadataChangeSetNormalizer
+class StageChangeSetNormalizer extends AbstractChangeSetNormalizer
 {
     public function supportsNormalization($data, string $format = null, array $context = []): bool
     {
@@ -13,10 +13,8 @@ class StageChangeSetNormalizer extends BasicMetadataChangeSetNormalizer
             ($context[self::CHANGE_SET_ENTITY_KEY] ?? null) instanceof Stage;
     }
 
-    public function normalize($object, string $format = null, array $context = [])
+    public function normalize($object, string $format = null, array $context = []): array|string|int|float|bool|\ArrayObject|null
     {
-        $object = parent::normalize($object, $format, $context);
-
         // Combine vehicle fields
         $updateVehicle = function($oldValue, $newValue) use (&$object) {
             $oldValue = ($oldValue instanceof Vehicle) ? $oldValue->getFriendlyName() : $oldValue;
@@ -35,18 +33,26 @@ class StageChangeSetNormalizer extends BasicMetadataChangeSetNormalizer
             $updateVehicle($vehicle[0] ?? null, $vehicleOther[1]);
         }
 
-        // Remove some fields
-        $this->removeFields($object, [
-            'id',
-            'journey',
-            'number',
-            'distanceTravelled', // member fields still get exposed separately
-        ]);
-
         // Rename distanceTravelled fields
         $this->renameFields($object, [
-            'distanceTravelled.value' => 'distanceTravelled',
-            'distanceTravelled.unit' => 'distanceTravelledUnit',
+            'number' => '#',
+            'distanceTravelled.value' => 'distance',
+            'distanceTravelled.unit' => 'distanceUnit',
+        ]);
+
+        $this->whitelistFields($object, [
+            '#',
+            'adultCount',
+            'boardingCount',
+            'childCount',
+            'distance',
+            'distanceUnit',
+            'isDriver',
+            'parkingCost',
+            'travelTime',
+            'ticketCost',
+            'ticketType',
+            'vehicle',
         ]);
 
         return $object;

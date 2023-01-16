@@ -15,7 +15,7 @@ use Symfony\Component\Validator\Constraints as Assert;
  * @ORM\Entity(repositoryClass=UserRepository::class)
  * @ORM\Table(uniqueConstraints={@ORM\UniqueConstraint(columns={"username"})})
  * @UniqueEntity(
- *     groups={"wizard.on-boarding.diary-keeper.user-identifier", "admin.interviewer"},
+ *     groups={"wizard.on-boarding.diary-keeper.user-identifier", "admin.interviewer", "api.interviewer"},
  *     fields={"username"},
  *     message="common.email.already-used"
  * )
@@ -32,9 +32,10 @@ class User implements UserInterface, PasswordAuthenticatedUserInterface
 
     /**
      * @ORM\Column(type="string", length=180, unique=true)
-     * @EmailOrNoLoginPlaceholder(groups={"wizard.on-boarding.diary-keeper.user-identifier", "admin.interviewer"}, message="wizard.diary-keeper.user-identifier.email")
-     * @Assert\NotBlank(groups={"wizard.on-boarding.diary-keeper.user-identifier", "admin.interviewer"}, message="wizard.diary-keeper.user-identifier.not-blank")
-     * @Assert\Length(groups={"wizard.on-boarding.diary-keeper.user-identifier", "admin.interviewer"}, maxMessage="common.string.max-length", max=180)
+     * @EmailOrNoLoginPlaceholder(groups={"wizard.on-boarding.diary-keeper.user-identifier"}, message="wizard.diary-keeper.user-identifier.email")
+     * @Assert\Email(groups={"admin.interviewer", "api.interviewer"}, message="wizard.diary-keeper.user-identifier.email")
+     * @Assert\NotBlank(groups={"wizard.on-boarding.diary-keeper.user-identifier", "admin.interviewer", "api.interviewer"}, message="wizard.diary-keeper.user-identifier.not-blank")
+     * @Assert\Length(groups={"wizard.on-boarding.diary-keeper.user-identifier", "admin.interviewer", "api.interviewer"}, maxMessage="common.string.max-length", max=180)
      */
     private ?string $username;
 
@@ -83,7 +84,7 @@ class User implements UserInterface, PasswordAuthenticatedUserInterface
 
     public function setUserIdentifier(?string $username): self
     {
-        $this->username = strtolower($username);
+        $this->username = is_null($username) ? $username : strtolower($username);
         return $this;
     }
 
@@ -215,10 +216,10 @@ class User implements UserInterface, PasswordAuthenticatedUserInterface
         $isDiaryKeeper = !!$diaryKeeper;
         $hasOnboardedHousehold = $household && $household->getIsOnboardingComplete();
 
-        return $this->hasValidIdentifierForLogin() && (!$isDiaryKeeper || $hasOnboardedHousehold);
+        return $this->hasIdentifierForLogin() && (!$isDiaryKeeper || $hasOnboardedHousehold);
     }
 
-    public function hasValidIdentifierForLogin(): bool
+    public function hasIdentifierForLogin(): bool
     {
         return $this->getUserIdentifier() && !self::isNoLoginPlaceholder($this->username);
     }

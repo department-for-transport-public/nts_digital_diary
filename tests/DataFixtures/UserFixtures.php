@@ -54,7 +54,7 @@ class UserFixtures extends AbstractFixture implements DependentFixtureInterface
 
         $interviewer = (new Interviewer())
             ->setName('Test interviewer')
-            ->setSerialId(1)
+            ->setSerialId(101)
             ->setUser($this->createUser($manager, 'interviewer@example.com'));
 
         $areaPeriodOne->addInterviewer($interviewer);

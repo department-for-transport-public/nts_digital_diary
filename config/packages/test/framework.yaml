@@ -3,3 +3,10 @@ framework:
     session:
         handler_id: session.handler.native_file
         storage_factory_id: session.storage.factory.mock_file
+
+services:
+    ## needs to be public so it can be mocked in NormalizerComparisonTest
+    Symfony\Component\Security\Core\Security:
+        public: true
+        arguments: ['@test.service_container']
+

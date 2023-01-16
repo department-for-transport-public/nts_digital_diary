@@ -11,8 +11,9 @@ class JourneyDefinition
     protected string $purpose;
 
     protected array $stageDefinitions;
+    private int $dayNumber;
 
-    public function __construct(string $startLocation, string $startTime, string $endLocation, string $endTime, string $purpose, array $stageDefinitions)
+    public function __construct(int $dayNumber, string $startLocation, string $startTime, string $endLocation, string $endTime, string $purpose, array $stageDefinitions)
     {
         $this->startLocation = $startLocation;
         $this->startTime = $startTime;
@@ -20,6 +21,12 @@ class JourneyDefinition
         $this->endTime = $endTime;
         $this->purpose = $purpose;
         $this->stageDefinitions = $stageDefinitions;
+        $this->dayNumber = $dayNumber;
+    }
+
+    public function getDayNumber(): int
+    {
+        return $this->dayNumber;
     }
 
     public function getStartLocation(): string {

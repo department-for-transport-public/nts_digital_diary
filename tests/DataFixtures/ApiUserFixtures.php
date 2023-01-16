@@ -1,14 +1,12 @@
 <?php
 
-
 namespace App\Tests\DataFixtures;
-
 
 use App\Entity\ApiUser;
 use Doctrine\Common\DataFixtures\AbstractFixture;
 use Doctrine\Persistence\ObjectManager;
 
-class ExportApiUserFixtures extends AbstractFixture
+class ApiUserFixtures extends AbstractFixture
 {
     public function load(ObjectManager $manager)
     {

@@ -3,11 +3,10 @@
 namespace App\Form\Admin;
 
 use App\Entity\AreaPeriod;
-use App\Features;
 use Ghost\GovUkFrontendBundle\Form\Type\ButtonGroupType;
 use Ghost\GovUkFrontendBundle\Form\Type\ButtonType;
+use Ghost\GovUkFrontendBundle\Form\Type\InputType;
 use Ghost\GovUkFrontendBundle\Form\Type\LinkType;
-use Ghost\GovUkFrontendBundle\Form\Type\NumberType;
 use Symfony\Component\Form\AbstractType;
 use Symfony\Component\Form\FormBuilderInterface;
 use Symfony\Component\OptionsResolver\OptionsResolver;
@@ -17,11 +16,10 @@ class AllocateAreaType extends AbstractType
     public function buildForm(FormBuilderInterface $builder, array $options)
     {
         $builder
-            ->add('area', NumberType::class, [
+            ->add('area', InputType::class, [
                 'attr' => ['class' => 'govuk-input--width-5'],
                 'label' => "interviewer.allocate.form.area.label",
                 'label_attr' => ['class' => 'govuk-label--s'],
-                'help' => Features::isEnabled(Features::USER_TESTING) ? "interviewer.allocate.form.area.help" : null,
             ])
             ->add('button_group', ButtonGroupType::class);
 

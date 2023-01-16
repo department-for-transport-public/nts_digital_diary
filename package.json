@@ -1,5 +1,6 @@
 {
     "devDependencies": {
+        "@nesk/puphpeteer": "^2.0.0",
         "@symfony/webpack-encore": "^1.0.0",
         "core-js": "^3.0.0",
         "file-loader": "^6.0.0",

@@ -30,6 +30,7 @@ class JourneyNormalizer implements ContextAwareNormalizerInterface, NormalizerAw
 
         /** @var Journey $object */
         return [
+            'id' => $object->getId(),
             'startTime' => $this->normalizer->normalize($object->getStartTime(), $format, $timeNormalizationContext),
             'startLocation' => $object->getStartLocation(),
             'startIsHome' => $object->getIsStartHome(),
@@ -39,6 +40,7 @@ class JourneyNormalizer implements ContextAwareNormalizerInterface, NormalizerAw
             'stages' => $this->normalizer->normalize($object->getStages(), $format, $context),
             'purpose' => $object->getPurpose(),
             'purposeCode' => $object->getPurpose() === Journey::TO_GO_HOME ? 1 : null,
+            'sharedFromId' => $object->getSharedFrom()?->getId(),
 
             '_history' => $this->normalizer->normalize(Utils::getHistoryForObject($context, $object), $format, [AbstractObjectNormalizer::PRESERVE_EMPTY_OBJECTS => true]),
         ];

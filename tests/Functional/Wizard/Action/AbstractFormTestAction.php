@@ -120,7 +120,7 @@ abstract class AbstractFormTestAction extends PathTestAction
 
             try {
                 $formSubmissionData = $formTestCase->getFormData($context);
-                $expectedErrorIds = $formTestCase->getExpectedErrorIds();
+                $expectedErrorIds = $formTestCase->getExpectedErrorIds($context);
 
                 $this->outputPreFormFillDebug($context, $formSubmissionData, $expectedErrorIds, $testCaseIdx);
 

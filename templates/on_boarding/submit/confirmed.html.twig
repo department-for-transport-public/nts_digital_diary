@@ -9,10 +9,10 @@
 
     {%- from '@GhostGovUkFrontend/components/macros.html.twig' import actionlessSummaryListRow, summaryListRow -%}
 
-    {% if is_feature_enabled(constant('App\\Features::USER_TESTING')) %}
+    {% if is_feature_enabled(constant('App\\Features::REVEAL_INVITE_LINKS')) %}
         <h2 class="govuk-heading-m">Diary Keeper links</h2>
         <div class="govuk-summary-list">
-            {% for dk in app.user.household.diaryKeepers | filter(dk => dk.hasValidIdentifierForLogin) %}
+            {% for dk in app.user.household.diaryKeepers | filter(dk => dk.hasIdentifierForLogin) %}
                 {# @var dk \App\Entity\DiaryKeeper #}
                 {% set link = url_signer.sign(url('auth_account_setup', {userId: dk.user.id | lower}), constant('App\\Utility\\AlphagovNotify\\Reference::ACCOUNT_CREATION_LINK_EXPIRY')) %}
                 {{ summaryListRow(

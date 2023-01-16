@@ -30,7 +30,7 @@
                 <tr class="govuk-table__row">
                     <th scope="row" class="govuk-table__cell">{{ diaryKeeper.number }}</th>
                     <td class="govuk-table__cell">{{ diaryKeeper.name }}</td>
-                    <td class="govuk-table__cell">{{ diaryKeeper.hasValidIdentifierForLogin ? diaryKeeper.user.userIdentifier : '-' }}</td>
+                    <td class="govuk-table__cell">{{ diaryKeeper.hasIdentifierForLogin ? diaryKeeper.user.userIdentifier : '-' }}</td>
                     <td class="govuk-table__cell">{{ diaryKeeper.isAdult | format_bool | trans }}</td>
                     <td class="govuk-table__cell">{{ proxyNames is not empty ? (proxyNames | join(', ')) : '-' }}</td>
                 </tr>

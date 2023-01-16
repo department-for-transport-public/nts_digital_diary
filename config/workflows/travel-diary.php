@@ -3,6 +3,7 @@
 namespace Symfony\Component\DependencyInjection\Loader\Configurator;
 
 use App\Entity\DiaryKeeper;
+use App\Entity\Household;
 
 return static function (ContainerConfigurator $container) {
     $container->extension('framework', [
@@ -51,6 +52,7 @@ return static function (ContainerConfigurator $container) {
                         'from' => DiaryKeeper::STATE_APPROVED,
                         'to' => DiaryKeeper::STATE_COMPLETED,
                         'name' => DiaryKeeper::TRANSITION_UNDO_APPROVAL,
+                        'guard' => sprintf("subject.getHousehold().getState() !== '%s'", Household::STATE_SUBMITTED),
                     ],
                 ]
             ]

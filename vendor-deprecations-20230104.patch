@@ -1,0 +1,33 @@
+--- vendor/api-platform/core/src/Symfony/Security/ResourceAccessChecker.php	2023-01-04 14:47:29.383252493 +0000
++++ vendor/api-platform/core/src/Symfony/Security/ResourceAccessChecker.php	2023-01-04 15:03:23.000000000 +0000
+@@ -46,7 +46,7 @@
+ 
+         if (5 < \func_num_args()) {
+             $this->exceptionOnNoToken = $exceptionOnNoToken;
+-            trigger_deprecation('api-platform/core', '2.7', 'The $exceptionOnNoToken parameter in "%s()" is deprecated and will always be false in 3.0, you should stop using it.', __METHOD__);
++//            trigger_deprecation('api-platform/core', '2.7', 'The $exceptionOnNoToken parameter in "%s()" is deprecated and will always be false in 3.0, you should stop using it.', __METHOD__);
+         }
+     }
+ 
+--- vendor/php-webdriver/webdriver/lib/Firefox/FirefoxOptions.php	2023-01-04 14:47:29.583104235 +0000
++++ vendor/php-webdriver/webdriver/lib/Firefox/FirefoxOptions.php	2023-01-04 15:00:12.000000000 +0000
+@@ -125,6 +125,9 @@
+         return $array;
+     }
+ 
++    /**
++     * @return mixed
++     */
+     #[ReturnTypeWillChange]
+     public function jsonSerialize()
+     {
+--- vendor/php-webdriver/webdriver/lib/Local/LocalWebDriver.php	2023-01-04 14:47:29.583104235 +0000
++++ vendor/php-webdriver/webdriver/lib/Local/LocalWebDriver.php	2023-01-04 14:57:35.000000000 +0000
+@@ -40,6 +40,7 @@
+      * @param string $selenium_server_url
+      * @param null $connection_timeout_in_ms
+      * @param null $request_timeout_in_ms
++     * @param bool $isW3cCompliant True to use W3C WebDriver (default), false to use the legacy JsonWire protocol
+      * @throws WebDriverException
+      * @return RemoteWebDriver
+      * @todo Remove in next major version (should not be inherited)

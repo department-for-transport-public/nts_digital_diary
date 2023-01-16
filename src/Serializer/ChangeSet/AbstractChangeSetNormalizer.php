@@ -30,6 +30,15 @@ abstract class AbstractChangeSetNormalizer implements ContextAwareNormalizerInte
         }
     }
 
+    protected function whitelistFields(array &$changeSet, array $fieldsToKeep): void
+    {
+        foreach($changeSet as $key => $value) {
+            if (!in_array($key, $fieldsToKeep)) {
+                unset($changeSet[$key]);
+            }
+        }
+    }
+
     protected function removeField(array &$changeSet, string $name): void
     {
         if (isset($changeSet[$name])) {

@@ -11,7 +11,7 @@
 
     {%- set actionPath = showActions ? path('onboarding_diarykeeper_edit', {diaryKeeperId: diaryKeeper.id, place: constant('App\\FormWizard\\OnBoarding\\DiaryKeeperState::STATE_IDENTITY')}) : false -%}
     {{- _self.listRow('proxied-by', diaryKeeper.proxyNames | join(', ') | default('-'), diaryKeeper.name, actionPath) -}}
-    {{- _self.listRow('user-identifier', diaryKeeper.user.hasValidIdentifierForLogin ? diaryKeeper.user.userIdentifier : '-', diaryKeeper.name, actionPath) -}}
+    {{- _self.listRow('user-identifier', diaryKeeper.user.hasIdentifierForLogin ? diaryKeeper.user.userIdentifier : '-', diaryKeeper.name, actionPath) -}}
 </div>
 
 {%- macro listRow(key, value, name, path) -%}

@@ -23,14 +23,28 @@ class JourneyFixtures extends AbstractFixture implements DependentFixtureInterfa
     public static function getJourneyDefinitions(): array
     {
         return [
-            'journey:1' => new JourneyDefinition('Home', '2020-01-01 8:26', 'Wobble', '2020-01-01 8:56', 'to-work', [
+            'journey:1' => new JourneyDefinition(1, 'Home', '2020-01-01 8:26', 'Wobble', '2020-01-01 8:56', 'to-work', [
                 'journey:1/stage:1'=> new PrivateStageDefinition(1, 'car', Distance::miles(30), 30, 1, 0, true, null, 'Red Tesla'),
             ]),
-            'journey:2' => new JourneyDefinition('Wobble', '2020-01-01 16:00', 'Home', '2020-01-01 17:00', 'to-home', [
+            'journey:2' => new JourneyDefinition(1, 'Wobble', '2020-01-01 16:00', 'Home', '2020-01-01 17:00', 'to-home', [
                 'journey:2/stage:1'=> new PublicStageDefinition(1, 'bus-or-coach', Distance::miles(28), 35, 1, 0, 350, 'standard-ticket', 1),
                 'journey:2/stage:2'=> new OtherStageDefinition(2, 'walk', Distance::miles(2), 25, 1, 0),
             ]),
         ];
+    }
+
+    public static function getAdditionalJourneyDefinitions(): array
+    {
+        return [
+            'journey:3' => new JourneyDefinition(7, 'Start', '2020-01-07 8:26', 'Finish', '2020-01-07 8:56', 'purpose', [
+                'journey:3/stage:1'=> new PrivateStageDefinition(1, 'car', Distance::miles(30), 30, 1, 1, true, null, 'Red Tesla'),
+            ]),
+        ];
+    }
+
+    public static function getAllJourneyDefinitions(): array
+    {
+        return array_merge(self::getJourneyDefinitions(), self::getAdditionalJourneyDefinitions());
     }
 
     public function load(ObjectManager $manager): void
@@ -39,9 +53,8 @@ class JourneyFixtures extends AbstractFixture implements DependentFixtureInterfa
 
         assert($diaryKeeper instanceof DiaryKeeper);
 
-        $day = $diaryKeeper->getDiaryDayByNumber(1);
-
-        foreach(self::getJourneyDefinitions() as $name => $definition) {
+        foreach(self::getAllJourneyDefinitions() as $name => $definition) {
+            $day = $diaryKeeper->getDiaryDayByNumber($definition->getDayNumber());
             $journey = $this->createJourney($definition, $day);
 
             $this->addReference($name, $journey);

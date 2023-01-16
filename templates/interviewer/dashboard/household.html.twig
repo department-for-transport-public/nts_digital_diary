@@ -59,7 +59,7 @@
             <tr class="govuk-table__row">
                 <th scope="row" class="govuk-table__cell">{{ diaryKeeper.number }}</th>
                 <td class="govuk-table__cell">{{ diaryKeeper.name }}{%- if diaryKeeper.proxies | length > 0 %}<br>({{ "household.proxied-by" | trans({proxyNames: diaryKeeper.proxyNames | join(', ')}) }}){% endif %}</td>
-                <td class="govuk-table__cell">{{ "boolean.#{diaryKeeper.hasValidIdentifierForLogin ? 'true' : 'false'}" | trans({}, 'messages') }}</td>
+                <td class="govuk-table__cell">{{ "boolean.#{diaryKeeper.hasIdentifierForLogin ? 'true' : 'false'}" | trans({}, 'messages') }}</td>
                 <td class="govuk-table__cell">{{ "household.type.#{diaryKeeper.isAdult ? 'adult' : 'child'}" | trans }}</td>
                 <td class="govuk-table__cell">{{ ("diary-keeper.states." ~ (diaryKeeper.diaryState ?? 'new')) | trans }}</td>
                 <td class="govuk-table__cell govuk-table__cell--numeric">
@@ -67,7 +67,7 @@
                         ? {(path('interviewer_change_email', {diaryKeeper: diaryKeeper.id})): {label: 'Change email'}}
                         : {}
                     %}
-                    {% set testingActions = is_feature_enabled(constant('App\\Features::USER_TESTING'))
+                    {% set testingActions = is_feature_enabled(constant('App\\Features::REVEAL_INVITE_LINKS'))
                         ? {(url_signer.sign(url('auth_account_setup', {userId: diaryKeeper.user.id | lower}), constant('App\\Utility\\AlphagovNotify\\Reference::ACCOUNT_CREATION_LINK_EXPIRY'))): {label: 'Invite link'}}
                         : {}
                     %}

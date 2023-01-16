@@ -53,11 +53,11 @@ admin:
     host: '%hostnames.admin%'
     name_prefix: admin_
 
-export_api:
-    resource: '../../src/Controller/ExportApi/**/*'
+api:
+    resource: '../../src/Controller/Api/**/*'
     type: annotation
     host: '%hostnames.frontend%'
-    name_prefix: exportapi_
+    name_prefix: api_
     prefix: /api/v{version}
     format: json
     requirements:

@@ -12,13 +12,13 @@ class AreaPeriodFixtures extends AbstractFixture
     public function load(ObjectManager $manager): void
     {
         $areaPeriodOne = (new AreaPeriod())
-            ->setArea(111984)
+            ->setArea("111984")
             ->populateMonthAndYearFromArea();
 
         $this->addReference('area-period:1', $areaPeriodOne);
 
         $areaPeriodTwo = (new AreaPeriod())
-            ->setArea(111994)
+            ->setArea("111994")
             ->populateMonthAndYearFromArea();
 
         $this->addReference('area-period:2', $areaPeriodTwo);

@@ -5,6 +5,8 @@ namespace App\Entity;
 use App\Repository\OtpUserRepository;
 use Doctrine\ORM\Mapping as ORM;
 use Symfony\Component\Security\Core\User\UserInterface;
+use Symfony\Component\Serializer\Annotation\Groups;
+use Symfony\Component\Serializer\Annotation\Ignore;
 
 /**
  * @ORM\Entity(repositoryClass=OtpUserRepository::class)
@@ -22,10 +24,10 @@ class OtpUser implements UserInterface
      * @ORM\ManyToOne(targetEntity=AreaPeriod::class, inversedBy="otpUsers")
      * @ORM\JoinColumn(nullable=false)
      */
-    private AreaPeriod $areaPeriod;
+    private ?AreaPeriod $areaPeriod;
 
     /**
-     * @ORM\OneToOne(targetEntity=Household::class, cascade={"persist", "remove"})
+     * @ORM\OneToOne(targetEntity=Household::class, cascade={"persist"})
      */
     private ?Household $household;
 
@@ -46,7 +48,7 @@ class OtpUser implements UserInterface
         return $this->areaPeriod ?? null;
     }
 
-    public function setAreaPeriod(AreaPeriod $areaPeriod): self
+    public function setAreaPeriod(?AreaPeriod $areaPeriod): self
     {
         $this->areaPeriod = $areaPeriod;
 
@@ -78,6 +80,7 @@ class OtpUser implements UserInterface
     {
     }
 
+    #[Ignore]
     public function getUsername(): string
     {
         return $this->getUserIdentifier();

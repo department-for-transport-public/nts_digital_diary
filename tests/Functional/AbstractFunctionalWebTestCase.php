@@ -10,7 +10,7 @@ use Symfony\Bundle\FrameworkBundle\Test\WebTestCase;
 class AbstractFunctionalWebTestCase extends WebTestCase
 {
     protected KernelBrowser $client;
-    private ReferenceRepository $fixtureReferenceRepository;
+    protected ReferenceRepository $fixtureReferenceRepository;
 
     public function initialiseClientAndLoadFixtures(array $fixtures): void
     {

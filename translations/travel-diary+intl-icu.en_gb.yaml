@@ -570,6 +570,9 @@ share-journey:
       Some details of the journey may be different for each household member. Please review these details before saving.
       
       To share a journey with another member of your household, you must have been on the **whole** journey together. If they were only with you for part of the way, then they must add that journey to their diaries separately.
+  help-details:
+    text: Help with sharing journeys
+    content: Watch this video to see how to share a journey with other members of your household.
 
   cannot-share:
     pre-form: |-

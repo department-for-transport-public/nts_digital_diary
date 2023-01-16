@@ -58,17 +58,15 @@ class SubmitController extends AbstractController
 
     protected function submitOnboarding(Household $household): RedirectResponse
     {
-        if (!Features::isEnabled(Features::USER_TESTING)) {
-            foreach ($household->getDiaryKeepers() as $diaryKeeper) {
-                if ($diaryKeeper->hasValidIdentifierForLogin()) {
-                    $this->accountCreationHelper->sendAccountCreationEmail($diaryKeeper);
-                }
-            }
-        }
-
         // disable/delete the onboarding code
         $household->setIsOnboardingComplete(true);
         $this->entityManager->flush();
+
+        foreach ($household->getDiaryKeepers() as $diaryKeeper) {
+            if ($diaryKeeper->hasIdentifierForLogin()) {
+                $this->accountCreationHelper->sendAccountCreationEmail($diaryKeeper);
+            }
+        }
 
         return $this->redirectToRoute('onboarding_dashboard');
     }

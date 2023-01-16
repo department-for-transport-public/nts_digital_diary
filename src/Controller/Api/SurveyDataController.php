@@ -1,6 +1,6 @@
 <?php
 
-namespace App\Controller\ExportApi;
+namespace App\Controller\Api;
 
 use App\Repository\HouseholdRepository;
 use DateTime;
@@ -25,11 +25,23 @@ class SurveyDataController extends AbstractController
     {
         $startTime = $this->getQueryTimestampAsDate($request, 'startTime');
         $endTime = $this->getQueryTimestampAsDate($request, 'endTime');
+
         $serials = $this->getQueryHouseholdSerials($request);
 
         if ($serials && !($startTime || $endTime)) {
+            $maxHouseholds = 10;
+            if (count($serials) > $maxHouseholds) {
+                throw new BadRequestHttpException("No more than $maxHouseholds households can be requested in a single call");
+            }
+
             $households = $householdRepository->findForExportByHouseholdSerials($serials);
         } elseif (!$serials && $startTime && $endTime) {
+            // Limit end time to 7 days after start time to prevent DOS
+            $sevenDays = 7 * 24 * 60 * 60;
+            if ($endTime->getTimestamp() > ($startTime->getTimestamp() + $sevenDays)) {
+                throw new BadRequestHttpException("endTime cannot be more than 7 days / $sevenDays seconds after startTime");
+            }
+
             $households = $householdRepository->findForExportByTimestamps($startTime, $endTime);
         } else {
             throw new BadRequestHttpException('Invalid request parameters');

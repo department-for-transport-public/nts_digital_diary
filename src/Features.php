@@ -21,7 +21,7 @@ class Features
     public const FORM_ERROR_LOG = 'form-error-log';
     public const PENTEST_FIXTURES = 'pentest-fixtures';
     public const SMARTLOOK_SESSION_RECORDING = 'smartlook-session-recording';
-    public const USER_TESTING = 'user-testing';
+    public const REVEAL_INVITE_LINKS = 'reveal-invite-links';
 
     private static array $enabledFeatures;
 

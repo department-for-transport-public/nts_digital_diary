@@ -2,5 +2,5 @@
 # (Along with the relevant app.<service>.yaml file)
 #
 dispatch:
-  - url: "admin.dev.ntstravelsurvey.co.uk/*"
+  - url: "admin.dev.access-national-travel-survey.service.gov.uk/*"
     service: admin

@@ -117,7 +117,7 @@ class DiaryKeeper implements UserPersonInterface
      */
     public function validateIdentity(ExecutionContextInterface $context)
     {
-        $hasIdentifier = $this->getUser()->hasValidIdentifierForLogin();
+        $hasIdentifier = $this->getUser()->hasIdentifierForLogin();
         $hasProxier = $this->getProxies()->count() > 0;
 
         $householdAlreadyHasDiaryKeepers = $this->getHousehold()->getDiaryKeepers()->count() > 1;
@@ -382,7 +382,7 @@ class DiaryKeeper implements UserPersonInterface
         $inaccessible = [];
 
         foreach($this->getActingAsProxyFor() as $proxyTarget) {
-            if (!$proxyTarget->hasValidIdentifierForLogin() && $proxyTarget->getProxies()->count() === 1) {
+            if (!$proxyTarget->hasIdentifierForLogin() && $proxyTarget->getProxies()->count() === 1) {
                 $inaccessible[] = $proxyTarget;
             }
         }
@@ -390,9 +390,9 @@ class DiaryKeeper implements UserPersonInterface
         return $inaccessible;
     }
 
-    public function hasValidIdentifierForLogin(): bool
+    public function hasIdentifierForLogin(): bool
     {
         $user = $this->getUser();
-        return $user && $user->hasValidIdentifierForLogin();
+        return $user && $user->hasIdentifierForLogin();
     }
 }

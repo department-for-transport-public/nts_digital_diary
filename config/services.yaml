@@ -19,6 +19,7 @@ parameters:
     default_host_separator: '.'
     hostnames.frontend: '%domain_name%'
     hostnames.admin: 'admin%env(default:default_host_separator:string:APP_HOSTNAME_SEPARATOR)%%domain_name%'
+    screenshots.path: '%env(resolve:SCREENSHOTS_PATH)%'
 
 services:
     # default configuration for services in *this* file
@@ -57,6 +58,12 @@ services:
                 - { name: 'router.expression_language_provider' }
                 - { name: 'workflow.expression_language_provider' }
                 - { name: 'validator.expression_language_provider' }
+
+    App\Command\NtsScreenshotsCommand:
+        lazy: true
+        arguments:
+            $frontendHostname: '%domain_name%'
+            $screenshotsPath: '%screenshots.path%'
 
     App\FormWizard\LocatorService:
         arguments:

@@ -23,6 +23,7 @@
             <directory>tests/Ghost</directory>
             <directory>tests/Messenger</directory>
             <directory>tests/Security</directory>
+            <directory>tests/Serializer</directory>
             <directory>tests/Utility</directory>
         </testsuite>
         <testsuite name="functional">

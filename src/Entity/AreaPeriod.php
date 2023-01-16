@@ -2,52 +2,74 @@
 
 namespace App\Entity;
 
+use ApiPlatform\Metadata\GetCollection;
+use ApiPlatform\Metadata\Post;
+use ApiPlatform\Metadata\Delete;
+use ApiPlatform\Metadata\Get;
+use ApiPlatform\Metadata\ApiResource;
 use App\Repository\AreaPeriodRepository;
 use App\Utility\AreaPeriodHelper;
 use Doctrine\Common\Collections\ArrayCollection;
 use Doctrine\Common\Collections\Collection;
 use Doctrine\ORM\Mapping as ORM;
 use Symfony\Bridge\Doctrine\Validator\Constraints\UniqueEntity;
-use Symfony\Component\Serializer\Annotation\SerializedName;
+use Symfony\Component\Serializer\Annotation\Ignore;
 use Symfony\Component\Validator\Constraints as Assert;
 
 /**
- * @ORM\Entity(repositoryClass=AreaPeriodRepository::class)
- * @UniqueEntity(errorPath="area", fields={"area","year"}, groups={"area.import", "api.area-period"}, message="admin.area.unique")
+ * @ORM\Entity (repositoryClass=AreaPeriodRepository::class)
+ * @UniqueEntity (errorPath="area", fields={"area","year"}, groups={"area.import", "api.area-period"}, message="admin.area.unique")
  */
+#[ApiResource(
+    operations: [
+        new Get(),
+        new GetCollection(),
+        new Post(),
+        new Delete(security: 'is_granted("DELETE", object)'),
+    ],
+    validationContext: ['groups' => ['api.area-period']]
+)]
 class AreaPeriod
 {
     use IdTrait;
 
     /**
-     * @ORM\Column(type="integer", nullable=false)
+     * @ORM\Column(type="string", length=6, nullable=false)
      * @Assert\NotBlank(groups={"interviewer.allocate-area", "api.area-period"}, message="allocate-area.area.not-blank")
      * @Assert\Regex("/^\d{1}((0[1-9])|(1[0-2]))\d{3}$/", groups={"interviewer.allocate-area", "api.area-period"}, message="allocate-area.area.valid")
+     * @Assert\Blank(groups={"api.area-periods.delete"})
      */
-    private ?int $area = null;
+    private ?string $area = null;
 
     /**
      * @ORM\Column(type="integer", nullable=false)
+     * @Assert\NotBlank(groups={"api.area-period"})
+     * @Assert\Expression("(value % 10) == this.getYearDigitFromArea()", groups={"api.area-period"})
      */
     private ?int $year;
 
     /**
      * @ORM\Column(type="integer", nullable=false)
+     * @Assert\NotBlank(groups={"api.area-period"})
+     * @Assert\Expression("value == this.getMonthDigitsFromArea()", groups={"api.area-period"})
      */
     private ?int $month;
 
     /**
      * @ORM\OneToMany(targetEntity=Household::class, mappedBy="areaPeriod")
+     * @Ignore
      */
     private Collection $households;
 
     /**
      * @ORM\ManyToMany(targetEntity=Interviewer::class, inversedBy="areaPeriods")
+     * @Ignore
      */
     private Collection $interviewers;
 
     /**
-     * @ORM\OneToMany(targetEntity=OtpUser::class, mappedBy="areaPeriod")
+     * @ORM\OneToMany(targetEntity=OtpUser::class, mappedBy="areaPeriod", cascade={"remove"})
+     * @Ignore
      */
     private Collection $otpUsers;
 
@@ -58,12 +80,12 @@ class AreaPeriod
         $this->otpUsers = new ArrayCollection();
     }
 
-    public function getArea(): ?int
+    public function getArea(): ?string
     {
         return $this->area;
     }
 
-    public function setArea(?int $area): self
+    public function setArea(?string $area): self
     {
         $this->area = $area;
         return $this;
@@ -183,5 +205,15 @@ class AreaPeriod
         }
 
         return $this;
+    }
+
+    public function getYearDigitFromArea(): ?string
+    {
+        return $this->area ? substr($this->area, 0, 1) : null;
+    }
+
+    public function getMonthDigitsFromArea(): ?string
+    {
+        return $this->area ? substr($this->area, 1, 2) : null;
     }
 }

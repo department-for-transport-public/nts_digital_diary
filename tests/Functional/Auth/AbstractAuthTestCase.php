@@ -39,6 +39,7 @@ abstract class AbstractAuthTestCase extends AbstractWebTestCase
         $message = $envelope->getMessage();
 
         $this->assertInstanceOf(Email::class, $message);
+        $this->assertSame('forgotten-password', $message->getEventName());
         return $message->getPersonalisation()['url'];
     }
 }

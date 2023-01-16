@@ -40,7 +40,6 @@ interviewer.allocate:
   form:
     area:
       label: Area
-      help: An Area is a 6 digit number and is the first 6 digits of the serial number, consisting of 2 year digits, 2 month digits and 2 sample point digits.
     allocate: Allocate to area
 
 sample-import.form:

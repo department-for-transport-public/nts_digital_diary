@@ -32,15 +32,15 @@ class UserIdentityDataMapper extends DataMapper
 
         $user = $data->getUser();
 
-        if ($user->hasValidIdentifierForLogin()) {
-            $userIdentifer = $user->getUserIdentifier();
+        if ($user->hasIdentifierForLogin()) {
+            $userIdentifier = $user->getUserIdentifier();
 //            $consent = $user->getHasConsented();
         } else {
-            $userIdentifer = '';
+            $userIdentifier = '';
 //            $consent = null;
         }
 
-        $forms['user']->get('username')->setData($userIdentifer);
+        $forms['user']->get('username')->setData($userIdentifier);
 //        $forms['user']->get('consent')->setData($consent);
     }
 
