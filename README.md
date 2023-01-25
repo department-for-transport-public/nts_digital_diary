@@ -1,7 +1,7 @@
 # Gov.uk / DfT - National Travel Survey Digital Diary
 
 ## Requirements
-- PHP 7.4+
+- PHP 8.1+
 - MySql / MariaDB
 - Gov.uk Notify API key
 - Composer 2
