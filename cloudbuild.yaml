@@ -33,6 +33,9 @@ steps:
           - 'APP_GOOGLE_SITE_VERIFICATION="${_APP_GOOGLE_SITE_VERIFICATION}"'
           - 'APP_HOSTNAME_SEPARATOR=${_APP_HOSTNAME_SEPARATOR}'
           - 'ALPHAGOV_NOTIFY_API_KEY=${_ALPHAGOV_NOTIFY_API_KEY}'
+          - 'APP_FEEDBACK_RECIPIENTS=${_APP_FEEDBACK_RECIPIENTS}'
+          - 'APP_RECAPTCHA_SECRET_KEY=${_APP_RECAPTCHA_SECRET_KEY}'
+          - 'APP_RECAPTCHA_SITE_KEY=${_APP_RECAPTCHA_SITE_KEY}'
       waitFor: ['copy-deploy-files']
 
     ## The app deployment will not run `composer install` if the composer.lock file has not changed

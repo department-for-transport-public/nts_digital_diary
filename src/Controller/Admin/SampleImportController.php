@@ -35,7 +35,6 @@ class SampleImportController extends AbstractController
             if ($form->isValid() || empty(iterator_to_array($form->get('areas')->getErrors()))) {
                 foreach ($areas as $area) {
                     $entityManager->persist($area);
-                    $areaPeriodHelper->createCodesForArea($area, false);
                 }
                 $errors = $this->getNormalizedSampleImportFormErrors($form);
                 if (empty($errors)) {

@@ -4,7 +4,7 @@ namespace App\Controller\OnBoarding;
 
 use App\Controller\FormWizard\AbstractSessionStateFormWizardController;
 use App\Entity\Household;
-use App\Entity\OtpUser;
+use App\Entity\OtpUserInterface;
 use App\FormWizard\FormWizardStateInterface;
 use App\FormWizard\OnBoarding\HouseholdState;
 use App\FormWizard\Place;
@@ -38,7 +38,7 @@ class HouseholdWizardController extends AbstractSessionStateFormWizardController
             return $state;
         }
 
-        /** @var OtpUser $user */
+        /** @var OtpUserInterface $user */
         $user = $this->getUser();
 
         /** @var HouseholdState $state */

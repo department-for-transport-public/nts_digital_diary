@@ -48,10 +48,10 @@
         </p>
     {%- endif -%}
 
-    {%- if stage.parkingCost is not null -%}
+    {%- if (stage.parkingCost.cost ?? null) is not null -%}
         <h3 class="{{ h3class }} govuk-!-margin-bottom-1">{{ "#{translation_prefix}.title.parking-cost" | trans }}</h3>
         <p class="{{ bodyClass }}">
-            {{ "stage.view.parking-cost.value" | trans({cost: stage.parkingCost/100}) }}
+            {{ "stage.view.parking-cost.value" | trans({cost: stage.parkingCost.cost/100}) }}
         </p>
     {%- endif -%}
 {%- endmacro -%}

@@ -21,6 +21,12 @@ abstract class AbstractDiaryKeeperTest extends AbstractOtpTest
         $tests[] = new FormTestAction(
             '/onboarding/diary-keeper/add/identity',
             'user_identifier_button_group_continue',
+            [new FormTestCase([], ['#user_identifier_mediaType'])]
+        );
+
+        $tests[] = new FormTestAction(
+            '/onboarding/diary-keeper/add/identity',
+            'user_identifier_button_group_continue',
             $this->getSecondStepTestCases(true, $email));
 
         $tests[] = new FormTestAction(
@@ -71,10 +77,14 @@ abstract class AbstractDiaryKeeperTest extends AbstractOtpTest
         if ($overwriteDetails) {
             return [
                 new FormTestCase([
+                    'user_identifier[mediaType]' => DiaryKeeper::MEDIA_TYPE_DIGITAL,
                     'user_identifier[user][username]' => '',
 //                    'user_identifier[user][consent]' => '',
-                ], ['#user_identifier_user_username']),
+                ], [
+                    '#user_identifier_user_username',
+                ]),
                 new FormTestCase([
+                    'user_identifier[mediaType]' => DiaryKeeper::MEDIA_TYPE_DIGITAL,
                     'user_identifier[user][username]' => 'Silly',
 //                    'user_identifier[user][consent]' => '',
                 ], [
@@ -82,6 +92,7 @@ abstract class AbstractDiaryKeeperTest extends AbstractOtpTest
 //                    '#user_identifier_user_consent'
                 ]),
                 new FormTestCase([
+                    'user_identifier[mediaType]' => DiaryKeeper::MEDIA_TYPE_DIGITAL,
                     'user_identifier[user][username]' => 'Not@Email',
 //                    'user_identifier[user][consent]' => '',
                 ], [
@@ -95,6 +106,7 @@ abstract class AbstractDiaryKeeperTest extends AbstractOtpTest
 //                    '#user_identifier_user_consent'
 //                ]),
                 new FormTestCase([
+                    'user_identifier[mediaType]' => DiaryKeeper::MEDIA_TYPE_DIGITAL,
                     'user_identifier[user][username]' => $email,
 //                    'user_identifier[user][consent]' => '1',
                 ]),

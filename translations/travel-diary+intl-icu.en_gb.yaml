@@ -22,11 +22,23 @@ breadcrumbs:
   stage: Stage {stageNumber}
   start-to-end: "{time}: {startLocation} to {endLocation}"
 
-approved:
+completed:
   page-title: Travel Diary completed
 
-  copy: Thank you for participating!
-  heading: Travel Diary completed
+  panel:
+    heading: Travel Diary completed
+    content: >-
+      Thank you for participating!
+  copy: >-
+    Your interviewer should be in contact within 6 days to arrange a pick-up interview.
+
+diary-keeper.states:
+  new: Not yet started
+  in-progress: In progress
+  completed: &stateCompleted Completed
+  approved: *stateCompleted
+  submitted: *stateCompleted
+  discarded: *stateCompleted
 
 days:
   page-title: *pageTitle
@@ -42,6 +54,7 @@ days:
               My    {{diary_keeper_name}}
               other {{diary_keeper_name}'s}
         } diary week
+  diary-week-intro-copy: On day 1, include **all** walks and runs. On days 2-7, only include walks and runs of a mile or more (it takes approximately 20 minutes to walk a mile).
   list:
     name: Name
     serial: Serial number
@@ -58,6 +71,22 @@ days:
         one   {1 journey}
         other {# journeys}
     }
+  primary-driver-vehicles: Vehicles
+  enter-odometer-readings: Enter odometer readings for "{vehicle}"
+
+vehicle.odometer-readings:
+  page-title: Vehicle odometer readings
+  week-start: First day of diary week
+  week-end: Last day of diary week
+  week-start-reading:
+    label: Odometer reading at start of diary week
+    help: ''
+  week-end-reading:
+    label: Odometer reading at end of diary week
+    help: ''
+  unit:
+    label: Odometer units
+    help: ''
 
 day:
   page-title: *dayDescription
@@ -74,6 +103,22 @@ day:
             }"
     time: "{time}"
 
+  day-1-walk-details: As this is day 1, include **all** walks and runs.
+  introduction-markdown: >-
+    {dayNumber, select,
+      0     {Enter some practice journeys and stages in the practice day. Anything you enter here will not be used as part of your travel diary.}
+      1     {As this is day 1, include **all** walks and runs{vehicleCount, plural, 
+                =0 {}
+                one {, and remember to record the start of week odometer readings for your [vehicle]({vehicleUrl}) at the beginning of the day}
+                other {, and remember to record the start of week odometer readings for your [vehicles]({vehicleUrl}) at the beginning of the day}
+            }.}
+      7     {{vehicleCount, plural, 
+                =0 {}
+                one {Remember to record the end of week odometer readings for your [vehicle]({vehicleUrl}) at the end of the day}
+                other {Remember to record the end of week odometer readings for your [vehicles]({vehicleUrl}) at the end of the day}
+            }.}
+      other {}
+    }
   notes:
     heading: Notes
     guidance: If there’s anything you’d like to tell us about the journeys you made on this day, please add a note below.
@@ -87,7 +132,6 @@ day:
     no-notes: No notes
 
   practice:
-    help: Enter some practice journeys and stages in the practice day. Anything you enter here will not be used as part of your travel diary.
     help-details:
       text: Help with filling in your travel diary
       content: Watch this video to see examples of how to add a journey, a return journey, and how stages within your journey works.
@@ -168,10 +212,14 @@ journey.times:
   page-title: Tell us about the travel times
   start:
     label: What time did you start the journey?
-    help: Use a 12 hour format. For example, 7:30am or 10:15pm
+    help: |-
+      Use 12-hour format. 12pm is midday.  
+      For example, 7:30am or 10:15pm.
   end:
     label: What time did you finish the journey?
-    help: Use a 12 hour format. For example, 7:30am or 10:15pm
+    help: |-
+      Use 12-hour format. 12pm is midday.  
+      For example, 7:30am or 10:15pm. 
 
 journey.view:
   page-title: "{startLocation} to {endLocation} (Day {day}, {time})"
@@ -188,7 +236,7 @@ journey.view:
   change: Change
   complete-journey: Mark journey as complete
   delete-journey: Delete this journey
-  return-journey: Make a return of this journey
+  return-journey: Make a return of this journey ({endLocation} to {startLocation})
   repeat-journey: Make this journey again
   delete-stage: Delete this stage
   delete-stage-sr-hidden-suffix: >-
@@ -280,11 +328,15 @@ stage.driver-and-parking:
     choices: &driverOrPassengerChoices
       driver: Driver
       passenger: Passenger
-  parking-cost:
-    label: &parkingCostLabel How much did you pay for parking, in pounds? (optional)
-    help: &parkingCostHelp |-
-      Enter a value in pounds. For example, £3.50.<br>
-      Leave this box empty if **you** did not pay anything.
+  parking-cost: &parkingCost
+    boolean:
+      label: Did you pay anything for parking?
+      help: |-
+        Select 'No' if **you** did not pay anything.
+    cost:
+      label: How much did you pay for parking, in pounds?
+      help: |-
+        Enter a value in pounds. For example, £3.57.
 
 stage.intermediary:
   page-title: "{journeyStartLocation} to {journeyEndLocation} - Add stages"
@@ -306,7 +358,7 @@ stage.method:
       {dayNumber, select,
           0       {}
           1       {This journey is on day 1. Include all walks and runs}
-          other   {This journey is on day {dayNumber}. Only include walks or runs of 1 mile or more}
+          other   {This journey is on day {dayNumber}. Only include walks and runs of 1 mile or more}
       }
     bicycle: Bicycle
     car: Car
@@ -383,12 +435,17 @@ stage.ticket-cost-and-boardings:
     label: How many times did you board?
     help: |-
         Enter the number of different trains or buses you used on this stage of your journey.
-  ticket-cost:
-    label: &ticketCostLabel How much did you pay for your ticket, in pounds? (optional)
-    help: &ticketCostHelp |-
-        * Tell us the amount you actually paid
-        * If this was a *one-day travelcard* or a *return ticket* and you have already entered the cost on a previous journey, leave this field blank
-        * If you used a *season ticket*, leave this field blank
+  ticket-cost: &ticketCost
+    boolean:
+      label: Did your ticket cost anything?
+      help: |-
+        Select 'No' if 
+        * this was a *travel card* or a *return ticket* and you have already entered the cost on a previous journey
+        * you used a *season ticket*
+    cost:
+      label: How much did your ticket cost, in pounds?
+      help: |-
+        Enter a value in pounds. For example, £3.57.
 
 stage.vehicle:
   page-title: Which vehicle did you use for this stage of your journey?
@@ -552,12 +609,8 @@ return-journey.journey-times:
 
 return-journey.stage-details:
   page-title: "Details for return stage #{number} ({method})"
-  ticket-cost:
-    label: *ticketCostLabel
-    help: *ticketCostHelp
-  parking-cost:
-    label: *parkingCostLabel
-    help: *parkingCostHelp
+  ticket-cost: *ticketCost
+  parking-cost: *parkingCost
 
 share-journey:
   context-header: Journey details
@@ -598,17 +651,31 @@ share-journey:
     public:
       page-title: Ticket details for stage {stage_number} of the journey
       introduction: Please add the ticket types for each household member who was on this journey with you. Ticket types may vary from passenger to passenger.
+    shared-with-section-title: 'Stage {stageNumber} details for {name}'
 
     driver-or-passenger:
       label: Was {name} the driver or a passenger?
       help: ''
       choices: *driverOrPassengerChoices
     parking-cost:
-      label: Parking costs paid by {name}
+      boolean:
+        label: Did {name} pay anything for parking?
+        help: Select 'No' if **{name}** did not pay anything
+      cost:
+        label: How much did {name} pay for parking, in pounds?
+        help: ''
     participant:
       label: Details for {name}
     ticket-cost:
-      label: Ticket cost for {name}
+      boolean:
+        label: Did {name}'s ticket cost anything?
+        help: |-
+          Select 'No' if 
+          * this was a *travel card* or a *return ticket* and {name} already entered the cost on a previous journey
+          * {name} used a *season ticket*
+      cost:
+        label: How much did {name}'s ticket cost, in pounds?
+        help: ''
     ticket-type:
       label: Ticket type for {name}
       help-summary: Help with ticket type

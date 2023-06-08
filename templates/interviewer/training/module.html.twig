@@ -1,0 +1,60 @@
+{% extends "interviewer/training/base.html.twig" %}
+{% trans_default_domain "interviewer" %}
+
+{%- block modukeHeading -%}
+    {{- "training.module.number" | trans({number: trainingRecord.moduleNumber}) | capitalize }}: {{ "training.module.title.#{trainingRecord.moduleName}" | trans -}}
+{%- endblock -%}
+
+{%- block pageTitlePrefix -%}
+    {{- block('modukeHeading') -}}
+    {{- " - " -}}
+    {{ 'breadcrumbs.training' | trans }}
+    {{- " - " -}}
+{%- endblock -%}
+
+{%- block pageHeading -%}
+    <h1 class="govuk-heading-l">{{- block('modukeHeading') -}}</h1>
+{%- endblock -%}
+
+{%- block content -%}
+    {{ _self.moduleActions(trainingRecord, _context) }}
+
+    {%- block moduleContent -%}
+        {% include "interviewer/training/modules/#{trainingRecord.moduleName}.html.twig" %}
+    {%- endblock -%}
+
+{#    {% include 'interviewer/training/module-history.html.twig' %}#}
+{%- endblock -%}
+
+{%- macro moduleActions(trainingRecord, context) -%}
+    {%- from '@GhostGovUkFrontend/components/macros.html.twig' import summaryListRow -%}
+    {%- from 'interviewer/training/macros.html.twig' import statusTag -%}
+
+    <div class="govuk-summary-list">
+{#
+        {{- summaryListRow('training.module.created' | trans, trainingRecord.createdAt | date(format_date_default)) -}}
+        {%- if trainingRecord.startedAt -%}{{- summaryListRow('training.module.started' | trans, trainingRecord.startedAt | date(format_date_default)) -}}{%- endif -%}
+        {%- if trainingRecord.completedAt -%}{{- summaryListRow('training.module.completed' | trans, trainingRecord.completedAt | date(format_date_default)) -}}{%- endif -%}
+#}
+        {{- summaryListRow('training.module.status' | trans, statusTag(trainingRecord)) -}}
+
+    {%- set formAction = false -%}
+    {%- set buttonText = false -%}
+    {%- if is_granted('CAN_START', trainingRecord) -%}
+        {%- set formAction = path('interviewer_training_module_start', {moduleName: trainingRecord.moduleName}) -%}
+        {%- set buttonText = "Mark module as started" -%}
+    {%- elseif is_granted('CAN_COMPLETE', trainingRecord) -%}
+        {%- set formAction = path('interviewer_training_module_complete', {moduleName: trainingRecord.moduleName}) -%}
+        {%- set buttonText = "Mark module as complete" -%}
+    {%- endif -%}
+
+    {%- if formAction -%}
+        <form method="post" action="{{ formAction }}" class="govuk-!-margin-top-1">
+            <div class="govuk-button-group">
+                <button class="govuk-button" type="submit">{{ buttonText }}</button>
+            </div>
+        </form>
+    {%- endif -%}
+
+    </div>
+{%- endmacro -%}

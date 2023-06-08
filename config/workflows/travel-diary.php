@@ -26,6 +26,7 @@ return static function (ContainerConfigurator $container) {
                     DiaryKeeper::STATE_IN_PROGRESS,
                     DiaryKeeper::STATE_COMPLETED,
                     DiaryKeeper::STATE_APPROVED,
+                    DiaryKeeper::STATE_DISCARDED,
                 ],
                 'transitions' => [
                     [
@@ -52,6 +53,17 @@ return static function (ContainerConfigurator $container) {
                         'from' => DiaryKeeper::STATE_APPROVED,
                         'to' => DiaryKeeper::STATE_COMPLETED,
                         'name' => DiaryKeeper::TRANSITION_UNDO_APPROVAL,
+                        'guard' => sprintf("subject.getHousehold().getState() !== '%s'", Household::STATE_SUBMITTED),
+                    ],
+                    [
+                        'from' => [DiaryKeeper::STATE_NEW, DiaryKeeper::STATE_IN_PROGRESS, DiaryKeeper::STATE_COMPLETED],
+                        'to' => DiaryKeeper::STATE_DISCARDED,
+                        'name' => DiaryKeeper::TRANSITION_DISCARD
+                    ],
+                    [
+                        'from' => DiaryKeeper::STATE_DISCARDED,
+                        'to' => DiaryKeeper::STATE_COMPLETED,
+                        'name' => DiaryKeeper::TRANSITION_UNDO_DISCARD,
                         'guard' => sprintf("subject.getHousehold().getState() !== '%s'", Household::STATE_SUBMITTED),
                     ],
                 ]

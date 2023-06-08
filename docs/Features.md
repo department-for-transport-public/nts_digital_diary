@@ -2,7 +2,7 @@
 
 # Features
 
-This document describes each the the features that can be enabled using environment vars
+This document describes each the features that can be enabled using environment vars
 
 ## Features enabled by using the `APP_FEATURES` env var
 Listed as `[env var string]` / `[feature const]`. A feature is enabled if the `[env var string]` is listed in the `APP_FEATURES` env var. 

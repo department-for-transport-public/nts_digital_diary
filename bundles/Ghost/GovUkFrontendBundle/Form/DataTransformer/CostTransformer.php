@@ -19,7 +19,7 @@ class CostTransformer implements DataTransformerInterface
     /** @var array */
     protected $invalidMessageParameters;
 
-    public function __construct(int $divisor = 100, string $invalidMessage = 'Please enter a real cost. For example £3.70', array $invalidMessageParameters = [])
+    public function __construct(int $divisor = 100, string $invalidMessage = 'common.cost.invalid', array $invalidMessageParameters = [])
     {
         $this->divisor = $divisor;
         $this->decimalPlaces = (int) log10($divisor);
@@ -61,7 +61,7 @@ class CostTransformer implements DataTransformerInterface
             return null;
         }
 
-        if (!preg_match('#^(?P<int>-?\d+)(?:\.(?P<dec>'.str_repeat('\d', $this->decimalPlaces).'))?$#', $value, $matches)) {
+        if (!preg_match('#^(?P<int>-?\d+)(?:\.(?P<dec>\d{'.$this->decimalPlaces.'}))?$#', $value, $matches)) {
             throw new TransformationFailedException('Invalid currency amount', 0, null, $this->invalidMessage, $this->invalidMessageParameters);
         }
 

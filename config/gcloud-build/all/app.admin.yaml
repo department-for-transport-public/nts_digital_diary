@@ -1,5 +1,5 @@
 ## GCP AppEngine config
-runtime: php74
+runtime: php81
 entrypoint: serve public/index.php
 instance_class: B2
 service: admin

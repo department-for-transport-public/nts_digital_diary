@@ -24,7 +24,7 @@ class EmptyDashboardTest extends AbstractFunctionalTestCase
 
         $this->assertDataHasKeyValuePair($data, 'Name', 'Test Diary Keeper (Adult)');
         $this->assertDataHasKeyValuePair($data, 'Serial number', '111984 / 08 / 2 / 1');
-        $this->assertDataHasKeyValuePair($data, 'Diary status', 'New');
+        $this->assertDataHasKeyValuePair($data, 'Diary status', 'Not yet started');
 
         // 3 rows as per above, and 7 rows for days
         $this->assertDataSize($data, 10);

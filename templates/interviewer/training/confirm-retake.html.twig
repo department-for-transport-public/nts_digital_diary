@@ -1,0 +1,13 @@
+{% extends 'interviewer/training/base.html.twig' %}
+{% trans_default_domain 'interviewer' %}
+{# @var trainingRecord \App\Entity\InterviewerTrainingRecord #}
+{% set trainingRecord = subject %}
+
+{% block content %}
+    {%- from "@GhostGovUkFrontend/components/macros.html.twig" import warningText -%}
+
+    <p class="govuk-body">{{ 'training.retake.copy' | trans(translation_parameters) }}</p>
+    {{ warningText('training.retake.warning' | trans) }}
+
+    {{ form(form) }}
+{% endblock %}

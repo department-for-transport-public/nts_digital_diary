@@ -10,23 +10,26 @@
 {% set breadcrumb_translation_parameters = translation_parameters %}
 
 {% block content %}
-    {# @var diaryKeeper \App\Entity\DiaryKeeer #}
+    {# @var diaryKeeper \App\Entity\DiaryKeeper #}
     <p class="govuk-body">{{ 'days.intro' | trans }}</p>
 
     {% include 'travel_diary/dashboard/includes/diary_keeper_details.html.twig'%}
+    {% include 'travel_diary/dashboard/includes/video-help.html.twig' %}
 
     {%- import "@GhostGovUkFrontend/components/macros.html.twig" as m -%}
 
-    {% set filteredProxies = diaryKeeper.actingAsProxyFor | filter(d => is_granted('CAN_IMPERSONATE_USER', d.user)) %}
-    {% if not is_granted('IS_IMPERSONATOR') and filteredProxies is not empty %}
-        <h2 class="govuk-heading-m">{{ 'days.other-members-of-my-household' | trans }}</h2>
+    {%- include 'travel_diary/dashboard/includes/diary_keeper_proxies.html.twig' -%}
+
+    {% if not diaryKeeper.primaryDriverVehicles.empty %}
+        <h2 class="govuk-heading-m" id="vehicles">{{ 'days.primary-driver-vehicles' | trans }}</h2>
         <ul class="govuk-list">
-            {% for proxy in filteredProxies %}
-                {# @var proxy \App\Entity\DiaryKeeper #}
-                <li><a class="govuk-link" href="{{ path('app_home', {_switch_user: proxy.user.userIdentifier}) }}">{{ "days.switch-user" | trans({diary_keeper_name: proxy | diary_keeper_display_name}) }}</a></li>
+            {% for vehicle in diaryKeeper.primaryDriverVehicles %}
+                {# @var vehicle \App\Entity\Vehicle #}
+                <li><a class="govuk-link" href="{{ path('traveldiary_vehicle_index', {vehicle: vehicle.id}) }}">{{ "days.enter-odometer-readings" | trans({vehicle: vehicle.friendlyName}) }}</a></li>
             {% endfor %}
         </ul>
     {% endif %}
+
 
     {% if diaryKeeper.practiceDay %}
         <h2 class="govuk-heading-m">{{ "days.practice-day.heading" | trans(translation_parameters) }}</h2>
@@ -36,6 +39,7 @@
     {% endif %}
 
     <h2 class="govuk-heading-m">{{ "days.diary-week" | trans(translation_parameters) }}</h2>
+    <div class="prose-scope">{{ 'days.diary-week-intro-copy' | trans | markdown_to_html }}</div>
     <dl class="govuk-summary-list">
         {% for day in diaryKeeper.diaryDays %}
             {{ m.summaryListRow(

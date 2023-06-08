@@ -6,26 +6,30 @@ namespace App\EventSubscriber;
 
 use App\Features;
 use App\Utility\CspInlineScriptHelper;
+use App\Utility\RecaptchaHelper;
 use Symfony\Component\EventDispatcher\EventSubscriberInterface;
 use Symfony\Component\HttpKernel\Event\ResponseEvent;
 use Symfony\Component\HttpKernel\KernelEvents;
 
 class SecureHeadersSubscriber implements EventSubscriberInterface
 {
+    public function __construct(
+        protected CspInlineScriptHelper $cspInlineScriptHelper,
+        protected RecaptchaHelper $recaptchaHelper,
+    ) {}
 
-    private CspInlineScriptHelper $cspInlineScriptHelper;
-
-    public function __construct(CspInlineScriptHelper $cspInlineScriptHelper)
-    {
-        $this->cspInlineScriptHelper = $cspInlineScriptHelper;
-    }
-
-    public function kernelResponseEvent(ResponseEvent $event)
+    public function kernelResponseEvent(ResponseEvent $event): void
     {
         $cspScriptSrc = "'self' {$this->nonce('js-detect')}";
         $inlineSessionStyle = "'sha256-biLFinpqYMtWHmXfkA1BPeCY0/fNt46SAZ+BBk5YUog='";
         $cspStyleSrc = "'self' {$this->nonce('env-label')}";
         $cspFrameSrc = "player.vimeo.com";
+
+        if ($this->recaptchaHelper->isRecaptchaUsed()) {
+            $cspFrameSrc .= " www.google.com/recaptcha/";
+            $cspScriptSrc .= " www.google.com/recaptcha/ www.gstatic.com/recaptcha/";
+        }
+
         $event->getResponse()->headers->add([
             'X-Frame-Options' => 'sameorigin',
             'X-Content-Type-Options' => 'nosniff',

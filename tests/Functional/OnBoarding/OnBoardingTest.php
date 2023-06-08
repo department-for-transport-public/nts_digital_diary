@@ -38,7 +38,7 @@ class OnBoardingTest extends AbstractOtpTest
                 $userIdentifier,
                 12 + $number,
                 2 + $number,
-                '' . (2000 + $number) . '/' . (2 + $number) . '/' . (25 + $number),
+                '2021/11/' . (25 + $number),
                 SerialHelper::getCheckLetter(111984, 12 + $number, 2 + $number),
             ));
         } else {
@@ -126,15 +126,34 @@ class OnBoardingTest extends AbstractOtpTest
             ]), [
                 "#household_diaryWeekStartDate",
             ]),
+            new FormTestCase($merge([
+                "household[addressNumber]" => '10',
+                "household[householdNumber]" => '1',
+                "household[checkLetter]" => SerialHelper::getCheckLetter(111984, 10, 1),
+                "household[diaryWeekStartDate][day]" => "31",
+                "household[diaryWeekStartDate][month]" => "10",
+                "household[diaryWeekStartDate][year]" => "2021",
+            ]), [
+                "#household_diaryWeekStartDate",
+            ]),
+            new FormTestCase($merge([
+                "household[addressNumber]" => '10',
+                "household[householdNumber]" => '1',
+                "household[checkLetter]" => SerialHelper::getCheckLetter(111984, 10, 1),
+                "household[diaryWeekStartDate][day]" => "1",
+                "household[diaryWeekStartDate][month]" => "1",
+                "household[diaryWeekStartDate][year]" => "2022",
+            ]), [
+                "#household_diaryWeekStartDate",
+            ]),
 
-            // N.B. Date field NOT extensively tested
             new FormTestCase([
                 "household[addressNumber]" => strval(12 + $adjustNumbersBy),
                 "household[householdNumber]" => strval(2 + $adjustNumbersBy),
                 "household[checkLetter]" => SerialHelper::getCheckLetter(111984, 12 + $adjustNumbersBy, 2 + $adjustNumbersBy),
                 "household[diaryWeekStartDate][day]" => strval(25 + $adjustNumbersBy),
-                "household[diaryWeekStartDate][month]" => strval(2 + $adjustNumbersBy),
-                "household[diaryWeekStartDate][year]" => strval(2000 + $adjustNumbersBy),
+                "household[diaryWeekStartDate][month]" => "11",
+                "household[diaryWeekStartDate][year]" => "2021",
             ]),
         ];
     }

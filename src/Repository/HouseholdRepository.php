@@ -7,6 +7,7 @@ use App\Entity\Household;
 use App\Entity\Journey\Method;
 use DateTime;
 use Doctrine\Bundle\DoctrineBundle\Repository\ServiceEntityRepository;
+use Doctrine\ORM\Query\Expr;
 use Doctrine\ORM\QueryBuilder;
 use Doctrine\Persistence\ManagerRegistry;
 
@@ -27,7 +28,7 @@ class HouseholdRepository extends ServiceEntityRepository
     {
         // Preload related data in to the entity manager
         $this->createQueryBuilder('household')
-            ->leftJoin('household.areaPeriod', 'areaPeriod')
+            ->innerJoin('household.areaPeriod', 'areaPeriod')
             ->select('household, areaPeriod')
             ->where('household.submittedAt >= :startTime')
             ->andWhere('household.submittedAt < :endTime')
@@ -40,12 +41,14 @@ class HouseholdRepository extends ServiceEntityRepository
         // end preload
 
         return $this->addSelectJoinsAndOrdersForExport($this->createQueryBuilder('household'))
+            // This AreaPeriod innerJoin is required to exclude training AreaPeriods (excluded by the training filter)
+            ->innerJoin('household.areaPeriod', 'areaPeriod')
             ->where('household.submittedAt >= :startTime')
             ->andWhere('household.submittedAt < :endTime')
-            ->andWhere('diaryKeeper.diaryState = :state')
+            ->andWhere('diaryKeeper.diaryState IN (:states)')
             ->setParameter('startTime', $startTime)
             ->setParameter('endTime', $endTime)
-            ->setParameter('state', DiaryKeeper::STATE_APPROVED)
+            ->setParameter('states', array(DiaryKeeper::STATE_APPROVED, DiaryKeeper::STATE_DISCARDED))
             ->getQuery()
             ->execute();
     }
@@ -57,7 +60,7 @@ class HouseholdRepository extends ServiceEntityRepository
         // Preload related data in to the entity manager
         $qb = $this->createQueryBuilder('household');
         $qb
-            ->leftJoin('household.areaPeriod', 'areaPeriod')
+            ->innerJoin('household.areaPeriod', 'areaPeriod')
             ->select('household, areaPeriod')
             ->where($qb->expr()->in(
                 $qb->expr()->concat('areaPeriod.area', $qb->expr()->literal('/'), 'household.addressNumber', $qb->expr()->literal('/'), 'household.householdNumber'),
@@ -72,16 +75,16 @@ class HouseholdRepository extends ServiceEntityRepository
 
         $qb = $this->createQueryBuilder('household');
         return $this->addSelectJoinsAndOrdersForExport($qb)
-            ->leftJoin('household.areaPeriod', 'areaPeriod')
+            ->innerJoin('household.areaPeriod', 'areaPeriod')
             ->where($qb->expr()->in(
                 $qb->expr()->concat('areaPeriod.area', $qb->expr()->literal('/'), 'household.addressNumber', $qb->expr()->literal('/'), 'household.householdNumber'),
                 ':serials'
             ))
-            ->andWhere('diaryKeeper.diaryState = :state')
+            ->andWhere('diaryKeeper.diaryState IN (:states)')
             ->andWhere('household.submittedAt IS NOT NULL')
             ->setParameters([
                 'serials' => $householdSerials,
-                'state' => DiaryKeeper::STATE_APPROVED,
+                'states' => array(DiaryKeeper::STATE_APPROVED, DiaryKeeper::STATE_DISCARDED),
             ])
             ->getQuery()
             ->execute();
@@ -101,5 +104,24 @@ class HouseholdRepository extends ServiceEntityRepository
             ->addOrderBy('diaryDays.number', 'ASC')
             ->addOrderBy('journeys.startTime', 'ASC')
             ->addOrderBy('stages.number', 'ASC');
+    }
+
+    /**
+     * @return array<Household>
+     */
+    public function getSubmittedSurveysForPurge(\DateTime $before): array
+    {
+        return $this->createQueryBuilder('household')
+            ->join('household.diaryKeepers', 'dk')
+            ->join('dk.user', 'user')
+            ->leftJoin('household.vehicles', 'vehicle')
+            ->join('dk.diaryDays', 'day')
+            ->leftJoin('day.journeys', 'journey')
+            ->leftJoin('journey.stages', 'stage')
+            ->where('household.submittedAt IS NOT NULL')
+            ->andWhere('household.submittedAt < :before')
+            ->getQuery()
+            ->setParameter('before', $before)
+            ->getResult();
     }
 }

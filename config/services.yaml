@@ -17,6 +17,7 @@ parameters:
     alphagov_notify_api_key: '%env(string:ALPHAGOV_NOTIFY_API_KEY)%'
     domain_name: '%env(string:DOMAIN_NAME)%'
     default_host_separator: '.'
+    feedback.recipients: '%env(csv:APP_FEEDBACK_RECIPIENTS)%'
     hostnames.frontend: '%domain_name%'
     hostnames.admin: 'admin%env(default:default_host_separator:string:APP_HOSTNAME_SEPARATOR)%%domain_name%'
     screenshots.path: '%env(resolve:SCREENSHOTS_PATH)%'
@@ -28,6 +29,9 @@ services:
         autoconfigure: true # Automatically registers your services as commands, event subscribers, etc.
         bind:
             $appEnvironment: '%env(APP_ENV)%'
+            $feedbackRecipients: '%feedback.recipients%'
+            $recaptchaSecretKey: '%env(default::APP_RECAPTCHA_SECRET_KEY)%'
+            $recaptchaSiteKey: '%env(default::APP_RECAPTCHA_SITE_KEY)%'
             $secret: '%env(APP_SECRET)%'
             $webRootDir: "%kernel.project_dir%/public"
 
@@ -92,3 +96,5 @@ services:
         arguments:
             $apiKey: '%alphagov_notify_api_key%'
 
+    App\Utility\TranslatableParameterTranslator:
+        decorates: 'translator'

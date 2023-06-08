@@ -23,11 +23,17 @@ class Distance implements ValueUnitInterface
         self::UNIT_TRANSLATION_PREFIX . self::UNIT_METRES => self::UNIT_METRES,
     ];
 
-    public static function miles(int $distance): Distance {
+    public static function miles(string $distance): Distance {
+        if (!is_numeric($distance)) {
+            throw new InvalidArgumentException('$distance argument must be numeric');
+        }
         return (new Distance())->setUnit(self::UNIT_MILES)->setValue($distance);
     }
 
-    public static function metres(int $distance): Distance {
+    public static function metres(string $distance): Distance {
+        if (!is_numeric($distance)) {
+            throw new InvalidArgumentException('$distance argument must be numeric');
+        }
         return (new Distance())->setUnit(self::UNIT_METRES)->setValue($distance);
     }
 

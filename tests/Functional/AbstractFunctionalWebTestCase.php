@@ -9,6 +9,8 @@ use Symfony\Bundle\FrameworkBundle\Test\WebTestCase;
 
 class AbstractFunctionalWebTestCase extends WebTestCase
 {
+    use WebTestCaseLoginTrait;
+
     protected KernelBrowser $client;
     protected ReferenceRepository $fixtureReferenceRepository;
 
@@ -24,5 +26,15 @@ class AbstractFunctionalWebTestCase extends WebTestCase
     protected function getFixtureByReference($reference): object
     {
         return $this->fixtureReferenceRepository->getReference($reference);
+    }
+
+    protected function submitLoginForm(string $username, string $password): void
+    {
+        $this->client->request('GET', '/login');
+
+        $this->client->submitForm('Sign in', [
+            'user_login[group][email]' => $username,
+            'user_login[group][password]' => $password,
+        ]);
     }
 }

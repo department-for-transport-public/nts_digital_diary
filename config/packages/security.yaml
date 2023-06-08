@@ -13,9 +13,16 @@ security:
         db:
             entity:
                 class: App\Entity\User
-        otp:
+
+        otp_entity:
             entity:
                 class: App\Entity\OtpUser
+        otp_training:
+            id: App\Security\OneTimePassword\TrainingUserProvider
+        otp:
+            chain:
+                providers: ['otp_training', 'otp_entity']
+
         hmac:
             entity:
                 class: App\Entity\ApiUser
@@ -60,6 +67,7 @@ security:
             pattern: ^/ #(login|logout|travel-diary|interviewer)
             host: '%regex.frontend_host%'
             provider: db
+            user_checker: App\Security\UserChecker
             switch_user: { role: CAN_IMPERSONATE_USER }
             login_throttling:
                 limiter: 'limiter.login'
@@ -93,6 +101,7 @@ security:
 
         ## Frontend / un-secured
         - { path: ^/onboarding/login, host: '%regex.frontend_host%', requires_channel: '%env(SECURE_SCHEME)%' }
+        - { path: ^/feedback, host: '%regex.frontend_host%', requires_channel: '%env(SECURE_SCHEME)%' }
         ## Frontend / secured
         - { path: ^/interviewer, host: '%regex.frontend_host%', roles: ROLE_INTERVIEWER, requires_channel: '%env(SECURE_SCHEME)%' }
         - { path: ^/travel-diary, host: '%regex.frontend_host%', roles: ROLE_DIARY_KEEPER, requires_channel: '%env(SECURE_SCHEME)%' }

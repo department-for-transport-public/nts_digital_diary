@@ -2,7 +2,7 @@
 
 namespace App\Serializer\ApiPlatform;
 
-use App\Entity\IdTrait;
+use App\ApiPlatform\ApiIdInterface;
 use Symfony\Component\Serializer\Normalizer\ContextAwareNormalizerInterface;
 
 class EntityAsIdNormalizer implements ContextAwareNormalizerInterface
@@ -12,15 +12,14 @@ class EntityAsIdNormalizer implements ContextAwareNormalizerInterface
     public function supportsNormalization($data, string $format = null, array $context = []): bool
     {
         return ($context[self::CONTEXT_KEY] ?? false) === true
-            && is_object($data)
-            && in_array(IdTrait::class, class_uses($data) ?? []);
+            && $data instanceof ApiIdInterface;
     }
 
     /**
-     * @param $object IdTrait
+     * @param $object ApiIdInterface
      */
     public function normalize($object, string $format = null, array $context = []): ?string
     {
-        return $object->getId();
+        return $object->getApiId();
     }
 }

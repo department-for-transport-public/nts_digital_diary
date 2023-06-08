@@ -6,8 +6,8 @@ namespace App\Form\TravelDiary\ReturnJourneyWizard;
 
 use App\Entity\Journey\Method;
 use App\Entity\Journey\Stage;
+use App\Form\CostOrNilType;
 use App\Form\TravelDiary\AbstractStageDetailsType;
-use Ghost\GovUkFrontendBundle\Form\Type\MoneyType;
 use Symfony\Component\Form\FormBuilderInterface;
 use Symfony\Component\Form\FormEvent;
 use Symfony\Component\Form\FormEvents;
@@ -27,23 +27,15 @@ class StageDetailsType extends AbstractStageDetailsType
             switch ($stage->getMethod()->getType()) {
                 case Method::TYPE_PRIVATE :
                     if ($stage->getIsDiaryKeeperAdult()) {
-                        $form->add('parkingCost', MoneyType::class, [
-                            'label' => "return-journey.stage-details.parking-cost.label",
-                            'label_attr' => ['class' => 'govuk-label--m'],
-                            'help' => "return-journey.stage-details.parking-cost.help",
-                            'help_html' => 'markdown',
-                            'attr' => ['class' => 'govuk-input--width-4'],
+                        $form->add('parkingCost', CostOrNilType::class, [
+                            'translation_prefix' => 'return-journey.stage-details.parking-cost',
                             'priority' => 1,
                         ]);
                     }
                     break;
                 case Method::TYPE_PUBLIC :
-                    $form->add('ticketCost', MoneyType::class, [
-                        'label' => "return-journey.stage-details.ticket-cost.label",
-                        'label_attr' => ['class' => 'govuk-label--m'],
-                        'help_html' => 'markdown',
-                        'help' => "return-journey.stage-details.ticket-cost.help",
-                        'attr' => ['class' => 'govuk-input--width-5'],
+                    $form->add('ticketCost', CostOrNilType::class, [
+                        'translation_prefix' => "return-journey.stage-details.ticket-cost",
                         'priority' => 1,
                     ]);
                     break;

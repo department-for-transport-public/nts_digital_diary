@@ -4,9 +4,11 @@ namespace App\Security\OneTimePassword;
 
 use App\Form\OnBoarding\OtpLoginType;
 use App\Utility\TranslatedAuthenticationUtils;
+use App\Utility\UrlSigner;
 use Symfony\Component\Form\FormFactoryInterface;
 use Symfony\Component\HttpFoundation\RedirectResponse;
 use Symfony\Component\HttpFoundation\Request;
+use Symfony\Component\HttpFoundation\RequestStack;
 use Symfony\Component\HttpFoundation\Response;
 use Symfony\Component\Routing\RouterInterface;
 use Symfony\Component\Security\Core\Authentication\Token\TokenInterface;
@@ -26,18 +28,22 @@ class FormAuthenticator extends AbstractAuthenticator implements AuthenticationE
     private PasscodeGenerator $passcodeGenerator;
     private RouterInterface $router;
     private TranslatedAuthenticationUtils $translatedAuthenticationUtils;
+    private RequestStack $requestStack;
+    private UrlSigner $urlSigner;
 
-    public function __construct(FormFactoryInterface $formFactory, PasscodeGenerator $passcodeGenerator, RouterInterface $router, TranslatedAuthenticationUtils $translatedAuthenticationUtils)
+    public function __construct(FormFactoryInterface $formFactory, PasscodeGenerator $passcodeGenerator, RouterInterface $router, TranslatedAuthenticationUtils $translatedAuthenticationUtils, RequestStack $requestStack, UrlSigner $urlSigner)
     {
         $this->formFactory = $formFactory;
         $this->passcodeGenerator = $passcodeGenerator;
         $this->router = $router;
         $this->translatedAuthenticationUtils = $translatedAuthenticationUtils;
+        $this->requestStack = $requestStack;
+        $this->urlSigner = $urlSigner;
     }
 
     public function supports(Request $request): ?bool
     {
-        return ($this->isLoginPage($request) && $request->getMethod() === Request::METHOD_POST);
+        return $this->isLoginPage($request) && $request->getMethod() === Request::METHOD_POST;
     }
 
     public function start(Request $request, AuthenticationException $authException = null): Response
@@ -67,13 +73,20 @@ class FormAuthenticator extends AbstractAuthenticator implements AuthenticationE
 
         return new Passport(
             new UserBadge($credentials['identifier']),
-            new CustomCredentials(
-                fn($credentials) => hash_equals(
-                    $credentials['passcode'] ?? '',
-                    $this->passcodeGenerator->getPasswordForUserIdentifier($credentials['identifier'])
-                ),
-                $credentials
-            )
+            new CustomCredentials([$this, 'checkCredentials'], $credentials)
+        );
+    }
+
+    public function checkCredentials(array $credentials): bool
+    {
+        if ($credentials['identifier'] === "12345678") {
+            if (!$this->urlSigner->isValid($this->requestStack->getCurrentRequest()->getRequestUri())) {
+                return false;
+            }
+        }
+        return hash_equals(
+            $credentials['passcode'] ?? '',
+            $this->passcodeGenerator->getPasswordForUserIdentifier($credentials['identifier'])
         );
     }
 
@@ -98,11 +111,12 @@ class FormAuthenticator extends AbstractAuthenticator implements AuthenticationE
 
     protected function getLoginUrl(): string
     {
-        return $this->router->generate('onboarding_login');
+        return $this->router->generate('onboarding_login', $this->requestStack->getCurrentRequest()->query->all());
     }
 
     protected function isLoginPage(Request $request): bool
     {
+        // We should only check the path, as we might have additional query params that would not match the getLoginUrl()
         return $request->getRequestUri() === $this->getLoginUrl();
     }
 }

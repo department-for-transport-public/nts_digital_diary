@@ -7,9 +7,11 @@ use App\Entity\Journey\Journey;
 use App\Entity\Journey\Stage;
 use App\Form\ConfirmActionType;
 use App\Repository\DiaryKeeperRepository;
+use App\Security\Voter\TravelDiary\DiaryAccessVoter;
 use App\Utility\ReorderUtils;
 use Doctrine\ORM\EntityManagerInterface;
 use Sensio\Bundle\FrameworkExtraBundle\Configuration\Entity;
+use Sensio\Bundle\FrameworkExtraBundle\Configuration\IsGranted;
 use Symfony\Component\Form\SubmitButton;
 use Symfony\Component\HttpFoundation\RedirectResponse;
 use Symfony\Component\HttpFoundation\Request;
@@ -18,7 +20,10 @@ use Symfony\Component\Routing\Annotation\Route;
 use Symfony\Component\Security\Core\User\UserInterface;
 
 /**
- * @Redirect("is_granted('DIARY_KEEPER_WITH_APPROVED_DIARY')", route="traveldiary_dashboard")
+ * @Route("/journey/{journeyId}", name="journey_")
+ * @Entity("journey", expr="repository.find(journeyId)")
+ * @IsGranted(DiaryAccessVoter::ACCESS, subject="journey", statusCode=404)
+ * @Redirect("!is_granted('EDIT_DIARY')", route="traveldiary_dashboard")
  */
 class StageReorderController extends AbstractController
 {
@@ -31,8 +36,7 @@ class StageReorderController extends AbstractController
     }
 
     /**
-     * @Route("/journey/{journeyId}/reorder-stages", name="journey_reorder_stages")
-     * @Entity("journey", expr="repository.find(journeyId)")
+     * @Route("/reorder-stages", name="reorder_stages")
      */
     public function reorder(Request $request, Journey $journey, UserInterface $user): Response
     {
@@ -91,7 +95,7 @@ class StageReorderController extends AbstractController
         ]);
     }
 
-    protected function getRedirectResponse(Journey $journey)
+    protected function getRedirectResponse(Journey $journey): RedirectResponse
     {
         return new RedirectResponse($this->getRedirectUrl($journey));
     }

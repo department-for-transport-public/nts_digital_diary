@@ -3,6 +3,7 @@
 namespace App\Tests\DataFixtures;
 
 use App\DataFixtures\NtsFixtures;
+use App\Entity\DiaryKeeper;
 use App\Entity\Household;
 use App\Entity\Journey\Method;
 use App\Entity\Vehicle;
@@ -19,11 +20,16 @@ class VehicleFixtures extends AbstractFixture implements DependentFixtureInterfa
 
         /** @var Household $household */
         $household = $this->getReference('household:onboarded');
+        /** @var DiaryKeeper $diaryKeeper */
+        $diaryKeeper = $this->getReference('diary-keeper:adult');
 
         $vehicle = (new Vehicle())
             ->setMethod($method)
             ->setFriendlyName('A-Team van')
-            ->setHousehold($household);
+            ->setCapiNumber(1)
+            ->setHousehold($household)
+            ->setPrimaryDriver($diaryKeeper)
+        ;
 
         $this->addReference('vehicle:1', $vehicle);
 
@@ -35,6 +41,6 @@ class VehicleFixtures extends AbstractFixture implements DependentFixtureInterfa
 
     public function getDependencies(): array
     {
-        return [HouseholdFixtures::class, NtsFixtures::class];
+        return [UserFixtures::class, HouseholdFixtures::class, NtsFixtures::class];
     }
 }

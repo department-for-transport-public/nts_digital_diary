@@ -18,7 +18,7 @@
         "watch": "encore dev --watch",
         "build": "encore production --progress",
         "deploy-build": "encore production",
-        "build-env-subs": "printenv | grep -E '^APP_|^(DOMAIN_NAME|DATABASE_URL|ALPHAGOV_NOTIFY_API_KEY)=' > .env.local"
+        "build-env-subs": "printenv | grep -E '^APP_|^(ALPHAGOV_NOTIFY_API_KEY|DOMAIN_NAME|DATABASE_URL)=' > .env.local"
     },
     "browserslist": [
         ">0.1%",

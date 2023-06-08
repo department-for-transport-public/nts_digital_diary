@@ -1,0 +1,23 @@
+{% extends 'travel_diary/base.html.twig' %}
+{% trans_default_domain 'travel-diary' %}
+
+{% set title_translation_key = "completed.page-title" %}
+{% set heading_class = "govuk-heading-xl" %}
+
+{% block pageHeading %}{% endblock %}
+
+{% block content %}
+    {%- import "@GhostGovUkFrontend/components/macros.html.twig" as m -%}
+    {%- set household = diaryKeeper.household -%}{# @var household \App\Entity\Household #}
+    {%- set areaPeriod = household.areaPeriod -%}{# @var areaPeriod \App\Entity\AreaPeriod #}
+
+    <div class="govuk-panel govuk-panel--confirmation">
+        <h1 class="govuk-panel__title">{{ 'completed.panel.heading' | trans }}</h1>
+        <div class="govuk-panel__body">
+            {{ 'completed.panel.content' | trans | nl2br }}
+        </div>
+    </div>
+    <div class="prose-scope">{{ 'completed.copy' | trans | markdown_to_html }}</div>
+
+    {%- include 'travel_diary/dashboard/includes/diary_keeper_proxies.html.twig' -%}
+{% endblock %}

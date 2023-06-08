@@ -89,6 +89,9 @@
 {% block bodyEnd %}
     {{ encore_entry_script_tags('app') }}
     {{ include('includes/smartlook-session-recording.html.twig') }}
+    {%- if isRecaptchaUsed() -%}
+    <script type="text/javascript" src="https://www.google.com/recaptcha/api.js" async defer></script>
+    {%- endif -%}
 {% endblock %}
 
 {% macro displayErrorSummary(context) %}

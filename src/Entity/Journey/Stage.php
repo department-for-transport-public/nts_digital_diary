@@ -2,15 +2,16 @@
 
 namespace App\Entity\Journey;
 
-use App\Entity\BasicMetadata;
+use App\Entity\BasicMetadataInterface;
 use App\Entity\BasicMetadataTrait;
+use App\Entity\CostOrNil;
 use App\Entity\Distance;
 use App\Entity\IdTrait;
 use App\Entity\PropertyChangeLoggable;
 use App\Entity\Vehicle;
 use App\Repository\Journey\StageRepository;
 use App\Validator\Constraints as AppAssert;
-use App\Validator\StageSharingValidator;
+use App\Validator\JourneySharingValidator;
 use Doctrine\ORM\Mapping as ORM;
 use Symfony\Component\Translation\TranslatableMessage;
 use Symfony\Component\Validator\Constraints as Assert;
@@ -20,10 +21,9 @@ use Symfony\Component\Validator\Context\ExecutionContextInterface;
  * @ORM\Entity(repositoryClass=StageRepository::class)
  * @ORM\HasLifecycleCallbacks()
  *
- * @Assert\Callback({StageSharingValidator::class, "validateSharedDriversAndParkingCosts"}, groups="wizard.share-journey.driver-and-parking")
- * @Assert\Callback({StageSharingValidator::class, "validateSharedTicketTypeAndCost"}, groups="wizard.share-journey.ticket-type-and-cost")
+ * @Assert\Callback({JourneySharingValidator::class, "validateStage"}, groups={"wizard.share-journey.driver-and-parking", "wizard.share-journey.ticket-type-and-cost"})
  */
-class Stage implements PropertyChangeLoggable, BasicMetadata
+class Stage implements PropertyChangeLoggable, BasicMetadataInterface
 {
     use IdTrait;
     use BasicMetadataTrait;
@@ -38,7 +38,7 @@ class Stage implements PropertyChangeLoggable, BasicMetadata
     const SHARE_JOURNEY_CLONE_PROPERTIES = [
         'number',
         ...self::COMMON_PROPERTIES,
-        /* cost form */     'ticketCost', 'boardingCount',
+        /* cost form */     'boardingCount',
     ];
     const REPEAT_JOURNEY_CLONE_PROPERTIES = [
         'number',
@@ -181,29 +181,34 @@ class Stage implements PropertyChangeLoggable, BasicMetadata
 
     /**
      * @ORM\Column(type="boolean", nullable=true)
-     * @Assert\NotNull(groups={"wizard.driver-and-parking", "wizard.share-journey.driver-and-parking"}, message="wizard.stage.driver-or-passenger.not-null")
+     * @Assert\NotNull(groups={"wizard.stage.driver-and-parking"}, message="wizard.stage.driver-or-passenger.not-null")
+     * @Assert\NotNull(groups={"wizard.share-journey.driver-and-parking.entry"}, message="wizard.share-journey.is-driver.not-null")
+     * @Assert\Expression("value != true || this.getDriverCountForSharedStage() <= 1", groups="wizard.share-journey.driver-and-parking.entry", message="wizard.share-journey.is-driver.not-multiple")
      */
     private ?bool $isDriver;
 
     /**
      * Cost in pence
-     * @ORM\Column(type="integer", nullable=true)
-     * @Assert\PositiveOrZero(groups={"wizard.driver-and-parking", "wizard.share-journey.driver-and-parking", "wizard.return-journey.stage-details"}, message="wizard.stage.parking-cost.positive-or-zero")
+     * @ORM\Embedded(class=CostOrNil::class)
+     * @AppAssert\CostOrNil(translationPrefix="wizard.stage.parking-cost", groups={"wizard.stage.driver-and-parking", "wizard.return-journey.stage-details"})
+     * @AppAssert\CostOrNil(translationPrefix="wizard.share-journey.parking-cost", groups={"wizard.share-journey.driver-and-parking.entry"})
      */
-    private ?int $parkingCost;
+    private ?CostOrNil $parkingCost;
 
     /**
      * @ORM\Column(type="string", length=255, nullable=true)
-     * @Assert\NotNull(groups={"wizard.ticket-type", "wizard.share-journey.ticket-type-and-cost"}, message="wizard.stage.ticket-type.not-null")
-     * @Assert\Length(groups={"wizard.ticket-type", "wizard.share-journey.ticket-type-and-cost"}, maxMessage="common.string.max-length", max=255)
+     * @Assert\NotNull(groups={"wizard.ticket-type"}, message="wizard.stage.ticket-type.not-null")
+     * @Assert\NotNull(groups={"wizard.share-journey.ticket-type-and-cost.entry"}, message="wizard.share-journey.ticket-type.not-null")
+     * @Assert\Length(groups={"wizard.ticket-type", "wizard.share-journey.ticket-type-and-cost.entry"}, maxMessage="common.string.max-length", max=255)
      */
     private ?string $ticketType;
 
     /**
-     * @ORM\Column(type="integer", nullable=true)
-     * @Assert\PositiveOrZero(groups={"wizard.ticket-cost-and-boardings", "wizard.return-journey.stage-details", "wizard.share-journey.ticket-type-and-cost"}, message="wizard.stage.ticket-cost.positive-or-zero")
+     * @ORM\Embedded(class=CostOrNil::class)
+     * @AppAssert\CostOrNil(translationPrefix="wizard.stage.ticket-cost", groups={"wizard.ticket-cost-and-boardings", "wizard.return-journey.stage-details"})
+     * @AppAssert\CostOrNil(translationPrefix="wizard.share-journey.ticket-cost", groups={"wizard.share-journey.ticket-type-and-cost.entry"})
      */
-    private ?int $ticketCost;
+    private ?CostOrNil $ticketCost;
 
     /**
      * @ORM\Column(type="integer", nullable=true)
@@ -333,12 +338,19 @@ class Stage implements PropertyChangeLoggable, BasicMetadata
         return $this;
     }
 
-    public function getParkingCost(): ?int
+    public function getDriverCountForSharedStage(): int
+    {
+        $sourceJourney = $this->getJourney()->getSharedFrom();
+        $matchingStagesBeingAdded = $sourceJourney->getSharedToJourneysBeingAdded()->map(fn(Journey $j) => $j->getStageByNumber($this->getNumber()));
+        return array_sum($matchingStagesBeingAdded->map(fn(Stage $s) => $s->isDriver ? 1 : 0)->toArray());
+    }
+
+    public function getParkingCost(): ?CostOrNil
     {
         return $this->parkingCost ?? null;
     }
 
-    public function setParkingCost(?int $parkingCost): self
+    public function setParkingCost(?CostOrNil $parkingCost): self
     {
         $this->parkingCost = $parkingCost;
         return $this;
@@ -355,12 +367,12 @@ class Stage implements PropertyChangeLoggable, BasicMetadata
         return $this;
     }
 
-    public function getTicketCost(): ?int
+    public function getTicketCost(): ?CostOrNil
     {
         return $this->ticketCost ?? null;
     }
 
-    public function setTicketCost(?int $ticketCost): self
+    public function setTicketCost(?CostOrNil $ticketCost): self
     {
         $this->ticketCost = $ticketCost;
         return $this;
@@ -385,7 +397,7 @@ class Stage implements PropertyChangeLoggable, BasicMetadata
             ? new TranslatableMessage("stage.method.choices.{$this->method->getDescriptionTranslationKey()}{$hasOtherSuffix}", [
                 'other' => $this->methodOther
             ], 'travel-diary')
-            : new TranslatableMessage("stage.view.method.other", ['method' => $this->methodOther]);
+            : new TranslatableMessage("stage.view.method.other", ['method' => $this->methodOther], 'travel-diary');
     }
 
     public function getVehicleOther(): ?string

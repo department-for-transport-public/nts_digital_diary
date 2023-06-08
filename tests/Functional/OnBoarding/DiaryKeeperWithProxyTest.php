@@ -2,6 +2,7 @@
 
 namespace App\Tests\Functional\OnBoarding;
 
+use App\Entity\DiaryKeeper;
 use App\Tests\DataFixtures\OtpUserFixtures;
 use App\Tests\Functional\Wizard\Action\CallbackAction;
 use App\Tests\Functional\Wizard\Action\Context;
@@ -121,12 +122,14 @@ class DiaryKeeperWithProxyTest extends AbstractDiaryKeeperTest
                 $tests = [];
 
                 $tests[] = new FormTestCase([
+                    'user_identifier[mediaType]' => DiaryKeeper::MEDIA_TYPE_DIGITAL,
                     'user_identifier[user][username]' => '',
 //                    'user_identifier[user][consent]' => '',
                     'user_identifier[user][proxies][]' => [],
                 ], ['#user_identifier_user']);
 
                 $tests[] = new FormTestCase([
+                    'user_identifier[mediaType]' => DiaryKeeper::MEDIA_TYPE_DIGITAL,
                     'user_identifier[user][username]' => 'Silly',
 //                    'user_identifier[user][consent]' => '',
                     'user_identifier[user][proxies][]' => [],
@@ -136,6 +139,7 @@ class DiaryKeeperWithProxyTest extends AbstractDiaryKeeperTest
                 ]);
 
                 $tests[] = new FormTestCase([
+                    'user_identifier[mediaType]' => DiaryKeeper::MEDIA_TYPE_DIGITAL,
                     'user_identifier[user][username]' => 'Not@Email',
 //                    'user_identifier[user][consent]' => '',
                     'user_identifier[user][proxies][]' => [],
@@ -145,6 +149,7 @@ class DiaryKeeperWithProxyTest extends AbstractDiaryKeeperTest
                 ]);
 
                 $tests[] = new FormTestCase([
+                    'user_identifier[mediaType]' => DiaryKeeper::MEDIA_TYPE_DIGITAL,
                     'user_identifier[user][username]' => 'Not@Email',
 //                    'user_identifier[user][consent]' => '',
                     'user_identifier[user][proxies][]' => [],
@@ -154,6 +159,7 @@ class DiaryKeeperWithProxyTest extends AbstractDiaryKeeperTest
                 ]);
 
 //                $tests[] = new FormTestCase([
+//                'user_identifier[mediaType]' => DiaryKeeper::MEDIA_TYPE_DIGITAL,
 //                    'user_identifier[user][username]' => 'test@example.com',
 //                    'user_identifier[user][consent]' => '',
 //                    'user_identifier[user][proxies][]' => [],
@@ -164,6 +170,7 @@ class DiaryKeeperWithProxyTest extends AbstractDiaryKeeperTest
                 }
 
                 $formData = [
+                    'user_identifier[mediaType]' => DiaryKeeper::MEDIA_TYPE_DIGITAL,
                     'user_identifier[user][username]' => $email ?? '',
 //                    'user_identifier[user][consent]' => $email ? '1' : '',
                     'user_identifier[user][proxies][]' => [],

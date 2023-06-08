@@ -8,25 +8,44 @@
             ? {(path('onboarding_household_index', {place: constant('App\\FormWizard\\OnBoarding\\HouseholdState::STATE_DETAILS')})): {label: 'actions.change', srHiddenSuffix: 'household.details.change-action-suffix', srHiddenSuffixDomain: 'on-boarding'}}
             : {}
         -%}
+        {{- summaryListRow('household.details.area-number.label' | trans, app.user.household.areaPeriod.area) -}}
         {{- summaryListRow('household.details.address-number.label' | trans, app.user.household.addressNumber, actions) -}}
         {{- summaryListRow('household.details.household-number.label' | trans, app.user.household.householdNumber, actions) -}}
         {{- summaryListRow('household.details.diary-start.label' | trans, app.user.household.diaryWeekStartDate | date(format_date_default), actions) -}}
     </div>
 {% endmacro %}
 
-{% macro showHouseholdVehicles(options) %}
-    {% set options = options ?? {} %}
-    {%- from '@GhostGovUkFrontend/components/macros.html.twig' import summaryListRow, actionlessSummaryListRow -%}
-    <div class="govuk-summary-list" id="household-vehicles">
-        {% for vehicle in app.user.household.vehicles %}
-            {%- set actions = {
-                (path('onboarding_vehicle_delete', {id: vehicle.id})): {label: 'Delete', srHiddenSuffix: 'vehicle'},
-                (path('onboarding_vehicle_edit', {id: vehicle.id})): {label: 'Change', srHiddenSuffix: 'vehicle'},
-            } -%}
-            {% if not (options.showActions ?? true) %}{% set actions = {} %}{% endif %}
-            {{- summaryListRow(vehicle.friendlyName, ("stage.method.choices.#{vehicle.method.descriptionTranslationKey}") | trans([], 'travel-diary'), actions) -}}
-        {% else %}
+{% macro showHouseholdVehicles() %}
+    {%- from '@GhostGovUkFrontend/components/macros.html.twig' import summaryListRow, actionlessSummaryListRow, tabsHead -%}
+    {%- if app.user.household.vehicles.empty -%}
+        <div class="govuk-summary-list">
             {{- actionlessSummaryListRow("dashboard.no-vehicles" | trans) -}}
-        {% endfor %}
-    </div>
+        </div>
+    {%- else -%}
+        <div class="govuk-tabs" data-module="govuk-tabs" id="household-vehicles">
+            {# @var vehicle \App\Entity\Vehicle #}
+            {%- set tabs = {} -%}
+            {% for vehicle in app.user.household.vehicles %}
+                {%- set tabs = tabs | merge({(vehicle.friendlyName): "tab-vehicle-#{vehicle.capiNumber}"}) -%}
+            {%- endfor -%}
+            {{- tabsHead(tabs) -}}
+            {% for vehicle in app.user.household.vehicles %}
+                <div class="govuk-tabs__panel{% if not loop.first %} govuk-tabs__panel--hidden{% endif %}" id="tab-vehicle-{{ vehicle.capiNumber }}">
+                    {%- set actions = {
+                        (path('onboarding_vehicle_edit', {id: vehicle.id})): {label: 'Change', srHiddenSuffix: 'vehicle'},
+                    } -%}
+                    <div class="govuk-summary-list">
+                        {{- summaryListRow('vehicle.form.capi-number.label' | trans, vehicle.capiNumber, actions) -}}
+                        {{- summaryListRow('vehicle.form.name.label' | trans, vehicle.friendlyName, actions) -}}
+                        {{- summaryListRow('vehicle.form.method.label' | trans, "stage.method.choices.#{vehicle.method.descriptionTranslationKey}" | trans([], 'travel-diary'), actions) -}}
+                        {{- summaryListRow('vehicle.form.primary-driver.label' | trans, vehicle.primaryDriver ? vehicle.primaryDriver.name : '-', actions) -}}
+                    </div>
+
+                    <div class="govuk-button-group">
+                        <a class="govuk-button govuk-button--warning" href="{{ path('onboarding_vehicle_delete', {id: vehicle.id}) }}">{{ 'actions.delete' | trans({}, 'messages') }}<span class="govuk-visually-hidden">: {{ 'vehicle.delete.delete-action-suffix' | trans({name: vehicle.friendlyName}) }}</span></a>
+                    </div>
+                </div>
+            {% endfor %}
+        </div>
+    {%- endif -%}
 {% endmacro %}

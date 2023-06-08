@@ -87,6 +87,7 @@ class PasscodeGenerator
 
     protected function usernameExistsInDatabase($passcode): bool
     {
+        // TODO: also need to check entity manager for as yet un-persisted new users
         $result = $this->otpUserRepository->findBy(['userIdentifier' => $passcode]);
         return (!empty($result));
     }

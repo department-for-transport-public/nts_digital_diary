@@ -80,42 +80,61 @@ abstract class AbstractJourneyTest extends AbstractWizardTest
         }
     }
 
-    protected function getStageDetailsTests(bool $overwriteStageDetails, int $finalValueIncrement): array
+    protected function getStageDetailsTests(bool $overwriteStageDetails, int $finalValueIncrement, string $stageType = 'simple'): array
     {
+        $additionalTestData = match($stageType) {
+            'public' => [
+                'stage_details[ticketCost][hasCost]' => 'false',
+            ],
+            'private' => [
+                'stage_details[parkingCost][hasCost]' => 'false',
+            ],
+            default => []
+        };
+        $additionalErrors = match($stageType) {
+            'public' => [
+                50 => '#stage_details_ticketCost_hasCost',
+            ],
+            'private' => [
+                50 => '#stage_details_parkingCost_hasCost',
+            ],
+            default => []
+        };
+
         if ($overwriteStageDetails) {
             return [
                 new FormTestCase([
                     'stage_details[travelTime]' => '',
                     'stage_details[companions][adultCount]' => '',
                     'stage_details[companions][childCount]' => '',
-                ], ['#stage_details_companions_adultCount']),
+                ], ['#stage_details_companions_adultCount'] + $additionalErrors),
                 new FormTestCase([
-                    'stage_details[travelTime]' => '-1',
-                    'stage_details[companions][adultCount]' => '-1',
-                    'stage_details[companions][childCount]' => '-1',
-                ], [
+                        'stage_details[travelTime]' => '-1',
+                        'stage_details[companions][adultCount]' => '-1',
+                        'stage_details[companions][childCount]' => '-1',
+                    ] + $additionalTestData, [
                     '#stage_details_travelTime',
                     '#stage_details_companions_adultCount',
                     '#stage_details_companions_childCount',
                 ]),
                 new FormTestCase([
-                    'stage_details[travelTime]' => '0',
-                    'stage_details[companions][adultCount]' => '0',
-                    'stage_details[companions][childCount]' => '0',
-                ], [
+                        'stage_details[travelTime]' => '0',
+                        'stage_details[companions][adultCount]' => '0',
+                        'stage_details[companions][childCount]' => '0',
+                    ] + $additionalTestData, [
                     '#stage_details_travelTime',
                     '#stage_details_companions_adultCount',
                 ]),
                 new FormTestCase([
-                    'stage_details[travelTime]' => strval(30 + $finalValueIncrement),
-                    'stage_details[companions][adultCount]' => (20 + $finalValueIncrement),
-                    'stage_details[companions][childCount]' => (10 + $finalValueIncrement),
-                ]),
+                        'stage_details[travelTime]' => (30 + $finalValueIncrement),
+                        'stage_details[companions][adultCount]' => (20 + $finalValueIncrement),
+                        'stage_details[companions][childCount]' => (10 + $finalValueIncrement),
+                    ] + $additionalTestData),
             ];
         }
 
         return [
-            new FormTestCase([]), // Details are pre-filled on this page...
+            new FormTestCase([] + $additionalTestData), // Details are pre-filled on this page...
         ];
     }
 }

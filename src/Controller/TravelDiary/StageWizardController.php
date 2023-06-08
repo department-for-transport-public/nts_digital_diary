@@ -11,7 +11,10 @@ use App\FormWizard\FormWizardStateInterface;
 use App\FormWizard\Place;
 use App\FormWizard\PropertyMerger;
 use App\FormWizard\TravelDiary\StageState;
+use App\Security\Voter\TravelDiary\DiaryAccessVoter;
 use Doctrine\ORM\EntityManagerInterface;
+use Sensio\Bundle\FrameworkExtraBundle\Configuration\Entity;
+use Sensio\Bundle\FrameworkExtraBundle\Configuration\IsGranted;
 use Symfony\Component\HttpFoundation\RedirectResponse;
 use Symfony\Component\HttpFoundation\Request;
 use Symfony\Component\HttpFoundation\RequestStack;
@@ -21,35 +24,42 @@ use Symfony\Component\Serializer\Exception\ExceptionInterface;
 
 /**
  * @Route(name="stage_wizard_")
- * @Redirect("is_granted('DIARY_KEEPER_WITH_APPROVED_DIARY')", route="traveldiary_dashboard")
+ * @Redirect("!is_granted('EDIT_DIARY')", route="traveldiary_dashboard")
  */
 class StageWizardController extends AbstractSessionStateFormWizardController
 {
-    private ?string $stageId;
-    private ?string $journeyId;
-    private Stage $stage;
-
-    protected EntityManagerInterface $entityManager;
-
-    public function __construct(EntityManagerInterface $entityManager, FormWizardManager $formWizardManager, RequestStack $requestStack, PropertyMerger $propertyMerger)
-    {
-        $this->entityManager = $entityManager;
-        parent::__construct($formWizardManager, $requestStack, $propertyMerger);
-    }
+    private ?Journey $journey = null;
+    private ?Stage $stage = null;
+    private bool $isAdd;
 
     /**
      * @Route("/journey/{journeyId}/add-stage/{place}", name="place")
      * @Route("/journey/{journeyId}/add-stage", name="start")
-     * @Route("/stage/{stageId}/edit/{place}", name="edit")
+     * @IsGranted(DiaryAccessVoter::ACCESS, subject="journey", statusCode=404)
+     * @Entity("journey", expr="repository.findByJourneyId(journeyId)")
      * @throws ExceptionInterface
      */
-    public function index(Request $request, ?string $journeyId = null, ?string $place = null, ?string $stageId = null): Response
+    public function add(Request $request, Journey $journey, ?string $place = null): Response
     {
-        $this->journeyId = $journeyId;
-        $this->stageId = $stageId;
+        $this->journey = $journey;
 
         return $this->doWorkflow($request, $place, [
-            'isAdd' => ($stageId === null),
+            'isAdd' => $this->isAdd = true,
+        ]);
+    }
+
+    /**
+     * @Route("/stage/{stageId}/edit/{place}", name="edit")
+     * @IsGranted(DiaryAccessVoter::ACCESS, subject="stage", statusCode=404)
+     * @Entity("stage", expr="repository.findByStageId(stageId)")
+     * @throws ExceptionInterface
+     */
+    public function edit(Request $request, Stage $stage, ?string $place = null): Response
+    {
+        $this->stage = $stage;
+
+        return $this->doWorkflow($request, $place, [
+            'isAdd' => $this->isAdd = false,
         ]);
     }
 
@@ -57,9 +67,7 @@ class StageWizardController extends AbstractSessionStateFormWizardController
     {
         /** @var StageState $state */
         $state = $this->session->get($this->getSessionKey(), new StageState());
-        $baseEntity = $this->stageId
-            ? $this->entityManager->getRepository(Stage::class)->findByStageId($this->stageId)
-            : (new Stage())->setJourney($this->entityManager->find(Journey::class, $this->journeyId))->autoAssignNumber();
+        $baseEntity = $this->stage ?: (new Stage())->setJourney($this->journey)->autoAssignNumber();
 
         return $state->setSubject($this->stage = $this->propertyMerger->merge(
             $baseEntity, $state->getSubject(), Stage::MERGE_PROPERTIES
@@ -68,9 +76,9 @@ class StageWizardController extends AbstractSessionStateFormWizardController
 
     protected function getRedirectResponse(?Place $place): RedirectResponse
     {
-        $url = $this->stageId ?
-            $this->generateUrl('traveldiary_stage_wizard_edit', ['stageId' => $this->stageId, 'place' => strval($place)]) :
-            $this->generateUrl('traveldiary_stage_wizard_place', ['journeyId' => $this->journeyId, 'place' => strval($place)]);
+        $url = !$this->isAdd
+            ? $this->generateUrl('traveldiary_stage_wizard_edit', ['stageId' => $this->stage->getId(), 'place' => strval($place)])
+            : $this->generateUrl('traveldiary_stage_wizard_place', ['journeyId' => $this->journey->getId(), 'place' => strval($place)]);
 
         return new RedirectResponse($url);
     }
@@ -79,6 +87,6 @@ class StageWizardController extends AbstractSessionStateFormWizardController
     {
         $url = $this->generateUrl('traveldiary_journey_view', ['journeyId' => $this->stage->getJourney()->getId()]);
 
-        return new RedirectResponse($url . ($this->stageId ? "#stage-{$this->stage->getNumber()}" : ''));
+        return new RedirectResponse($url . ($this->stage->getId() ? "#stage-{$this->stage->getNumber()}" : ''));
     }
 }

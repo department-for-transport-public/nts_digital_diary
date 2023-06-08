@@ -6,11 +6,15 @@ use App\Annotation\Redirect;
 use App\Entity\Journey\Journey;
 use App\Entity\User;
 use App\Repository\Journey\JourneyRepository;
+use App\Security\Voter\TravelDiary\DiaryAccessVoter;
 use App\Utility\ConfirmAction\TravelDiary\DeleteJourneyConfirmAction;
+use Doctrine\ORM\EntityManagerInterface;
 use Sensio\Bundle\FrameworkExtraBundle\Configuration\Entity;
+use Sensio\Bundle\FrameworkExtraBundle\Configuration\IsGranted;
 use Sensio\Bundle\FrameworkExtraBundle\Configuration\Template;
 use Symfony\Component\HttpFoundation\RedirectResponse;
 use Symfony\Component\HttpFoundation\Request;
+use Symfony\Component\HttpFoundation\Response;
 use Symfony\Component\HttpKernel\Exception\NotFoundHttpException;
 use Symfony\Component\Routing\Annotation\Route;
 use Symfony\Component\Security\Core\User\UserInterface;
@@ -18,7 +22,8 @@ use Symfony\Component\Security\Core\User\UserInterface;
 /**
  * @Route("/journey/{journeyId}", name="journey")
  * @Entity("journey", expr="repository.findByJourneyId(journeyId)")
- * @Redirect("is_granted('DIARY_KEEPER_WITH_APPROVED_DIARY')", route="traveldiary_dashboard")
+ * @IsGranted(DiaryAccessVoter::ACCESS, subject="journey", statusCode=404)
+ * @Redirect("!is_granted('EDIT_DIARY')", route="traveldiary_dashboard")
  */
 class JourneyController extends AbstractController
 {
@@ -29,10 +34,6 @@ class JourneyController extends AbstractController
     public function view(UserInterface $user, Journey $journey, JourneyRepository $journeyRepository): array
     {
         $diaryKeeper = $journey->getDiaryDay()->getDiaryKeeper();
-
-        if (!$user instanceof User || $user->getDiaryKeeper() !== $diaryKeeper) {
-            throw new NotFoundHttpException();
-        }
 
         return [
             'diaryKeeper' => $diaryKeeper,
@@ -47,7 +48,7 @@ class JourneyController extends AbstractController
      * @Route("/delete", name="_delete")
      * @Template("travel_diary/journey/delete.html.twig")
      */
-    public function delete(Journey $journey, DeleteJourneyConfirmAction $confirmAction, Request $request)
+    public function delete(Journey $journey, DeleteJourneyConfirmAction $confirmAction, Request $request): RedirectResponse | array
     {
         return $confirmAction
             ->setSubject($journey)
@@ -60,12 +61,11 @@ class JourneyController extends AbstractController
 
     /**
      * @Route("/complete", name="_complete")
-     * @Template("travel_diary/journey/delete.html.twig")
      */
-    public function markComplete(Journey $journey)
+    public function markComplete(Journey $journey): Response
     {
         $journey->setIsPartial(false);
-        $this->getDoctrine()->getManager()->flush();
+        $entityManager->flush();
 
         return new RedirectResponse($this->generateUrl('traveldiary_dashboard_day', ['dayNumber' => $journey->getDiaryDay()->getNumber()]));
     }

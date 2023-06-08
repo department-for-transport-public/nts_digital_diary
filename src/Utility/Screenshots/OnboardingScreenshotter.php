@@ -26,25 +26,15 @@ class OnboardingScreenshotter extends AbstractScreenshotter
         $this->screenshot('3-household-details.png');
 
         // Fill out and view dashboard
+        $now = new \DateTime();
         $this->submit([
             'Address number' => '1',
             'Household number' => '2',
             'Day' => '2',
-            'Month' => '8',
-            'Year' => '2022',
+            'Month' => $now->format('m'),
+            'Year' => $now->format('Y'),
         ], 'Save and continue');
         $this->screenshot('4a-dashboard-empty.png');
-
-        // ----- Vehicle -----
-        // Click "Add a vehicle"
-        $this->clickLinkWithText('Add a vehicle');
-        $this->screenshot('add-vehicle/1-add-vehicle.png');
-
-        // Fill out and view dashboard
-        $this->submit([
-            'Name' => "Blue golf",
-            'Car' => true,
-        ], 'Save vehicle');
 
         // ----- First diary keeper -----
         // Click "Add a diary keeper"
@@ -57,7 +47,12 @@ class OnboardingScreenshotter extends AbstractScreenshotter
             'Number' => '1',
             'Yes' => true,
         ], 'Continue');
-        $this->screenshot('add-first-diary-keeper/2-sharing-options.png');
+        $this->screenshot('add-first-diary-keeper/2a-diary-media-type.png');
+
+        $this->fillForm([
+            'Digital diary' => true,
+        ]);
+        $this->screenshot('add-first-diary-keeper/2b-sharing-options.png');
 
         // Fill out identity form
         $userIdentifier = 'mark@example.com';
@@ -79,7 +74,12 @@ class OnboardingScreenshotter extends AbstractScreenshotter
             'Number' => '2',
             'No' => true,
         ], 'Continue');
-        $this->screenshot('add-second-diary-keeper/2-sharing-options.png');
+        $this->screenshot('add-second-diary-keeper/2a-diary-media-type.png');
+
+        $this->fillForm([
+            'Digital diary' => true,
+        ]);
+        $this->screenshot('add-second-diary-keeper/2b-sharing-options.png');
 
         // Fill out identity form
         $this->submit([
@@ -90,6 +90,19 @@ class OnboardingScreenshotter extends AbstractScreenshotter
         $this->submit([
             'No' => true,
         ], 'Continue');
+
+        // ----- Vehicle -----
+        // Click "Add a vehicle"
+        $this->clickLinkWithText('Add a vehicle');
+        $this->screenshot('add-vehicle/1-add-vehicle.png');
+
+        // Fill out and view dashboard
+        $this->submit([
+            'Name' => "Blue golf",
+            'Car' => true,
+            'CAPI number' => "1",
+            "Mark" => true,
+        ], 'Save vehicle');
 
         // Populated dashboard screenshot
         $this->screenshot('4b-dashboard-populated.png');

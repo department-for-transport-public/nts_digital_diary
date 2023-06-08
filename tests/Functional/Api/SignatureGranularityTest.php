@@ -32,8 +32,10 @@ class SignatureGranularityTest extends AbstractApiWebTestCase
         $areaPeriod1 = $this->getFixtureByReference('area-period:1');
         $areaPeriod2 = $this->getFixtureByReference('area-period:2');
 
-        $this->makeSignedRequestAndGetResponse("/api/v1/area_periods/{$areaPeriod1->getId()}", [], ['expectedResponseCode' => 200], addNonce: false);
-        $this->makeSignedRequestAndGetResponse("/api/v1/area_periods/{$areaPeriod2->getId()}", [], ['expectedResponseCode' => 401], addNonce: false);
+        $this->pauseUntilSecondBoundary();
+
+        $this->makeSignedRequestAndGetResponse("/api/v1/area_periods/{$areaPeriod1->getApiId()}", [], ['expectedResponseCode' => 200], addNonce: false);
+        $this->makeSignedRequestAndGetResponse("/api/v1/area_periods/{$areaPeriod2->getApiId()}", [], ['expectedResponseCode' => 401], addNonce: false);
     }
 
     public function testGetSuccess()
@@ -41,7 +43,24 @@ class SignatureGranularityTest extends AbstractApiWebTestCase
         $areaPeriod1 = $this->getFixtureByReference('area-period:1');
         $areaPeriod2 = $this->getFixtureByReference('area-period:2');
 
-        $this->makeSignedRequestAndGetResponse("/api/v1/area_periods/{$areaPeriod1->getId()}", ['_nonce' => 1], ['expectedResponseCode' => 200]);
-        $this->makeSignedRequestAndGetResponse("/api/v1/area_periods/{$areaPeriod2->getId()}", ['_nonce' => 2], ['expectedResponseCode' => 200]);
+        $this->pauseUntilSecondBoundary();
+
+        $this->makeSignedRequestAndGetResponse("/api/v1/area_periods/{$areaPeriod1->getApiId()}", ['_nonce' => 1], ['expectedResponseCode' => 200]);
+        $this->makeSignedRequestAndGetResponse("/api/v1/area_periods/{$areaPeriod2->getApiId()}", ['_nonce' => 2], ['expectedResponseCode' => 200]);
+    }
+
+    /**
+     * Since the test are based on the signature being the same, if the two assertions lie either side of a second
+     * boundary (eg. 0.95 / 1.05) then we're not testing the right thing. Also, the testGetFail tests actually fails!
+     */
+    protected function pauseUntilSecondBoundary(): void
+    {
+        $timestamp = microtime(true);
+        $partialSecond = $timestamp - floor($timestamp);
+
+        // Only need to pause for the second boundary in cases where we're already very close
+        if ($partialSecond > 0.9) {
+            usleep(intval((1 - $partialSecond) * 1000000));
+        }
     }
 }

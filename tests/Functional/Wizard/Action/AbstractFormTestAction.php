@@ -204,6 +204,9 @@ abstract class AbstractFormTestAction extends PathTestAction
             array('<', '>', ':', '"', '/', '\\', '|', '?', '*')
         ), '', $context->getTestCase()->getDataSetName());
 
+        $context->getOutput()
+            ->writeln("     <comment>Screenshot data   :</comment> {$actionIdx}{$testCaseLetter}-{$typeSuffix}, {$dataSetName}\n");
+
         ServerExtension::takeScreenshots("{$actionIdx}{$testCaseLetter}-{$typeSuffix}", $dataSetName);
     }
 }

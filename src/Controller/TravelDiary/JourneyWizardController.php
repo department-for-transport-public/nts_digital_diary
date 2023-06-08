@@ -10,6 +10,9 @@ use App\Entity\User;
 use App\FormWizard\FormWizardStateInterface;
 use App\FormWizard\Place;
 use App\FormWizard\TravelDiary\JourneyState;
+use App\Security\Voter\TravelDiary\DiaryAccessVoter;
+use Sensio\Bundle\FrameworkExtraBundle\Configuration\Entity;
+use Sensio\Bundle\FrameworkExtraBundle\Configuration\IsGranted;
 use Symfony\Component\HttpFoundation\RedirectResponse;
 use Symfony\Component\HttpFoundation\Request;
 use Symfony\Component\HttpFoundation\Response;
@@ -18,48 +21,56 @@ use Symfony\Component\Serializer\Exception\ExceptionInterface;
 
 /**
  * @Route("", name="journey_wizard_")
- * @Redirect("is_granted('DIARY_KEEPER_WITH_APPROVED_DIARY')", route="traveldiary_dashboard")
+ * @Redirect("!is_granted('EDIT_DIARY')", route="traveldiary_dashboard")
  */
 class JourneyWizardController extends AbstractSessionStateFormWizardController
 {
-    protected ?string $journeyId;
+    protected Journey $journey;
     private ?string $dayNumber;
 
     /**
      * @Route("/day-{dayNumber}/add-journey/{place}", name="place")
      * @Route("/day-{dayNumber}/add-journey", name="start")
-     * @Route("/journey/{journeyId}/edit/{place}", name="edit")
      * @throws ExceptionInterface
      */
-    public function index(Request $request, ?string $place = null, ?string $journeyId = null, ?string $dayNumber = null): Response
+    public function add(Request $request, ?string $place = null, ?string $dayNumber = null): Response
     {
-        $this->journeyId = $journeyId;
+        $this->journey = new Journey();
         $this->dayNumber = $dayNumber;
         
         return $this->doWorkflow($request, $place);
     }
 
+    /**
+     * @Route("/journey/{journeyId}/edit/{place}", name="edit")
+     * @Entity("journey", expr="repository.findByJourneyId(journeyId)")
+     * @IsGranted(DiaryAccessVoter::ACCESS, subject="journey", statusCode=404)
+     * @throws ExceptionInterface
+     */
+    public function edit(Request $request, Journey $journey, ?string $place = null, ?string $dayNumber = null): Response
+    {
+        $this->journey = $journey;
+        $this->dayNumber = $dayNumber;
+
+        return $this->doWorkflow($request, $place);
+    }
+
     protected function getState(): FormWizardStateInterface
     {
-        $em = $this->getDoctrine()->getManager();
-
         /** @var JourneyState $state */
         $state = $this->session->get($this->getSessionKey(), new JourneyState());
-        $baseEntity = $this->journeyId
-            ? $em->find(Journey::class, $this->journeyId)
-            : (new Journey());
 
-        if (!$baseEntity->getDiaryDay()) {
-            $this->getDiaryDay()->addJourney($baseEntity);
+        if (!$this->journey->getDiaryDay()) {
+            $this->getDiaryDay()->addJourney($this->journey);
         }
 
-        return $state->setSubject($this->propertyMerger->merge($baseEntity, $state->getSubject(), Journey::MERGE_PROPERTIES));
+        return $state->setSubject($this->propertyMerger->merge($this->journey, $state->getSubject(), Journey::MERGE_PROPERTIES));
     }
 
     protected function getRedirectResponse(?Place $place): RedirectResponse
     {
-        $url = $this->journeyId
-            ? $this->generateUrl('traveldiary_journey_wizard_edit', ['journeyId' => $this->journeyId, 'place' => strval($place)])
+        $url = $this->journey->getId()
+            ? $this->generateUrl('traveldiary_journey_wizard_edit', ['journeyId' => $this->journey->getId(), 'place' => strval($place)])
             : $this->generateUrl('traveldiary_journey_wizard_place', ['dayNumber' => $this->dayNumber, 'place' => strval($place)]);
 
         return new RedirectResponse($url);
@@ -67,8 +78,8 @@ class JourneyWizardController extends AbstractSessionStateFormWizardController
 
     protected function getCancelRedirectResponse(): ?RedirectResponse
     {
-        $url = $this->journeyId
-            ? $this->generateUrl('traveldiary_journey_view', ['journeyId' => $this->journeyId])
+        $url = $this->journey->getId()
+            ? $this->generateUrl('traveldiary_journey_view', ['journeyId' => $this->journey->getId()])
             : $this->generateUrl('traveldiary_dashboard_day', ['dayNumber' => $this->dayNumber]);
 
         return new RedirectResponse($url);

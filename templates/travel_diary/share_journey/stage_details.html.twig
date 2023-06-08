@@ -2,13 +2,13 @@
 
 {%- trans_default_domain 'travel-diary' -%}
 
-{%- set current_stage = form.vars.data -%}
+{%- set current_stage = formWizardState.contextStage -%}
 
 {%- set translation_parameters = {
     stage_number: current_stage.number
 } -%}
 
-{%- set methodType = form.vars.data.method.type ?? null -%}
+{%- set methodType = current_stage.method.type ?? null -%}
 {%- set title_translation_key = "share-journey.stage-details." ~ methodType ~ ".page-title" -%}
 
 {% block preFormContent %}

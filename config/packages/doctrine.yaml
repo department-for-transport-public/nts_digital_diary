@@ -3,6 +3,8 @@ doctrine:
         url: '%env(resolve:DATABASE_URL)%'
         types:
             datetimemicrosecond: App\Doctrine\DBAL\Types\DateTimeMicrosecondType
+        # lock_keys table is used by lock component, which is used by rate limiter
+        schema_filter: ~^(?!lock_keys)~
 
     orm:
         auto_generate_proxy_classes: true
@@ -16,3 +18,8 @@ doctrine:
                 dir: '%kernel.project_dir%/src/Entity'
                 prefix: 'App\Entity'
                 alias: App
+        filters:
+            -
+                name: !php/const App\Doctrine\ORM\Filter\TrainingAreaPeriodFilter::FILTER_NAME
+                class: App\Doctrine\ORM\Filter\TrainingAreaPeriodFilter
+                enabled: false

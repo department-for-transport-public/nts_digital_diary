@@ -3,6 +3,7 @@
 namespace App\DataFixtures;
 
 use App\Entity\AreaPeriod;
+use App\Entity\CostOrNil;
 use App\Entity\DiaryDay;
 use App\Entity\DiaryKeeper;
 use App\Entity\Distance;
@@ -186,7 +187,7 @@ abstract class AbstractTestFixtures extends Fixture implements FixtureGroupInter
         $stage = $this->createBaseStage($methodKey, $methodOther, $distance, $adultCount, $travelTime);
         assertSame(Method::TYPE_PUBLIC, $stage->getMethod()->getType());
         $stage
-            ->setTicketCost($ticketCost)
+            ->setTicketCost((new CostOrNil())->setCost($ticketCost))
             ->setBoardingCount($boardingCount)
             ->setTicketType($ticketType);
         $journey->addStage($stage);
@@ -204,7 +205,7 @@ abstract class AbstractTestFixtures extends Fixture implements FixtureGroupInter
         if ($journey->getDiaryDay()->getDiaryKeeper()->getIsAdult()) {
             $stage
                 ->setIsDriver($isDriver)
-                ->setParkingCost($parkingCost);
+                ->setParkingCost((new CostOrNil())->setCost($parkingCost));
         }
         $journey->addStage($stage);
         return $stage;

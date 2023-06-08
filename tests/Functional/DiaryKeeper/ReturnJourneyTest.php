@@ -19,6 +19,7 @@ class ReturnJourneyTest extends AbstractJourneyTest
     {
         $linkIndex = $returnToHome ? 0 : 1;      // Which journey? - Home to Wobble, or Wobble to Home (from JourneyFixtures)
         $numberOfStages = $returnToHome ? 1 : 2; // The first journey on day 1 has one stage, but the second has two
+        $stageTypes = $returnToHome ? ['private'] : ['simple', 'public']; // stages are **reversed** compared to fixtures!
 
         $url = fn(string $pathEnd) => '#^\/travel-diary\/journey\/[0-9A-Z]+' . $pathEnd . '$#';
         $options = [PathTestAction::OPTION_EXPECTED_PATH_REGEX => true];
@@ -80,45 +81,46 @@ class ReturnJourneyTest extends AbstractJourneyTest
                 $url('\/return-journey\/stage-details/'.$i),
                 "stage_details_button_group_continue",
                 // TODO: this is not testing ticketCost on public stages, or parkingCost on private stages
-                $this->getStageDetailsTests($overwriteStageDetails, $i),
+                $this->getStageDetailsTests($overwriteStageDetails, $i, $stageTypes[$i-1]),
                 $options
             );
         }
 
         $tests[] = new PathTestAction($url(''), $options);
 
-        $tests[] = new CallbackAction(function (Context $context)
-        use ($returnToHome, $linkIndex, $overwriteStageDetails) {
-            $dk = $context->getEntityManager()->getRepository(User::class)->getDiaryKeeperJourneysAndStages(self::TEST_USERNAME);
+        $tests[] = new CallbackAction(
+            function (Context $context) use ($returnToHome, $linkIndex, $overwriteStageDetails) {
+                $dk = $context->getEntityManager()->getRepository(User::class)->getDiaryKeeperJourneysAndStages(self::TEST_USERNAME);
 
-            $dayOneJourneys = $dk->getDiaryDayByNumber(1)->getJourneys();
+                $dayOneJourneys = $dk->getDiaryDayByNumber(1)->getJourneys();
 
-            $testCase = $context->getTestCase();
-            $testCase->assertCount(2, $dayOneJourneys);
-            $sourceJourney = $dayOneJourneys[$linkIndex];
+                $testCase = $context->getTestCase();
+                $testCase->assertCount(2, $dayOneJourneys);
+                $sourceJourney = $dayOneJourneys[$linkIndex];
 
-            $dayThreeJourneys = $dk->getDiaryDayByNumber(3)->getJourneys();
-            $testCase->assertCount(1, $dayThreeJourneys);
+                $dayThreeJourneys = $dk->getDiaryDayByNumber(3)->getJourneys();
+                $testCase->assertCount(1, $dayThreeJourneys);
 
-            $targetJourney = $dayThreeJourneys[0];
+                $targetJourney = $dayThreeJourneys[0];
 
-            $expectedPurpose = $returnToHome ? 'Go home' : 'Eat vegetables';
-            $expectedIsStartHome = !$returnToHome;
-            $expectedStartLocation = $returnToHome ? 'Wobble' : null;
-            $expectedIsEndHome = $returnToHome;
-            $expectedEndLocation = $returnToHome ? null : 'Wobble';
+                $expectedPurpose = $returnToHome ? 'Go home' : 'Eat vegetables';
+                $expectedIsStartHome = !$returnToHome;
+                $expectedStartLocation = $returnToHome ? 'Wobble' : null;
+                $expectedIsEndHome = $returnToHome;
+                $expectedEndLocation = $returnToHome ? null : 'Wobble';
 
-            $testCase->assertEquals($expectedPurpose, $targetJourney->getPurpose());
-            $testCase->assertEquals($expectedIsStartHome, $targetJourney->getIsStartHome());
-            $testCase->assertEquals($expectedStartLocation, $targetJourney->getStartLocation());
-            $testCase->assertEquals($expectedIsEndHome, $targetJourney->getIsEndHome());
-            $testCase->assertEquals($expectedEndLocation, $targetJourney->getEndLocation());
-            $testCase->assertTimeEquals(new \DateTime("1:59pm"), $targetJourney->getStartTime());
-            $testCase->assertTimeEquals(new \DateTime("2:25pm"), $targetJourney->getEndTime());
+                $testCase->assertEquals($expectedPurpose, $targetJourney->getPurpose());
+                $testCase->assertEquals($expectedIsStartHome, $targetJourney->getIsStartHome());
+                $testCase->assertEquals($expectedStartLocation, $targetJourney->getStartLocation());
+                $testCase->assertEquals($expectedIsEndHome, $targetJourney->getIsEndHome());
+                $testCase->assertEquals($expectedEndLocation, $targetJourney->getEndLocation());
+                $testCase->assertTimeEquals(new \DateTime("1:59pm"), $targetJourney->getStartTime());
+                $testCase->assertTimeEquals(new \DateTime("2:25pm"), $targetJourney->getEndTime());
 
-            $targetStages = new ArrayCollection(array_reverse($targetJourney->getStages()->toArray()));
-            $this->assertStagesAsExpected($testCase, $sourceJourney->getStages(), $targetStages, $overwriteStageDetails, true);
-        });
+                $targetStages = new ArrayCollection(array_reverse($targetJourney->getStages()->toArray()));
+                $this->assertStagesAsExpected($testCase, $sourceJourney->getStages(), $targetStages, $overwriteStageDetails, true);
+            }
+        );
 
         return [$tests, $linkIndex];
     }

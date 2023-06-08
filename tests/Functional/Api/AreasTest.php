@@ -3,8 +3,10 @@
 namespace App\Tests\Functional\Api;
 
 use App\Entity\AreaPeriod;
+use App\Entity\OtpUser;
 use App\Tests\DataFixtures\ApiFixtures;
 use App\Tests\DataFixtures\ApiUserFixtures;
+use App\Utility\AreaPeriodHelper;
 
 class AreasTest extends AbstractApiWebTestCase
 {
@@ -25,26 +27,27 @@ class AreasTest extends AbstractApiWebTestCase
             $this->assertContainsMatchingAreaPeriod($areaPeriod, $response);
         }
     }
-    public function testGet()
+    public function testItemGet()
     {
         $areaPeriod = $this->getAreaPeriodFixture(0);
-        $areaPeriodId = $areaPeriod->getId();
+        $areaPeriodId = $areaPeriod->getApiId();
 
         $response = $this->makeSignedRequestAndGetResponse("/api/v1/area_periods/{$areaPeriodId}");
         $this->assertMatchesAreaPeriod($areaPeriod, $response);
     }
 
-    public function testGetFail()
+    public function testItemGetFail()
     {
         $areaPeriod = $this->getAreaPeriodFixture(0);
-        $areaPeriodId = $this->garbleId($areaPeriod->getId());
+        $areaPeriodId = $this->garbleId($areaPeriod->getApiId());
 
         $this->makeSignedRequestAndGetResponse("/api/v1/area_periods/{$areaPeriodId}", [], ['expectedResponseCode' => 404]);
     }
 
+
     public function testDeleteSuccess()
     {
-        $areaPeriodId = $this->getAreaPeriodFixture(1)->getId();
+        $areaPeriodId = $this->getAreaPeriodFixture(1)->getApiId();
 
         $this->makeSignedRequestAndGetResponse("/api/v1/area_periods/{$areaPeriodId}", [], ['method' => 'DELETE', 'expectedResponseCode' => 204]);
 
@@ -56,7 +59,7 @@ class AreasTest extends AbstractApiWebTestCase
     public function testDeleteFail()
     {
         // This one can't be deleted because it has households
-        $areaPeriodId = $this->getAreaPeriodFixture(0)->getId();
+        $areaPeriodId = $this->getAreaPeriodFixture(0)->getApiId();
         $this->makeSignedRequestAndGetResponse("/api/v1/area_periods/{$areaPeriodId}", [], ['method' => 'DELETE', 'expectedResponseCode' => 403]);
 
         // this one doesn't exist
@@ -109,6 +112,43 @@ class AreasTest extends AbstractApiWebTestCase
         $this->makeSignedRequestAndGetResponse("/api/v1/area_periods", [], ['method' => 'POST', 'expectedResponseCode' => $expectedResponseCode], $data);
     }
 
+    /**
+     * Primarily designed to test the insertion of a large number of areas, simulating what happens at the beginning of
+     * each year. In 2023, NatCen is sampling 1164 points, so setting the NTS_BULK_AREA_TEST_COUNT env var to 100
+     * `$ AREA_BULK_TEST_COUNT=100 bin/phpunit --filter=testBulkPost`
+     * would be a good representation (the test creates that many areas for each month of the year)
+     */
+    public function testBulkPost()
+    {
+        $testCount = getenv('NTS_BULK_AREA_TEST_COUNT') ?: 10;
+
+        $initialOtpCount = $this->entityManager->getRepository(OtpUser::class)
+            ->createQueryBuilder('ou')
+            ->select('count(ou.id) as ouCount')
+            ->getQuery()
+            ->getSingleScalarResult();
+
+        foreach (range(1, 12) as $month) {
+            foreach (range(0, $testCount - 1) as $sample) {
+                $this->makeSignedRequestAndGetResponse("/api/v1/area_periods", [], ['method' => 'POST', 'expectedResponseCode' => 201], [
+                    'area' => sprintf("3%02d%03d", $month, $sample),
+                    'year' => 2023,
+                    'month' => $month,
+                ]);
+            }
+        }
+
+        $finalOtpCount = $this->entityManager->getRepository(OtpUser::class)
+            ->createQueryBuilder('ou')
+            ->select('count(ou.id) as ouCount')
+            ->getQuery()
+            ->getSingleScalarResult();
+        self::assertEquals(
+            ($testCount * 12 * AreaPeriodHelper::CODES_PER_AREA) + $initialOtpCount,
+            $finalOtpCount
+        );
+    }
+
     public function getAreaPeriodById(string $id): ?AreaPeriod
     {
         return $this->entityManager->getRepository(AreaPeriod::class)
@@ -124,17 +164,6 @@ class AreasTest extends AbstractApiWebTestCase
     public function getAreaPeriodFixture(int $index): AreaPeriod
     {
         return $this->getAreaPeriodFixtures()[$index];
-    }
-
-    /**
-     * @return array<AreaPeriod>
-     */
-    public function getAreaPeriodFixtures(): array
-    {
-        return [
-            $this->getFixtureByReference('area-period:1'),
-            $this->getFixtureByReference('area-period:2'),
-        ];
     }
 
     protected function assertContainsMatchingAreaPeriod(AreaPeriod $areaPeriod, array $data, array $options = []): void

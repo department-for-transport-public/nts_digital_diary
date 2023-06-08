@@ -39,19 +39,19 @@ class InterviewerScreenshotter extends AbstractScreenshotter
         $this->clickLinkWithTextThatStartsWith('Mark diary as approved');
         $this->screenshot('7a-mark-diary-approved.png');
 
-        $this->submit([], 'Mark diary as approved');
+        $this->submit(['#double_confirm_action_confirmation' => true], 'Mark diary as approved');
 
         // Approve second diary keeper
         $this->clickLinkWithTextThatStartsWith('View', 1);
         $this->clickLinkWithTextThatStartsWith('Mark diary as approved');
-        $this->submit([], 'Mark diary as approved');
+        $this->submit(['#double_confirm_action_confirmation' => true], 'Mark diary as approved');
 
         $this->screenshot('5b-household-with-approved-diary-keepers.png');
 
         $this->clickLinkWithTextThatStartsWith('View');
         $this->screenshot('6b-diary-keeper-approved.png');
 
-        $this->clickLinkWithTextThatStartsWith('Unapprove diary');
+        $this->clickLinkWithTextThatStartsWith('Un-approve diary');
         $this->screenshot('7b-unapprove-diary.png'); // N.B. We don't actually unapprove it
 
         $this->clickLinkWithTextThatStartsWith('Cancel');

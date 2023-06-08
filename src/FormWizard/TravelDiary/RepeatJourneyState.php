@@ -10,8 +10,6 @@ class RepeatJourneyState extends AbstractDuplicateJourneyState
     const STATE_FULL_INTRODUCTION = 'full-introduction';
     const STATE_SELECT_SOURCE_DAY = 'select-source-day';
     const STATE_SELECT_SOURCE_JOURNEY = 'select-source-journey';
-    const STATE_ALT_INTRODUCTION = 'alt-introduction';
-    const STATE_SELECT_TARGET_DAY = 'select-target-day';
     const STATE_PURPOSE = 'purpose';
     const STATE_ADJUST_TIMES = 'adjust-times';
     const STATE_ADJUST_STAGE_DETAILS = 'adjust-stage-details';
@@ -19,9 +17,7 @@ class RepeatJourneyState extends AbstractDuplicateJourneyState
 
     const TRANSITION_FULL_INTRO_TO_SOURCE_DAY = 'introduction-to-source-day';
     const TRANSITION_DAY_TO_SOURCE_JOURNEY = 'source-day-to-source-journey';
-    const TRANSITION_SOURCE_JOURNEY_TO_TARGET_DAY = 'source-journey-to-target-day';
-    const TRANSITION_ALT_INTRO_TO_TARGET_DAY = 'introduction-to-target-day';
-    const TRANSITION_TARGET_DAY_TO_PURPOSE = 'target-day-to-purpose';
+    const TRANSITION_SOURCE_JOURNEY_TO_PURPOSE = 'source-journey-to-purpose';
     const TRANSITION_PURPOSE_TO_TIMES = 'purpose-to-times';
     const TRANSITION_TIMES_TO_FINISH = 'times-to-finish';
     const TRANSITION_TIMES_TO_STAGE = 'times-to-stage';
@@ -38,7 +34,7 @@ class RepeatJourneyState extends AbstractDuplicateJourneyState
      */
     public ?string $sourceJourneyId = null;
 
-    public bool $isPracticeDay = false;
+    public int $targetDayNumber;
 
     public function getStageDetailsTitle(): TranslatableMessage
     {
@@ -49,9 +45,14 @@ class RepeatJourneyState extends AbstractDuplicateJourneyState
         ], 'travel-diary');
     }
 
-    public function setIsPracticeDay(bool $isPracticeDay): self
+    public function isPracticeDay(): bool
     {
-        $this->isPracticeDay = $isPracticeDay;
+        return $this->targetDayNumber === 0;
+    }
+
+    public function setTargetDayNumber(int $targetDayNumber): self
+    {
+        $this->targetDayNumber = $targetDayNumber;
         return $this;
     }
 }

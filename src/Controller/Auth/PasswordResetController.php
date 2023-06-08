@@ -7,9 +7,11 @@ use App\Entity\UserPersonInterface;
 use App\Form\Auth\ChangePasswordType;
 use App\Form\Auth\ForgottenPasswordType;
 use App\Messenger\AlphagovNotify\Email;
+use App\Security\Voter\UserValidForLoginVoter;
 use App\Utility\AlphagovNotify\Reference;
 use Symfony\Component\Form\SubmitButton;
 use Symfony\Component\HttpFoundation\RedirectResponse;
+use Symfony\Component\HttpFoundation\Request;
 use Symfony\Component\HttpFoundation\Response;
 use Symfony\Component\Messenger\MessageBusInterface;
 use Symfony\Component\Routing\Annotation\Route;
@@ -21,7 +23,7 @@ class PasswordResetController extends AbstractController
     /**
      * @Route("/forgotten-password", name="forgotten_password")
      */
-    public function forgottenPassword(MessageBusInterface $messageBus, string $secret): Response
+    public function forgottenPassword(Request $request, MessageBusInterface $messageBus, string $secret): Response
     {
         $this->redirectToDashboardIfAppropriate();
 
@@ -29,7 +31,7 @@ class PasswordResetController extends AbstractController
             'cancel_link_href' => $this->generateUrl('app_home'),
         ]);
 
-        $form->handleRequest($this->requestStack->getCurrentRequest());
+        $form->handleRequest($request);
 
         if ($form->isSubmitted() && $form->isValid()) {
             $cancel = $form->get('button_group')->get('cancel');
@@ -43,12 +45,12 @@ class PasswordResetController extends AbstractController
             /** @var ?User $user */
             $user = $this->userRepository->findOneBy(['username' => $emailAddress]);
 
-            $diaryKeeper = $user ? $user->getDiaryKeeper() : null;
-            $interviewer = $user ? $user->getInterviewer() : null;
+            $diaryKeeper = $user?->getDiaryKeeper();
+            $interviewer = $user?->getInterviewer();
             /** @var UserPersonInterface $person */
             $person = $diaryKeeper ?? $interviewer ?? null;
 
-            if ($person && $user && $user->isValidForLogin()) {
+            if ($person && $user && $this->isGranted(UserValidForLoginVoter::USER_VALID_FOR_LOGIN, $user)) {
                 $passwordResetCode = substr(hash_hmac('sha256', $user->getId() . rand(), $secret), 0, 16);
                 $user->setPasswordResetCode($passwordResetCode);
                 $this->entityManager->flush();
@@ -85,7 +87,7 @@ class PasswordResetController extends AbstractController
     /**
      * @Route("/password-reset/{userId}/{code}", name="password_reset")
      */
-    public function passwordReset(?UserInterface $currentUser, string $userId, string $code): Response
+    public function passwordReset(Request $request, ?UserInterface $currentUser, string $userId, string $code): Response
     {
         $sessionKey = 'account_password_reset';
         $user = $this->fetchUserAndCacheCriteria($sessionKey, ['id' => $userId, 'passwordResetCode' => $code]);
@@ -103,7 +105,7 @@ class PasswordResetController extends AbstractController
             'cancel_link_href' => $successUrl,
         ]);
 
-        $form->handleRequest($this->requestStack->getCurrentRequest());
+        $form->handleRequest($request);
 
         if ($form->isSubmitted() && $form->isValid()) {
             $this->entityManager->flush();

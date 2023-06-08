@@ -1,4 +1,4 @@
-{%- extends 'base.html.twig' -%}
+{%- extends 'on_boarding/base.html.twig' -%}
 
 {%- trans_default_domain 'on-boarding' -%}
 {%- set translation_prefix = "submit" -%}
@@ -9,8 +9,7 @@
     {% from 'on_boarding/macros.html.twig' import showHouseholdDetails, showHouseholdVehicles %}
     {{ showHouseholdDetails({showActions: false}) }}
 
-    <h2 class="govuk-heading-m govuk-!-margin-top-8" id="vehicles">{{ "dashboard.household-vehicles" | trans }}</h2>
-    {{ showHouseholdVehicles({showActions: false}) }}
+    <hr class="govuk-section-break govuk-section-break--l">
 
     <table class="govuk-table">
         <caption class="govuk-table__caption govuk-table__caption--m">{{ "dashboard.diary-keepers" | trans }}</caption>
@@ -18,8 +17,9 @@
             <tr class="govuk-table__row">
                 <th scope="col" class="govuk-table__header">{{ "diary-keeper.view.summary.capi" | trans }}</th>
                 <th scope="col" class="govuk-table__header">{{ "diary-keeper.view.summary.name" | trans }}</th>
-                <th scope="col" class="govuk-table__header">{{ "diary-keeper.view.summary.email" | trans }}</th>
                 <th scope="col" class="govuk-table__header">{{ "diary-keeper.view.summary.is-adult" | trans }}</th>
+                <th scope="col" class="govuk-table__header">{{ "diary-keeper.view.summary.media-type" | trans }}</th>
+                <th scope="col" class="govuk-table__header">{{ "diary-keeper.view.summary.email" | trans }}</th>
                 <th scope="col" class="govuk-table__header">{{ "diary-keeper.view.summary.proxied-by" | trans }}</th>
             </tr>
         </thead>
@@ -30,13 +30,41 @@
                 <tr class="govuk-table__row">
                     <th scope="row" class="govuk-table__cell">{{ diaryKeeper.number }}</th>
                     <td class="govuk-table__cell">{{ diaryKeeper.name }}</td>
-                    <td class="govuk-table__cell">{{ diaryKeeper.hasIdentifierForLogin ? diaryKeeper.user.userIdentifier : '-' }}</td>
                     <td class="govuk-table__cell">{{ diaryKeeper.isAdult | format_bool | trans }}</td>
+                    <td class="govuk-table__cell">{{ diaryKeeper.mediaType ? ("diary-keeper.user-identifier.media-type.choices.#{diaryKeeper.mediaType}" | trans) : '-' }}</td>
+                    <td class="govuk-table__cell">{{ diaryKeeper.hasIdentifierForLogin ? diaryKeeper.user.userIdentifier : '-' }}</td>
                     <td class="govuk-table__cell">{{ proxyNames is not empty ? (proxyNames | join(', ')) : '-' }}</td>
                 </tr>
             {% endfor %}
         </tbody>
     </table>
+
+    <hr class="govuk-section-break govuk-section-break--l">
+
+    <table class="govuk-table">
+        <caption class="govuk-table__caption govuk-table__caption--m">{{ "dashboard.household-vehicles" | trans }}</caption>
+        <thead class="govuk-table__head">
+        <tr class="govuk-table__row">
+            <th scope="col" class="govuk-table__header">{{ "vehicle.form.capi-number.label" | trans }}</th>
+            <th scope="col" class="govuk-table__header">{{ "vehicle.form.name.label" | trans }}</th>
+            <th scope="col" class="govuk-table__header">{{ "vehicle.form.method.label" | trans }}</th>
+            <th scope="col" class="govuk-table__header">{{ "vehicle.form.primary-driver.label" | trans }}</th>
+        </tr>
+        </thead>
+        <tbody class="govuk-table__body">
+        {% for vehicle in app.user.household.vehicles %}
+            {# @var vehicle \App\Entity\Vehicle #}
+            <tr class="govuk-table__row">
+                <th scope="row" class="govuk-table__cell">{{ vehicle.capiNumber }}</th>
+                <td class="govuk-table__cell">{{ vehicle.friendlyName }}</td>
+                <td class="govuk-table__cell">{{ "stage.method.choices.#{vehicle.method.descriptionTranslationKey}" | trans([], 'travel-diary') }}</td>
+                <td class="govuk-table__cell">{{ vehicle.primaryDriver.name }}</td>
+            </tr>
+        {% endfor %}
+        </tbody>
+    </table>
+
+    <hr class="govuk-section-break govuk-section-break--l">
 
     {{ form(form) }}
 {%- endblock -%}

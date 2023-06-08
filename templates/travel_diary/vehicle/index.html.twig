@@ -1,0 +1,11 @@
+{% extends 'travel_diary/base_form.html.twig' %}
+
+{% set title_translation_prefix = 'vehicle.odometer-readings' %}
+{% trans_default_domain 'travel-diary' %}
+
+{% block formContext %}
+    <h2 class="govuk-heading-s">{{ 'vehicle.odometer-readings.week-start' | trans() }}</h2>
+    <p class="govuk-body">{{ vehicle.household.diaryWeekStartDate | date(format_date_with_dow) }}</p>
+    <h2 class="govuk-heading-s">{{ 'vehicle.odometer-readings.week-end' | trans() }}</h2>
+    <p class="govuk-body">{{ vehicle.primaryDriver.diaryDays.last.date | date(format_date_with_dow) }}</p>
+{% endblock %}

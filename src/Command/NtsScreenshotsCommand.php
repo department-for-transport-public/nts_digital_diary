@@ -27,8 +27,9 @@ class NtsScreenshotsCommand extends Command
     protected UserPasswordHasherInterface $passwordHasher;
     protected string $screenshotsPath;
     protected string $frontendHostname;
+    private string $appEnvironment;
 
-    public function __construct(EntityManagerInterface $entityManager, FixtureManager $fixtureCreator, UserPasswordHasherInterface $passwordHasher, string $frontendHostname, string $screenshotsPath)
+    public function __construct(EntityManagerInterface $entityManager, FixtureManager $fixtureCreator, UserPasswordHasherInterface $passwordHasher, string $frontendHostname, string $screenshotsPath, string $appEnvironment)
     {
         parent::__construct();
         $this->entityManager = $entityManager;
@@ -37,6 +38,7 @@ class NtsScreenshotsCommand extends Command
 
         $this->frontendHostname = $frontendHostname;
         $this->screenshotsPath = $screenshotsPath;
+        $this->appEnvironment = $appEnvironment;
     }
 
     protected function configure(): void
@@ -51,7 +53,9 @@ class NtsScreenshotsCommand extends Command
     {
         $io = new SymfonyStyle($input, $output);
 
-        // TODO: Check environment is staging
+        if ($this->appEnvironment !== 'prod') {
+            throw new \RuntimeException("The screenshots command must be run in the `prod` environment");
+        }
 
         $this->fixtureCreator->deleteExistingInterviewer();
         $this->fixtureCreator->createInterviewer();

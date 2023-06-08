@@ -2,9 +2,11 @@
 
 namespace App\FormWizard\TravelDiary;
 
+use App\Entity\Journey\Journey;
 use App\Entity\Journey\Journey as JourneyEntity;
 use App\Entity\Journey\Method;
 use App\Entity\Journey\Stage;
+use Doctrine\Common\Collections\Collection;
 
 class ShareJourneyState extends AbstractDuplicateJourneyState
 {
@@ -55,5 +57,12 @@ class ShareJourneyState extends AbstractDuplicateJourneyState
             }
         }
         return null;
+    }
+
+    public function getContextSharedToStagesBeingAdded(): Collection
+    {
+        return $this->subject->getSharedToJourneysBeingAdded()->map(
+            fn(Journey $j) => $j->getStageByNumber($this->getStageNumber())
+        );
     }
 }

@@ -8,7 +8,7 @@ class Email extends AbstractMessage
 
     protected ?string $emailReplyToId;
 
-    public function __construct(string $eventName, string $originatingEntityClass, string $originatingEntityId, string $emailAddress, string $templateId, $personalisation = [], ?string $reference = null, ?string $senderId = null)
+    public function __construct(string $eventName, ?string $originatingEntityClass, ?string $originatingEntityId, string $emailAddress, string $templateId, $personalisation = [], ?string $reference = null, ?string $senderId = null)
     {
         parent::__construct($eventName, $originatingEntityClass, $originatingEntityId, $templateId, $personalisation, $reference);
         $this->emailAddress = $emailAddress;

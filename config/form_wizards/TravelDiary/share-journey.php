@@ -1,8 +1,9 @@
 <?php
 namespace Symfony\Component\DependencyInjection\Loader\Configurator;
 
-use App\Form\TravelDiary\ShareJourneyWizard\PurposesType;
+use App\Form\TravelDiary\ShareJourneyWizard\PurposeCollectionType;
 use App\Form\TravelDiary\ShareJourneyWizard\ShareToType;
+use App\Form\TravelDiary\ShareJourneyWizard\StageDetailsCollectionType;
 use App\Form\TravelDiary\ShareJourneyWizard\StageDetailsType;
 use App\FormWizard\TravelDiary\ShareJourneyState as State;
 
@@ -48,9 +49,11 @@ return static function (ContainerConfigurator $container) {
                 'places' => [
                     td_place(State::STATE_INTRO, null, 'share-journey.introduction', [], 'travel_diary/share_journey/wizard_introduction.html.twig'),
                     td_place(State::STATE_WHO_WITH, ShareToType::class, 'share-journey.who-with', [], 'travel_diary/share_journey/base_form.html.twig'),
-                    td_place(State::STATE_PURPOSES, PurposesType::class, 'share-journey.purposes', [], 'travel_diary/share_journey/purposes.html.twig'),
-                    td_place(State::STATE_STAGE_DETAILS, StageDetailsType::class, 'share-journey.stage-details', [
-                        'form_data_property' => 'contextStage',
+                    td_place(State::STATE_PURPOSES, PurposeCollectionType::class, 'share-journey.purposes', [
+                        'form_data_property' => 'subject.sharedToJourneysBeingAdded',
+                    ], 'travel_diary/share_journey/purposes.html.twig'),
+                    td_place(State::STATE_STAGE_DETAILS, StageDetailsCollectionType::class, 'share-journey.stage-details', [
+                        'form_data_property' => 'contextSharedToStagesBeingAdded',
                     ], 'travel_diary/share_journey/stage_details.html.twig'),
                     ['name' => State::STATE_FINISH],
                 ],

@@ -1,0 +1,22 @@
+{% extends 'base.html.twig' %}
+{% trans_default_domain translation_domain %}
+
+{%- block beforeContent -%}
+    {#
+        only in use when training...
+         - if logged in, use the logout path (which has an event subscriber to redirect back to the module)
+         - if on the login form, just redirect back to the module
+        this is because complications occur if onbaording for training is partially complete and we don't log out.
+    #}
+    {%- if is_granted(constant('\App\\Security\\OneTimePassword\\InMemoryOtpUser::ROLE_ON_BOARDING_TRAINING')) or (trainingInterviewer ?? false) -%}
+        {% set trainingInterviewer = trainingInterviewer ?? app.user.interviewer %}
+        {% set trainingRecord = trainingInterviewer.latestTrainingRecordForModule(constant('\App\\Entity\\InterviewerTrainingRecord::MODULE_ONBOARDING')) ?? false %}
+        {%- include 'includes/training-banner.html.twig' with {
+            moduleUrl: is_granted(constant('\App\\Security\\OneTimePassword\\InMemoryOtpUser::ROLE_ON_BOARDING_TRAINING'))
+                ? logout_path()
+                : path('interviewer_training_module_index', {moduleName: trainingRecord.moduleName})
+        } -%}
+    {%- endif -%}
+
+    {{- parent() -}}
+{%- endblock -%}

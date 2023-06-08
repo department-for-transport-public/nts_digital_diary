@@ -13,14 +13,22 @@ common:
     max: "Cannot be more than {limit}"
     positive: Enter a positive number
     positive-or-zero: Enter a positive number or zero
+  cost:
+    invalid: Enter a real cost
   password:
     not-complex-enough: Enter a password at least 8 characters long. It must contain an uppercase letter, a lowercase letter and a number.
   string:
     invalid: Enter a valid value
     max-length: Enter {limit} characters or fewer
+  option:
+    required: This field is required
 
 change-email:
   email.not-blank: Enter an email address
+
+feedback:
+  comments.not-blank: Enter your comments
+  email.not-valid: Enter a valid email address
 
 forgotten-password:
   email.not-blank: Enter an email address
@@ -49,11 +57,22 @@ setup:
     not-blank: Enter a password
     must-match: This password must match the first
 
-allocate-area:
-  area:
-    not-blank: Enter an Area ID
-    valid: Enter a valid Area ID
-    range: Area ID must be 6 digits
+api:
+  area-period:
+    area:
+      not-blank: Provide an Area ID
+      valid: Provide a valid Area ID (YMMXXX)
+    year:
+      not-blank: Provide a year
+      expression: The year does not match the Area ID
+    month:
+      not-blank: Provide a month
+      expression: The month does not match the Area ID
+  interviewer:
+    name:
+      not-blank: Provide a name
+    serial-id:
+      not-blank: Provide a Serial ID
 
 admin:
   area:
@@ -62,6 +81,7 @@ admin:
 
 wizard.diary-keeper:
   is-adult.not-null: You must indicate if this person is an adult
+  is-adult.has-vehicles: This person is the primary driver for one or more vehicles so must be an adult
   is-proxied.not-null: You must indicate if this person needs a proxy
   add-another.not-null: Choose if you need to add another diary keeper
   consent:
@@ -110,19 +130,36 @@ wizard.on-boarding:
     start-date.not-blank: Enter the diary week start date
     purpose-form-group.not-blank: Select a test group
   vehicle:
-    name.not-blank: Enter a name for the vehicle
+    name:
+      not-blank: Enter a name for the vehicle
+      unique: A vehicle with this name already exists in this household
+    capi-number:
+      unique: A vehicle with this CAPI number already exists in this household
+      not-in-range: The number must be between 1 and 99 inclusive
+      not-blank: Enter the CAPI number
     method.not-blank: Choose the type of vehicle
+    primary-driver.not-blank: Choose the primary driver
 
 wizard.share-journey:
   who-with.not-blank: Choose who to share the journey with
-  is-driver:
-    not-blank: Choose whether {name} was the driver or passenger
-    not-multiple: Choose only one person as the driver
-  purposes.not-null: Enter the purpose of this journey
   share-to.count: "Select fewer people. This journey can be shared with a maximum of {max} other {max, select,
       1     {person}
       other {people}
     } because only {minStageTravellerCount} people (including you) were present on all stages"
+  purpose.not-null: Enter the purpose of this journey for {name}
+  ticket-type:
+    not-null: Enter the ticket type for {name}
+  ticket-cost:
+    has-cost.not-null: Select an option for {name}
+    cost.positive: Enter a positive ticket cost for {name}
+    cost.not-null: Enter the ticket cost for {name}
+  is-driver:
+    not-null: Choose whether {name} was the driver or passenger
+    not-multiple: Choose only one person as the driver
+  parking-cost:
+    has-cost.not-null: Select an option for {name}
+    cost.positive: Enter a positive parking cost for {name}
+    cost.not-null: Enter the parking cost for {name}
 
 wizard.stage:
   adult-count:
@@ -154,8 +191,14 @@ wizard.stage:
     bus-or-coach.not-empty: Provide details of the bus or coach
     other-private.not-empty: Provide details of the private method of transport
     other-public.not-empty: provide details of the public method of transport
-  parking-cost.positive-or-zero: Please enter a positive amount or leave the box empty
-  ticket-cost.positive-or-zero: Enter a positive ticket cost or leave the box empty
+  parking-cost:
+    has-cost.not-null: Select an option
+    cost.positive: Enter a positive amount
+    cost.not-null: Enter the amount you paid
+  ticket-cost:
+    has-cost.not-null: Select an option
+    cost.positive: Ticket cost must be a positive amount
+    cost.not-null: Enter the cost of the ticket
   ticket-type.not-null: Enter ticket details
   travel-time:
     positive: Travel time must be greater than zero
@@ -170,3 +213,6 @@ wizard.repeat-journey:
 
 wizard.return-journey:
   diary-day.not-null: Select a day
+
+vehicle.odometer-readings:
+    end-not-less-than-start: This cannot be less than the first odometer reading

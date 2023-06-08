@@ -20,8 +20,8 @@ class InterviewerDenormalizer implements ContextAwareDenormalizerInterface, Deno
     public function denormalize($data, string $type, string $format = null, array $context = []): Interviewer
     {
         return (new Interviewer())
-            ->setName($data['name'] ?? null)
             ->setSerialId($data['serialId'] ?? null)
+            ->setName($data['name'] ?? null)
             ->setUser((new User())->setUserIdentifier($data['email'] ?? null));
     }
 }

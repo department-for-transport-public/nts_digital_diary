@@ -29,7 +29,7 @@ class InterviewersTest extends AbstractApiWebTestCase
         self::assertEquals($user->getUserIdentifier(), $data['email']);
 
         if ($options['check_area_periods'] ?? false) {
-            $areaPeriods = array_map(fn(AreaPeriod $a) => $a->getId(), $interviewer->getAreaPeriods()->toArray());
+            $areaPeriods = array_map(fn(AreaPeriod $a) => $a->getApiId(), $interviewer->getAreaPeriods()->toArray());
             self::assertEqualsCanonicalizing($areaPeriods, $data['area_periods']);
         }
     }
@@ -40,20 +40,6 @@ class InterviewersTest extends AbstractApiWebTestCase
         self::assertInstanceOf(User::class, $user);
         self::assertNotNull($user->getInterviewer());
 
-        return $user;
-    }
-
-    protected function getInterviewerUserBySerialId(int $serialId): User
-    {
-        $user = $this->entityManager->getRepository(User::class)
-            ->createQueryBuilder('u')
-            ->leftJoin('u.interviewer', 'i')
-            ->where('i.serialId = :serialId')
-            ->setParameter('serialId', $serialId)
-            ->getQuery()
-            ->getOneOrNullResult();
-
-        self::assertInstanceOf(User::class, $user);
         return $user;
     }
 
@@ -120,24 +106,24 @@ class InterviewersTest extends AbstractApiWebTestCase
         }
     }
 
-    public function testGetSuccess()
+    public function testItemGetSuccess()
     {
         $user = $this->getInterviewerUser();
-        $interviewerId = $user->getInterviewer()->getId();
+        $interviewerId = $user->getInterviewer()->getApiId();
 
         $response = $this->makeSignedRequestAndGetResponse("/api/v1/interviewers/{$interviewerId}");
         $this->assertMatchesUserInterviewer($user, $response, ['check_area_periods' => true]);
     }
 
-    public function testGetFail()
+    public function testItemGetFail()
     {
-        $interviewerId = $this->garbleId($this->getInterviewerUser()->getInterviewer()->getId());
+        $interviewerId = $this->garbleId($this->getInterviewerUser()->getInterviewer()->getApiId());
         $this->makeSignedRequestAndGetResponse("/api/v1/interviewers/{$interviewerId}", [], ['expectedResponseCode' => 404]);
     }
 
     public function testDeleteSuccess()
     {
-        $interviewerId = $this->getInterviewerUser()->getInterviewer()->getId();
+        $interviewerId = $this->getInterviewerUser()->getInterviewer()->getApiId();
         $this->makeSignedRequestAndGetResponse("/api/v1/interviewers/{$interviewerId}", [], ['method' => 'DELETE', 'expectedResponseCode' => 204]);
 
         // Check it's actually been deleted...
@@ -147,7 +133,7 @@ class InterviewersTest extends AbstractApiWebTestCase
 
     public function testDeleteFail()
     {
-        $interviewerId = $this->garbleId($this->getInterviewerUser()->getInterviewer()->getId());
+        $interviewerId = $this->garbleId($this->getInterviewerUser()->getInterviewer()->getApiId());
         $this->makeSignedRequestAndGetResponse("/api/v1/interviewers/{$interviewerId}", [], ['method' => 'DELETE', 'expectedResponseCode' => 404]);
     }
 

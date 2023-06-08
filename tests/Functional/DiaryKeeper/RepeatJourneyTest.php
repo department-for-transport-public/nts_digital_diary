@@ -18,7 +18,7 @@ class RepeatJourneyTest extends AbstractJourneyTest
 
     protected function generateTest(bool $overwriteStageDetails, int $sourceJourneyIndex, int $numberOfStages): array
     {
-        $url = fn(string $pathEnd) => '/travel-diary' . $pathEnd;
+        $url = fn(string $pathEnd) => '/travel-diary/day-3' . $pathEnd;
 
         $tests[] = new FormTestAction(
             $url('/repeat-journey/full-introduction'),
@@ -51,14 +51,14 @@ class RepeatJourneyTest extends AbstractJourneyTest
             ]
         );
 
-        $tests[] = new FormTestAction(
-            $url('/repeat-journey/select-target-day'),
-            'target_day_button_group_continue',
-            [
-                new FormTestCase([], ["#target_day_diaryDay"]),
-                new FormTestCase(['target_day[diaryDay]' => 'day-3']),
-            ]
-        );
+//        $tests[] = new FormTestAction(
+//            $url('/repeat-journey/select-target-day'),
+//            'target_day_button_group_continue',
+//            [
+//                new FormTestCase([], ["#target_day_diaryDay"]),
+//                new FormTestCase(['target_day[diaryDay]' => 'day-3']),
+//            ]
+//        );
 
         $tests[] = new FormTestAction(
             $url('/repeat-journey/purpose'),
@@ -145,7 +145,7 @@ class RepeatJourneyTest extends AbstractJourneyTest
     {
         $this->initialiseClientAndLoadFixtures([StageFixtures::class]);
         $this->loginUser(self::TEST_USERNAME);
-        $this->client->request('GET', '/travel-diary/repeat-journey');
+        $this->client->request('GET', '/travel-diary/day-3/repeat-journey');
 
         $this->doWizardTest($wizardData);
     }

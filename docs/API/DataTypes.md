@@ -2,6 +2,10 @@
 
 # Data types
 
+- **serialId** - string  
+  NatCen's internal unique reference for an interviewer
+- **area** - string  
+  NatCen's internal reference for an area - numeric, but represented by a string as the first digit can be a zero
 - **ULID** - string  
   26 character unique identifier (https://github.com/ulid/spec, https://symfony.com/doc/current/components/uid.html#ulids)  
   e.g. `01AN4Z07BY79KA1307SR9X4MV3`

@@ -1,0 +1,9 @@
+{%- extends "interviewer/base.html.twig" -%}
+
+{% trans_default_domain "interviewer" %}
+
+{%- block beforeContent -%}
+    {{- parent() -}}
+
+    {{- include('interviewer/training/breadcrumbs.html.twig') -}}
+{%- endblock -%}

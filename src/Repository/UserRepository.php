@@ -75,4 +75,45 @@ class UserRepository extends ServiceEntityRepository implements UserLoaderInterf
             return null;
         }
     }
+
+    /**
+     * Fetches user with everything needed to generate a serial ID (supports both int or dk)
+     */
+    public function loadUserForSerialInformation(string $identifier): ?User
+    {
+        try {
+            return $this->createQueryBuilder('user')
+                ->select('user, dk, int, household, area')
+                ->leftJoin('user.diaryKeeper', 'dk')
+                ->leftJoin('dk.household', 'household')
+                ->leftJoin('household.areaPeriod', 'area')
+                ->leftJoin('user.interviewer', 'int')
+                ->where('user.username = :username')
+                ->setParameter('username', $identifier)
+                ->getQuery()
+                ->getOneOrNullResult();
+        } catch (NonUniqueResultException) {
+            return null;
+        }
+    }
+
+    /**
+     * Returns an array of users whose household has been submitted before the given date, and who have not previously
+     * had their email address purged.
+     *
+     * @return array<User>
+     */
+    public function getUsersForEmailPurge(\DateTime $before): array
+    {
+        return $this->createQueryBuilder('user')
+            ->select('user, dk, household')
+            ->join('user.diaryKeeper', 'dk')
+            ->join('dk.household', 'household')
+            ->where('household.submittedAt IS NOT NULL')
+            ->andWhere('household.submittedAt < :before')
+            ->andWhere('user.emailPurgeDate IS NULL')
+            ->getQuery()
+            ->setParameter('before', $before)
+            ->getResult();
+    }
 }

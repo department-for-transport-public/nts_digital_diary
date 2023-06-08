@@ -1,4 +1,4 @@
-{%- extends 'base.html.twig' -%}
+{%- extends 'on_boarding/base.html.twig' -%}
 
 {%- trans_default_domain 'on-boarding' -%}
 {% set title_translation_prefix = 'dashboard' %}
@@ -6,13 +6,6 @@
 {%- block content -%}
     {% from 'on_boarding/macros.html.twig' import showHouseholdDetails, showHouseholdVehicles %}
     {{ showHouseholdDetails() }}
-
-    <h2 class="govuk-heading-m govuk-!-margin-top-8" id="vehicles">{{ "dashboard.household-vehicles" | trans }}</h2>
-    {{ showHouseholdVehicles() }}
-    <div class="govuk-button-group">
-        <a class="govuk-button govuk-button--secondary" href="{{ path('onboarding_vehicle_add') }}">{{ 'dashboard.add-vehicle' | trans }}</a>
-    </div>
-
 
     {%- from '@GhostGovUkFrontend/components/macros.html.twig' import actionlessSummaryListRow, summaryListRow, tabsHead -%}
     <h2 class="govuk-heading-m govuk-!-margin-top-6">{{ "dashboard.diary-keepers" | trans }}</h2>
@@ -42,6 +35,11 @@
         </div>
     {%- endif -%}
     <a class="govuk-button govuk-button--secondary" href="{{ path('onboarding_diarykeeper_add') }}">{{ 'dashboard.add-diary-keeper' | trans }}</a>
+
+
+    <h2 class="govuk-heading-m govuk-!-margin-top-8" id="vehicles">{{ "dashboard.household-vehicles" | trans }}</h2>
+    {{ showHouseholdVehicles() }}
+    <a class="govuk-button govuk-button--secondary" href="{{ path('onboarding_vehicle_add') }}">{{ 'dashboard.add-vehicle' | trans }}</a>
 
 
     {%- if thereAreDiaryKeepers -%}

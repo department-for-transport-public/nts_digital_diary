@@ -18,13 +18,13 @@ Successful response will be an array of [Interviewer](#interviewer) objects (`ar
 ]
 ```
 
-### `GET /interviewers/{ULID}`
+### `GET /interviewers/{serialId}`
 
-Retrieve specific [Interviewer](#interviewer) object, identified by `{ULID}`
+Retrieve specific [Interviewer](#interviewer) object, identified by `{serialId}`
 
 #### Response
 
-Successful response will be an [Interviewer](#interviewer) object (all fields will be returned)
+Successful response will be an [Interviewer](#interviewer) object
 
 ### `POST /interviewers`
 
@@ -32,22 +32,23 @@ Create a new interviewer
 
 #### Request body
 
-The request body should be a json encoded [Interviewer](#interviewer) object (excluding `id`, and `area_periods`)
+The request body should be a partial (only `serialId`, `name`, `email`), json encoded [Interviewer](#interviewer) object
 
-### `DELETE /interviewers/{ULID}`
+### `DELETE /interviewers/{serialId}`
 
-Delete specific [Interviewer](#interviewer) object, identified by `{ULID}`
+Delete specific [Interviewer](#interviewer) object, identified by `{serialId}`
 
 
 ## Models
 
 ### Interviewer
 
-- `id` string, optional (ULID)
+- `id` string (ULID)
 - `name` string
 - `serialID` string (unique)
 - `email` string (email address, unique)
-- `area_periods` array, optional (string, ULID)
+- `area_periods` array (string, year/area)
+- `training_record` array
 
 #### Example
 
@@ -55,11 +56,11 @@ Delete specific [Interviewer](#interviewer) object, identified by `{ULID}`
 {
   "id": "01G42P4XFB9V62H12NYVFMK03Y",
   "name": "Alice",
-  "serialId": "AS43",
+  "serialId": "1234",
   "email": "alice@example.com"
   "area_periods": [
-    "01G4A3QG7VQNCRCV1YZTJGYM9N",
-    "01G4A5HFM6N41M3BNV3QSDQ9W8"
+    "2022/211500",
+    "2022/212600"
   ]
 }
 ```

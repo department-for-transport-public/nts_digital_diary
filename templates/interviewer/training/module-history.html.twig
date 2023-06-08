@@ -1,0 +1,31 @@
+{% trans_default_domain "interviewer" %}
+{% from '@GhostGovUkFrontend/components/macros.html.twig' import tag %}
+<table class="govuk-table govuk-!-margin-top-9">
+    <caption class="govuk-table__caption govuk-table__caption--m">{{ 'training.module.history.caption' | trans }}</caption>
+    <thead class="govuk-table__head">
+    <tr class="govuk-table__tr">
+        <th scope="col" class="govuk-table__header">{{ 'training.module.created' | trans }}</th>
+        <th scope="col" class="govuk-table__header">{{ 'training.module.started' | trans }}</th>
+        <th scope="col" class="govuk-table__header">{{ 'training.module.completed' | trans }}</th>
+        <th scope="col" class="govuk-table__header">{{ 'training.module.status' | trans }}</th>
+    </tr>
+    </thead>
+    <tbody class="govuk-table__body">
+    {% for trainingRecord in trainingHistory | reverse %}
+        {# @var trainingRecord \App\Entity\InterviewerTrainingRecord #}
+        <tr class="govuk-table__tr">
+            <td class="govuk-table__cell">{{ _self.dateOrHyphen(trainingRecord.createdAt) }}</td>
+            <td class="govuk-table__cell">{{ _self.dateOrHyphen(trainingRecord.startedAt) }}</td>
+            <td class="govuk-table__cell">{{ _self.dateOrHyphen(trainingRecord.completedAt) }}</td>
+            <td class="govuk-table__cell">{{ tag({
+                    classes: "govuk-tag govuk-tag--" ~ ("training.state.color" | trans({state: trainingRecord.state})),
+                    text: "training.state.label" | trans({state: trainingRecord.state})
+                }) }}</td>
+        </tr>
+    {% endfor %}
+    </tbody>
+</table>
+
+{%- macro dateOrHyphen(dateVar) -%}
+    {{ dateVar ? (dateVar | date(format_date_default)) : '-' }} {{ dateVar ? (dateVar | date(format_time_short)) : '' }}
+{%- endmacro -%}

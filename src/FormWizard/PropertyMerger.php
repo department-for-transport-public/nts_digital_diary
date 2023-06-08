@@ -110,7 +110,20 @@ class PropertyMerger
             return; // Skip replacing DateTimes with an equivalent value
         }
 
+        if ($overlayProperty instanceof PropertyMergerNonEntityInterface) {
+            $overlayProperty = $this->mergeNonEntity($this->propertyAccess->getValue($entity, $propertyPath), $overlayProperty);
+        }
+
         $this->propertyAccess->setValue($entity, $propertyPath, $overlayProperty);
+    }
+
+    protected function mergeNonEntity(?PropertyMergerNonEntityInterface $target, PropertyMergerNonEntityInterface $source): PropertyMergerNonEntityInterface
+    {
+        $target  = $target ?? new $source();
+        foreach ($source::getMergeProperties() as $mergePropertyPath) {
+            $this->mergeProperty($target, $source, $mergePropertyPath);
+        }
+        return $target;
     }
 
     protected function checkAndReloadFromDatabase($value)

@@ -2,26 +2,28 @@
 
 namespace App\Tests\Functional\DiaryKeeper;
 
-use App\Tests\DataFixtures\StageFixtures;
-use App\Tests\Functional\Wizard\Action\CallbackAction;
-use App\Tests\Functional\Wizard\Action\Context;
-use App\Tests\Functional\Wizard\Form\CallbackFormTestCase;
-use App\Tests\Functional\Wizard\Form\CallbackIncludingErrorsFormTestCase;
+use App\Entity\DiaryKeeper;
+use App\Entity\Journey\Journey;
+use App\Entity\Journey\Method;
+use App\Tests\DataFixtures\TestSpecific\ShareJourneyTestFixtures;
+use App\Tests\Functional\AbstractProceduralWizardTest;
 use App\Tests\Functional\Wizard\Form\FormTestCase;
 use App\Tests\Functional\Wizard\Action\PathTestAction;
-use App\Tests\Functional\Wizard\Action\FormTestAction;
 use Facebook\WebDriver\WebDriverBy;
 
-class ShareJourneyTest extends AbstractJourneyTest
+class ShareJourneyTest extends AbstractProceduralWizardTest
 {
     const TEST_USERNAME = 'diary-keeper-adult@example.com';
 
-    protected function generateTest(bool $overwriteStageDetails, int $numberOfStages): array
+    protected function performTest(string $journeyFixtureRef, bool $overwriteStageDetails): void
     {
+        $journeyFixture = $this->getFixtureByReference($journeyFixtureRef);
+        $this->assertInstanceOf(Journey::class, $journeyFixture);
+
         $url = fn(string $pathEnd) => '#^\/travel-diary\/journey\/[0-9A-Z]+' . $pathEnd . '$#';
         $options = [PathTestAction::OPTION_EXPECTED_PATH_REGEX => true];
 
-        $tests[] = new FormTestAction(
+        $this->formTestAction(
             $url('/share-journey/introduction'),
             'form_button_group_continue',
             [
@@ -30,75 +32,158 @@ class ShareJourneyTest extends AbstractJourneyTest
             $options
         );
 
-        $chooseNthShareButton = function(int $n): \Closure {
-            return function(Context $context) use ($n): array {
-                $input = $context->getClient()->findElement(WebDriverBy::xpath('//div[@id="share_to_shareTo"]/div['.($n).']/input'));
-                return ['share_to[shareTo][]' => $input->getAttribute('value')];
-            };
-        };
+        $sharingDK = $journeyFixture->getDiaryDay()->getDiaryKeeper();
+        $allProxiedDKs = $sharingDK->getActingAsProxyFor();
+        $allNonProxiedDKs = $sharingDK->getHousehold()->getDiaryKeepers()->filter(fn(DiaryKeeper $dk) => !$sharingDK->isActingAsProxyFor($dk) && $dk->getId() !== $sharingDK->getId());
+        $excludeDk = $this->getFixtureByReference('diary-keeper:journey-share:adult');
+        $shareToDKs = $allProxiedDKs->filter(fn($dk) => $dk->getId() !== $excludeDk->getId());
 
-        $tests[] = new FormTestAction(
+        $this->assertCount(3, $allProxiedDKs);
+        $this->assertCount(2, $allNonProxiedDKs);
+        $this->assertCount(2, $shareToDKs);
+
+        $this->formTestAction(
             $url('/share-journey/who'),
             'share_to_button_group_continue',
             [
                 new FormTestCase([], ["#share_to"]),
-                // Although it won't be possible to choose this button, since it is disabled, this will serve as a
-                // good test that it *is* actually disabled
-                new CallbackFormTestCase($chooseNthShareButton(1), ['#share_to']),
-                new CallbackFormTestCase($chooseNthShareButton(2))
+                // try selecting someone who isn't proxied... should be disabled
+                new FormTestCase(['share_to[shareTo][]' => $allNonProxiedDKs->first()->getId()], ['#share_to']),
+                // select too many people with respect to maximum allowed by source journey
+                new FormTestCase(['share_to[shareTo][]' => $allProxiedDKs->map(fn($dk) => $dk->getId())->toArray()], ['#share_to_shareTo']),
+                new FormTestCase(['share_to[shareTo][]' => $shareToDKs->map(fn($dk) => $dk->getId())->toArray()]),
             ],
             $options
         );
 
-        $setNthPurposeTo = function(int $n, string $purpose): \Closure {
-            return function(Context $context) use ($n, $purpose): array {
-                $input = $context->getClient()->findElement(WebDriverBy::xpath('//div[@id="purposes"]/div['.($n).']/input'));
-                return [$input->getAttribute('name') => $purpose];
-            };
-        };
+//        dump(array_map(fn ($e) => $e->getAttribute('name'), $this->context->getClient()->findElements(WebDriverBy::xpath('//div[@id="purpose_collection"]/div/div/div/input'))));
+//        exit(1);
 
-        $expectedErrorForNthPurpose = function(int $n): \Closure {
-            return function (Context $context) use ($n): array {
-                $input = $context->getClient()->findElement(WebDriverBy::xpath('//div[@id="purposes"]/div['.($n).']/input'));
-                return ['#'.$input->getAttribute('id')];
-            };
-        };
-
-        $tests[] = new FormTestAction(
+        $this->formTestAction(
             $url('/share-journey/purposes'),
-            'purposes_button_group_continue',
+            'purpose_collection_button_group_continue',
             [
-                new CallbackIncludingErrorsFormTestCase($setNthPurposeTo(1, ''), $expectedErrorForNthPurpose(1)),
-                new CallbackFormTestCase($setNthPurposeTo(1, 'shared purpose')),
+                new FormTestCase([], ['#purpose_collection_0_purpose', '#purpose_collection_1_purpose']),
+                new FormTestCase(['purpose_collection[0][purpose]' => 'shared purpose 0'], ['#purpose_collection_1_purpose']),
+                new FormTestCase(['purpose_collection[1][purpose]' => 'shared purpose 1'], ['#purpose_collection_0_purpose']),
+                new FormTestCase([
+                    'purpose_collection[0][purpose]' => 'shared purpose 0',
+                    'purpose_collection[1][purpose]' => 'shared purpose 1',
+                ], []),
             ],
             $options
         );
 
-        for($i=1; $i<=$numberOfStages; $i++) {
-            $tests[] = new FormTestAction(
-                $url('/share-journey/stage-details/'.$i),
-                "stage_details_button_group_continue",
-                [
-                    new FormTestCase([]),
-                ],
-                $options
-            );
+        foreach($journeyFixture->getStages() as $stage) {
+            switch ($stage->getMethod()->getType()) {
+                case Method::TYPE_OTHER :
+                    $this->context->getTestCase()->assertPathNotMatches($url('/share-journey/stage-details/'.$stage->getNumber()), true, 'Landed on stage details for other stage type');
+                    break;
+
+                case Method::TYPE_PRIVATE :
+                    $this->formTestAction(
+                        $url('/share-journey/stage-details/'.$stage->getNumber()),
+                        "stage_details_collection_button_group_continue",
+                        match ($stage->getNumber()) {
+                            // source stage is driver
+                            3 => [
+                                // isDriver values should be ignored, as they are disabled
+                                new FormTestCase([
+                                    'stage_details_collection[0][isDriver]' => '',
+                                    'stage_details_collection[0][parkingCost][hasCost]' => 'true',
+                                    'stage_details_collection[0][parkingCost][cost]' => '',
+                                    'stage_details_collection[1][isDriver]' => '',
+                                    'stage_details_collection[1][parkingCost][hasCost]' => 'false',
+                                ], [
+                                    '#stage_details_collection_0_parkingCost_cost',
+                                ]),
+                                new FormTestCase([
+                                    'stage_details_collection[0][isDriver]' => 'true',
+                                    'stage_details_collection[0][parkingCost][hasCost]' => 'true',
+                                    'stage_details_collection[0][parkingCost][cost]' => '',
+                                    'stage_details_collection[1][isDriver]' => 'true',
+                                ], [
+                                    '#stage_details_collection_0_parkingCost_cost',
+                                    '#stage_details_collection_1_parkingCost_hasCost',
+                                ]),
+                                new FormTestCase([
+                                    'stage_details_collection[0][parkingCost][hasCost]' => 'false',
+                                    'stage_details_collection[1][parkingCost][hasCost]' => 'true',
+                                    'stage_details_collection[1][parkingCost][cost]' => '3.45',
+                                ]),
+                            ],
+                            4 => [
+                                // maximum 1 driver
+                                new FormTestCase([
+                                    'stage_details_collection[0][isDriver]' => 'true',
+                                    'stage_details_collection[0][parkingCost][hasCost]' => 'false',
+                                    'stage_details_collection[1][isDriver]' => 'true',
+                                    'stage_details_collection[1][parkingCost][hasCost]' => 'false',
+                                ], [
+//                                    '#some_error',
+                                    '#stage_details_collection_0_isDriver',
+                                    '#stage_details_collection_1_isDriver',
+                                ]),
+                                // zero drivers allowed
+                                new FormTestCase([
+                                    'stage_details_collection[0][isDriver]' => 'false',
+                                    'stage_details_collection[0][parkingCost][hasCost]' => 'false',
+                                    'stage_details_collection[1][isDriver]' => 'false',
+                                ], [
+                                    '#stage_details_collection_1_parkingCost_hasCost',
+                                ]),
+                                new FormTestCase([
+                                    'stage_details_collection[0][isDriver]' => 'true',
+                                    'stage_details_collection[0][parkingCost][hasCost]' => 'true',
+                                    'stage_details_collection[0][parkingCost][cost]' => '3.45',
+                                    'stage_details_collection[1][isDriver]' => 'false',
+                                    'stage_details_collection[1][parkingCost][hasCost]' => 'false',
+                                ]),
+                            ],
+                        },
+                        $options
+                    );
+
+                    break;
+
+                case Method::TYPE_PUBLIC :
+                    $this->formTestAction(
+                        $url('/share-journey/stage-details/'.$stage->getNumber()),
+                        "stage_details_collection_button_group_continue",
+                        [
+                            new FormTestCase([
+                                'stage_details_collection[0][ticketType]' => '',
+                                'stage_details_collection[0][ticketCost][hasCost]' => 'true',
+                                'stage_details_collection[0][ticketCost][cost]' => '',
+                                'stage_details_collection[1][ticketCost][hasCost]' => 'false',
+                            ], [
+                                '#stage_details_collection_0_ticketType',
+                                '#stage_details_collection_0_ticketCost_cost',
+                            ]),
+                            new FormTestCase([
+                                'stage_details_collection[0][ticketType]' => 'ticket type 0',
+                                'stage_details_collection[0][ticketCost][hasCost]' => 'true',
+                                'stage_details_collection[0][ticketCost][cost]' => '1.23',
+                                'stage_details_collection[1][ticketCost][hasCost]' => 'false',
+                            ]),
+                        ],
+                        $options
+                    );
+                    break;
+            }
         }
 
-        $tests[] = new PathTestAction('#^\/travel-diary\/journey\/[A-Z0-9]+$#', [
+        $this->pathTestAction('#^\/travel-diary\/journey\/[A-Z0-9]+$#', [
             PathTestAction::OPTION_EXPECTED_PATH_REGEX => true
         ]);
 
-        $tests[] = new CallbackAction(function(Context $context){
-            $tag = $context->getClient()->findElement(WebDriverBy::xpath('//main[@id="main-content"]/strong[contains(concat(" ",normalize-space(@class)," ")," govuk-tag ")]'));
-            $context->getTestCase()->assertEqualsIgnoringCase("journey shared with test diary keeper (proxied)", $tag->getText());
-        });
+        $dkNameList = join(', ', $shareToDKs->map(fn ($dk) => $dk->getName())->toArray());
+        $tag = $this->context->getClient()->findElement(WebDriverBy::xpath('//main[@id="main-content"]/strong[contains(concat(" ",normalize-space(@class)," ")," govuk-tag ")]'));
+        $this->context->getTestCase()->assertEqualsIgnoringCase("journey shared with {$dkNameList}", $tag->getText());
 
-        $tests[] = new CallbackAction(function(Context $context) {
-            $context->getTestCase()->clickLinkContaining('Delete this journey');
-        });
+        $this->context->getTestCase()->clickLinkContaining('Delete this journey');
 
-        $tests[] = new FormTestAction(
+        $this->formTestAction(
             $url('/delete'),
             'confirm_action_button_group_confirm',
             [
@@ -107,30 +192,29 @@ class ShareJourneyTest extends AbstractJourneyTest
             $options
         );
 
-        $tests[] = new PathTestAction('/travel-diary/day-7');
-
-        return [$tests];
+        $this->pathTestAction('/travel-diary/day-6');
     }
 
     public function wizardData(): array
     {
         return
             [
-                'Share' => $this->generateTest(false, 1),
+                'Day 6 journey' => ['sharing-journey:1', false],
             ];
     }
 
     /**
      * @dataProvider wizardData
      */
-    public function testShareJourneyWizard(array $wizardData)
+    public function testShareJourneyWizard(string $journeyFixtureRef, bool $overwriteStageDetails)
     {
-        $this->initialiseClientAndLoadFixtures([StageFixtures::class]);
+        $this->initialiseClientAndLoadFixtures([ShareJourneyTestFixtures::class]);
         $this->loginUser(self::TEST_USERNAME);
-        $this->client->request('GET', '/travel-diary/day-7');
+        $this->client->request('GET', '/travel-diary/day-6');
         $this->clickLinkContaining('View');
         $this->clickLinkContaining('Share this journey');
 
-        $this->doWizardTest($wizardData);
+        $this->context = $this->createContext('');
+        $this->performTest($journeyFixtureRef, $overwriteStageDetails);
     }
 }

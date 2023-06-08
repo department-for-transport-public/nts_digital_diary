@@ -72,8 +72,7 @@
         </li>
         {%- endif %}
         {%- set day_parameters = { dayNumber: day.number } -%}
-        <li><a class="govuk-link" href="{{ path('traveldiary_return_journey_wizard_start', {journeyId: journey.id}) }}">{{- "journey.view.return-journey" | trans -}}</a></li>
-        <li><a class="govuk-link" href="{{ path('traveldiary_repeat_journey_wizard_source_journey', {journeyId: journey.id}) }}">{{- "journey.view.repeat-journey" | trans -}}</a></li>
+        <li><a class="govuk-link" href="{{ path('traveldiary_return_journey_wizard_start', {journeyId: journey.id}) }}">{{- "journey.view.return-journey" | trans({startLocation: journey.startLocationForDisplay, endLocation: journey.endLocationForDisplay}) -}}</a></li>
 
         <li>
             <a class="govuk-link" href="{{ path('traveldiary_journey_delete', {journeyId: journey.id}) }}">

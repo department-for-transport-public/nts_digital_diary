@@ -10,7 +10,7 @@ Retrieve collection of `AreaPeriods`
 
 #### Response
 
-Successful response will be an array of [AreaPeriod](#areaperiod) objects (`interviewers` and `onbaording_codes` will not be included in this output)
+Successful response will be an array of reduced (excluding `interviewers` and `onbaording_codes`) [AreaPeriod](#areaperiod) objects
 
 ```json
 [
@@ -18,13 +18,13 @@ Successful response will be an array of [AreaPeriod](#areaperiod) objects (`inte
 ]
 ```
 
-### `GET /area_periods/{ULID}`
+### `GET /area_periods/{year}/{area}`
 
-Retrieve specific AreaPeriod object, identified by `{ULID}`
+Retrieve specific AreaPeriod object, identified by `{year}` and `{area}`
 
 #### Response
 
-Successful response will be an [AreaPaeriod](#areaperiod) object (all fields will be returned)
+Successful response will be an [AreaPaeriod](#areaperiod) object
 
 ### `POST /area_periods`
 
@@ -32,23 +32,27 @@ Create a new AreaPeriod
 
 #### Request body
 
-The request body should be a json encoded [AreaPeriod](#areaperiod) object (excluding `id`, `interviewers` and `onboarding_codes`)
+The request body should be a partial (only `area`, `year`, `month`), json encoded [AreaPeriod](#areaperiod) object
 
-### `DELETE /area_periods/{ULID}`
+#### Response
 
-Delete specific [AreaPeriod](#areaperiod) object, identified by `{ULID}`
+Successful response will be an [AreaPaeriod](#areaperiod) object
+
+### `DELETE /area_periods/{year}/{area}`
+
+Delete specific [AreaPeriod](#areaperiod) object, identified by `{year}` and `{area}`
 
 
 ## Models
 
 ### AreaPeriod
 
-- `id` string, optional (ULID)
+- `id` string (ULID)
 - `area` string
 - `year` integer
 - `month` integer
-- `interviewers` array, optional (string, ULID)
-- `onboarding_codes` array, optional
+- `interviewers` array (string, serialId)
+- `onboarding_codes` array
 
 #### Example
 
@@ -59,17 +63,13 @@ Delete specific [AreaPeriod](#areaperiod) object, identified by `{ULID}`
     "year": 2022,
     "month": 6,
     "interviewers": [
-        "01G4A3BM1XW3NMV79J0BE6XV4P",
-        "01G4A3E96QJHSM109HD3CZ6GAW"
+        "1234",
+        "4321"
     ],
     "onboarding_codes": [
         [
             "45652205",
             "59885698"
-        ],
-        [
-            "04641751",
-            "22897262"
         ],
       ...
     ]

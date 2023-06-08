@@ -2,23 +2,34 @@
 
 namespace App\Tests\Functional;
 
+use Doctrine\Common\DataFixtures\ReferenceRepository;
 use Facebook\WebDriver\WebDriverBy;
 use Facebook\WebDriver\WebDriverElement;
 use Liip\TestFixturesBundle\Services\DatabaseToolCollection;
+use PHPUnit\Runner\BaseTestRunner;
 use Symfony\Component\Panther\Client;
 use Symfony\Component\Panther\PantherTestCase;
+use Symfony\Component\Panther\ServerExtension;
 
 class AbstractFunctionalTestCase extends PantherTestCase
 {
     public const WAIT_TIMEOUT = 5;
     protected Client $client;
 
+    protected ReferenceRepository $fixtureReferenceRepository;
+
     public function initialiseClientAndLoadFixtures(array $fixtures): void
     {
         $databaseTool = static::getContainer()->get(DatabaseToolCollection::class)->get();
-        $databaseTool->loadFixtures($fixtures);
+        $fixtures = $databaseTool->loadFixtures($fixtures);
+        $this->fixtureReferenceRepository = $fixtures->getReferenceRepository();
 
         $this->client = static::createPantherClient();
+    }
+
+    protected function getFixtureByReference($reference): object
+    {
+        return $this->fixtureReferenceRepository->getReference($reference);
     }
 
     public function loginUser(?string $userIdentifier, ?string $password = 'password'): void
@@ -198,5 +209,20 @@ class AbstractFunctionalTestCase extends PantherTestCase
 
         $func = $functionMap[($negate ? 'Not' : '') . ($isRegex ? 'Regex' : 'Equals')];
         $this->$func($expectedPath, $this->getCurrentPath(), $errorMessage);
+    }
+
+    /**
+     * Overridden from PantherTestCase, as some test names have unusable characters in
+     */
+    public function takeScreenshotIfTestFailed(): void
+    {
+        if (!\in_array($this->getStatus(), [BaseTestRunner::STATUS_ERROR, BaseTestRunner::STATUS_FAILURE], true)) {
+            return;
+        }
+
+        $type = BaseTestRunner::STATUS_FAILURE === $this->getStatus() ? 'failure' : 'error';
+        $test = md5($this->toString());
+
+        ServerExtension::takeScreenshots($type, $test);
     }
 }

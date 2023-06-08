@@ -26,22 +26,25 @@ class UserFixtures extends AbstractFixture implements DependentFixtureInterface
             ->setName('Test Diary Keeper (Adult)')
             ->setIsAdult(true)
             ->setNumber(1)
-            ->setUser($this->createUser($manager, 'diary-keeper-adult@example.com'))
-            ->setHousehold($householdOnboarded);
+            ->setMediaType(DiaryKeeper::MEDIA_TYPE_DIGITAL)
+            ->setHousehold($householdOnboarded)
+            ->setUser($this->createUser($manager, 'diary-keeper-adult@example.com'));
 
         $diaryKeeperChild = (new DiaryKeeper())
             ->setName('Test Diary Keeper (Child)')
             ->setIsAdult(false)
             ->setNumber(2)
-            ->setUser($this->createUser($manager, 'diary-keeper-child@example.com'))
-            ->setHousehold($householdOnboarded);
+            ->setMediaType(DiaryKeeper::MEDIA_TYPE_DIGITAL)
+            ->setHousehold($householdOnboarded)
+            ->setUser($this->createUser($manager, 'diary-keeper-child@example.com'));
 
         $diaryKeeperProxied = (new DiaryKeeper())
             ->setName('Test Diary Keeper (Proxied)')
             ->setIsAdult(true)
             ->setNumber(3)
-            ->setUser($this->createUser($manager, 'diary-keeper-proxied@example.com'))
-            ->setHousehold($householdOnboarded);
+            ->setMediaType(DiaryKeeper::MEDIA_TYPE_DIGITAL)
+            ->setHousehold($householdOnboarded)
+            ->setUser($this->createUser($manager, 'diary-keeper-proxied@example.com'));
 
         $diaryKeeperAdult->addActingAsProxyFor($diaryKeeperProxied);
 
@@ -49,8 +52,9 @@ class UserFixtures extends AbstractFixture implements DependentFixtureInterface
             ->setName('Test Diary Keeper (No password set)')
             ->setIsAdult(true)
             ->setNumber(4)
-            ->setUser($this->createUser($manager, 'diary-keeper-no-password@example.com', null))
-            ->setHousehold($householdOnboarded);
+            ->setMediaType(DiaryKeeper::MEDIA_TYPE_DIGITAL)
+            ->setHousehold($householdOnboarded)
+            ->setUser($this->createUser($manager, 'diary-keeper-no-password@example.com', null));
 
         $interviewer = (new Interviewer())
             ->setName('Test interviewer')
@@ -69,6 +73,7 @@ class UserFixtures extends AbstractFixture implements DependentFixtureInterface
         $this->setReference('diary-keeper:child', $diaryKeeperChild);
         $this->setReference('diary-keeper:proxied', $diaryKeeperProxied);
         $this->setReference('diary-keeper:no-password', $diaryKeeperNoPassword);
+        $this->setReference('interviewer', $interviewer);
 
         $this->setReference('user:diary-keeper:adult', $diaryKeeperAdult->getUser());
         $this->setReference('user:diary-keeper:child', $diaryKeeperChild->getUser());

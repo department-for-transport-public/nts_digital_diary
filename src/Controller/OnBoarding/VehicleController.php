@@ -3,15 +3,17 @@
 namespace App\Controller\OnBoarding;
 
 use App\Entity\Household;
-use App\Entity\OtpUser;
+use App\Entity\OtpUserInterface;
 use App\Entity\Vehicle;
 use App\Form\OnBoarding\VehicleType;
 use App\Utility\ConfirmAction\OnBoarding\DeleteVehicleConfirmAction;
 use Doctrine\ORM\EntityManagerInterface;
+use Ghost\GovUkFrontendBundle\Model\NotificationBanner;
 use Sensio\Bundle\FrameworkExtraBundle\Configuration\IsGranted;
 use Symfony\Component\HttpFoundation\RedirectResponse;
 use Symfony\Component\HttpFoundation\Request;
 use Symfony\Component\HttpFoundation\Response;
+use Symfony\Component\HttpFoundation\Session\Flash\FlashBagInterface;
 use Symfony\Component\HttpKernel\Exception\NotFoundHttpException;
 use Symfony\Component\Routing\Annotation\Route;
 
@@ -31,10 +33,22 @@ class VehicleController extends AbstractController
     /**
      * @Route("/vehicle/add", name="add")
      */
-    public function add(Request $request): Response
+    public function add(Request $request, FlashBagInterface $flashBag): Response
     {
-        $vehicle = (new Vehicle());
-        $this->getHousehold()->addVehicle($vehicle);
+        $household = $this->getHousehold();
+        if ($household->getDiaryKeepersWhoCanBePrimaryDrivers()->isEmpty()) {
+            $flashBag->add(NotificationBanner::FLASH_BAG_TYPE, new NotificationBanner(
+                'vehicle.add.cant-add-notification.title',
+                'vehicle.add.cant-add-notification.heading',
+                'vehicle.add.cant-add-notification.content',
+                ['style' => NotificationBanner::STYLE_WARNING],
+                [],
+                'on-boarding'
+            ));
+            return new RedirectResponse($this->generateUrl('onboarding_dashboard'));
+        }
+
+        $household->addVehicle($vehicle = (new Vehicle()));
 
         return $this->addOrEdit($request, $vehicle, 'on_boarding/vehicle/add.html.twig');
     }
@@ -63,7 +77,7 @@ class VehicleController extends AbstractController
         return $data instanceof Response ? $data : $this->render("on_boarding/vehicle/delete.html.twig", $data);
     }
 
-    protected function addOrEdit(Request $request, Vehicle $vehicle, string $template)
+    protected function addOrEdit(Request $request, Vehicle $vehicle, string $template): Response
     {
         $returnUrl = $this->generateUrl('onboarding_dashboard');
 
@@ -87,7 +101,7 @@ class VehicleController extends AbstractController
     {
         $user = $this->getUser();
 
-        if (!$user instanceof OtpUser || !$user->getHousehold()) {
+        if (!$user instanceof OtpUserInterface || !$user->getHousehold()) {
             throw new NotFoundHttpException();
         }
 

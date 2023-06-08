@@ -8,7 +8,7 @@ use App\Entity\Household;
 use App\Entity\Journey\Journey;
 use App\Entity\Journey\Stage;
 use App\Entity\User;
-use App\Security\Voter\JourneySharingVoter;
+use App\Security\Voter\TravelDiary\JourneySharingVoter;
 use Symfony\Bundle\FrameworkBundle\Test\WebTestCase;
 use Symfony\Component\Security\Core\Authorization\AuthorizationCheckerInterface;
 
@@ -49,7 +49,8 @@ class JourneySharingVoterTest extends WebTestCase
         return $journey;
     }
 
-    public function getCanShareJourneyTests(bool $journeySharingEnabled, bool $userIsProxying, bool $sourceAlreadyShared, bool $sourceIsItselfASharedJourney): array
+
+    protected function setupHousehold(bool $journeySharingEnabled, bool $userIsProxying): User
     {
         $otherDiaryKeeper = (new DiaryKeeper());
         $userDiaryKeeper = (new DiaryKeeper());
@@ -66,15 +67,15 @@ class JourneySharingVoterTest extends WebTestCase
             $userDiaryKeeper->addActingAsProxyFor($otherDiaryKeeper);
         }
 
+        return $user;
+    }
+
+    public function getCanShareJourneyTests(bool $journeySharingEnabled, bool $userIsProxying, bool $sourceAlreadyShared, bool $sourceIsItselfASharedJourney): array
+    {
+        $user = $this->setupHousehold($journeySharingEnabled, $userIsProxying);
+
         $expectedSuccess = ($journeySharingEnabled || $userIsProxying) && !$sourceAlreadyShared && !$sourceIsItselfASharedJourney;
         return [
-            [$user, $this->createJourney(null, null, 0), false],
-            [$user, $this->createJourney(null, null, 1), false],
-            [$user, $this->createJourney(1, 0, 1), false],
-            [$user, $this->createJourney(0, 1, 1), false],
-            [$user, $this->createJourney(1, 0, 5), false],
-            [$user, $this->createJourney(0, 1, 5), false],
-
             [$user, $this->createJourney(1, 1, 1, $sourceAlreadyShared, $sourceIsItselfASharedJourney), $expectedSuccess],
             [$user, $this->createJourney(2, 0, 1, $sourceAlreadyShared, $sourceIsItselfASharedJourney), $expectedSuccess],
             [$user, $this->createJourney(0, 2, 1, $sourceAlreadyShared, $sourceIsItselfASharedJourney), $expectedSuccess],
@@ -82,6 +83,28 @@ class JourneySharingVoterTest extends WebTestCase
             [$user, $this->createJourney(2, 0, 5, $sourceAlreadyShared, $sourceIsItselfASharedJourney), $expectedSuccess],
             [$user, $this->createJourney(0, 2, 5, $sourceAlreadyShared, $sourceIsItselfASharedJourney), $expectedSuccess],
         ];
+    }
+
+    public function dataInvalidJourneys(): array
+    {
+        $user = $this->setupHousehold(true, true);
+
+        return [
+            [$user, $this->createJourney(null, null, 0), false],
+            [$user, $this->createJourney(null, null, 1), false],
+            [$user, $this->createJourney(1, 0, 1), false],
+            [$user, $this->createJourney(0, 1, 1), false],
+            [$user, $this->createJourney(1, 0, 5), false],
+            [$user, $this->createJourney(0, 1, 5), false],
+        ];
+    }
+
+    /**
+     * @dataProvider dataInvalidJourneys
+     */
+    public function testInvalidJourneys(User $user, Journey $journey, bool $expectedToBeAllowed): void
+    {
+        $this->baseCanShareJourneyTest($user, $journey, $expectedToBeAllowed);
     }
 
     public function dataCanShareJourneyNoProxyNoSharing(): array
@@ -190,6 +213,19 @@ class JourneySharingVoterTest extends WebTestCase
         $sharingEnabledNonProxiedDiaryKeeper = (new DiaryKeeper())
             ->setHousehold($sharingEnabledHousehold);
 
+        $sharingEnabledCompleteDiaryKeeper = (new DiaryKeeper())
+            ->setDiaryState(DiaryKeeper::STATE_COMPLETED)
+            ->setHousehold($sharingEnabledHousehold);
+        $sharingEnabledApprovedDiaryKeeper = (new DiaryKeeper())
+            ->setDiaryState(DiaryKeeper::STATE_APPROVED)
+            ->setHousehold($sharingEnabledHousehold);
+        $sharingEnabledDiscardedDiaryKeeper = (new DiaryKeeper())
+            ->setDiaryState(DiaryKeeper::STATE_DISCARDED)
+            ->setHousehold($sharingEnabledHousehold);
+        $sharingEnabledInProgressDiaryKeeper = (new DiaryKeeper())
+            ->setDiaryState(DiaryKeeper::STATE_IN_PROGRESS)
+            ->setHousehold($sharingEnabledHousehold);
+
         $userDiaryKeeper = (new DiaryKeeper())
             ->addActingAsProxyFor($proxiedDiaryKeeper)
             ->addActingAsProxyFor($sharingEnabledProxiedDiaryKeeper)
@@ -202,6 +238,10 @@ class JourneySharingVoterTest extends WebTestCase
             [$user, $nonProxiedDiaryKeeper, false],
             [$user, $sharingEnabledProxiedDiaryKeeper, true],
             [$user, $sharingEnabledNonProxiedDiaryKeeper, true],
+            [$user, $sharingEnabledCompleteDiaryKeeper, false],
+            [$user, $sharingEnabledApprovedDiaryKeeper, false],
+            [$user, $sharingEnabledDiscardedDiaryKeeper, false],
+            [$user, $sharingEnabledInProgressDiaryKeeper, true],
         ];
     }
 

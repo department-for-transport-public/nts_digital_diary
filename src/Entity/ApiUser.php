@@ -11,6 +11,8 @@ use Symfony\Component\Security\Core\User\UserInterface;
  */
 class ApiUser implements UserInterface
 {
+    const ROLE_API_USER = 'ROLE_API_USER';
+
     use IdTrait;
 
     /**
@@ -50,7 +52,7 @@ class ApiUser implements UserInterface
     public function getRoles(): array
     {
         return [
-            'ROLE_API_USER'
+            self::ROLE_API_USER,
         ];
     }
 

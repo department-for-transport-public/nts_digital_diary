@@ -5,6 +5,7 @@ namespace App\Form\TravelDiary\StageWizard;
 use App\Entity\Journey\Method;
 use App\Entity\Journey\Stage;
 use Doctrine\ORM\EntityManagerInterface;
+use Ghost\GovUkFrontendBundle\Form\Type\BooleanChoiceType;
 use Ghost\GovUkFrontendBundle\Form\Type\EntityType;
 use Ghost\GovUkFrontendBundle\Form\Type\InputType;
 use Symfony\Component\Form\AbstractType;

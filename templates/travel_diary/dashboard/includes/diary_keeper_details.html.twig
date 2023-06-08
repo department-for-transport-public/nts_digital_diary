@@ -2,7 +2,7 @@
 {%- import "@GhostGovUkFrontend/components/macros.html.twig" as m -%}
 {%- set household = diaryKeeper.household -%}
 {%- set areaPeriod = household.areaPeriod -%}
-<dl class="govuk-summary-list govuk-!-margin-bottom-9">
+<dl class="govuk-summary-list">
     {%- if showName ?? true -%}
         {{- m.actionlessSummaryListRow(
             "days.list.name" | trans,
@@ -15,6 +15,6 @@
     ) -}}
     {{- m.actionlessSummaryListRow(
         "days.list.state" | trans,
-        ("diary-keeper.states." ~ (diaryKeeper.diaryState ?? 'new')) | trans({}, 'interviewer')
+        ("diary-keeper.states." ~ (diaryKeeper.diaryState ?? 'new')) | trans({}, is_impersonator_granted('ROLE_INTERVIEWER') ? 'interviewer' : 'travel-diary')
     ) -}}
 </dl>

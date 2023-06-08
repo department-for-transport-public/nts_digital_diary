@@ -1,0 +1,36 @@
+{% extends 'interviewer/dashboard/base.html.twig' %}
+{% trans_default_domain 'interviewer' %}
+
+{% set title_translation_key = "diary-state.approve.page-title" %}
+{% set heading_class = "govuk-heading-xl" %}
+{% set breadcrumb_translation_parameters = {
+    diary_keeper_name: diaryKeeper.name,
+} %}
+{% set household = diaryKeeper.household %}
+{% set areaPeriod = household.areaPeriod %}
+
+{% block content %}
+    <p class="govuk-body govuk-!-margin-bottom-6">
+        {{- 'diary-state.approve.copy' | trans | nl2br -}}
+    </p>
+    {%- if hasEmptyDays -%}
+        <p class="govuk-body">
+            {{ 'diary-state.approve.empty-journeys-copy' | trans }}
+        </p>
+        <dl class="govuk-summary-list">
+            {% from '@GhostGovUkFrontend/components/macros.html.twig' import actionlessSummaryListRow %}
+            {# @var subject \App\Entity\DiaryKeeper #}
+            {% for day in subject.diaryDays | filter(d => d.journeys.isEmpty()) %}
+                {# @var day \App\Entity\DiaryDay #}
+                {{ actionlessSummaryListRow(
+                    "descriptions.day" | trans({
+                        dayNumber: day.number,
+                        date: day.date | date(format_date_with_dow),
+                    }, 'travel-diary'),
+                    "day.no-journeys" | trans ({}, 'travel-diary')
+                ) }}
+            {% endfor %}
+        </dl>
+    {%- endif -%}
+    {{ form(form) }}
+{% endblock %}

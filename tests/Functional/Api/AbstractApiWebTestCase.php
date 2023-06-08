@@ -3,6 +3,8 @@
 namespace App\Tests\Functional\Api;
 
 use App\Entity\ApiUser;
+use App\Entity\AreaPeriod;
+use App\Entity\User;
 use App\Security\HmacAuth\SecretGenerator;
 use App\Tests\Functional\AbstractFunctionalWebTestCase;
 use Doctrine\ORM\EntityManagerInterface;
@@ -55,7 +57,7 @@ abstract class AbstractApiWebTestCase extends AbstractFunctionalWebTestCase
     protected function makeSignedRequestAndGetResponse(string $endPoint, array $queryParams = [], array $options = [], array $data = [], bool $addNonce = true): ?array
     {
         $expectedResponseCode = $options['expectedResponseCode'] ?? 200;
-        $expectBody = $expectedResponseCode === 200;
+        $expectBody = in_array($expectedResponseCode, [200, 201]);
 
         if ($addNonce && !isset($queryParams['_nonce'])) {
             try {
@@ -98,6 +100,31 @@ abstract class AbstractApiWebTestCase extends AbstractFunctionalWebTestCase
             throw new RuntimeException("unexpected reference type");
         }
         return $apiUser;
+    }
+
+    /**
+     * @return array<AreaPeriod>
+     */
+    protected function getAreaPeriodFixtures(): array
+    {
+        return [
+            $this->getFixtureByReference('area-period:1'),
+            $this->getFixtureByReference('area-period:2'),
+        ];
+    }
+
+    protected function getInterviewerUserBySerialId(int $serialId): User
+    {
+        $user = $this->entityManager->getRepository(User::class)
+            ->createQueryBuilder('u')
+            ->leftJoin('u.interviewer', 'i')
+            ->where('i.serialId = :serialId')
+            ->setParameter('serialId', $serialId)
+            ->getQuery()
+            ->getOneOrNullResult();
+
+        self::assertInstanceOf(User::class, $user);
+        return $user;
     }
 
     protected function queryParamsToQueryString(array $queryParams): string

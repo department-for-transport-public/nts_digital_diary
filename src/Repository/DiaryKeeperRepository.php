@@ -3,14 +3,11 @@
 namespace App\Repository;
 
 use App\Entity\DiaryKeeper;
-use App\Entity\Household;
 use App\Entity\Interviewer;
 use App\Entity\Journey\Journey;
-use App\Entity\Journey\Method;
-use App\Entity\OtpUser;
+use App\Entity\OtpUserInterface;
 use App\Entity\User;
 use App\Utility\ItemByFrequencyHelper;
-use DateTime;
 use Doctrine\Bundle\DoctrineBundle\Repository\ServiceEntityRepository;
 use Doctrine\ORM\NonUniqueResultException;
 use Doctrine\ORM\Query\Expr\OrderBy;
@@ -105,7 +102,7 @@ class DiaryKeeperRepository extends ServiceEntityRepository
     {
         $user = $this->security->getUser();
 
-        if (!$user instanceof OtpUser) {
+        if (!$user instanceof OtpUserInterface) {
             throw new RuntimeException("wrong user instance");
         }
 

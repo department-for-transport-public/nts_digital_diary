@@ -37,12 +37,12 @@ class StageNormalizer implements ContextAwareNormalizerInterface, NormalizerAwar
             'adultCount' => $object->getAdultCount() ?? 0,
             'travelTime' => $object->getTravelTime(),
             'boardingCount' => $object->getBoardingCount(),
-            'ticketCost' => Utils::formatFloat($object->getTicketCost()),
+            'ticketCost' => Utils::formatFloat($object->getTicketCost()->getCost()),
             'ticketType' => $object->getTicketType(),
             'isDriver' => $object->getIsDriver(),
-            'parkingCost' => Utils::formatFloat($object->getParkingCost()),
+            'parkingCost' => Utils::formatFloat($object->getParkingCost()?->getCost()),
             'vehicle' => $object->getVehicle() ? $object->getVehicle()->getFriendlyName() : $object->getVehicleOther(),
-            'vehicleCapiNumber' => null, // TODO: placeholder - replace with real value once available
+            'vehicleCapiNumber' => $object->getVehicle() ?->getCapiNumber(),
 
             '_history' => $this->normalizer->normalize(Utils::getHistoryForObject($context, $object), $format, [AbstractObjectNormalizer::PRESERVE_EMPTY_OBJECTS => true]),
         ];

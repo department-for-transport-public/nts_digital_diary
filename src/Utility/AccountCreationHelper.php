@@ -2,6 +2,7 @@
 
 namespace App\Utility;
 
+use App\Entity\DiaryKeeper;
 use App\Entity\UserPersonInterface;
 use App\Messenger\AlphagovNotify\Email;
 use App\Utility\AlphagovNotify\Reference;
@@ -24,6 +25,11 @@ class AccountCreationHelper
 
     public function sendAccountCreationEmail(UserPersonInterface $userPerson, string $emailOverride = null): void
     {
+        if ($userPerson instanceof DiaryKeeper && $userPerson->getHousehold()->getAreaPeriod()->getTrainingInterviewer()) {
+            // we don't want to send emails if it's a diary keeper that's been added as part of training!
+            return;
+        }
+
         $routeParameters = [
             'userId' => $userPerson->getUser()->getId(),
         ];

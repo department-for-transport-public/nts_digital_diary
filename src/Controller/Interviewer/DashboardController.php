@@ -22,9 +22,9 @@ class DashboardController extends AbstractController
      * @Route("", name="")
      * @Template()
      */
-    public function areas(UserInterface $user): array
+    public function areas(): array
     {
-        $interviewer = $this->getInterviewer($user);
+        $interviewer = $this->getInterviewer();
 
         return [
             'interviewer' => $interviewer,
@@ -36,9 +36,9 @@ class DashboardController extends AbstractController
      * @Route("/areas/{areaPeriod}", name="_area")
      * @Template()
      */
-    public function area(UserInterface $user, AreaPeriod $areaPeriod): array
+    public function area(AreaPeriod $areaPeriod): array
     {
-        $interviewer = $this->getInterviewer($user);
+        $interviewer = $this->getInterviewer();
         $this->checkInterviewerIsSubscribedToAreaPeriod($areaPeriod, $interviewer);
 
         return [
@@ -52,9 +52,9 @@ class DashboardController extends AbstractController
      * @Template()
      * @Security("household.getIsOnboardingComplete()")
      */
-    public function household(UserInterface $user, Household $household): array
+    public function household(Household $household): array
     {
-        $interviewer = $this->getInterviewer($user);
+        $interviewer = $this->getInterviewer();
         $this->checkInterviewerIsSubscribedToAreaPeriod($household->getAreaPeriod(), $interviewer);
 
         return [
@@ -68,9 +68,9 @@ class DashboardController extends AbstractController
      * @Template()
      * @Security("diaryKeeper.getHousehold().getIsOnboardingComplete()")
      */
-    public function diaryKeeper(UserInterface $user, DiaryKeeper $diaryKeeper): array
+    public function diaryKeeper(DiaryKeeper $diaryKeeper): array
     {
-        $interviewer = $this->getInterviewer($user);
+        $interviewer = $this->getInterviewer();
         $this->checkInterviewerIsSubscribedToAreaPeriod($diaryKeeper->getHousehold()->getAreaPeriod(), $interviewer);
 
         return [

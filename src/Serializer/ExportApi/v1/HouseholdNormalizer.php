@@ -35,6 +35,7 @@ class HouseholdNormalizer implements ContextAwareNormalizerInterface, Normalizer
             'address' => $object->getAddressNumber(),
             'household' => $object->getHouseholdNumber(),
             'travelWeekStartDate' => $this->normalizer->normalize($object->getDiaryWeekStartDate(), $format, $dateNormalizationContext),
+            'vehicles' => $this->normalizer->normalize($object->getVehicles(), $format, $context),
             'diaryKeepers' => $this->normalizer->normalize($object->getDiaryKeepers(), $format, $context),
             'submittedBy' => $object->getSubmittedBy(),
             'submittedAt' => $this->normalizer->normalize($object->getSubmittedAt(), $format, $context),

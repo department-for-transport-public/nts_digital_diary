@@ -18,7 +18,7 @@ class MarkAsCompleteController extends AbstractController
 {
     /**
      * @Route("/mark-as-complete", name="mark_as_complete")
-     * @Redirect("is_granted('DIARY_KEEPER_WITH_APPROVED_DIARY')", route="traveldiary_dashboard")
+     * @Redirect("!is_granted('EDIT_DIARY')", route="traveldiary_dashboard")
      */
     public function maskAsComplete(EntityManagerInterface $entityManager, Request $request, UserInterface $user, WorkflowInterface $travelDiaryStateStateMachine): Response
     {

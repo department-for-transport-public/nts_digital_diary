@@ -1,0 +1,35 @@
+{% trans_default_domain 'interviewer' %}
+
+{%- from '@GhostGovUkFrontend/components/macros.html.twig' import breadcrumbs -%}
+{%- set breadcrumbItems = [
+    {
+        href: path('interviewer_training_dashboard'),
+        text: 'breadcrumbs.training' | trans,
+    }
+] -%}
+{# @var trainingRecord \App\Entity\InterviewerTrainingRecord #}
+{%- if trainingRecord is defined %}{% set breadcrumbItems = breadcrumbItems | merge([
+    {
+        href: path('interviewer_training_module_index', {moduleName: trainingRecord.moduleName}),
+        text: ("training.module.number" | trans({number: trainingRecord.moduleNumber}) | capitalize)
+            ~ ": "
+            ~ ("training.module.title.#{trainingRecord.moduleName}" | trans),
+    }
+]) %}{% endif -%}
+{# @var household \App\Entity\Household #}
+{%- if household is defined %}{% set breadcrumbItems = breadcrumbItems | merge([
+    {
+        href: path('interviewer_dashboard_household', {household: household.id}),
+        text: "household.page-title" | trans({serial: household.serialNumber}) | capitalize,
+    }
+]) %}{% endif -%}
+{# @var diaryKeeper \App\Entity\DiaryKeeper #}
+{%- if diaryKeeper is defined %}{% set breadcrumbItems = breadcrumbItems | merge([
+    {
+        href: path("interviewer_dashboard_diary_keeper", {diaryKeeper: diaryKeeper.id}),
+        text: "#{diaryKeeper.name}",
+    }
+]) %}{% endif -%}
+
+
+{{- breadcrumbs({items: breadcrumbItems}) -}}

@@ -16,14 +16,21 @@ abstract class AbstractMessage extends AbstractAsyncMessage
     private ?string $reference;
     private ?string $eventName;
 
-    public function __construct(string $eventName, string $originatingEntityClass, string $originatingEntityId, string $templateId, $personalisation = [], ?string $reference = null)
+    public function __construct(string $eventName, ?string $originatingEntityClass, ?string $originatingEntityId, string $templateId, $personalisation = [], ?string $reference = null)
     {
-        $this->originatingEntityClass = ClassUtils::getRealClass($originatingEntityClass);
+        $this->originatingEntityClass = ($originatingEntityClass !== null) ?
+            ClassUtils::getRealClass($originatingEntityClass) :
+            null;
+
         $this->originatingEntityId = $originatingEntityId;
         $this->templateId = $templateId;
         $this->personalisation = $personalisation;
         if (empty($reference)) {
-            $this->reference = "$this->originatingEntityClass::$this->originatingEntityId";
+            if ($this->originatingEntityClass && $this->originatingEntityId) {
+                $this->reference = "$this->originatingEntityClass::$this->originatingEntityId";
+            } else {
+                $this->reference = '';
+            }
         } else {
             $this->reference = $reference;
         }

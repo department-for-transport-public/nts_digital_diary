@@ -1,0 +1,9 @@
+{% trans_default_domain "interviewer" %}
+
+{%- macro statusTag(trainingRecord) -%}
+    {%- from '@GhostGovUkFrontend/components/macros.html.twig' import tag -%}
+    {{- tag({
+        classes: "govuk-tag govuk-tag--" ~ ("training.state.color" | trans({state: trainingRecord.state})),
+        text: "training.state.label" | trans({state: trainingRecord.state})
+    }) -}}
+{%- endmacro -%}

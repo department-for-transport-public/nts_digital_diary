@@ -37,7 +37,7 @@ class HouseholdFixtures extends AbstractFixture implements DependentFixtureInter
             ->setDiaryWeekStartDate(new \DateTime('2021-11-22'))
             ->setIsOnboardingComplete(true);
 
-        $this->setCheckLetter($householdOnboarded);
+        self::setCheckLetter($householdOnboarded);
 
         $this->addReference('household:onboarded', $householdOnboarded);
         $manager->persist($householdOnboarded);
@@ -50,7 +50,7 @@ class HouseholdFixtures extends AbstractFixture implements DependentFixtureInter
         return [AreaPeriodFixtures::class, NtsFixtures::class];
     }
 
-    public function setCheckLetter(Household $household): void
+    public static function setCheckLetter(Household $household): void
     {
         $household->setCheckLetter(SerialHelper::getCheckLetter(
             $household->getAreaPeriod()->getArea(),

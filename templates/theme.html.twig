@@ -25,3 +25,7 @@
         {{ block('form_label') }}
     {% endwith %}
 {% endblock %}
+
+{% block recaptcha_widget -%}
+    <div {{ block('widget_attributes') }}></div>
+{%- endblock %}

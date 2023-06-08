@@ -12,30 +12,22 @@ class ApiFixtures extends AbstractFixture implements DependentFixtureInterface
 {
     public function load(ObjectManager $manager): void
     {
-        $dkRepo = $manager->getRepository(DiaryKeeper::class);
-        $householdRepo  = $manager->getRepository(Household::class);
+        /** @var Household $householdOnboarded */
+        $householdOnboarded = $this->getReference('household:onboarded');
 
-        $dkRepo->createQueryBuilder('dk')
-            ->update()
-            ->set('dk.diaryState', ':state')
-            ->setParameter('state', DiaryKeeper::STATE_APPROVED)
-            ->getQuery()
-            ->execute();
-        $householdRepo->createQueryBuilder('h')
-            ->update()
-            ->set('h.submittedAt', ':subAt')
-            ->set('h.submittedBy', ':subBy')
-            ->setParameters([
-                'subAt' => new \DateTime('2021-11-22 13:30'),
-                'subBy' => 'T1000',
-            ])
-            ->getQuery()
-            ->execute();
+        $householdOnboarded->getDiaryKeepers()->map(fn (DiaryKeeper $dk) =>
+            $dk->setDiaryState(DiaryKeeper::STATE_APPROVED)
+        );
+        $householdOnboarded
+            ->setSubmittedAt(new \DateTime('2021-11-22 13:30'))
+            ->setSubmittedBy('T1000');
+
+        $manager->flush();
     }
 
     public function getDependencies(): array
     {
-        return [StageFixtures::class];
+        return [StageFixtures::class, HouseholdFixtures::class];
     }
 }
 

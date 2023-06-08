@@ -1,11 +1,16 @@
 {%- if is_granted('IS_IMPERSONATOR') -%}
     {% from '@GhostGovUkFrontend/components/macros.html.twig' import notificationBanner %}
-    {%- set content -%}
-        {%- if is_impersonator_granted('ROLE_INTERVIEWER') -%}
-            <p class="govuk-body">Impersonating {{ app.user.diaryKeeper.household.serialNumber }} / {{ app.user.diaryKeeper.name }} - <a class="govuk-link" href="{{ impersonation_exit_path(path('interviewer_dashboard_household', {household: app.user.diaryKeeper.household.id})) }}">Exit</a></p>
-        {%- elseif is_impersonator_granted('ROLE_DIARY_KEEPER') -%}
-            <p class="govuk-body">Acting as {{ app.user.diaryKeeper.name }} - <a class="govuk-link" href="{{ impersonation_exit_path(path('app_home')) }}">Exit / Go back to my own diary</a></p>
-        {%- endif -%}
-    {%- endset -%}
-    {{ notificationBanner({title: 'notification.user-impersonation', content: content}, {html_content: true, class: 'govuk-notification-banner--impersonation'}) }}
+    {% if app.user.diaryKeeper.household.areaPeriod.trainingInterviewer ?? false %}
+        {% set trainingRecord = app.user.diaryKeeper.household.areaPeriod.latestTrainingRecord %}
+        {{ include('includes/training-banner.html.twig') }}
+    {% else %}
+        {%- set content -%}
+            {%- if is_impersonator_granted('ROLE_INTERVIEWER') -%}
+                <p class="govuk-body">Impersonating {{ app.user.diaryKeeper.household.serialNumber }} / {{ app.user.diaryKeeper.name }} - <a class="govuk-link" href="{{ impersonation_exit_path(app.session.get('switch_user_source') ?? path('interviewer_dashboard')) }}">Exit</a></p>
+            {%- elseif is_impersonator_granted('ROLE_DIARY_KEEPER') -%}
+                <p class="govuk-body">Acting as {{ app.user.diaryKeeper.name }} - <a class="govuk-link" href="{{ impersonation_exit_path(path('app_home')) }}">Exit / Go back to my own diary</a></p>
+            {%- endif -%}
+        {%- endset -%}
+        {{ notificationBanner({title: 'notification.user-impersonation', content: content}, {html_content: true, class: 'govuk-notification-banner--impersonation'}) }}
+    {% endif %}
 {%- endif -%}

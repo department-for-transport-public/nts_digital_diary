@@ -4,6 +4,8 @@ namespace App\Form\TravelDiary\StageWizard;
 
 use App\Entity\Journey\Stage;
 use Ghost\GovUkFrontendBundle\Form\Type\BooleanChoiceType;
+use App\Form\CostOrNilType;
+use Ghost\GovUkFrontendBundle\Form\Type\MoneyNilType;
 use Ghost\GovUkFrontendBundle\Form\Type\MoneyType;
 use Symfony\Component\Form\AbstractType;
 use Symfony\Component\Form\FormBuilderInterface;
@@ -13,25 +15,20 @@ class DriverAndParkingType extends AbstractType
 {
     public function buildForm(FormBuilderInterface $builder, array $options)
     {
-        $transPrefix = "stage.driver-and-parking";
         $builder
             ->add('isDriver', BooleanChoiceType::class, [
-                'label' => "{$transPrefix}.driver-or-passenger.label",
+                'label' => "stage.driver-and-parking.driver-or-passenger.label",
                 'label_attr' => ['class' => 'govuk-label--m'],
-                'help' => "{$transPrefix}.driver-or-passenger.help",
+                'help' => "stage.driver-and-parking.driver-or-passenger.help",
                 'attr' => [],
                 'choices' => [
-                    "{$transPrefix}.driver-or-passenger.choices.driver" => "true",
-                    "{$transPrefix}.driver-or-passenger.choices.passenger" => "false",
+                    "stage.driver-and-parking.driver-or-passenger.choices.driver" => "true",
+                    "stage.driver-and-parking.driver-or-passenger.choices.passenger" => "false",
                 ],
                 'choice_translation_domain' => $options['translation_domain'],
             ])
-            ->add('parkingCost', MoneyType::class, [
-                'label' => "{$transPrefix}.parking-cost.label",
-                'label_attr' => ['class' => 'govuk-label--m'],
-                'help' => "{$transPrefix}.parking-cost.help",
-                'help_html' => 'markdown',
-                'attr' => ['class' => 'govuk-input--width-5'],
+            ->add('parkingCost', CostOrNilType::class, [
+                'translation_prefix' => "stage.driver-and-parking.parking-cost",
             ]);
     }
 
@@ -40,7 +37,7 @@ class DriverAndParkingType extends AbstractType
         $resolver->setDefaults([
             'data_class' => Stage::class,
             'translation_domain' => 'travel-diary',
-            'validation_groups' => 'wizard.driver-and-parking',
+            'validation_groups' => 'wizard.stage.driver-and-parking',
         ]);
     }
 }

@@ -16,7 +16,7 @@ use Symfony\Component\Security\Core\User\UserInterface;
 
 /**
  * @Route("/day-{dayNumber}", name="day_", requirements={"dayNumber": "[0-7]{1}"})
- * @Redirect("is_granted('DIARY_KEEPER_WITH_APPROVED_DIARY')", route="traveldiary_dashboard")
+ * @Redirect("!is_granted('EDIT_DIARY')", route="traveldiary_dashboard")
  */
 class NotesController extends AbstractController
 {

@@ -92,18 +92,21 @@ class AddStageTestBuilder
                 new FormTestCase(['vehicle[vehicle]' => $vehicleName]),
             ]),
             new FormTestAction("/add-stage/driver-and-parking", "driver_and_parking_button_group_continue", [
-                new FormTestCase([], ['#driver_and_parking_isDriver']),
+                new FormTestCase([], ['#driver_and_parking_isDriver', '#driver_and_parking_parkingCost_hasCost']),
                 new FormTestCase([
                     'driver_and_parking[isDriver]' => 'true',
-                    'driver_and_parking[parkingCost]' => 'abc'
-                ], ['#driver_and_parking_parkingCost']),
+                    'driver_and_parking[parkingCost][hasCost]' => 'true',
+                    'driver_and_parking[parkingCost][cost]' => 'abc',
+                ], ['#driver_and_parking_parkingCost_cost']),
                 new FormTestCase([
                     'driver_and_parking[isDriver]' => 'false',
-                    'driver_and_parking[parkingCost]' => '-10'
-                ], ['#driver_and_parking_parkingCost']),
+                    'driver_and_parking[parkingCost][hasCost]' => 'true',
+                    'driver_and_parking[parkingCost][cost]' => '-10',
+                ], ['#driver_and_parking_parkingCost_cost']),
                 new FormTestCase([
                     'driver_and_parking[isDriver]' => 'true',
-                    'driver_and_parking[parkingCost]' => '3.60'
+                    'driver_and_parking[parkingCost][hasCost]' => 'true',
+                    'driver_and_parking[parkingCost][cost]' => '3.60',
                 ]),
             ]),
             new PathTestAction(''),
@@ -144,7 +147,7 @@ class AddStageTestBuilder
                 }
 
                 $testCase->assertEquals(true, $stage->getIsDriver());
-                $testCase->assertEquals(360, $stage->getParkingCost());
+                $testCase->assertEquals(360, $stage->getParkingCost()->getCost());
             }
         });
     }

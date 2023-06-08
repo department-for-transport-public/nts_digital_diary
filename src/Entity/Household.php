@@ -11,9 +11,11 @@ use Doctrine\ORM\Mapping as ORM;
 use Symfony\Bridge\Doctrine\Validator\Constraints\UniqueEntity;
 use Symfony\Component\Validator\Constraints as Assert;
 use Symfony\Component\Validator\Context\ExecutionContextInterface;
+use Doctrine\ORM\Mapping\UniqueConstraint;
 
 /**
  * @ORM\Entity(repositoryClass="App\Repository\HouseholdRepository", repositoryClass=HouseholdRepository::class)
+ * @ORM\Table(uniqueConstraints={@UniqueConstraint(columns={"address_number", "household_number", "area_period_id"})})
  * @UniqueEntity(groups={"wizard.on-boarding.household"}, errorPath="", message="wizard.on-boarding.household.unique-in-area-period", fields={"addressNumber", "householdNumber", "areaPeriod"})
  */
 class Household
@@ -39,11 +41,13 @@ class Household
     /**
      * @ORM\Column(type="date", nullable=true)
      * @Assert\NotBlank(groups={"wizard.on-boarding.household"}, message="wizard.on-boarding.household.start-date.not-blank")
+     * @Assert\Expression(groups={"wizard.on-boarding.household"},"value >= this.getAreaPeriod().getFirstValidDiaryStartDate()")
+     * @Assert\Expression(groups={"wizard.on-boarding.household"},"value < this.getAreaPeriod().getLastValidDiaryStartDate()")
      */
     private ?DateTime $diaryWeekStartDate;
 
     /**
-     * @var DiaryKeeper[] | Collection
+     * @var Collection<int, DiaryKeeper>
      * @ORM\OneToMany(targetEntity=DiaryKeeper::class, mappedBy="household", orphanRemoval=true)
      * @ORM\OrderBy({"number": "ASC"})
      */
@@ -138,11 +142,21 @@ class Household
     }
 
     /**
-     * @return Collection|DiaryKeeper[]
+     * @return Collection<int, DiaryKeeper>
      */
-    public function getDiaryKeepers()
+    public function getDiaryKeepers(): Collection
     {
         return $this->diaryKeepers;
+    }
+
+    /**
+     * @return Collection<int, DiaryKeeper>
+     */
+    public function getDiaryKeepersWhoCanBePrimaryDrivers(): Collection
+    {
+        return $this
+            ->diaryKeepers
+            ->filter(fn(DiaryKeeper $dk) => $dk->getIsAdult());
     }
 
     public function addDiaryKeeper(DiaryKeeper $diaryKeeper): self
@@ -231,7 +245,7 @@ class Household
 
     public function getAreaPeriod(): ?AreaPeriod
     {
-        return $this->areaPeriod;
+        return $this->areaPeriod ?? null;
     }
 
     public function setAreaPeriod(?AreaPeriod $areaPeriod): self
@@ -275,6 +289,7 @@ class Household
             DiaryKeeper::STATE_IN_PROGRESS => 0,
             DiaryKeeper::STATE_COMPLETED => 0,
             DiaryKeeper::STATE_APPROVED => 0,
+            DiaryKeeper::STATE_DISCARDED => 0,
         ];
 
         foreach($this->diaryKeepers as $diaryKeeper) {

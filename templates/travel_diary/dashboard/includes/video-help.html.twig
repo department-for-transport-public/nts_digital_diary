@@ -1,0 +1,12 @@
+{% trans_default_domain 'travel-diary' %}
+{%- from "@GhostGovUkFrontend/components/macros.html.twig" import details-%}
+{% set htmlContent %}
+    <p class="govuk-body">{{ 'day.practice.help-details.content' | trans }}</p>
+    <div class="video-container">
+        <iframe src="https://player.vimeo.com/video/760318784?h=77521f81ef&badge=0&autopause=0&player_id=0&app_id=58479&byline=0&dnt=1&title=0" frameborder="0" allow="fullscreen; picture-in-picture" allowfullscreen title="{{ 'day.practice.help-details.text' | trans }}"></iframe>
+    </div>
+{% endset %}
+{{ details({
+    summaryText: 'day.practice.help-details.text' | trans,
+    html: htmlContent,
+}) }}

@@ -1,0 +1,11 @@
+<div class="prose-scope">
+{%- apply markdown_to_html -%}
+Now that you’ve finished checking and editing a diary, please watch this video to see how Mary’s travel diary should
+have been corrected.
+
+## How you **should** have corrected your diary
+{% endapply %}
+</div>
+
+{% from 'interviewer/training/vimeo-container.html.twig' import videoContainer %}
+{{ videoContainer('807935838/686c6002e3', 'How you should have corrected your diary') }}

@@ -169,12 +169,24 @@ class DiaryKeeperScreenshotter extends AbstractScreenshotter
             'Other' => true,
             'Describe the vehicle you used' => "Friend's car 🚗",
         ], 'Continue');
+
+
+        $this->fillForm([
+            '#driver_and_parking_parkingCost' => [
+                'Yes' => true,
+            ],
+        ]);
         $this->screenshot('add-stage/private/4-parking-costs-and-driver.png');
+
 
         $this->submit([
             'Driver' => true,
-            'How much did you pay for parking' => '3.50',
+            '#driver_and_parking_parkingCost' => [
+                'Yes' => true,
+                'How much did you pay for parking' => '8.50',
+            ],
         ], 'Save and continue');
+
     }
 
     /**
@@ -218,10 +230,20 @@ class DiaryKeeperScreenshotter extends AbstractScreenshotter
         $this->submit([
             'Tell us about the ticket' => 'Anytime return',
         ], 'Continue');
+
+
+        $this->fillForm([
+            '#ticket_cost_and_boardings_ticketCost' => [
+                'Yes' => true,
+            ],
+        ]);
         $this->screenshot('add-stage/public/4-ticket-cost-and-boardings.png');
 
         $this->submit([
-            'How much did you pay' => '8.50',
+            '#ticket_cost_and_boardings_ticketCost' => [
+                'Yes' => true,
+                'How much did your ticket cost' => '8.50',
+            ],
             'How many times did you board' => '1',
         ], 'Save and continue');
     }
@@ -245,14 +267,33 @@ class DiaryKeeperScreenshotter extends AbstractScreenshotter
         $this->submit([
             'Purpose of journey for Linda' => 'To go shopping for groceries',
         ], 'Continue');
+
+        $this->fillForm([
+            '#stage_details_collection_0_parkingCost' => [
+                'Yes' => true,
+            ],
+        ]);
         $this->screenshot('share-journey/4-details-for-stage-1.png');
 
         $this->submit([
-            'Parking costs paid by Linda' => '',
+            '#stage_details_collection_0_parkingCost' => [
+                'No' => true,
+            ],
         ], 'Continue');
+
+
+        $this->fillForm([
+            '#stage_details_collection_0_ticketCost' => [
+                'Yes' => true,
+            ],
+        ]);
         $this->screenshot('share-journey/5-details-for-stage-3.png');
 
-        $this->submit([], 'Save and continue'); // N.B. Already pre-filled
+        $this->submit([
+            '#stage_details_collection_0_ticketCost' => [
+                'No' => true,
+            ],
+        ], 'Save and continue'); // N.B. Already pre-filled
     }
 
     /**
@@ -261,7 +302,7 @@ class DiaryKeeperScreenshotter extends AbstractScreenshotter
      */
     public function returnJourneyFlow(): void
     {
-        $this->clickLinkWithText('Make a return of this journey');
+        $this->clickLinkWithTextThatStartsWith('Make a return of this journey');
         $this->screenshot('return-journey/1-intro.png');
 
         $this->submit([], 'Continue');
@@ -284,15 +325,35 @@ class DiaryKeeperScreenshotter extends AbstractScreenshotter
                 'pm' => true,
             ],
         ], 'Continue');
+
+        $this->fillForm([
+            '#stage_details_ticketCost' => [
+                'Yes' => true
+            ],
+        ]);
         $this->screenshot('return-journey/4-details-for-stage-1.png');
 
-        $this->submit([], 'Continue'); // N.B. Pre-filled
+        $this->submit([
+            '#stage_details_ticketCost' => [
+                'No' => true
+            ],
+        ], 'Continue'); // N.B. Pre-filled
         $this->screenshot('return-journey/5-details-for-stage-2.png');
 
         $this->submit([], 'Continue'); // N.B. Pre-filled
+
+        $this->fillForm([
+            '#stage_details_parkingCost' => [
+                'Yes' => true,
+            ],
+        ]);
         $this->screenshot('return-journey/6-details-for-stage-3.png');
 
-        $this->submit([], 'Save and continue'); // N.B. Pre-filled
+        $this->submit([
+            '#stage_details_parkingCost' => [
+                'No' => true,
+            ],
+        ], 'Save and continue'); // N.B. Pre-filled
     }
 
     /**
@@ -301,19 +362,26 @@ class DiaryKeeperScreenshotter extends AbstractScreenshotter
      */
     public function repeatJourneyFlow(): void
     {
-        $this->clickLinkWithText('Make this journey again');
+        $this->clickLinkWithTextThatStartsWith('Back to day');
+
+        $this->clickLinkWithText('Repeat a journey');
         $this->screenshot('repeat-journey/1-intro.png');
 
         $this->submit([], 'Continue');
         $this->screenshot('repeat-journey/2-which-day.png');
 
         $this->submit([
-            'Day 2' => true,
+            'Day 1' => true,
         ], 'Continue');
-        $this->screenshot('repeat-journey/3-journey-purpose.png');
+        $this->screenshot('repeat-journey/3-which-journey.png');
+
+        $this->submit([
+            'From Home to Portsmouth' => true,
+        ], 'Continue');
+        $this->screenshot('repeat-journey/4-purpose.png');
 
         $this->submit([], 'Continue'); // N.B. Pre-filled
-        $this->screenshot('repeat-journey/4-what-time.png');
+        $this->screenshot('repeat-journey/5-what-time.png');
 
         $this->submit([
             'What time did you start the journey?' => [
@@ -327,13 +395,13 @@ class DiaryKeeperScreenshotter extends AbstractScreenshotter
                 'pm' => true,
             ],
         ], 'Continue');
-        $this->screenshot('repeat-journey/5-details-for-stage-1.png');
+        $this->screenshot('repeat-journey/6-details-for-stage-1.png');
 
         $this->submit([], 'Continue'); // N.B. Pre-filled
-        $this->screenshot('repeat-journey/5-details-for-stage-2.png');
+        $this->screenshot('repeat-journey/7-details-for-stage-2.png');
 
         $this->submit([], 'Continue'); // N.B. Pre-filled
-        $this->screenshot('repeat-journey/5-details-for-stage-3.png');
+        $this->screenshot('repeat-journey/8-details-for-stage-3.png');
 
         $this->submit([], 'Save and continue'); // N.B. Pre-filled
     }

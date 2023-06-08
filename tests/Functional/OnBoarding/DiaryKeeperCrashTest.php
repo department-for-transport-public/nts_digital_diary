@@ -2,6 +2,7 @@
 
 namespace App\Tests\Functional\OnBoarding;
 
+use App\Entity\DiaryKeeper;
 use App\Tests\DataFixtures\OtpUserFixtures;
 use App\Tests\Functional\Wizard\Action\CallbackAction;
 use App\Tests\Functional\Wizard\Action\Context;
@@ -32,6 +33,7 @@ class DiaryKeeperCrashTest extends AbstractDiaryKeeperTest
                         'user_identifier_button_group_continue',
                         [
                             new FormTestCase([
+                                'user_identifier[mediaType]' => DiaryKeeper::MEDIA_TYPE_DIGITAL,
                                 'user_identifier[user][username]' => 'one@example.com',
 //                                'user_identifier[user][consent]' => '1',
                             ])
@@ -59,6 +61,7 @@ class DiaryKeeperCrashTest extends AbstractDiaryKeeperTest
                         function(Context $context) {
                             return [
                                 new FormTestCase([
+                                    'user_identifier[mediaType]' => DiaryKeeper::MEDIA_TYPE_DIGITAL,
                                     'user_identifier[user][username]' => 'two',
 //                                    'user_identifier[user][consent]' => '1',
                                     'user_identifier[user][proxies][]' => [
@@ -72,6 +75,7 @@ class DiaryKeeperCrashTest extends AbstractDiaryKeeperTest
                         'user_identifier_button_group_continue',
                         [
                                 new FormTestCase([
+                                    'user_identifier[mediaType]' => DiaryKeeper::MEDIA_TYPE_DIGITAL,
                                     'user_identifier[user][username]' => 'two',
 //                                    'user_identifier[user][consent]' => '1',
                                     'user_identifier[user][proxies][]' => [],

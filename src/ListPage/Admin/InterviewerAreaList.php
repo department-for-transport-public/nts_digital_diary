@@ -7,6 +7,7 @@ use App\ListPage\AbstractListPage;
 use App\ListPage\Field\Simple;
 use App\ListPage\Field\TextFilter;
 use App\Repository\AreaPeriodRepository;
+use Doctrine\ORM\Query\Expr\Join;
 use Doctrine\ORM\QueryBuilder;
 use Symfony\Component\Form\FormFactoryInterface;
 use Symfony\Component\Routing\RouterInterface;
@@ -44,9 +45,12 @@ class InterviewerAreaList extends AbstractListPage
         return $queryBuilder
             ->select('areaPeriod, interviewer, household')
             ->leftJoin('areaPeriod.interviewers', 'interviewer')
-            ->leftJoin('areaPeriod.households', 'household')
+            ->leftJoin('areaPeriod.households', 'household', Join::WITH, 'household.isOnboardingComplete = :true')
             ->having('interviewer = :interviewer')
-            ->setParameter('interviewer', $this->interviewer)
+            ->setParameters([
+                'interviewer' => $this->interviewer,
+                'true' => true,
+            ])
             ;
     }
 

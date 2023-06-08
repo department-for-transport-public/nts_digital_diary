@@ -71,22 +71,24 @@
                         ? {(url_signer.sign(url('auth_account_setup', {userId: diaryKeeper.user.id | lower}), constant('App\\Utility\\AlphagovNotify\\Reference::ACCOUNT_CREATION_LINK_EXPIRY'))): {label: 'Invite link'}}
                         : {}
                     %}
+                    {% set impersonationAction = is_granted('EDIT_DIARY', diaryKeeper)
+                        ? {(path('app_home', {_switch_user: diaryKeeper.user.userIdentifier})): {
+                            label: "household.impersonate",
+                            labelDomain: 'interviewer',
+                            srHiddenSuffix: "household.impersonate-sr-hidden-suffix",
+                            srHiddenSuffixDomain: "interviewer",
+                            srHiddenSuffixParams: {name: diaryKeeper.name},
+                        }} : {}
+                    %}
 
-                    {{ actionLinks(actions | merge(testingActions) | merge({
+                    {{ actionLinks(actions | merge(testingActions) | merge(impersonationAction) | merge({
                         (path('interviewer_dashboard_diary_keeper', {diaryKeeper: diaryKeeper.id})): {
                             label: "household.diary-keeper-summary",
                             labelDomain: 'interviewer',
                             srHiddenSuffix: "household.diary-keeper-summary-sr-hidden-suffix",
                             srHiddenSuffixDomain: "interviewer",
                             srHiddenSuffixParams: {name: diaryKeeper.name},
-                        },
-                        (path('app_home', {_switch_user: diaryKeeper.user.userIdentifier})): {
-                            label: "household.impersonate",
-                            labelDomain: 'interviewer',
-                            srHiddenSuffix: "household.impersonate-sr-hidden-suffix",
-                            srHiddenSuffixDomain: "interviewer",
-                            srHiddenSuffixParams: {name: diaryKeeper.name},
-                        },
+                        }
                     })) }}
                 </td>
             </tr>

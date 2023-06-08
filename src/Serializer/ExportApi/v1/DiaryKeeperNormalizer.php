@@ -5,7 +5,6 @@ namespace App\Serializer\ExportApi\v1;
 use App\Entity\DiaryKeeper;
 use Symfony\Component\Serializer\Exception\ExceptionInterface;
 use Symfony\Component\Serializer\Normalizer\ContextAwareNormalizerInterface;
-use Symfony\Component\Serializer\Normalizer\DateTimeNormalizer;
 use Symfony\Component\Serializer\Normalizer\NormalizerAwareInterface;
 use Symfony\Component\Serializer\Normalizer\NormalizerAwareTrait;
 
@@ -39,6 +38,11 @@ class DiaryKeeperNormalizer implements ContextAwareNormalizerInterface, Normaliz
             'person' => $object->getNumber(),
             'name' => $object->getName(),
             'isAdult' => $object->getIsAdult(),
+            'mediaType' => $object->getMediaType(),
+            'state' => $object->getDiaryState(),
+            'hasUsedPracticeDay' => $object->getPracticeDay()->getJourneys()?->count() > 0,
+            'emptyDaysVerifiedBy' => $object->getEmptyDaysVerifiedBy(),
+            'emptyDaysVerifiedAt' => $this->normalizer->normalize($object->getEmptyDaysVerifiedAt(), $format, $context),
             'days' => $this->normalizer->normalize($object->getDiaryDays()->getValues(), $format, $dayContext),
         ];
     }

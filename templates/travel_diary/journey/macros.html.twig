@@ -100,7 +100,7 @@
                     options | merge({place: 'vehicle'})
                 ) }}
                 {{ _self.stage_row(stage, "parking-cost",
-                    (not stage.parkingCost is same as null) ?"stage.view.parking-cost.value" | trans({cost: stage.parkingCost/100}) : '-',
+                    (not (stage.parkingCost.cost ?? null) is same as null) ?"stage.view.parking-cost.value" | trans({cost: stage.parkingCost.cost/100}) : '-',
                     options | merge({place: 'vehicle'})
                 ) }}
             {%- endif -%}
@@ -111,7 +111,7 @@
             ) }}
 
             {{ _self.stage_row(stage, "ticket-cost",
-                (not stage.ticketCost is same as null) ? ("stage.view.ticket-cost.value" | trans({cost: stage.ticketCost/100})) : '-',
+                (not (stage.ticketCost.cost ?? null) is same as null) ? ("stage.view.ticket-cost.value" | trans({cost: stage.ticketCost.cost/100})) : '-',
                 options | merge({place: 'ticket-type'})
             ) }}
 

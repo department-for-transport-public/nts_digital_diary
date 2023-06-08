@@ -149,29 +149,35 @@ abstract class AbstractScreenshotter
      */
     protected function fillForm(array $fields, string $xpathPrefix = '//form', bool $overwriteFields = false)
     {
-        foreach($fields as $label => $value) {
+        foreach($fields as $labelOrId => $value) {
             if (is_array($value)) {
-                $xpath = (new XPath())->withPrefix($xpathPrefix)->withTag('legend')->withTextStartsWith($label)->withSuffix('/..');
+                $xpath = str_starts_with($labelOrId, '#')
+                    ? '//*[@id="' . substr($labelOrId, 1) . '"]'
+                    : (new XPath())->withPrefix($xpathPrefix)->withTag('legend')->withTextStartsWith($labelOrId)->withSuffix('/..');
                 $this->fillForm($value, $xpath);
                 continue;
             }
 
-            $xpath = (new XPath())->withPrefix($xpathPrefix)->withTag('label')->withTextStartsWith($label);
-            $label = $this->findElement($xpath);
-            $targetId = $label->evaluate(JsFunction::createWithParameters(['node'])->body('return node.getAttribute("for");'));
+            if (str_starts_with($labelOrId, '#')) {
+                $targetId = $labelOrId;
+            } else {
+                $xpath = (new XPath())->withPrefix($xpathPrefix)->withTag('label')->withTextStartsWith($labelOrId);
+                $labelOrId = $this->findElement($xpath);
+                $targetId = $labelOrId->evaluate(JsFunction::createWithParameters(['node'])->body('return node.getAttribute("for");'));
 
-            if (!$targetId) {
-                throw new ScreenshotsException("Could not find referenced (for) element for label element '{$label}'", $this->page);
+                if (!$targetId) {
+                    throw new ScreenshotsException("Could not find referenced (for) element for label element '{$labelOrId}'", $this->page);
+                }
+
+                $targetId = "#{$targetId}";
             }
-
-            $targetId = "#{$targetId}";
 
             if (is_bool($value)) {
                 if ($value === true) {
                     $this->page->click($targetId, []);
                 } else {
                     // Makes no logical sense - we click, or we don't
-                    throw new ScreenshotsException("Value cannot be 'false' for label {$label}", $this->page);
+                    throw new ScreenshotsException("Value cannot be 'false' for label {$labelOrId}", $this->page);
                 }
             } else {
                 if ($overwriteFields) {
@@ -182,5 +188,12 @@ abstract class AbstractScreenshotter
                 $this->page->type($targetId, $value, []);
             }
         }
+    }
+
+    protected function getFormElementXPath(string $xpathPrefix, string $tag, string $idOrTextStartsWith): string
+    {
+        return str_starts_with($idOrTextStartsWith, '#')
+            ? '//*[@id="' . substr($idOrTextStartsWith, 1) . '"]'
+            : (new XPath())->withPrefix($xpathPrefix)->withTag($tag)->withTextStartsWith($label)->$xpath->withSuffix('/..');
     }
 }

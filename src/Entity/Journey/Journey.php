@@ -2,7 +2,7 @@
 
 namespace App\Entity\Journey;
 
-use App\Entity\BasicMetadata;
+use App\Entity\BasicMetadataInterface;
 use App\Entity\BasicMetadataTrait;
 use App\Entity\DiaryDay;
 use App\Entity\DiaryKeeper;
@@ -16,11 +16,13 @@ use Doctrine\ORM\Mapping as ORM;
 use RuntimeException;
 use Symfony\Component\Validator\Constraints as Assert;
 use Symfony\Component\Validator\Context\ExecutionContextInterface;
+use App\Validator\JourneySharingValidator;
 
 /**
  * @ORM\Entity(repositoryClass=JourneyRepository::class)
+ * @Assert\Callback({JourneySharingValidator::class, "validateJourney"}, groups={"wizard.share-journey.purpose"})
  */
-class Journey implements PropertyChangeLoggable, BasicMetadata
+class Journey implements PropertyChangeLoggable, BasicMetadataInterface
 {
     use IdTrait;
     use BasicMetadataTrait;
@@ -51,34 +53,13 @@ class Journey implements PropertyChangeLoggable, BasicMetadata
     /**
      * @ORM\Column(type="string", length=255, nullable=true)
      * @Assert\NotNull(groups={"wizard.journey.purpose"}, message="wizard.journey.purpose.not-null")
+     * @Assert\NotNull(groups={"wizard.share-journey.purpose.entry"}, message="wizard.share-journey.purpose.not-null")
      * @Assert\Length(
-     *     groups={"wizard.journey.purpose"},
+     *     groups={"wizard.journey.purpose", "wizard.share-journey.purpose.entry"},
      *     maxMessage="common.string.max-length", max=255
      * )
      */
     private ?string $purpose;
-
-    /**
-     * @Assert\Callback(groups="wizard.share-journey.purposes")
-     */
-    public function validateSharingPurpose(ExecutionContextInterface $context)
-    {
-        foreach ($this->sharedTo as $value) {
-            $context->getValidator()->validate($value, []);
-            if (is_null($value->getPurpose())) {
-                $context->buildViolation('wizard.share-journey.purposes.not-null', [
-                    'name' => $value->getDiaryDay()->getDiaryKeeper()->getName(),
-                ])
-                    ->atPath("purpose-{$value->getDiaryDay()->getDiaryKeeper()->getId()}")
-                    ->addViolation();
-            }
-            else if (strlen($value->getPurpose()) > 255) {
-                $context->buildViolation('common.string.max-length', ['limit' => 255])
-                    ->atPath("purpose-{$value->getDiaryDay()->getDiaryKeeper()->getId()}")
-                    ->addViolation();
-            }
-        }
-    }
 
     /**
      * @ORM\Column(type="time")
@@ -148,6 +129,11 @@ class Journey implements PropertyChangeLoggable, BasicMetadata
 
     /**
      * @Assert\Callback(groups={"wizard.share-journey.share-to"})
+     *
+     * NOTE (2023-05-03): while re-writing journey sharing tests, realised that this doesn't validate
+     * traveller type counts (adult/child), just a total count. Discussion between Mark/Tom decided
+     * this was for the best - users might not be aware of the distinction between adult and child
+     * when adding stages, and we want the form to be permissive.
      */
     public function validateSharedToCount(ExecutionContextInterface $context) {
         if ($this->sharedTo->count() >= $this->getMinimumStageTravellerCount()) {
@@ -414,19 +400,10 @@ class Journey implements PropertyChangeLoggable, BasicMetadata
     }
 
     /**
-     * @return array | Journey[]
+     * @return Collection<int, Journey>
      */
-    public function getSharedToJourneysBeingAdded(): array
+    public function getSharedToJourneysBeingAdded(): Collection
     {
-        /** @var Journey[] $sharedJourneysBeingAdded */
-        $sharedJourneysBeingAdded = $this->getSharedTo()->filter(fn(Journey $j) => $j->getId() === null);
-
-        $data = [];
-        foreach($sharedJourneysBeingAdded as $journey) {
-            $diaryKeeper = $journey->getDiaryDay()->getDiaryKeeper();
-            $data[$diaryKeeper->getId()] = $journey;
-        };
-
-        return $data;
+        return $this->getSharedTo()->filter(fn(Journey $j) => $j->getId() === null);
     }
 }

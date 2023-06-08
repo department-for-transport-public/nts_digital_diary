@@ -5,13 +5,16 @@
 <div class="govuk-summary-list">
     {%- set actionPath = showActions ? path('onboarding_diarykeeper_edit', {diaryKeeperId: diaryKeeper.id}) : false -%}
 
-    {{- _self.listRow('name', diaryKeeper.name, diaryKeeper.name, showActions ? actionPath) -}}
     {{- _self.listRow('capi', diaryKeeper.number, diaryKeeper.name, actionPath) -}}
+    {{- _self.listRow('name', diaryKeeper.name, diaryKeeper.name, showActions ? actionPath) -}}
     {{- _self.listRow('is-adult', diaryKeeper.isAdult | format_bool | trans({}, 'messages'), diaryKeeper.name, actionPath) -}}
 
     {%- set actionPath = showActions ? path('onboarding_diarykeeper_edit', {diaryKeeperId: diaryKeeper.id, place: constant('App\\FormWizard\\OnBoarding\\DiaryKeeperState::STATE_IDENTITY')}) : false -%}
-    {{- _self.listRow('proxied-by', diaryKeeper.proxyNames | join(', ') | default('-'), diaryKeeper.name, actionPath) -}}
-    {{- _self.listRow('user-identifier', diaryKeeper.user.hasIdentifierForLogin ? diaryKeeper.user.userIdentifier : '-', diaryKeeper.name, actionPath) -}}
+    {{- _self.listRow('media-type', diaryKeeper.mediaType ? ("diary-keeper.user-identifier.media-type.choices.#{diaryKeeper.mediaType}" | trans) : '-', diaryKeeper.name, actionPath) -}}
+    {% if diaryKeeper.mediaType == constant('App\\Entity\\DiaryKeeper::MEDIA_TYPE_DIGITAL') %}
+        {{- _self.listRow('proxied-by', diaryKeeper.proxyNames | join(', ') | default('-'), diaryKeeper.name, actionPath) -}}
+        {{- _self.listRow('user-identifier', diaryKeeper.user.hasIdentifierForLogin ? diaryKeeper.user.userIdentifier : '-', diaryKeeper.name, actionPath) -}}
+    {% endif %}
 </div>
 
 {%- macro listRow(key, value, name, path) -%}

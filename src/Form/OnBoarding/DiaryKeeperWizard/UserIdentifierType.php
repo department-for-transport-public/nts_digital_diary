@@ -4,6 +4,7 @@ namespace App\Form\OnBoarding\DiaryKeeperWizard;
 
 use App\Entity\DiaryKeeper;
 use App\Repository\DiaryKeeperRepository;
+use Ghost\GovUkFrontendBundle\Form\Type\ChoiceType;
 use Ghost\GovUkFrontendBundle\Form\Type\EntityType;
 use Ghost\GovUkFrontendBundle\Form\Type\InputType;
 use Symfony\Component\Form\AbstractType;
@@ -11,6 +12,7 @@ use Symfony\Component\Form\Extension\Core\Type\FormType;
 use Symfony\Component\Form\FormBuilderInterface;
 use Symfony\Component\Form\FormEvent;
 use Symfony\Component\Form\FormEvents;
+use Symfony\Component\Form\FormInterface;
 use Symfony\Component\OptionsResolver\OptionsResolver;
 
 class UserIdentifierType extends AbstractType
@@ -30,6 +32,20 @@ class UserIdentifierType extends AbstractType
     {
         $builder->setDataMapper(new UserIdentityDataMapper());
 
+        $builder->add('mediaType', ChoiceType::class, [
+            'label' => "diary-keeper.user-identifier.media-type.label",
+            'help' => "diary-keeper.user-identifier.media-type.help",
+            'label_attr' => ['class' => 'govuk-label--m'],
+
+            'choices' => [
+                'diary-keeper.user-identifier.media-type.choices.digital' => DiaryKeeper::MEDIA_TYPE_DIGITAL,
+                'diary-keeper.user-identifier.media-type.choices.paper' => DiaryKeeper::MEDIA_TYPE_PAPER,
+            ],
+            'choice_options' => [
+                'diary-keeper.user-identifier.media-type.choices.digital' => ['conditional_form_name' => 'user'],
+            ],
+        ]);
+
         $builder->add('user', FormType::class, [
             'label' => false,
             'error_bubbling' => false,
@@ -44,7 +60,7 @@ class UserIdentifierType extends AbstractType
                 ->add('username', InputType::class, [
                     'label' => "diary-keeper.user-identifier.user-identifier.label",
                     'help' => "diary-keeper.user-identifier.user-identifier.help",
-                    'label_attr' => ['class' => 'govuk-label--m'],
+                    'label_attr' => ['class' => 'govuk-label--s'],
                     'attr' => ['class' => 'govuk-input--width-20'],
                     'property_path' => 'username',
                     'row_attr' => ['class' => 'govuk-!-margin-top-7'],
@@ -67,7 +83,7 @@ class UserIdentifierType extends AbstractType
                         ->add('proxies', EntityType::class, [
                             'label' => "diary-keeper.user-identifier.proxy.label",
                             'help' => "diary-keeper.user-identifier.proxy.help",
-                            'label_attr' => ['class' => 'govuk-label--m'],
+                            'label_attr' => ['class' => 'govuk-label--s'],
                             'class' => DiaryKeeper::class,
                             'multiple' => true,
                             'expanded' => true,
@@ -97,10 +113,14 @@ class UserIdentifierType extends AbstractType
         $resolver->setDefaults([
             'data_class' => DiaryKeeper::class,
             'translation_domain' => 'on-boarding',
-            'validation_groups' => [
-                'wizard.on-boarding.diary-keeper.identity',
-                'wizard.on-boarding.diary-keeper.user-identifier',
-            ],
+            'validation_groups' => function(FormInterface $form) {
+                $groups = ['wizard.on-boarding.diary-keeper.media-type'];
+                if ($form->getData()->getMediaType() === 'digital') {
+                    $groups[] = 'wizard.on-boarding.diary-keeper.user-identifier';
+                }
+
+                return $groups;
+            },
         ]);
     }
 }

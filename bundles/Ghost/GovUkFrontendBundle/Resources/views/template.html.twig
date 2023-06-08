@@ -35,16 +35,9 @@
     {% block headerBar %}
     {{ govuk.header({}) }}
     {% endblock %}
-    {% set feedbackMailtoBody -%}
-        <br><br><br><br>
-        ----<br>
-        Helpful feedback information<br><br>
-        Page loaded: {{ date().format('c') }}<br>
-        Path: {{ app.request.server.get('REQUEST_URI') }}<br>
-        {%- endset %}
     {% set phaseBannerHtml %}
         This is a new service – your
-        <a class="govuk-link" href="mailto:feedback@ghostlimited.com?subject=DfT National Travel Survey: user feedback&body={{ feedbackMailtoBody | replace({'<br>' : '%0A'}) }}">feedback</a>
+        <a class="govuk-link" href="{{ path('app_feedback', {info: encodeFeedback()}) }}">feedback</a>
         will help us to improve it.
     {% endset %}
     {{ govuk.phaseBanner({

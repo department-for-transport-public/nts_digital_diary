@@ -3,7 +3,7 @@
 namespace App\Controller\TravelDiary;
 
 use App\Annotation\Redirect;
-use App\Security\Voter\DiaryKeeperVoter;
+use App\Security\Voter\EditDiaryVoter;
 use Sensio\Bundle\FrameworkExtraBundle\Configuration\Template;
 use Symfony\Component\HttpFoundation\Response;
 use Symfony\Component\Routing\Annotation\Route;
@@ -21,9 +21,9 @@ class DashboardController extends AbstractController
     {
         $diaryKeeper = $this->getDiaryKeeper($user);
 
-        $template = $this->isGranted(DiaryKeeperVoter::DIARY_KEEPER_WITH_APPROVED_DIARY) ?
-            'travel_diary/dashboard/approved.html.twig' :
-            'travel_diary/dashboard/dashboard.html.twig';
+        $template = $this->isGranted(EditDiaryVoter::EDIT_DIARY)
+            ? 'travel_diary/dashboard/dashboard.html.twig'
+            : 'travel_diary/dashboard/completed.html.twig';
 
         return $this->render($template, ['diaryKeeper' => $diaryKeeper]);
     }
@@ -31,7 +31,7 @@ class DashboardController extends AbstractController
     /**
      * @Route("/day-{dayNumber}", name="_day", requirements={"dayNumber": "[0-7]{1}"})
      * @Template("travel_diary/dashboard/day.html.twig")
-     * @Redirect("is_granted('DIARY_KEEPER_WITH_APPROVED_DIARY')", route="traveldiary_dashboard")
+     * @Redirect("!is_granted('EDIT_DIARY')", route="traveldiary_dashboard")
      */
     public function day(UserInterface $user, int $dayNumber): array
     {

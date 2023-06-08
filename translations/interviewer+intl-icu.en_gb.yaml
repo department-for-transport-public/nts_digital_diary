@@ -1,10 +1,6 @@
 breadcrumbs:
   dashboard: Dashboard
-
-  area-subscribe:
-    subscribe: Subscribe to area
-    unsubscribe: Unsubscribe from area
-
+  training: Training dashboard
 
 diary-keeper.states:
   new: New
@@ -12,17 +8,23 @@ diary-keeper.states:
   completed: Completed
   approved: Approved
   submitted: Submitted
+  discarded: Discarded
 
 
 diary-keeper:
   page-title: Diary summary for {name}
 
   back: Back to household
+  mark-as-in-progress: Mark diary as in progress (re-open)
   mark-as-approved: Mark diary as approved
-  undo-approval: Unapprove diary
+  undo-approve: Un-approve diary
+  mark-as-discarded: Mark diary as discarded
+  undo-discard: Un-discard diary
 
   no-journeys: No journeys
   no-stages: No stages
+
+  shared: Shared
 
   boardings: Boardings
   day: Day {dayNumber} — {date}
@@ -33,7 +35,7 @@ diary-keeper:
   journeys: Journeys
   method: Method
   parking-cost: Parking cost
-  passengers: Passengers
+  travellers: Companions
   purpose: Purpose
   stages: Stages
   start: Start
@@ -85,12 +87,50 @@ household.submit:
     heading: Household submitted
     content: The household with serial {serial} has been submitted for processing
 
-mark-as-approved:
-  page-title: Mark diary as approved?
-  breadcrumb: Mark diary as approved
 
-  copy: Marking this diary as approved will disallow the diary keeper from further accessing the diary, and will also make the diary eligible to be exported.
-  confirm: Mark diary as approved
+diary-state:
+  approve:
+    page-title: Mark diary as approved?
+    breadcrumb: Mark diary as approved
+    copy: Marking this diary as approved will prevent it from being editable. All diaries in a household must be approved before the household can be submitted for export.
+    confirm: Mark diary as approved
+    empty-journeys-copy: The following days have no journeys
+    confirm-empty-journeys: I have verified with the diary keeper ({name}) that there were no qualifying journeys on these days
+    confirmed-notification:
+      heading: Diary approved for {name}
+      content: The diary for {name} has been marked as approved
+  un-approve:
+    page-title: Un-approve diary?
+    breadcrumb: Un-approve diary
+    copy: Un-approving this diary will allow the diary keeper to again access the diary, and the diary will no longer be eligible for export.
+    confirm: Un-approve diary
+    confirmed-notification:
+      heading: Diary un-approved for {name}
+      content: The diary for {name} has been un-approved
+  re-open:
+    page-title: Mark diary and in progress (re-open)?
+    breadcrumb: Re-open diary
+    copy: Re-opening this diary will allow {name} (and authorised proxies) to edit the diary again.
+    confirm: Re-open diary
+    confirmed-notification:
+      heading: Diary re-opened for {name}
+      content: The diary for {name} has been re-opened
+  discard:
+    page-title: Discard diary?
+    breadcrumb: Discard diary
+    copy: Discarding this diary will prevent the diary from being approved, although the data will be exported.
+    confirm: Discard diary
+    confirmed-notification:
+      heading: Diary discarded for {name}
+      content: The diary for {name} has been marked for discard
+  un-discard:
+    page-title: Un-discard diary?
+    breadcrumb: Un-discard diary
+    copy: Un-discarding this diary will allow the diary keeper to again access the diary, and the diary will no longer be eligible for export.
+    confirm: Un-discard diary
+    confirmed-notification:
+      heading: Diary un-discarded for {name}
+      content: The diary for {name} has been un-discarded
 
 onboarding-codes:
   page-title: Onboarding codes for {serial}
@@ -100,24 +140,10 @@ onboarding-codes:
 
   no-codes: No codes available
 
+  household: Used by incomplete household
   passcode-1: Passcode 1
   passcode-2: Passcode 2
   title: NTS Onboarding code — Area {area}
-
-subscribe.subscribe:
-  page-title: "Subscribe to area"
-
-  form:
-    area:
-      label: Area ID
-      help: An Area ID is a 6 digit number consisting of 2 year digits, 2 month digits and 2 sample point digits.
-    subscribe: Subscribe
-
-subscribe.unsubscribe:
-  page-title: "Unsubscribe from area {area}?"
-
-  form:
-    unsubscribe: Unsubscribe
 
 survey-area:
   page-title: "Area: {area}"
@@ -127,7 +153,6 @@ survey-area:
   households: Households
   no-households: No households in this area
   onboarding-codes: View Onboarding Codes
-  unsubscribe: Unsubscribe from this area
   view: View
   view-sr-hidden-suffix: Address number {address}, household {household}
 
@@ -141,7 +166,6 @@ survey-areas:
   page-title: Interviewer dashboard ({name})
 
   no-active-areas: No active areas
-  subscribe-to-new-area: Subscribe to new area
 
   view: View
   view-sr-hidden-suffix: "area {area}"
@@ -150,9 +174,47 @@ survey-areas:
     active-households: Active households
     area: Area ID
 
-undo-approval:
-  page-title: Unapprove diary?
-  breadcrumb: Unapprove diary
 
-  copy: Unapproving this diary will allow the diary keeper to again access the diary, and the diary will no longer be eligible for export.
-  confirm: Unapprove diary
+training:
+  module:
+    number: module {number}
+    title:
+      personal-diary: personal travel diary
+      walkthrough: video walkthrough
+      onboarding: onboarding practice
+      diary-correction: correcting a travel diary
+      diary-correction-answers: diary correction answers
+    created: Created
+    started: Started
+    completed: Completed
+    status: Status
+    history:
+      caption: Training history
+  state:
+    label: >-
+      {state, select,
+        new         {Not started}
+        in_progress {In progress}
+        complete    {Complete}
+        other       {}
+      }
+    color: >-
+      {state, select,
+        new         {orange}
+        in_progress {blue}
+        complete    {green}
+        other       {}
+      }
+
+  dashboard:
+    page-title: Interviewer Training Dashboard for {name}
+    table:
+      caption: Current training modules
+  retake:
+    page-title: "Retake {moduleNumber}: {moduleName}"
+    copy: 'Do you wish to retake the {moduleName} training module?'
+    warning: This will prevent you from working on previous instances of this module
+    confirm-label: Retake {moduleName}
+    confirmed-notification:
+      heading: Retaking {moduleName}
+      content: The {moduleName} training module has been set up for retaking.

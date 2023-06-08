@@ -34,6 +34,7 @@ Successful response will be an array of [household](#household) objects
 ## Models
 
 - [Household](#household)
+- [Vehicle](#vehicle)
 - [Diary Keeper](#diary-keeper)
 - [Day](#day)
 - [Journey](#journey)
@@ -63,11 +64,36 @@ Successful response will be an array of [household](#household) objects
 }
 ```
 
+### Vehicle
+
+- `capiNumber` int (CAPI number)
+- `name` string
+- `odometerUnit` string (enum: `miles`, `kilometres`) | null
+- `weekStartOdometerReading` int | null
+- `weekEndOdometerReading` int | null
+
+#### Example
+```json
+{
+  "capiNumber": 1,
+  "name": "Red car",
+  "odometerUnit": "miles",
+  "weekStartOdometerReading": 31546,
+  "weekEndOdometerReading": 31672
+}
+```
+
+
 ### Diary Keeper
 
 - `person` int (CAPI number)
 - `name` string
 - `isAdult` boolean
+- `mediaType` string (enum: `digital`, `paper`)
+- `state` string (enum: `approved`, `discarded`)
+- `hasUsedPracticeDay` boolean
+- `emptyDiaryDaysVerirfiedBy` string (email address)
+- `emptyDiaryDaysVerirfiedAt` string (formatted date/time)
 - `days` array
 
 #### Example
@@ -76,6 +102,11 @@ Successful response will be an array of [household](#household) objects
   "person": 1, 
   "name": "Alice", 
   "isAdult": true,
+  "mediaType": "digital",
+  "state": "approved",
+  "hasUsedPracticeDay": false,
+  "emptyDaysVerifiedBy": "bob@example.com",
+  "emptyDaysVerifiedAt": "2023-05-22T15:06:50+01:00",
   "days": [...]
 ```
 

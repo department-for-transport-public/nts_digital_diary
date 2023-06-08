@@ -3,12 +3,12 @@
 namespace App\Entity;
 
 use App\Repository\DiaryKeeperRepository;
+use DateTimeImmutable;
 use Doctrine\Common\Collections\ArrayCollection;
 use Doctrine\Common\Collections\Collection;
 use Doctrine\ORM\Mapping as ORM;
 use Symfony\Bridge\Doctrine\Validator\Constraints\UniqueEntity;
 use Symfony\Component\Validator\Constraints as Assert;
-use Symfony\Component\Validator\Context\ExecutionContextInterface;
 
 /**
  * @ORM\Entity(repositoryClass=DiaryKeeperRepository::class)
@@ -26,13 +26,18 @@ class DiaryKeeper implements UserPersonInterface
     const STATE_IN_PROGRESS = 'in-progress';
     const STATE_COMPLETED = 'completed';
     const STATE_APPROVED = 'approved';
+    const STATE_DISCARDED = 'discarded';
 
+    const TRANSITION_DISCARD = 'discard';
     const TRANSITION_APPROVE = 'approve';
     const TRANSITION_COMPLETE = 'complete';
     const TRANSITION_START = 'start';
-    const TRANSITION_UNDO_APPROVAL = 'undo-approval';
+    const TRANSITION_UNDO_APPROVAL = 'undo-approve';
+    const TRANSITION_UNDO_DISCARD = 'undo-discard';
     const TRANSITION_UNDO_COMPLETE = 'undo-complete';
 
+    const MEDIA_TYPE_DIGITAL = 'digital';
+    const MEDIA_TYPE_PAPER = 'paper';
     use IdTrait;
 
     /**
@@ -44,6 +49,7 @@ class DiaryKeeper implements UserPersonInterface
     /**
      * @ORM\Column(type="boolean")
      * @Assert\NotNull(groups={"wizard.on-boarding.diary-keeper.details"}, message="wizard.diary-keeper.is-adult.not-null")
+     * @Assert\Expression("(value === true) || this.getPrimaryDriverVehicles().isEmpty()", groups={"wizard.on-boarding.diary-keeper.details"}, message="wizard.diary-keeper.is-adult.has-vehicles")
      */
     private ?bool $isAdult;
 
@@ -62,11 +68,18 @@ class DiaryKeeper implements UserPersonInterface
     private ?int $number;
 
     /**
-     * @var Collection|DiaryDay[]
+     * @var Collection<int, DiaryDay>
      * @ORM\OneToMany(targetEntity=DiaryDay::class, mappedBy="diaryKeeper", cascade={"persist"}, indexBy="number", orphanRemoval=true)
      * @ORM\OrderBy({"number" = "ASC"})
      */
     private Collection $diaryDays;
+
+    /**
+     * @var Collection<int, Vehicle>
+     * @ORM\OneToMany(targetEntity=Vehicle::class, mappedBy="primaryDriver")
+     * @ORM\OrderBy({"friendlyName" = "ASC"})
+     */
+    private Collection $primaryDriverVehicles;
 
     private ?array $frequentLocations = [];
 
@@ -93,6 +106,22 @@ class DiaryKeeper implements UserPersonInterface
      */
     private Collection $actingAsProxyFor;
 
+    /**
+     * @ORM\Column(type="string", length=10)
+     * @Assert\NotNull(groups={"wizard.on-boarding.diary-keeper.media-type"}, message="common.choice.invalid")
+     */
+    private ?string $mediaType;
+
+    /**
+     * @ORM\Column(type="string", length=255, nullable=true)
+     */
+    private ?string $emptyDaysVerifiedBy;
+
+    /**
+     * @ORM\Column(type="datetime_immutable", nullable=true)
+     */
+    private ?DateTimeImmutable $emptyDaysVerifiedAt;
+
     public function __construct()
     {
         $this->diaryDays = new ArrayCollection();
@@ -107,38 +136,10 @@ class DiaryKeeper implements UserPersonInterface
         }
 
         $this->diaryState = self::STATE_NEW;
+        $this->primaryDriverVehicles = new ArrayCollection();
 
         $this->proxies = new ArrayCollection();
         $this->actingAsProxyFor = new ArrayCollection();
-    }
-
-    /**
-     * @Assert\Callback(groups="wizard.on-boarding.diary-keeper.identity")
-     */
-    public function validateIdentity(ExecutionContextInterface $context)
-    {
-        $hasIdentifier = $this->getUser()->hasIdentifierForLogin();
-        $hasProxier = $this->getProxies()->count() > 0;
-
-        $householdAlreadyHasDiaryKeepers = $this->getHousehold()->getDiaryKeepers()->count() > 1;
-
-        if (!$hasIdentifier) {
-            if (!$hasProxier) {
-                // Must have at least one login or proxy
-                $errorKey = $householdAlreadyHasDiaryKeepers ? 'at-least-one' : 'enter-email';
-
-                $context->buildViolation("wizard.on-boarding.diary-keeper.identity.{$errorKey}")
-                    ->atPath($householdAlreadyHasDiaryKeepers ? "user" : "user.username")
-                    ->addViolation();
-            } else if ($this->isActingAsAProxyForOthers()) {
-                $context->buildViolation("wizard.on-boarding.diary-keeper.identity.not-empty-when-acting-as-a-proxy")
-                    ->atPath("user.username")
-                    ->setParameters([
-                        'names' => join(', ', $this->getActingAsAProxyForNames()),
-                    ])
-                    ->addViolation();
-            }
-        }
     }
 
     /**
@@ -200,7 +201,7 @@ class DiaryKeeper implements UserPersonInterface
     }
 
     /**
-     * @return Collection|DiaryDay[]
+     * @return Collection<int, DiaryDay>
      */
     public function getDiaryDays(): Collection
     {
@@ -267,6 +268,20 @@ class DiaryKeeper implements UserPersonInterface
     public function setFrequentLocations(array $frequentLocations): self
     {
         $this->frequentLocations = $frequentLocations;
+        return $this;
+    }
+
+    /**
+     * @return Collection<int, Vehicle>
+     */
+    public function getPrimaryDriverVehicles(): Collection
+    {
+        return $this->primaryDriverVehicles;
+    }
+
+    public function setPrimaryDriverVehicles(Collection $primaryDriverVehicles): self
+    {
+        $this->primaryDriverVehicles = $primaryDriverVehicles;
         return $this;
     }
 
@@ -394,5 +409,45 @@ class DiaryKeeper implements UserPersonInterface
     {
         $user = $this->getUser();
         return $user && $user->hasIdentifierForLogin();
+    }
+
+    public function getMediaType(): ?string
+    {
+        return $this->mediaType ?? null;
+    }
+
+    public function setMediaType(?string $mediaType): self
+    {
+        $this->mediaType = $mediaType;
+
+        return $this;
+    }
+
+    public function getEmptyDaysVerifiedBy(): ?string
+    {
+        return $this->getDiaryState() === self::STATE_APPROVED
+            ? $this->emptyDaysVerifiedBy
+            : null;
+    }
+
+    public function setEmptyDaysVerifiedBy(?string $emptyDaysVerifiedBy): self
+    {
+        $this->emptyDaysVerifiedBy = $emptyDaysVerifiedBy;
+
+        return $this;
+    }
+
+    public function getEmptyDaysVerifiedAt(): ?DateTimeImmutable
+    {
+        return $this->getDiaryState() === self::STATE_APPROVED
+            ? $this->emptyDaysVerifiedAt
+            : null;
+    }
+
+    public function setEmptyDaysVerifiedAt(?DateTimeImmutable $emptyDaysVerifiedAt): self
+    {
+        $this->emptyDaysVerifiedAt = $emptyDaysVerifiedAt;
+
+        return $this;
     }
 }

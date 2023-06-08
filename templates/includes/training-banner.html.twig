@@ -1,0 +1,18 @@
+{#
+only in use when training
+
+Special notes for onboarding trainng return links can be found in
+templates/on_boarding/base.html.twig
+#}
+
+{% from '@GhostGovUkFrontend/components/macros.html.twig' import notificationBanner %}
+{# @var trainingRecord \App\Entity\InterviewerTrainingRecord #}
+{%- set content %}
+    <p class="govuk-body">
+        {{ "training.module.number" | trans({number: trainingRecord.moduleNumber}, 'interviewer') | capitalize }}:
+        {{ "training.module.title.#{trainingRecord.moduleName}" | trans({}, 'interviewer') }}
+        -
+        <a class="govuk-link" href="{{ moduleUrl ?? impersonation_exit_path(app.session.get('switch_user_source') ?? path('interviewer_dashboard')) }}">Return to module</a>
+    </p>
+{%- endset -%}
+{{ notificationBanner({title: 'notification.interviewer-training', content: content}, {html_content: true, class: 'govuk-notification-banner--interviewer-training'}) }}

@@ -10,6 +10,7 @@ actions:
   move-up: Move up
   move-down: Move down
   save-and-continue: Save and continue
+  save: Save
   view: View
 
 admin:
@@ -77,6 +78,18 @@ errors:
     copy: |-
       The service is undergoing scheduled maintenance, and is not available. Check back in 15 minutes.
 
+feedback:
+  comments.label: Comments
+  email:
+    help: We will be able to reply if you provide an email address
+    label: Email
+  send.label: Send feedback
+  page-title: Feedback
+
+feedback-thanks:
+  page-title: Thanks!
+  copy: Your feedback has been successfully submitted
+
 format: # Unused??
   date:
     default: 'd/m/Y'
@@ -119,6 +132,7 @@ notification:
   success: Success
   warning: Warning
   user-impersonation: User impersonation
+  interviewer-training: NatCen interviewer training
 
 start-now : Start now
 
@@ -139,3 +153,7 @@ unit.distance:
   metres: Metres
   value.label: Distance
   unit.label: Unit
+
+unit.odometer-reading:
+  miles: Miles
+  kilometres: Kilometres

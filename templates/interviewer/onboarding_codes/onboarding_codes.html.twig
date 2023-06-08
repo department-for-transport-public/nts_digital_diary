@@ -15,6 +15,11 @@
         <div class="onboarding-codes__code-pair">
             <div class="onboarding-codes__title">{{ "onboarding-codes.title" | trans({area: areaPeriod.area}) }}</div>
             <div class="onboarding-codes__url">{{ url('onboarding_dashboard') }}</div>
+            {% if code.household ?? false %}
+                <div class="onboarding-codes__id">
+                    <span>{{ "onboarding-codes.household" | trans }}:</span> {{ code.household.addressNumber }} / {{ code.household.householdNumber }}
+                </div>
+            {% endif %}
             <div class="onboarding-codes__id">
                 <span>{{ "onboarding-codes.passcode-1" | trans }}:</span> {{ code.id }}
             </div>

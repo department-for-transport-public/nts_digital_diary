@@ -2,7 +2,6 @@
 namespace Symfony\Component\DependencyInjection\Loader\Configurator;
 
 use App\Form\TravelDiary\RepeatJourneyWizard\PurposeType;
-use App\Form\TravelDiary\RepeatJourneyWizard\TargetDayType;
 use App\Form\TravelDiary\RepeatJourneyWizard\TimesType;
 use App\Form\TravelDiary\RepeatJourneyWizard\SourceDayType;
 use App\Form\TravelDiary\RepeatJourneyWizard\SourceJourneyType;
@@ -38,16 +37,6 @@ return static function (ContainerConfigurator $container) {
                     td_place(State::STATE_SELECT_SOURCE_JOURNEY,SourceJourneyType::class, 'repeat-journey.select-source-journey', [
                         'form_data_property' => null,
                     ]),
-                    td_place(State::STATE_ALT_INTRODUCTION,null, 'repeat-journey.alt-introduction', [
-                        'translation_parameters' => [
-                            'startLocation' => 'subject.startLocationForDisplay',
-                            'endLocation' => 'subject.endLocationForDisplay',
-                        ],
-                        'is_valid_alternative_start_place' => true
-                    ], 'travel_diary/repeat_journey/wizard_alt_introduction.html.twig'),
-                    td_place(State::STATE_SELECT_TARGET_DAY,TargetDayType::class, 'repeat-journey.target-day', [
-                        'form_options' => ['is_practice' => 'isPracticeDay'],
-                    ]),
                     td_place(State::STATE_PURPOSE,PurposeType::class, 'repeat-journey.purpose'),
                     td_place(State::STATE_ADJUST_TIMES,TimesType::class, 'repeat-journey.adjust-times'),
                     td_place(State::STATE_ADJUST_STAGE_DETAILS,StageDetailsType::class, 'repeat-journey.stage-details', [
@@ -71,18 +60,8 @@ return static function (ContainerConfigurator $container) {
                         State::STATE_SELECT_SOURCE_JOURNEY,
                     ),
                     td_transition(
-                        State::TRANSITION_SOURCE_JOURNEY_TO_TARGET_DAY,
+                        State::TRANSITION_SOURCE_JOURNEY_TO_PURPOSE,
                         State::STATE_SELECT_SOURCE_JOURNEY,
-                        State::STATE_SELECT_TARGET_DAY,
-                    ),
-                    td_transition(
-                        State::TRANSITION_ALT_INTRO_TO_TARGET_DAY,
-                        State::STATE_ALT_INTRODUCTION,
-                        State::STATE_SELECT_TARGET_DAY,
-                    ),
-                    td_transition(
-                        State::TRANSITION_TARGET_DAY_TO_PURPOSE,
-                        State::STATE_SELECT_TARGET_DAY,
                         State::STATE_PURPOSE,
                     ),
                     td_transition(

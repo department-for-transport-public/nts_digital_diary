@@ -6,6 +6,7 @@ use App\Controller\AbstractController as RootAbstractController;
 use App\Entity\User;
 use App\Exception\RedirectResponseException;
 use App\Repository\UserRepository;
+use App\Security\Voter\UserValidForLoginVoter;
 use App\Utility\UrlSigner;
 use Doctrine\ORM\EntityManagerInterface;
 use Ghost\GovUkFrontendBundle\Model\NotificationBanner;
@@ -58,7 +59,7 @@ class AbstractController extends RootAbstractController
 
         $user = $this->userRepository->findOneBy($cachedCriteria);
 
-        if (!$user || !$user->isValidForLogin()) {
+        if (!$user || !$this->isGranted(UserValidForLoginVoter::USER_VALID_FOR_LOGIN, $user)) {
             $this->redirectToLoginWithInvalidLinkMessage();
         }
 

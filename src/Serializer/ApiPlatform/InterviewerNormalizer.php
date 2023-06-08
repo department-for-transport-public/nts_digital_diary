@@ -4,6 +4,7 @@ namespace App\Serializer\ApiPlatform;
 
 use App\Entity\AreaPeriod;
 use App\Entity\Interviewer;
+use App\Repository\InterviewerTrainingRecordRepository;
 use Symfony\Component\Serializer\Normalizer\ContextAwareNormalizerInterface;
 use Symfony\Component\Serializer\Normalizer\NormalizerAwareInterface;
 use Symfony\Component\Serializer\Normalizer\NormalizerAwareTrait;
@@ -11,6 +12,10 @@ use Symfony\Component\Serializer\Normalizer\NormalizerAwareTrait;
 class InterviewerNormalizer implements ContextAwareNormalizerInterface, NormalizerAwareInterface
 {
     use NormalizerAwareTrait;
+
+    public function __construct(private readonly InterviewerTrainingRecordRepository $trainingRecordRepository)
+    {
+    }
 
     public function supportsNormalization($data, string $format = null, array $context = []): bool
     {
@@ -35,6 +40,11 @@ class InterviewerNormalizer implements ContextAwareNormalizerInterface, Normaliz
                 $object->getAreaPeriods(),
                 $format,
                 array_merge($context, [EntityAsIdNormalizer::CONTEXT_KEY => true])
+            );
+            $interviewer['training_record'] = $this->normalizer->normalize(
+                $this->trainingRecordRepository->findLatestForInterviewer($object),
+                $format,
+                $context,
             );
         }
 

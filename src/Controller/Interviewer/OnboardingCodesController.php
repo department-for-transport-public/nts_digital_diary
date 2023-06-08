@@ -10,6 +10,7 @@ use App\Utility\AreaPeriodHelper;
 use Doctrine\ORM\EntityManagerInterface;
 use Sensio\Bundle\FrameworkExtraBundle\Configuration\Template;
 use Symfony\Component\Routing\Annotation\Route;
+use Symfony\Component\Security\Core\Security;
 use Symfony\Component\Security\Core\User\UserInterface;
 
 class OnboardingCodesController extends AbstractController
@@ -18,9 +19,9 @@ class OnboardingCodesController extends AbstractController
     protected PasscodeGenerator $passcodeGenerator;
     private AreaPeriodHelper $areaPeriodHelper;
 
-    public function __construct(EntityManagerInterface $entityManager, OtpUserRepository $otpUserRepository, PasscodeGenerator $passcodeGenerator, AreaPeriodHelper $areaPeriodHelper)
+    public function __construct(EntityManagerInterface $entityManager, Security $security, OtpUserRepository $otpUserRepository, PasscodeGenerator $passcodeGenerator, AreaPeriodHelper $areaPeriodHelper)
     {
-        parent::__construct($entityManager);
+        parent::__construct($entityManager, $security);
         $this->otpUserRepository = $otpUserRepository;
         $this->passcodeGenerator = $passcodeGenerator;
         $this->areaPeriodHelper = $areaPeriodHelper;
@@ -30,9 +31,9 @@ class OnboardingCodesController extends AbstractController
      * @Route("/areas/{areaPeriod}/onboarding-codes", name="area_onboarding_codes")
      * @Template()
      */
-    public function onboardingCodes(UserInterface $user, AreaPeriod $areaPeriod): array
+    public function onboardingCodes(AreaPeriod $areaPeriod): array
     {
-        $interviewer = $this->getInterviewer($user);
+        $interviewer = $this->getInterviewer();
         $this->checkInterviewerIsSubscribedToAreaPeriod($areaPeriod, $interviewer);
 
         return [
@@ -44,7 +45,7 @@ class OnboardingCodesController extends AbstractController
 
     protected function getCodesForArea(AreaPeriod $areaPeriod): array
     {
-        $codes = $this->otpUserRepository->findBy(['areaPeriod' => $areaPeriod, 'household' => null]);
+        $codes = $this->otpUserRepository->findForInterviewerDashboard($areaPeriod);
 
         if (count($codes) === 0) {
             $codes = $this->areaPeriodHelper->createCodesForArea($areaPeriod);
@@ -52,7 +53,8 @@ class OnboardingCodesController extends AbstractController
 
         $codes = array_map(fn(OtpUser $o) => [
             'id' => $o->getUserIdentifier(),
-            'code' => $this->passcodeGenerator->getPasswordForUserIdentifier($o->getUserIdentifier())
+            'code' => $this->passcodeGenerator->getPasswordForUserIdentifier($o->getUserIdentifier()),
+            'household' => $o->getHousehold(),
         ], $codes);
 
         usort($codes, fn($a, $b) => $a['id'] <=> $b['id']);

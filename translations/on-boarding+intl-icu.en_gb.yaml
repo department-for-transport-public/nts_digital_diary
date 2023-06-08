@@ -20,6 +20,7 @@ dashboard:
   complete-onboarding: Submit household
   diary-keepers: Diary Keepers
   household-vehicles: Household vehicles
+  vehicle-details: "{method} (primary driver: {name})"
   no-diary-keepers: No diary keepers
   no-vehicles: No vehicles
 
@@ -76,6 +77,12 @@ diary-keeper.user-identifier:
         editing     {Edit diary keeper identity}
         other       {Add diary keeper identity}
     }
+  media-type:
+    label: How will this person be recording their travel diary?
+    help: ''
+    choices:
+      digital: Digital diary
+      paper: Paper diary
   consent:
     label: This diary keeper is over 12 years old and consents to receive notifications in relation to this survey
     help: ''
@@ -105,6 +112,7 @@ diary-keeper.view:
     capi: CAPI number
     email: Email
     is-adult: Is an adult
+    media-type: Media type
     user-identifier: Email address
     proxied-by: Proxied by
   change-action-suffix:
@@ -119,6 +127,7 @@ household.details:
   page-title: Household details
   help: "These details are extremely important and are used to match your travel diaries to your interview data. You must ensure that these details have been confirmed by your interviewer."
   change-action-suffix: household details
+  area-number.label: Area number
   address-number:
     label: Address number
     help: ''
@@ -151,6 +160,11 @@ household.introduction:
 vehicle.add:
   page-title: Add vehicle
 
+  cant-add-notification:
+    title: Add a vehicle
+    heading: Can't add a vehicle
+    content: Vehicles can't be added until there is at least one diary keeper who can act as primary driver
+
 vehicle.delete:
   page-title: 'Delete vehicle: "{name}"?'
   delete-action-suffix: "{name}"
@@ -178,6 +192,12 @@ vehicle.form:
   name:
     label: Name
     help: e.g. "Fred's car" or "Blue Micra"
+  primary-driver:
+    label: Primary driver
+    help: This person will need to enter the vehicle's odometer reading at the start and end of the diary week
+  capi-number:
+    label: CAPI number
+    help: ''
   method:
     label: Vehicle type
     help: ''

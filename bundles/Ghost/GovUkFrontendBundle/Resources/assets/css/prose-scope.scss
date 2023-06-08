@@ -18,6 +18,11 @@
   }
   a {
     @extend .govuk-link;
+
+    &.govuk-button {
+      @extend .govuk-button;
+    }
+
   }
   ul, ol {
     @extend .govuk-list;

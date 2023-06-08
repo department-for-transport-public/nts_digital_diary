@@ -2,3 +2,12 @@ cron:
 - description: "Messenger consumer"
   url: "/cron/messenger/consume"
   schedule: 'every 5 minutes synchronized'
+- description: "Cleanup OTP users"
+  url: "/cron/cleanup-otp-users"
+  schedule: "1 of month 01:00"
+#- description: "Purge emails"
+#  url: "/cron/cleanup/purge-old-email-addresses"
+#  schedule: "every day 02:00"
+#- description: "Purge surveys"
+#  url: "/cron/cleanup/purge-old-surveys"
+#  schedule: "every day 03:00"

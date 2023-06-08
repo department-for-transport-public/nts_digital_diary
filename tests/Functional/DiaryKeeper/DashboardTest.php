@@ -2,10 +2,10 @@
 
 namespace App\Tests\Functional\DiaryKeeper;
 
+use App\DataFixtures\Definition\PrivateStageDefinition;
+use App\DataFixtures\Definition\PublicStageDefinition;
 use App\Tests\DataFixtures\JourneyFixtures;
 use App\Tests\DataFixtures\StageFixtures;
-use App\Tests\Definition\PrivateStageDefinition;
-use App\Tests\Definition\PublicStageDefinition;
 use App\Tests\Functional\AbstractFunctionalTestCase;
 use App\Utility\DateTimeFormats;
 use Symfony\Contracts\Translation\TranslatorInterface;

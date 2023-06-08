@@ -2,7 +2,7 @@
 
 namespace App\Security\Voter;
 
-use App\Entity\OtpUser;
+use App\Entity\OtpUserInterface;
 use Symfony\Component\Security\Core\Authentication\Token\TokenInterface;
 use Symfony\Component\Security\Core\Authorization\Voter\Voter;
 
@@ -19,7 +19,7 @@ class OnboardingVoter extends Voter
     {
         $user = $token->getUser();
         // if the user is anonymous, do not grant access
-        if (!$user instanceof OtpUser) {
+        if (!$user instanceof OtpUserInterface) {
             return false;
         }
 

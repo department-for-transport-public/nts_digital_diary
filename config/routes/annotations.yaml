@@ -12,6 +12,11 @@ core:
     type: annotation
     host: '%hostnames.frontend%'
 
+feedback:
+    resource: ../../src/Controller/FeedbackController.php
+    type: annotation
+    host: '%hostnames.frontend%'
+
 session:
     resource: ../../src/Controller/CommonController.php
     type: annotation

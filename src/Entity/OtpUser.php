@@ -11,7 +11,7 @@ use Symfony\Component\Serializer\Annotation\Ignore;
 /**
  * @ORM\Entity(repositoryClass=OtpUserRepository::class)
  */
-class OtpUser implements UserInterface
+class OtpUser implements UserInterface, OtpUserInterface
 {
     use IdTrait;
 

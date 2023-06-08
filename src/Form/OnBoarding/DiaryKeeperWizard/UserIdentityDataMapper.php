@@ -62,10 +62,16 @@ class UserIdentityDataMapper extends DataMapper
 
         parent::mapFormsToData($forms, $data);
 
+        if($data->getMediaType() === DiaryKeeper::MEDIA_TYPE_PAPER) {
+            $user->setUserIdentifier(null);
+            $proxies = $data->getProxies()->toArray();
+            array_walk($proxies, fn($p) => $data->removeProxy($p));
+        }
+
         if (!$user->getUserIdentifier()) {
-            $newUserIdentifier = User::isNoLoginPlaceholder($currentUserIdentifier) ?
-                $currentUserIdentifier :
-                (User::NO_LOGIN_PLACEHOLDER.':'.(new Ulid()));
+            $newUserIdentifier = User::isNoLoginPlaceholder($currentUserIdentifier)
+                ? $currentUserIdentifier
+                : User::generateNoLoginPlaceholder();
 
             $user
                 ->setUserIdentifier($newUserIdentifier);
