@@ -90,7 +90,7 @@ class ReturnJourneyTest extends AbstractJourneyTest
 
         $tests[] = new CallbackAction(
             function (Context $context) use ($returnToHome, $linkIndex, $overwriteStageDetails) {
-                $dk = $context->getEntityManager()->getRepository(User::class)->getDiaryKeeperJourneysAndStages(self::TEST_USERNAME);
+                $dk = $context->getEntityManager()->getRepository(User::class)->getDiaryKeeperJourneysAndStagesForTests(self::TEST_USERNAME);
 
                 $dayOneJourneys = $dk->getDiaryDayByNumber(1)->getJourneys();
 

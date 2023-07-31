@@ -7,10 +7,10 @@ use App\Entity\Distance;
 class PublicStageDefinition extends StageDefinition
 {
     protected string $ticketType;
-    protected ?int $ticketCost;
+    protected ?string $ticketCost;
     protected int $boardingCount;
 
-    public function __construct(int $number, string $method, Distance $distance, int $travelTime, int $adultCount, int $childCount, int $ticketCost, string $ticketType, int $boardingCount, ?string $methodOther = null) {
+    public function __construct(int $number, string $method, Distance $distance, int $travelTime, int $adultCount, int $childCount, ?string $ticketCost, string $ticketType, int $boardingCount, ?string $methodOther = null) {
         parent::__construct($number, $method, $distance, $travelTime, $adultCount, $childCount);
 
         $this->ticketCost = $ticketCost;
@@ -24,7 +24,7 @@ class PublicStageDefinition extends StageDefinition
         return $this->ticketType;
     }
 
-    public function getTicketCost(): ?int {
+    public function getTicketCost(): ?string {
         return $this->ticketCost;
     }
 

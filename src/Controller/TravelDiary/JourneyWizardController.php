@@ -29,8 +29,8 @@ class JourneyWizardController extends AbstractSessionStateFormWizardController
     private ?string $dayNumber;
 
     /**
-     * @Route("/day-{dayNumber}/add-journey/{place}", name="place")
-     * @Route("/day-{dayNumber}/add-journey", name="start")
+     * @Route("/day-{dayNumber}/add-journey/{place}", name="place", requirements={"dayNumber": "[0-7]{1}"})
+     * @Route("/day-{dayNumber}/add-journey", name="start", requirements={"dayNumber": "[0-7]{1}"})
      * @throws ExceptionInterface
      */
     public function add(Request $request, ?string $place = null, ?string $dayNumber = null): Response

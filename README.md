@@ -10,6 +10,8 @@
 
 ## Related documents / config
 - [Change log](docs/ChangeLog.md)
+- [Doctrine](docs/Doctrine.md)
 - [Environment variables `Features` config](docs/Features.md)
-- [Form wizard configuration](config/form_wizards/README.md)
+- [Form wizard](docs/FormWizard.md)
+- [Translation parameter properties extension](docs/TranslationParameterPropertiesExtension.md)
 - [API](docs/API.md)

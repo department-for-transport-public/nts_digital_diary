@@ -10,7 +10,7 @@
     #}
     {%- if is_granted(constant('\App\\Security\\OneTimePassword\\InMemoryOtpUser::ROLE_ON_BOARDING_TRAINING')) or (trainingInterviewer ?? false) -%}
         {% set trainingInterviewer = trainingInterviewer ?? app.user.interviewer %}
-        {% set trainingRecord = trainingInterviewer.latestTrainingRecordForModule(constant('\App\\Entity\\InterviewerTrainingRecord::MODULE_ONBOARDING')) ?? false %}
+        {% set trainingRecord = trainingInterviewer.latestTrainingRecordForModule(constant('\App\\Entity\\InterviewerTrainingRecord::MODULE_ONBOARDING_PRACTICE')) ?? false %}
         {%- include 'includes/training-banner.html.twig' with {
             moduleUrl: is_granted(constant('\App\\Security\\OneTimePassword\\InMemoryOtpUser::ROLE_ON_BOARDING_TRAINING'))
                 ? logout_path()

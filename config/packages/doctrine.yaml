@@ -3,6 +3,7 @@ doctrine:
         url: '%env(resolve:DATABASE_URL)%'
         types:
             datetimemicrosecond: App\Doctrine\DBAL\Types\DateTimeMicrosecondType
+            decimal_brick: App\Doctrine\DBAL\Types\DecimalBrickType
         # lock_keys table is used by lock component, which is used by rate limiter
         schema_filter: ~^(?!lock_keys)~
 

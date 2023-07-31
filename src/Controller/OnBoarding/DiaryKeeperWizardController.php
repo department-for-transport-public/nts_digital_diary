@@ -64,12 +64,14 @@ class DiaryKeeperWizardController extends AbstractSessionStateFormWizardControll
             $baseEntity = new DiaryKeeper();
         }
 
-        $user->getHousehold()->addDiaryKeeper($baseEntity);
-
-        return $state->setSubject($this->propertyMerger->merge($baseEntity, $state->getSubject(), [
+        $baseEntity = $this->propertyMerger->merge($baseEntity, $state->getSubject(), [
             /* details form */  'name', 'number', 'isAdult',
             /* identity form */ 'user', '?user.username', 'proxies',
-        ]));
+        ]);
+
+        $user->getHousehold()->addDiaryKeeper($baseEntity);
+
+        return $state->setSubject($baseEntity);
     }
 
     protected function getRedirectResponse(?Place $place): RedirectResponse

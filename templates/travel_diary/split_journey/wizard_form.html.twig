@@ -1,0 +1,8 @@
+{%- extends 'travel_diary/base_form.html.twig' -%}
+
+{%- trans_default_domain 'travel-diary' -%}
+
+{%- block formContext -%}
+    {%- import "travel_diary/journey/macros_sidebar.html.twig" as j -%}
+    {{- j.journeySidebar(originalJourney, {header_translation_key: 'split-journey.sidebar.title', show_purpose: false, show_stages: false}) -}}
+{%- endblock -%}

@@ -16,6 +16,8 @@ return static function (ContainerConfigurator $container) {
         ],
     ];
 
+    $defaultTemplate = 'travel_diary/repeat_journey/wizard_form.html.twig';
+
     $container->extension('framework', [
         'workflows' => [
             'form_wizard.travel_diary.return_journey' => [
@@ -35,15 +37,15 @@ return static function (ContainerConfigurator $container) {
                             'endLocation' => 'subject.endLocationForDisplay',
                         ],
                     ], 'travel_diary/return_journey/wizard_introduction.html.twig'),
-                    td_place(State::STATE_PURPOSE,PurposeType::class, 'journey.purpose'),
-                    td_place(State::STATE_DAY,TargetDayType::class, 'return-journey.select-day'),
-                    td_place(State::STATE_TIMES,TimesType::class, 'return-journey.journey-times'),
+                    td_place(State::STATE_PURPOSE,PurposeType::class, 'journey.purpose', [], $defaultTemplate),
+                    td_place(State::STATE_DAY,TargetDayType::class, 'return-journey.select-day', [], $defaultTemplate),
+                    td_place(State::STATE_TIMES,TimesType::class, 'return-journey.journey-times', [], $defaultTemplate),
                     td_place(State::STATE_STAGE_DETAILS,StageDetailsType::class, 'return-journey.stage-details', [
                         'form_data_property' => 'contextStage',
                         'view_data' => [
                             'title_translatable_message' => 'stageDetailsTitle',
                         ],
-                    ]),
+                    ], $defaultTemplate),
 
                     ['name' => State::STATE_FINISH],
                 ],

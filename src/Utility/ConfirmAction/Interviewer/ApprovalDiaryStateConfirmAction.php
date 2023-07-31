@@ -4,6 +4,7 @@ namespace App\Utility\ConfirmAction\Interviewer;
 
 use App\Entity\DiaryDay;
 use App\Form\DoubleConfirmActionType;
+use App\Form\TravelDiary\ApproveDiaryConfirmActionType;
 use Doctrine\ORM\EntityManagerInterface;
 use Symfony\Component\Form\FormFactoryInterface;
 use Symfony\Component\HttpFoundation\RequestStack;
@@ -18,51 +19,32 @@ class ApprovalDiaryStateConfirmAction extends ChangeDiaryStateConfirmAction
         parent::__construct($formFactory, $requestStack, $entityManager, $travelDiaryStateStateMachine, $router);
     }
 
-    protected function hasEmptyDays(): bool
-    {
-        return !$this->subject
-            ->getDiaryDays()
-            ->filter(fn(DiaryDay $d) => $d->getJourneys()->isEmpty())
-            ->isEmpty();
-    }
-
     public function getExtraViewData(): array
     {
         return array_merge(parent::getExtraViewData(), [
-            'hasEmptyDays' => $this->hasEmptyDays(),
+            'hasEmptyDays' => $this->subject->hasEmptyDays(),
         ]);
     }
 
     public function getFormClass(): string
     {
-        return $this->hasEmptyDays()
-            ? DoubleConfirmActionType::class
-            : parent::getFormClass();
+        return ApproveDiaryConfirmActionType::class;
     }
 
     public function getFormOptions(): array
     {
-        return array_merge(
-            parent::getFormOptions(),
-            $this->hasEmptyDays()
-                ?
-                    [
-                        'confirmation_checkbox_options' => [
-                            'label' => 'diary-state.approve.confirm-empty-journeys',
-                            'label_translation_parameters' => $this->getTranslationParameters(),
-                        ],
-                    ]
-                : []
-        );
+        return array_merge(parent::getFormOptions(), [
+            'diary_keeper' => $this->getSubject(),
+        ]);
     }
 
     public function doConfirmedAction($formData)
     {
-        if (($formData['confirmation'] ?? false) === true) {
-            $this->subject
-                ->setEmptyDaysVerifiedBy($this->security->getUser()->getUserIdentifier())
-                ->setEmptyDaysVerifiedAt(new \DateTimeImmutable());
-        }
+        // if the form validated, all items were checked
+        $this->subject
+            ->setApprovalChecklistVerifiedBy($this->security->getUser()->getUserIdentifier())
+            ->setApprovalChecklistVerifiedAt(new \DateTimeImmutable());
+
         parent::doConfirmedAction($formData);
     }
 }

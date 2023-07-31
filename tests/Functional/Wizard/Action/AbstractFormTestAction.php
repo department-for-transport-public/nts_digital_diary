@@ -175,21 +175,21 @@ abstract class AbstractFormTestAction extends PathTestAction
         }
 
         if ($this->isAtLeastDebugLevel($context, 4)) {
-            $this->takeDebugScreenshot($context, $testCaseIdx, 'pre-fill');
+            $this->takeDebugScreenshot($context, $testCaseIdx, 'a-pre-fill');
         }
     }
 
     protected function outputPostFormFillDebug(Context $context, int $testCaseIdx): void
     {
         if ($this->isAtLeastDebugLevel($context, 3)) {
-            $this->takeDebugScreenshot($context, $testCaseIdx, 'post-fill');
+            $this->takeDebugScreenshot($context, $testCaseIdx, 'b-post-fill');
         }
     }
 
     protected function outputPostFormSubmitDebug(Context $context, int $testCaseIdx): void
     {
         if ($this->isAtLeastDebugLevel($context, 5)) {
-            $this->takeDebugScreenshot($context, $testCaseIdx, 'post-sub');
+            $this->takeDebugScreenshot($context, $testCaseIdx, 'c-post-sub');
         }
     }
 

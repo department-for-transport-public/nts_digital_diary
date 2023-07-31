@@ -3,7 +3,6 @@
 namespace App\Utility;
 
 use Symfony\Component\Translation\MessageCatalogueInterface;
-use Symfony\Component\Translation\Translator;
 use Symfony\Component\Translation\TranslatorBagInterface;
 use Symfony\Contracts\Translation\LocaleAwareInterface;
 use Symfony\Contracts\Translation\TranslatableInterface;
@@ -11,9 +10,9 @@ use Symfony\Contracts\Translation\TranslatorInterface;
 
 class TranslatableParameterTranslator implements TranslatorInterface, TranslatorBagInterface, LocaleAwareInterface
 {
-    protected Translator $translator;
+    protected TranslatorInterface $translator;
 
-    public function __construct(Translator $translator)
+    public function __construct(TranslatorInterface $translator)
     {
         $this->translator = $translator;
     }

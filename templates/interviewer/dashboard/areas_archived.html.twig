@@ -1,0 +1,25 @@
+{% extends "interviewer/dashboard/base.html.twig" %}
+
+{% trans_default_domain "interviewer" %}
+{% set action = "archived-areas" %}
+{% set title_translation_key = "survey-areas.archived.page-title" %}
+{% set title_translation_parameters = {
+    'name': app.user.interviewer.name
+} %}
+
+{%- block content -%}
+    {%- import "interviewer/dashboard/macros.html.twig" as d -%}
+
+    {%- for year, areaPeriods in areaPeriodsByYear -%}
+        {{- d.areaPeriodList(areaPeriods, year) -}}
+    {%- else -%}
+        <table class="govuk-table">
+            <tr>
+                <td class="govuk-table__cell">{{ "survey-areas.archived.no-areas" | trans }}</td>
+            </tr>
+        </table>
+    {%- endfor -%}
+    <p class="govuk-body">
+        <a class="govuk-link" href="{{ path('interviewer_dashboard') }}">{{ 'survey-areas.view-dashboard' | trans }}</a>
+    </p>
+{%- endblock -%}

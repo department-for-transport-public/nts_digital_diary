@@ -1,0 +1,211 @@
+{%- trans_default_domain "interviewer" -%}
+
+{%- macro areaPeriodList(areaPeriods, title, noAreasTitle) -%}
+    {%- import "@GhostGovUkFrontend/components/macros.html.twig" as m -%}
+    <table class="govuk-table">
+        <caption class="govuk-table__caption govuk-table__caption--m">{{ title }}</caption>
+        <thead class="govuk-table__head">
+        <tr class="govuk-table__row">
+            <th scope="col" class="govuk-table__header">{{ "survey-areas.table.area" | trans }}</th>
+            <th scope="col" class="govuk-table__header">{{ "survey-areas.table.onboarded-households" | trans }}</th>
+            <th scope="col" class="govuk-table__header">{{ "survey-areas.table.submitted-households" | trans }}</th>
+            <th scope="col" class="govuk-table__header"><span class="govuk-visually-hidden">{{ 'table.action-links'|trans({}, 'messages') }}</span></th>
+        </tr>
+        </thead>
+        <tbody class="govuk-table__body">
+        {%- for areaPeriod in areaPeriods -%}
+            {%- set counts = areaPeriod.getHouseholdSubmittedCounts() -%}
+            <tr class="govuk-table__row">
+                <td class="govuk-table__cell">{{ areaPeriod.area }}</td>
+                <td class="govuk-table__cell">{{ counts.onboarded }}</td>
+                <td class="govuk-table__cell">{{ counts.submitted }}</td>
+                <td class="govuk-table__cell govuk-table__cell--numeric">
+                    {{ m.actionLinks({
+                        (path('interviewer_dashboard_area', {areaPeriod: areaPeriod.id})): {
+                            label: 'survey-areas.view',
+                            labelDomain: 'interviewer',
+                            srHiddenSuffix: 'survey-areas.view-sr-hidden-suffix',
+                            srHiddenSuffixParams: {area: areaPeriod.area},
+                            srHiddenSuffixDomain: 'interviewer',
+                        }
+                    }) }}
+                </td>
+            </tr>
+        {%- else -%}
+            {#-
+                N.B. This isn't relevant for areas_archived, since that's grouped by year, and so if no areas, no
+                     group, and this macro never gets called.
+            -#}
+            <tr>
+                <td class="govuk-table__cell" colspan="4">{{ noAreasTitle | default('-') }}</td>
+            </tr>
+        {%- endfor -%}
+        </tbody>
+    </table>
+{%- endmacro -%}
+
+{% macro dayView(day, options) %}
+    {% set diaryKeeper = day.diaryKeeper %}
+    <table class="govuk-table diary-keeper-view">
+        {% if options.showCaptions ?? true %}<caption class="govuk-table__caption govuk-table__caption--l">{{ "diary-keeper.day" | trans({dayNumber: day.number, date: day.date | date(format_date_with_dow)}) }}</caption>{% endif %}
+        <thead class="govuk-table__head">
+        <tr class="govuk-table__row">
+            <th scope="col" colspan="4" class="compare-cell-journeys govuk-table__header govuk-hidden-from-wide">{{ 'diary-keeper.journeys' | trans }}</th>
+            <th scope="col" colspan="6" class="compare-cell-journeys govuk-table__header govuk-visible-from-wide">{{ 'diary-keeper.journeys' | trans }}</th>
+            <th scope="col" colspan="11" class="compare-cell-stages govuk-table__header">{{ 'diary-keeper.stages' | trans }}</th>
+        </tr>
+        <tr class="govuk-table__row">
+            <th scope="col" class="govuk-table__header">#</th>
+            <th scope="col" class="govuk-table__header compare-purpose">{{ 'diary-keeper.purpose' | trans }}</th>
+            {# single column (time+location) for start/dest at smaller widths #}
+            <th scope="col" class="govuk-table__header govuk-hidden-from-wide">{{ 'diary-keeper.start' | trans }}</th>
+            <th scope="col" class="govuk-table__header govuk-hidden-from-wide">{{ 'diary-keeper.destination' | trans }}</th>
+            {# separate columns (time/location) for start/dest at larger widths #}
+            <th scope="col" colspan="2" class="govuk-table__header govuk-visible-from-wide">{{ 'diary-keeper.start' | trans }}</th>
+            <th scope="col" colspan="2" class="govuk-table__header govuk-visible-from-wide">{{ 'diary-keeper.destination' | trans }}</th>
+
+            <th scope="col" class="govuk-table__header">#</th>
+            <th scope="col" class="govuk-table__header">{{ 'diary-keeper.method' | trans }}</th>
+            <th scope="col" class="govuk-table__header">{{ 'diary-keeper.distance' | trans }}</th>
+            <th scope="col" class="govuk-table__header">{{ 'diary-keeper.duration' | trans }}</th>
+            <th scope="col" class="govuk-table__header">{{ 'diary-keeper.travellers' | trans }}</th>
+            <th scope="col" class="govuk-table__header">{{ 'diary-keeper.vehicle' | trans }}</th>
+            <th scope="col" class="govuk-table__header">{{ 'diary-keeper.driver' | trans }}</th>
+            <th scope="col" class="govuk-table__header">{{ 'diary-keeper.parking-cost' | trans }}</th>
+            <th scope="col" class="govuk-table__header">{{ 'diary-keeper.ticket-type' | trans }}</th>
+            <th scope="col" class="govuk-table__header">{{ 'diary-keeper.ticket-cost' | trans }}</th>
+            <th scope="col" class="govuk-table__header">{{ 'diary-keeper.boardings' | trans }}</th>
+        </tr>
+        </thead>
+        <tbody class="govuk-table__body">
+        {%- for journey in day.journeys -%}
+            {# @var journey \App\Entity\Journey\Journey #}
+            {%- for stage in journey.stages -%}
+                <tr class="govuk-table__row">
+                    {%- if loop.index == 1 -%}
+                        {{ _self.journeyDetails(diaryKeeper, loop.parent.loop.index, journey) }}
+                    {%- endif -%}
+
+                    {%- set isPrivateTransport = stage.method.type == constant('App\\Entity\\Journey\\Method::TYPE_PRIVATE') -%}
+                    {%- set isPublicTransport = stage.method.type == constant('App\\Entity\\Journey\\Method::TYPE_PUBLIC') -%}
+
+                    <th class="govuk-table__cell">
+                        {% if is_granted('EDIT_DIARY', diaryKeeper) %}<a class="govuk-link" href="{{ path('traveldiary_journey_view', {journeyId: journey.id, _switch_user: diaryKeeper.user.userIdentifier}) ~ '#stage-' ~ loop.index }}">{% endif %}
+                            {{- loop.index -}}
+                            {% if is_granted('EDIT_DIARY', diaryKeeper) %}</a>{% endif %}
+                    </th>
+                    <td class="govuk-table__cell">{{ stage.methodForDisplayCompareHousehold | trans }}</td>
+                    <td class="govuk-table__cell"><span class="nowrap">{{- stage.distanceTravelled.isBlank ? '-' : "distance.#{stage.distanceTravelled.unit}" | trans({value: stage.distanceTravelled.value.toFloat}, 'messages') -}}</span></td>
+                    <td class="govuk-table__cell"><span class="nowrap">{{ stage.travelTime is null ? '-' : "stage.view.travel-time.value-short" | trans({minutes: stage.travelTime}, 'travel-diary') }}</span></td>
+                    <td class="govuk-table__cell">{{ "stage.view.companion-count.value" | trans({adultCount: stage.adultCount ?? 0, childCount: stage.childCount ?? 0, count: stage.travellingPeopleCount}, 'travel-diary') }}</td>
+                    <td class="govuk-table__cell">
+                        {%- if isPrivateTransport -%}
+                            {{ stage.vehicle.friendlyName ?? stage.vehicleOther ?? ("stage.view.vehicle.unknown" | trans([], 'travel-diary')) }}
+                        {%- else -%}
+                            {{ ' - ' }}
+                        {%- endif -%}
+                    </td>
+                    <td class="govuk-table__cell">
+                        {%- if isPrivateTransport and diaryKeeper.isAdult -%}
+                            <span class="nowrap">{{- ("stage.view.driver-or-passenger." ~ (stage.isDriver ? 'driver' : 'passenger')) | trans([], 'travel-diary') -}}</span>
+                        {%- else -%}
+                            {{ ' - ' }}
+                        {%- endif -%}
+                    </td>
+                    <td class="govuk-table__cell">
+                        {%- if isPrivateTransport and diaryKeeper.isAdult -%}
+                            <span class="nowrap">{{- stage.parkingCost | format_cost_or_nil('stage.view.parking-cost.value') -}}</span>
+                        {%- else -%}
+                            {{ ' - ' }}
+                        {%- endif -%}
+                    </td>
+                    <td class="govuk-table__cell">
+                        {%- if isPublicTransport -%}
+                            {{- stage.ticketType -}}
+                        {%- else -%}
+                            {{ ' - ' }}
+                        {%- endif -%}
+                    </td>
+                    <td class="govuk-table__cell">
+                        {%- if isPublicTransport -%}
+                            <span class="nowrap">{{- stage.ticketCost | format_cost_or_nil('stage.view.ticket-cost.value') -}}</span>
+                        {%- else -%}
+                            {{ ' - ' }}
+                        {%- endif -%}
+                    </td>
+                    <td class="govuk-table__cell">
+                        {{- isPublicTransport ? stage.boardingCount : ' - ' -}}
+                    </td>
+                </tr>
+            {%- else -%}
+                <tr>
+                    {{ _self.journeyDetails(diaryKeeper, loop.parent.loop.index, journey) }}
+                    <td colspan="11" class="govuk-table__cell govuk-!-font-weight-bold">{{ 'diary-keeper.no-stages' | trans }}</td>
+                </tr>
+            {%- endfor -%}
+        {%- else -%}
+            <tr>
+                <td colspan="15" class="govuk-table__cell govuk-hidden-from-wide">{{ 'diary-keeper.no-journeys' | trans }}</td>
+                <td colspan="17" class="govuk-table__cell govuk-visible-from-wide">{{ 'diary-keeper.no-journeys' | trans }}</td>
+            </tr>
+        {%- endfor -%}
+        </tbody>
+    </table>
+
+    <div class="govuk-grid-row">
+        <div class="govuk-grid-column-one-half">
+            <h3 class="govuk-heading-s">{{ "day.notes.diary-keepers-notes" | trans({}, 'travel-diary') }}</h3>
+            <div class="govuk-body-s">{{ day.diaryKeeperNotes ?? ("day.notes.no-notes" | trans({}, 'travel-diary')) }}</div>
+        </div>
+        <div class="govuk-grid-column-one-half">
+            <h3 class="govuk-heading-s">{{ "day.notes.interviewers-notes" | trans({}, 'travel-diary') }}</h3>
+            <div class="govuk-body-s">{{ day.interviewerNotes ?? ("day.notes.no-notes" | trans({}, 'travel-diary')) }}</div>
+        </div>
+    </div>
+{% endmacro %}
+
+{% macro journeyDetails(diaryKeeper, journeyNumber, journey) %}
+    {%- from "@GhostGovUkFrontend/components/macros.html.twig" import actionlessSummaryListRow, tag -%}
+    {# @var journey \App\Entity\Journey\Journey #}
+    {% set rowSpan = max(1, journey.stages.count) %}
+    {% set cellClass = false and (journey.shared or journey.wasCreatedBySharing) ? ' govuk-table__cell-no-bottom-border' : '' %}
+    <th scope="row" class="govuk-table__cell {{ cellClass }}" rowspan="{{ rowSpan }}">
+        {% if is_granted('EDIT_DIARY', diaryKeeper) %}<a class="govuk-link" href="{{ path('traveldiary_journey_view', {journeyId: journey.id, _switch_user: diaryKeeper.user.userIdentifier}) }}">{% endif %}
+            {{- journeyNumber -}}
+            {% if is_granted('EDIT_DIARY', diaryKeeper) %}</a>{% endif %}
+    </th>
+    <td class="govuk-table__cell {{ cellClass }}" rowspan="{{ rowSpan }}">
+        {{- journey.purpose -}}
+        {%- if journey.shared or journey.wasCreatedBySharing %}
+            <br>
+            {{ tag({
+                text: ('diary-keeper.shared.' ~ (journey.shared ? 'sharer' : 'sharee')) | trans,
+                classes: journey.shared ? 'govuk-tag--pink' : 'govuk-tag--purple',
+            }) }}
+        {%- endif -%}
+    </td>
+    {# smaller widths #}
+    <td class="govuk-table__cell {{ cellClass }} govuk-hidden-from-wide" rowspan="{{ rowSpan }}">
+        <span class="nowrap">{{ journey.startTime | date(format_time_short) }}</span>
+        <br>
+        {{- journey.startLocationForDisplay -}}
+    </td>
+    <td class="govuk-table__cell {{ cellClass }} govuk-hidden-from-wide" rowspan="{{ rowSpan }}">
+        <span class="nowrap">{{ journey.endTime | date(format_time_short) }}</span>
+        <br>
+        {{- journey.endLocationForDisplay -}}
+    </td>
+    {# larger widths #}
+    <td class="govuk-table__cell {{ cellClass }} govuk-visible-from-wide" rowspan="{{ rowSpan }}">
+        <span class="nowrap">{{- journey.startTime | date(format_time_short) -}}</span>
+    </td>
+    <td class="govuk-table__cell {{ cellClass }} govuk-visible-from-wide" rowspan="{{ rowSpan }}">
+        {{- journey.startLocationForDisplay -}}
+    </td>
+    <td class="govuk-table__cell {{ cellClass }} govuk-visible-from-wide" rowspan="{{ rowSpan }}">
+        <span class="nowrap">{{- journey.endTime | date(format_time_short) -}}</span>
+    </td>
+    <td class="govuk-table__cell {{ cellClass }} govuk-visible-from-wide" rowspan="{{ rowSpan }}">
+        {{- journey.endLocationForDisplay -}}
+    </td>
+{% endmacro %}

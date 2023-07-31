@@ -43,7 +43,7 @@ class PasswordResetController extends AbstractController
             $emailAddress = $form->get('emailAddress')->getData();
 
             /** @var ?User $user */
-            $user = $this->userRepository->findOneBy(['username' => $emailAddress]);
+            $user = $this->userRepository->loadUserByIdentifier($emailAddress);
 
             $diaryKeeper = $user?->getDiaryKeeper();
             $interviewer = $user?->getInterviewer();

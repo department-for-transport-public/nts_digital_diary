@@ -3,8 +3,10 @@
 namespace App\Utility\ConfirmAction\Interviewer;
 
 use App\Entity\Household;
+use App\Event\SubmitHouseholdEvent;
 use App\Utility\ConfirmAction\AbstractConfirmAction;
 use Doctrine\ORM\EntityManagerInterface;
+use Symfony\Component\EventDispatcher\EventDispatcherInterface;
 use Symfony\Component\Form\FormFactoryInterface;
 use Symfony\Component\HttpFoundation\RequestStack;
 use Symfony\Component\Security\Core\Authentication\Token\Storage\TokenStorageInterface;
@@ -16,11 +18,10 @@ class SubmitHouseholdConfirmAction extends AbstractConfirmAction
     protected EntityManagerInterface $entityManager;
     protected TokenStorageInterface $tokenStorage;
 
-    public function __construct(FormFactoryInterface $formFactory, RequestStack $requestStack, EntityManagerInterface $entityManager, TokenStorageInterface $tokenStorage)
-    {
+    public function __construct(FormFactoryInterface $formFactory, RequestStack $requestStack,
+        private readonly EventDispatcherInterface $eventDispatcher,
+    ) {
         parent::__construct($formFactory, $requestStack);
-        $this->entityManager = $entityManager;
-        $this->tokenStorage = $tokenStorage;
     }
 
     public function getFormOptions(): array
@@ -53,8 +54,6 @@ class SubmitHouseholdConfirmAction extends AbstractConfirmAction
 
     public function doConfirmedAction($formData)
     {
-        $this->subject->setSubmittedAt(new \DateTime());
-        $this->subject->setSubmittedBy($this->tokenStorage->getToken()->getUser()->getUserIdentifier());
-        $this->entityManager->flush();
+        $this->eventDispatcher->dispatch(new SubmitHouseholdEvent($this->subject));
     }
 }

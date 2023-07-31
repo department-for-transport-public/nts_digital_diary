@@ -22,7 +22,7 @@ class LocationsDataMapper implements DataMapperInterface
         $this->mapLocationDataToForms('end', $viewData, $forms);
     }
     
-    protected function mapLocationDataToForms(string $locationType, ?Journey $viewData, array $forms)
+    protected function mapLocationDataToForms(string $locationType, ?Journey $viewData, array $forms): void
     {
         $ucfLocationType = ucfirst($locationType);
         if (isset($forms["{$locationType}Location"]) && isset($forms["{$locationType}_choice"])) {
@@ -69,7 +69,7 @@ class LocationsDataMapper implements DataMapperInterface
      * @param FormInterface[] | array $forms
      * @param Journey $viewData
      */
-    protected function mapLocationFormsToData($locationType, array $forms, Journey $viewData)
+    protected function mapLocationFormsToData($locationType, array $forms, Journey $viewData): void
     {
         $ucfLocationType = ucfirst($locationType);
         if (isset($forms["{$locationType}Location"]) && isset($forms["{$locationType}_choice"])) {

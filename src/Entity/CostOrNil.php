@@ -2,46 +2,47 @@
 
 namespace App\Entity;
 
-use App\FormWizard\PropertyMergerNonEntityInterface;
+use Brick\Math\BigDecimal;
 use Doctrine\ORM\Mapping as ORM;
 use JsonSerializable;
 
 /**
  * @ORM\Embeddable()
  */
-class CostOrNil implements JsonSerializable, PropertyMergerNonEntityInterface
+class CostOrNil implements JsonSerializable
 {
     /**
-     * @ORM\Column(type="integer", nullable=true)
+     * @ORM\Column(type="decimal_brick", precision=10, scale=2, nullable=true)
      */
-    private ?int $cost;
+    private ?BigDecimal $cost;
 
     /**
-     * Tom Sykes (2023-05-16): I investigated persisting this value to be able to remove logic from setters, and the
-     * need for the data mapper on the form, however, since the Export API outputs a single property, and (because of
-     * that) the change log normalizer also represents this cost in a single property, it makes more sense to store this
-     * as a single property
+     * @ORM\Column(type="boolean", nullable=true)
      */
     private ?bool $hasCost;
 
-    public function getCost(): ?int
+    public function __construct()
+    {
+        $this->cost = null;
+        $this->hasCost = null;
+    }
+
+    public function getCost(): ?BigDecimal
     {
         return $this->cost ?? null;
     }
 
-    public function getHasCost():?bool
+    public function setCost(?BigDecimal $cost): self
     {
-        return $this->hasCost ?? match($this->cost) {
-            null => null,
-            0 => false,
-            default => true
-        };
+        if ($this->cost === null || $cost === null || !$this->cost->isEqualTo($cost)) {
+            $this->cost = $cost;
+        }
+        return $this;
     }
 
-    public function setCost(?int $cost): self
+    public function getHasCost():?bool
     {
-        $this->cost = $cost;
-        return $this;
+        return $this->hasCost;
     }
 
     public function setHasCost(?bool $hasCost): self
@@ -50,17 +51,25 @@ class CostOrNil implements JsonSerializable, PropertyMergerNonEntityInterface
         return $this;
     }
 
-    public function jsonSerialize(): ?int
+    public function jsonSerialize(): ?string
     {
-        return $this->cost;
+        return $this->encodeToSingleValue();
     }
 
-    public static function getMergeProperties(): array
+    public function encodeToSingleValue(): ?string
     {
-        return [
-            'hasCost',
-            'cost',
-        ];
+        return match(true) {
+            $this->hasCost === null => null,
+            $this->hasCost === true => $this->cost === null ? null : strval($this->cost->toScale(2)),
+            $this->hasCost === false => '0.00'
+        };
     }
 
+    public function decodeFromSingleValue(?string $value): self
+    {
+        $this->cost = $value === null ? null : BigDecimal::of($value);
+        $this->hasCost = $value !== '0' && $value !== '0.00';
+
+        return $this;
+    }
 }

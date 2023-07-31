@@ -2,6 +2,7 @@
 
 namespace App;
 
+use App\Doctrine\DBAL\Schema\CustomSchemaManagerFactory;
 use Symfony\Bundle\FrameworkBundle\Kernel\MicroKernelTrait;
 use Symfony\Component\DependencyInjection\Compiler\CompilerPassInterface;
 use Symfony\Component\DependencyInjection\ContainerBuilder;
@@ -90,6 +91,12 @@ class Kernel extends BaseKernel implements CompilerPassInterface
         foreach ($formWizardServiceIds as $formWizardServiceId) {
             $definition = $container->findDefinition($formWizardServiceId);
             $definition->addTag('app.form_wizard.workflow');
+        }
+
+        // specify custom schema manager factory for dbal connection
+        if ($container->hasDefinition('doctrine.dbal.connection.configuration')) {
+            $dbalConfig = $container->getDefinition('doctrine.dbal.connection.configuration');
+            $dbalConfig->addMethodCall('setSchemaManagerFactory', [new Reference(CustomSchemaManagerFactory::class)]);
         }
     }
 }

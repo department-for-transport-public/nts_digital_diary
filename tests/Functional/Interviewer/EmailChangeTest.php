@@ -2,17 +2,15 @@
 
 namespace App\Tests\Functional\Interviewer;
 
-use App\Entity\User;
 use App\Messenger\AlphagovNotify\Email;
 use App\Tests\DataFixtures\UserFixtures;
-use App\Tests\Functional\AbstractWebTestCase;
 use App\Utility\Test\CrawlerTableHelper;
 use App\Utility\Test\MessageUrlRetriever;
 use Doctrine\ORM\EntityManagerInterface;
 use Liip\TestFixturesBundle\Services\DatabaseToolCollection;
 use Symfony\Bundle\FrameworkBundle\KernelBrowser;
 
-class EmailChangeTest extends AbstractWebTestCase
+class EmailChangeTest extends AbstractInterviewerDiaryKeeperTest
 {
     protected KernelBrowser $client;
 
@@ -27,33 +25,7 @@ class EmailChangeTest extends AbstractWebTestCase
 
     public function testPasswordReset(): void
     {
-        // Log in as an interviewer
-        $this->client->request('GET', '/');
-        $this->submitLoginForm('interviewer@example.com', 'password');
-        $this->assertEquals('/interviewer', $this->client->getRequest()->getRequestUri());
-
-        // Fetch a particular user
-        $entityManager = static::getContainer()->get(EntityManagerInterface::class);
-        $user = $entityManager
-            ->getRepository(User::class)
-            ->findOneBy(['username' => 'diary-keeper-no-password@example.com']);
-
-        // Drill down to find this user in areas > households
-        $diaryKeeper = $user->getDiaryKeeper();
-        $household = $diaryKeeper->getHousehold();
-        $areaPeriod = $household->getAreaPeriod();
-
-        $tableHelper = new CrawlerTableHelper($this->client->getCrawler());
-        $viewAreaUrl = $tableHelper->getLinkUrlForRowMatching('View', [
-            'Area ID' => "".$areaPeriod->getArea(),
-        ], false);
-        $this->client->request('GET', $viewAreaUrl);
-
-        $tableHelper = new CrawlerTableHelper($this->client->getCrawler());
-        $viewHouseholdUrl = $tableHelper->getLinkUrlForRowMatching('View', [
-            'Serial' => $areaPeriod->getArea().' / '.str_pad($household->getAddressNumber(), 2, '0', STR_PAD_LEFT).' / '.$household->getHouseholdNumber(),
-        ], false);
-        $this->client->request('GET', $viewHouseholdUrl);
+        $this->logInAsInterviewerAndDrillDownToUsersHouseholdPage('diary-keeper-no-password@example.com');
 
         // Click the "change email" link and add a new email address
         $tableHelper = new CrawlerTableHelper($this->client->getCrawler());

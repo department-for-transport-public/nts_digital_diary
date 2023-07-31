@@ -81,8 +81,12 @@ diary-keeper.user-identifier:
     label: How will this person be recording their travel diary?
     help: ''
     choices:
-      digital: Digital diary
-      paper: Paper diary
+      digital:
+        label: Digital diary
+        help: ''
+      paper:
+        label: Interviewer completing on diary keeper's behalf
+        help: Only use this option if the diary keeper requests digital diary entry by the interviewer
   consent:
     label: This diary keeper is over 12 years old and consents to receive notifications in relation to this survey
     help: ''
@@ -95,6 +99,14 @@ diary-keeper.user-identifier:
         other {(optional)}
       }
     help: >-
+      Enter the email address that this diary keeper will use to sign in to the travel diary.
+      {onlyDiaryKeeper, select,
+        1  {}
+        other {If they will not be filling in their own diary, this field can be left blank.}
+      }
+    child-help: >-
+      **Reminder:** Only participants over the age of 12 may complete their own diary.  
+        
       Enter the email address that this diary keeper will use to sign in to the travel diary.
       {onlyDiaryKeeper, select,
         1  {}
@@ -139,7 +151,7 @@ household.details:
     help: ''
   diary-start:
     label: Diary week start date
-    help: ''
+    help: Dates between {start_date,date,short} and {end_date,date,short} are valid for this area.
   purpose-form-group:
     label: Purpose form group
     help: 'Used for user testing of journey purpose forms'
@@ -201,3 +213,4 @@ vehicle.form:
   method:
     label: Vehicle type
     help: ''
+  no-vehicles: No household vehicles

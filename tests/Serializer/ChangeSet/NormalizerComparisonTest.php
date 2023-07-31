@@ -54,22 +54,30 @@ class NormalizerComparisonTest extends WebTestCase
     {
         $this->compareNormalizerWithChangeLog(
             $this->getJourney()->getStageByNumber(1),
-            ['methodCode', 'methodOther', 'vehicleCapiNumber', '_history']
+            ['methodCode', 'methodOther', 'vehicleCapiNumber', '_history'],
+            ['parkingHasCost', 'ticketHasCost']
         );
     }
 
-    protected function compareNormalizerWithChangeLog($entity, array $ignoreNormalizedProperties = [])
-    {
+    protected function compareNormalizerWithChangeLog(
+        $entity,
+        array $ignoreNormalizedProperties = [],
+        array $ignorePropertyChangeLogProperties = [],
+    ): void {
         $normalizedProperties = array_diff(
             array_keys($this->normalizer->normalize($entity, null, ['apiVersion' => 1])),
             $ignoreNormalizedProperties
         );
 
-        $changes = $this->entityManager->getRepository(PropertyChangeLog::class)
+        $changeLogChanges = $this->entityManager->getRepository(PropertyChangeLog::class)
             ->findBy(['entityId' => $entity->getId()]);
-        $changeProperties = array_map(fn(PropertyChangeLog $l) => $l->getPropertyName(), $changes);
 
-        $this->assertArraysSameValues($normalizedProperties, $changeProperties);
+        $changeLogProperties = array_diff(
+            array_map(fn(PropertyChangeLog $l) => $l->getPropertyName(), $changeLogChanges),
+            $ignorePropertyChangeLogProperties
+        );
+
+        $this->assertArraysSameValues($normalizedProperties, $changeLogProperties);
     }
 
     protected function assertArraysSameValues($expected, $actual, $message = 'Missing (-) and excess (+)')

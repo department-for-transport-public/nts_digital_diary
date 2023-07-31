@@ -29,7 +29,7 @@ class ReturnJourneyState extends AbstractDuplicateJourneyState
         return new TranslatableMessage('return-journey.stage-details.page-title', [
             'number' => $this->getStageNumber(),
             // as this is part of place metadata, this was throwing an exception when clicking back after finishing, so we need to check
-            'method' => $this->getContextStage() ? $this->getContextStage()->getMethodForDisplay() : null,
+            'method' => $this->getContextStage() ? $this->getContextStage()->getMethodForDisplay(true) : null,
         ], 'travel-diary');
     }
 }

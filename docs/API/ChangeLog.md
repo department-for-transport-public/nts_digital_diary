@@ -2,20 +2,29 @@
 
 # API Change Log
 
-## Changes in V1.3
+## Changes in v2023.07.21
+
+- **Fix**: better parameter error messages on export api
+- **Update**: renamed `emptyDays` verification properties on Diary Keeper to `approvalChecklist` ([SurveyExport](./SurveyExport.md#diary-keeper)) 
+
+## Changes in v2023.06.22
+
+- **Fix**: primary data in export API was outputting costs as decimals whilst property change log was giving integers. Both now output as decimals
+
+## Changes in v2023.04.25
 
 - Interviewer now includes training record
 - added `hasUsedPracticeDay` property to Diary Keeper (export)
 - added `emptyDiaryDaysVerifiedBy` and `emptyDiaryDaysVerifiedAt` properties to Diary Keeper (export)
 - added `state` property to diary keeper (export), indicating if the diary was approved or discarded by the interviewer
 
-## Changes in v1.2
+## Changes in v2023.03.22
 
 ### Household
 
 - Added `vehicles` array
 
-## Changes in v1.1
+## Changes in v2023.01.04
 
 ### Diary Keeper
 

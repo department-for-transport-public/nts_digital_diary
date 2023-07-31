@@ -9,11 +9,13 @@ use Ghost\GovUkFrontendBundle\Form\Type\InputType;
 use Ghost\GovUkFrontendBundle\Form\Type\NumberType;
 use Symfony\Component\Form\AbstractType;
 use Symfony\Component\Form\FormBuilderInterface;
+use Symfony\Component\Form\FormEvent;
+use Symfony\Component\Form\FormEvents;
 use Symfony\Component\OptionsResolver\OptionsResolver;
 
 class HouseholdType extends AbstractType
 {
-    public function buildForm(FormBuilderInterface $builder, array $options)
+    public function buildForm(FormBuilderInterface $builder, array $options): void
     {
         $builder
             ->add('addressNumber', NumberType::class, [
@@ -39,15 +41,26 @@ class HouseholdType extends AbstractType
                 ]);
         }
 
-        $builder
-            ->add('diaryWeekStartDate', DateType::class, [
-                'label' => "household.details.diary-start.label",
-                'label_attr' => ['class' => 'govuk-label--s'],
-                'help' => "household.details.diary-start.help",
-            ]);
+        $builder->addEventListener(FormEvents::PRE_SET_DATA, function(FormEvent $event) {
+            $data = $event->getData();
+            assert($data instanceof Household);
+
+            $areaPeriod = $data->getAreaPeriod();
+
+            $event->getForm()
+                ->add('diaryWeekStartDate', DateType::class, [
+                    'label' => "household.details.diary-start.label",
+                    'label_attr' => ['class' => 'govuk-label--s'],
+                    'help' => "household.details.diary-start.help",
+                    'help_translation_parameters' => [
+                        'start_date' => $areaPeriod->getFirstValidDiaryStartDate(),
+                        'end_date' => $areaPeriod->getLastValidDiaryStartDate(),
+                    ],
+                ]);
+        });
     }
 
-    public function configureOptions(OptionsResolver $resolver)
+    public function configureOptions(OptionsResolver $resolver): void
     {
         $validationGroups = ['wizard.on-boarding.household'];
 

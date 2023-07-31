@@ -33,33 +33,68 @@ class InterviewerScreenshotter extends AbstractScreenshotter
         $this->clickLinkWithText('View');
         $this->screenshot('5a-household.png');
 
-        $this->clickLinkWithTextThatStartsWith('View');
-        $this->screenshot('6a-diary-keeper.png');
+        $this->clickLinkWithText('Impersonate');
+        $this->journeySplitterHomeToHomeFlow();
+        $this->journeySplitterNonHomeToNonHomeFlow();
+        $this->clickLinkWithText('Exit');
+
+        $this->clickLinkWithText('View / amend diaries');
+        $this->setViewportSize($this->page, 1920);
+        $this->screenshot('6a-compare-household-one.png');
+
+        $this->clickLinkWithText('Linda', 0, false);
+        $this->screenshot('6b-compare-household-two.png');
+        $this->setViewportSize($this->page);
+
+        $this->page->goBack([]);
+        $this->page->goBack([]);
+
+        $this->clickLinkWithTextThatStartsWith('Summary');
+        $this->screenshot('7a-diary-summary.png');
 
         $this->clickLinkWithTextThatStartsWith('Mark diary as approved');
-        $this->screenshot('7a-mark-diary-approved.png');
+        $this->screenshot('8a-mark-diary-approved.png');
 
-        $this->submit(['#double_confirm_action_confirmation' => true], 'Mark diary as approved');
+        $this->submit([
+            '#approve_diary_confirm_action_verifyEmptyDays' => true,
+            "#approve_diary_confirm_action_alsoVerified_0" => true,
+            "#approve_diary_confirm_action_alsoVerified_1" => true,
+            "#approve_diary_confirm_action_alsoVerified_2" => true,
+            "#approve_diary_confirm_action_alsoVerified_3" => true,
+        ], 'Mark diary as approved');
 
         // Approve second diary keeper
-        $this->clickLinkWithTextThatStartsWith('View', 1);
+        $this->clickLinkWithTextThatStartsWith('Summary', 1);
+
+        // Can only approve when diary is complete
+        $this->clickLinkWithText('Impersonate');
+        $this->clickLinkWithText('Mark travel diary as complete');
+        $this->submit([], 'Mark travel diary as complete');
+        $this->clickLinkWithText('Exit');
+
         $this->clickLinkWithTextThatStartsWith('Mark diary as approved');
-        $this->submit(['#double_confirm_action_confirmation' => true], 'Mark diary as approved');
+        $this->submit([
+            '#approve_diary_confirm_action_verifyEmptyDays' => true,
+            "#approve_diary_confirm_action_alsoVerified_0" => true,
+            "#approve_diary_confirm_action_alsoVerified_1" => true,
+            "#approve_diary_confirm_action_alsoVerified_2" => true,
+            "#approve_diary_confirm_action_alsoVerified_3" => true,
+        ], 'Mark diary as approved');
 
         $this->screenshot('5b-household-with-approved-diary-keepers.png');
 
-        $this->clickLinkWithTextThatStartsWith('View');
-        $this->screenshot('6b-diary-keeper-approved.png');
+        $this->clickLinkWithTextThatStartsWith('Summary');
+        $this->screenshot('7b-diary-keeper-approved.png');
 
         $this->clickLinkWithTextThatStartsWith('Un-approve diary');
-        $this->screenshot('7b-unapprove-diary.png'); // N.B. We don't actually unapprove it
+        $this->screenshot('8b-unapprove-diary.png'); // N.B. We don't actually unapprove it
 
         $this->clickLinkWithTextThatStartsWith('Cancel');
         $this->clickLinkWithTextThatStartsWith('Submit for processing');
-        $this->screenshot('8-confirm-household-submission.png');
+        $this->screenshot('9-confirm-household-submission.png');
 
         $this->submit([], 'Confirm submission');
-        $this->screenshot('9-household-submitted.png');
+        $this->screenshot('10-household-submitted.png');
 
         $this->clickLinkWithText('Logout');
     }
@@ -100,5 +135,55 @@ class InterviewerScreenshotter extends AbstractScreenshotter
             $matches['passcode1'],
             $matches['passcode2'],
         ];
+    }
+
+    /**
+     * @throws ScreenshotsException
+     */
+    protected function journeySplitterHomeToHomeFlow(): void
+    {
+        $this->clickLinkWithText('View', 4); // Day 5
+        $this->clickLinkWithText('View');
+        $this->clickLinkWithText('Split journey (Interviewer only)');
+
+        $this->screenshot('journey-splitter/home-to-home/1-intro.png');
+
+        $this->submit([], 'Continue');
+
+        $this->screenshot('journey-splitter/home-to-home/2-midpoint.png');
+
+        $this->submit([
+            'Portsmouth' => true,
+        ], 'Save and continue');
+
+        $this->clickLinkWithText('Back to diary overview');
+    }
+
+    /**
+     * @throws ScreenshotsException
+     */
+    protected function journeySplitterNonHomeToNonHomeFlow(): void
+    {
+        $this->clickLinkWithText('View', 5); // Day 6
+        $this->clickLinkWithText('View');
+        $this->clickLinkWithText('Split journey (Interviewer only)');
+
+        $this->screenshot('journey-splitter/other-to-other/1-intro.png');
+
+        $this->submit([], 'Continue');
+
+        $this->screenshot('journey-splitter/other-to-other/2-midpoint.png');
+
+        $this->submit([
+            'Somewhere else' => true,
+            'What was the location?' => 'Chichester'
+        ], 'Continue');
+        $this->screenshot('journey-splitter/other-to-other/2-purpose.png');
+
+        $this->submit([
+            'What was the purpose of the journey from Chichester to Portsmouth?' => "Return to friend's house",
+        ], 'Save and continue');
+
+        $this->clickLinkWithText('Back to diary overview');
     }
 }

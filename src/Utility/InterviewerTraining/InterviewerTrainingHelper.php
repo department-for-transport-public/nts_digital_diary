@@ -2,12 +2,15 @@
 
 namespace App\Utility\InterviewerTraining;
 
+use App\DataFixtures\Definition\JourneyDefinition;
 use App\DataFixtures\FixtureHelper;
 use App\Entity\AreaPeriod;
 use App\Entity\DiaryKeeper;
+use App\Entity\Distance;
 use App\Entity\Household;
 use App\Entity\Interviewer;
 use App\Entity\InterviewerTrainingRecord;
+use App\Entity\Journey\Journey;
 use App\Entity\Journey\Method;
 use App\Entity\User;
 use App\Entity\Vehicle;
@@ -27,23 +30,31 @@ class InterviewerTrainingHelper
         $this->entityManager = $entityManager;
     }
 
-    public function checkOrCreateTrainingData(Interviewer $interviewer, bool $flushEntityManager = true): void
+    public function checkOrCreateTrainingData(Interviewer $interviewer): void
     {
         $this->checkOrCreateTrainingAreas($interviewer);
 
         foreach (InterviewerTrainingRecord::MODULES as $name => $number) {
             if (!$interviewer->hasTrainingRecordsForModule($name)) {
-                $this->createTrainingRecordForModule($interviewer, $name, $flushEntityManager);
+                $this->createTrainingRecordForModule($interviewer, $name);
             }
         }
 
-        if ($flushEntityManager) {
-            $this->entityManager->flush();
-        }
+        $this->entityManager->flush();
     }
 
-    public function createTrainingRecordForModule(Interviewer $interviewer, string $module, bool $flushEntityManager = true): void
+    public function createTrainingRecordForModule(Interviewer $interviewer, string $module): void
     {
+        // delete existing households for training area modules
+        foreach ($interviewer->getTrainingRecordsForModule($module) as $trainingRecord) {
+            if ($household = $trainingRecord->getHousehold()) {
+                $trainingRecord->getAreaPeriod()->removeHousehold($household);
+                $this->entityManager->remove($household);
+                $trainingRecord->setHousehold(null);
+            }
+        }
+        $this->entityManager->flush();
+
         $trainingRecord = $this->getTrainingRecord($interviewer, $module);
 
         switch ($module) {
@@ -51,7 +62,7 @@ class InterviewerTrainingHelper
                 $this->createPersonalDiaryTrainingData($trainingRecord);
                 break;
 
-            case InterviewerTrainingRecord::MODULE_ONBOARDING :
+            case InterviewerTrainingRecord::MODULE_ONBOARDING_PRACTICE :
                 $this->createOnboardingTrainingData($trainingRecord);
                 break;
 
@@ -60,9 +71,7 @@ class InterviewerTrainingHelper
                 break;
         }
 
-        if ($flushEntityManager) {
-            $this->entityManager->flush();
-        }
+        $this->entityManager->flush();
     }
 
     protected function checkOrCreateTrainingAreas(Interviewer $interviewer): void
@@ -81,11 +90,10 @@ class InterviewerTrainingHelper
     protected function checkOrCreateTrainingArea(string $serial, Interviewer $interviewer): void
     {
         if (!$interviewer->getTrainingAreaPeriodBySerial($serial)) {
-            $now = new DateTime();
             $ap = (new AreaPeriod())
                 ->setArea($serial)
-                ->setYear($now->format('Y'))
-                ->setMonth($now->format('m'))
+                ->setYear(2023)
+                ->setMonth(1)
             ;
             $interviewer->addTrainingAreaPeriod($ap);
             $this->entityManager->persist($ap);
@@ -139,40 +147,73 @@ class InterviewerTrainingHelper
         $interviewer = $trainingRecord->getInterviewer();
         $area = $interviewer->getTrainingAreaPeriodBySerial(AreaPeriod::TRAINING_CORRECTION_AREA_SERIAL);
 
-        $diaryKeeper = $this->createDiaryKeeper('Alice', 1);
-        $diaryKeeper2 = $this->createDiaryKeeper('Bob', 2);
-        $household = $this->createHousehold($this->getNextAddressNumber($area), 1, new DateTime('1 week ago'), [$diaryKeeper, $diaryKeeper2]);
+        $diaryKeeper1 = $this->createDiaryKeeper('Mary', 1);
+        $diaryKeeper2 = $this->createDiaryKeeper('John', 2);
+        $diaryKeeper2->getDiaryDayByNumber(1)->setDiaryKeeperNotes("I did not do any travel today");
+        $household = $this->createHousehold($this->getNextAddressNumber($area), 1, new DateTime('1 week ago'), [$diaryKeeper1, $diaryKeeper2]);
         $household->setIsJourneySharingEnabled(true);
 
         $method = $this->entityManager->getRepository(Method::class)->findOneBy(['descriptionTranslationKey' => 'car']);
 
-        $household->addVehicle($vehicle = (new Vehicle())
-            ->setPrimaryDriver($diaryKeeper)
+        $household->addVehicle($vehicle1 = (new Vehicle())
+            ->setPrimaryDriver($diaryKeeper1)
             ->setCapiNumber(1)
             ->setFriendlyName('Blue volvo')
             ->setMethod($method)
+            ->setOdometerUnit(Vehicle::ODOMETER_UNIT_MILES)
+            ->setWeekStartOdometerReading(18001)
+            ->setWeekEndOdometerReading(18067)
+        );
+        $household->addVehicle($vehicle2 = (new Vehicle())
+            ->setPrimaryDriver($diaryKeeper2)
+            ->setCapiNumber(2)
+            ->setFriendlyName('White ford')
+            ->setMethod($method)
+            ->setOdometerUnit(Vehicle::ODOMETER_UNIT_MILES)
+            ->setWeekStartOdometerReading(25440)
+            ->setWeekEndOdometerReading(25456)
         );
 
         $area->addHousehold($household);
         $trainingRecord->setHousehold($household);
 
-        $this->entityManager->persist($diaryKeeper);
+        $this->entityManager->persist($diaryKeeper1);
         $this->entityManager->persist($diaryKeeper2);
         $this->entityManager->persist($household);
-        $this->entityManager->persist($vehicle);
+        $this->entityManager->persist($vehicle1);
+        $this->entityManager->persist($vehicle2);
 
-        foreach (Fixtures::getJourneyFixturesForCorrection() as $journeyDef)
+        foreach (Fixtures::getFirstDiaryKeeperJourneyFixturesForCorrection() as $journeyDef)
         {
-            $this->entityManager->persist(
-                $journey = FixtureHelper::createJourney($journeyDef, $diaryKeeper->getDiaryDayByNumber($journeyDef->getDayNumber()))
-            );
-            foreach ($journeyDef->getStageDefinitions() as $stageDef) {
-                $this->entityManager->persist(
-                    $stage = FixtureHelper::createStage($stageDef, $this->entityManager->getRepository(Method::class), $household->getVehicles()->toArray())
-                );
-                $journey->addStage($stage);
-            }
+            $this->createAndPersistJourney($journeyDef, $diaryKeeper1);
         }
+        foreach (Fixtures::getSecondDiaryKeeperJourneyFixturesForCorrection() as $journeyDef)
+        {
+            $this->createAndPersistJourney($journeyDef, $diaryKeeper2);
+        }
+        // take the 1st journey on day 7 for DK2, and "share it" with DK1
+        /** @var Journey $sourceJourney */
+        $sourceJourney = $diaryKeeper2->getDiaryDayByNumber(7)->getJourneys()->get(0);
+        /** @var Journey $targetJourney */
+        $targetJourney = $diaryKeeper1->getDiaryDayByNumber(7)->getJourneys()->get(1);
+        $sourceJourney->addSharedTo($targetJourney);
+
+        $diaryKeeper1->setDiaryState(DiaryKeeper::STATE_COMPLETED);
+        $diaryKeeper2->setDiaryState(DiaryKeeper::STATE_COMPLETED);
+    }
+
+    protected function createAndPersistJourney(JourneyDefinition $journeyDef, DiaryKeeper $diaryKeeper): Journey
+    {
+        $this->entityManager->persist(
+            $journey = FixtureHelper::createJourney($journeyDef, $diaryKeeper->getDiaryDayByNumber($journeyDef->getDayNumber()))
+        );
+        foreach ($journeyDef->getStageDefinitions() as $stageDef) {
+            $this->entityManager->persist(
+                $stage = FixtureHelper::createStage($stageDef, $this->entityManager->getRepository(Method::class), $diaryKeeper->getHousehold()->getVehicles()->toArray())
+            );
+            $journey->addStage($stage);
+        }
+        return $journey;
     }
 
     protected function createHousehold(int $addressNumber, int $householdNumber, DateTime $diaryWeekStartDate, $diaryKeepers = []): Household

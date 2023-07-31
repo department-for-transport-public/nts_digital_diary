@@ -1,8 +1,6 @@
 <?php
 
-
 namespace App\Form\OnBoarding\DiaryKeeperWizard;
-
 
 use App\Entity\DiaryKeeper;
 use Ghost\GovUkFrontendBundle\Form\Type\BooleanChoiceType;
@@ -16,7 +14,7 @@ use Symfony\Component\OptionsResolver\OptionsResolver;
 
 class DetailsType extends AbstractType
 {
-    public function buildForm(FormBuilderInterface $builder, array $options)
+    public function buildForm(FormBuilderInterface $builder, array $options): void
     {
         $builder
             ->add('name', InputType::class, [
@@ -47,7 +45,7 @@ class DetailsType extends AbstractType
         });
     }
 
-    public function configureOptions(OptionsResolver $resolver)
+    public function configureOptions(OptionsResolver $resolver): void
     {
         $resolver->setDefaults([
             'data_class' => DiaryKeeper::class,

@@ -14,9 +14,8 @@
 
     {% set htmlContent %}
         <p class="govuk-body">{{ 'household.help-details.content' | trans }}</p>
-        <div class="video-container">
-            <iframe src="https://player.vimeo.com/video/715584858?h=a79e20e754&badge=0&autopause=0&player_id=0&app_id=58479&byline=0&dnt=1&title=0" frameborder="0" allow="fullscreen; picture-in-picture" allowfullscreen title="{{ 'household.help-details.text' | trans }}"></iframe>
-        </div>
+        {% from 'macros/vimeo-container.html.twig' import videoContainer %}
+        {{ videoContainer(vimeo_ids.interviewer_editing, 'household.help-details.text' | trans) }}
     {% endset %}
     {{ details({
         summaryText: 'household.help-details.text' | trans,
@@ -40,6 +39,10 @@
             ) }}
         {% endif %}
     </dl>
+
+    <p class="govuk-body">
+        <a class="govuk-button" href="{{ path('interviewer_household_compare_day', {household: household.id, day: 1}) }}">View / amend diaries</a>
+    </p>
 
     <table class="govuk-table">
         <caption class="govuk-table__caption govuk-table__caption--m">{{ "household.diary-keepers" | trans }}</caption>
@@ -94,7 +97,7 @@
             </tr>
         {%- else -%}
             <tr>
-                <td colspan="3" class="govuk-table__cell">{{ "household.no-diary-keepers" | trans }}</td>
+                <td colspan="5" class="govuk-table__cell">{{ "household.no-diary-keepers" | trans }}</td>
             </tr>
         {%- endfor -%}
         </tbody>

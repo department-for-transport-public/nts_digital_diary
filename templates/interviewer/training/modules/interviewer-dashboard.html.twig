@@ -1,0 +1,11 @@
+<div class="prose-scope">
+{%- apply markdown_to_html -%}
+We’ll now give you a tour of your Interviewer dashboard. This is where you’ll view your areas, the households within
+each area, and the respondents within each household and their travel diaries.
+
+This exercise should be completed during your NatCen fieldwork briefing.
+{%- endapply -%}
+</div>
+
+{% from 'interviewer/training/macros.html.twig' import trainingVideo %}
+{{ trainingVideo('842533323/3ca589b9ef', 'Introducing the dashboard', trainingRecord) }}

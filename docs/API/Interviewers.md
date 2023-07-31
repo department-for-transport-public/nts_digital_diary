@@ -48,7 +48,7 @@ Delete specific [Interviewer](#interviewer) object, identified by `{serialId}`
 - `serialID` string (unique)
 - `email` string (email address, unique)
 - `area_periods` array (string, year/area)
-- `training_record` array
+- `training_record` array (training records)
 
 #### Example
 
@@ -61,6 +61,30 @@ Delete specific [Interviewer](#interviewer) object, identified by `{serialId}`
   "area_periods": [
     "2022/211500",
     "2022/212600"
-  ]
+  ],
+  "training_record": [{}, {}, ...]
+}
+```
+
+### Training Record
+- `moduleNumber` int
+- `moduleName` string
+- `latestId` string (ULID)
+- `state` string
+- `created`: int | null (timestamp)
+- `started`: int | null (timestamp)
+- `completed`: int | null (timestamp)
+
+#### Example
+
+```json
+{
+  "moduleNumber": 1,
+  "moduleName": "introduction",
+  "latestId": "01H4G3PQ09FK0EDAPQZY1BQR2N",
+  "state": "complete",
+  "created": 1688462908,
+  "started": 1688639589,
+  "completed": null
 }
 ```

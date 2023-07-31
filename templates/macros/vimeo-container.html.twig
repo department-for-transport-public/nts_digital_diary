@@ -1,0 +1,8 @@
+{%- macro videoContainer(video, title, options) -%}
+    {{ setVimeoUsed(true) }}
+    {% set id = (video.id ?? video) | split('/') %}
+    {%- from "@GhostGovUkFrontend/components/macros.html.twig" import attributes -%}
+    <div class="video-container" {{ attributes(options.attributes ?? {}) }}>
+        <iframe src="https://player.vimeo.com/video/{{ id[0] }}?h={{ id[1] ?? '' }}&badge=0&portrait=0&autopause=0&player_id=0&app_id=58479&byline=0&dnt=1&title=0" frameborder="0" allow="fullscreen; picture-in-picture" allowfullscreen title="{{ (video.title ?? title) | trans }}"></iframe>
+    </div>
+{%- endmacro -%}

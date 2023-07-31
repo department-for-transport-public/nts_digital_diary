@@ -65,7 +65,7 @@ class DeleteStageTest extends AbstractWebTestCase
 
         $panels = $getPanels();
 
-        $expectedTransportMethods = ['Bus/Coach', 'Walk or run'];
+        $expectedTransportMethods = ['Bus/Coach: London bus', 'Walk or run'];
         $this->assertEquals($expectedTransportMethods, $getTransportMethods($panels));
 
         // 1. Visit the delete page, but click cancel

@@ -10,7 +10,14 @@ use Symfony\Component\Validator\Constraint;
 class CostOrNil extends Constraint
 {
     public string $translationPrefix;
-    public bool $allowBlank = false;
+
+    // Allow the radio/hasCost to be completely unselected?
+    public bool $allowBlankHasCost = false;
+
+    // When the radio/hasCost is true, Allow the cost input to be empty?
+    public bool $allowBlankCost = false;
+    public int $precision = 10;
+    public int $scale = 2;
 
     public function validatedBy(): string
     {

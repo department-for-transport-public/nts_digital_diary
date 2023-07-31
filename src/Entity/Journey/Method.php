@@ -8,6 +8,7 @@ use Symfony\Component\Validator\Constraints as Assert;
 
 /**
  * @ORM\Entity(repositoryClass=MethodRepository::class)
+ * @ORM\Table(uniqueConstraints={@ORM\UniqueConstraint(name="description_translation_key_type_unique", columns={"description_translation_key", "type"})})
  */
 class Method implements \JsonSerializable
 {
@@ -110,7 +111,6 @@ class Method implements \JsonSerializable
     public function setDisplayGroup(string $displayGroup): self
     {
         $this->displayGroup = $displayGroup;
-
         return $this;
     }
 
@@ -122,7 +122,6 @@ class Method implements \JsonSerializable
     public function setSort(int $sort): self
     {
         $this->sort = $sort;
-
         return $this;
     }
 
@@ -131,5 +130,16 @@ class Method implements \JsonSerializable
     public function jsonSerialize(): ?int
     {
         return $this->code;
+    }
+
+    public function getPrefixedDescriptionTranslationKey(string $prefix, bool $resolveOthersToPlainOther = false): string
+    {
+        $key = $this->getDescriptionTranslationKey();
+
+        if ($resolveOthersToPlainOther && str_starts_with($key, 'other-')) {
+            $key = 'other';
+        }
+
+        return "{$prefix}{$key}";
     }
 }

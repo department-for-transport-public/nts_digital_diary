@@ -19,6 +19,9 @@
     "beberlei/doctrineextensions": {
         "version": "v1.3.0"
     },
+    "brick/math": {
+        "version": "0.11.0"
+    },
     "clue/socket-raw": {
         "version": "v1.6.0"
     },

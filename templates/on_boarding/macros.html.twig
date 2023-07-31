@@ -37,7 +37,9 @@
                     <div class="govuk-summary-list">
                         {{- summaryListRow('vehicle.form.capi-number.label' | trans, vehicle.capiNumber, actions) -}}
                         {{- summaryListRow('vehicle.form.name.label' | trans, vehicle.friendlyName, actions) -}}
-                        {{- summaryListRow('vehicle.form.method.label' | trans, "stage.method.choices.#{vehicle.method.descriptionTranslationKey}" | trans([], 'travel-diary'), actions) -}}
+
+                        {%- set methodTranslationKey = vehicle.method.prefixedDescriptionTranslationKey('stage.method.choices.', true) -%}
+                        {{- summaryListRow('vehicle.form.method.label' | trans, methodTranslationKey | trans([], 'travel-diary'), actions) -}}
                         {{- summaryListRow('vehicle.form.primary-driver.label' | trans, vehicle.primaryDriver ? vehicle.primaryDriver.name : '-', actions) -}}
                     </div>
 

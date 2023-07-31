@@ -76,7 +76,7 @@ class AddJourneyTest extends AbstractJourneyTest
                     PathTestAction::OPTION_EXPECTED_PATH_REGEX => true,
                 ]),
                 new CallbackAction(function (Context $context) use ($isDestinationHome) {
-                    $dk = $context->getEntityManager()->getRepository(User::class)->getDiaryKeeperJourneysAndStages(self::TEST_USERNAME);
+                    $dk = $context->getEntityManager()->getRepository(User::class)->getDiaryKeeperJourneysAndStagesForTests(self::TEST_USERNAME);
                     $journeys = $dk->getDiaryDayByNumber(self::TEST_DAY)->getJourneys();
 
                     $testCase = $context->getTestCase();

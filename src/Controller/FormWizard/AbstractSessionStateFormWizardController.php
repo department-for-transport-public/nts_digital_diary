@@ -26,12 +26,12 @@ abstract class AbstractSessionStateFormWizardController extends AbstractFormWiza
         $this->propertyMerger = $propertyMerger;
     }
 
-    protected function setState(FormWizardStateInterface $state)
+    protected function setState(FormWizardStateInterface $state): void
     {
         $this->session->set($this->getSessionKey(), $state);
     }
 
-    protected function cleanUp()
+    protected function cleanUp(): void
     {
         $this->session->remove($this->getSessionKey());
     }

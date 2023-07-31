@@ -13,6 +13,7 @@ use Doctrine\ORM\EntityManagerInterface;
 use Nesk\Puphpeteer\Puppeteer;
 use Symfony\Component\Console\Command\Command;
 use Symfony\Component\Console\Input\InputInterface;
+use Symfony\Component\Console\Input\InputOption;
 use Symfony\Component\Console\Output\OutputInterface;
 use Symfony\Component\Console\Style\SymfonyStyle;
 use Symfony\Component\PasswordHasher\Hasher\UserPasswordHasherInterface;
@@ -43,12 +44,13 @@ class NtsScreenshotsCommand extends Command
 
     protected function configure(): void
     {
-//        $this
-//            ->addArgument('arg1', InputArgument::OPTIONAL, 'Argument description')
-//            ->addOption('option1', null, InputOption::VALUE_NONE, 'Option description')
-//        ;
+        $this
+            ->addOption('extra-diary-stages', null, InputOption::VALUE_NONE, 'Add extra stages to the diary keeper screenshots');
     }
 
+    /**
+     * @throws ScreenshotsException
+     */
     protected function execute(InputInterface $input, OutputInterface $output): int
     {
         $io = new SymfonyStyle($input, $output);
@@ -78,7 +80,7 @@ class NtsScreenshotsCommand extends Command
         try {
             $interviewerScreenshotter = new InterviewerScreenshotter($browser, "{$outputDir}/interviewer/", $hostname);
             $onboardingScreenshotter = new OnboardingScreenshotter($browser, "{$outputDir}/onboarding/", $hostname);
-            $diaryKeeperScreenshotter = new DiaryKeeperScreenshotter($browser, "{$outputDir}/diary-keeper/", $hostname);
+            $diaryKeeperScreenshotter = new DiaryKeeperScreenshotter($browser, "{$outputDir}/diary-keeper/", $hostname, $input->getOption('extra-diary-stages'));
 
             [$passcode1, $passcode2] = $interviewerScreenshotter->retrieveOnboardingCodes();
 
@@ -102,7 +104,7 @@ class NtsScreenshotsCommand extends Command
                 }
             }
 
-            return Command::FAILURE;
+            throw $e;
         }
 
         return Command::SUCCESS;
@@ -114,7 +116,7 @@ class NtsScreenshotsCommand extends Command
     public function setUserPassword(string $userIdentifier, string $password): void
     {
         $user = $this->entityManager->getRepository(User::class)
-            ->findOneBy(['username' => $userIdentifier]);
+            ->loadUserByIdentifier($userIdentifier);
 
         if (!$user) {
             throw new ScreenshotsException('Unable to retrieve diary user');

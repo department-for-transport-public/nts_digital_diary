@@ -5,7 +5,6 @@ namespace App\Form\OnBoarding;
 use App\Entity\DiaryKeeper;
 use App\Entity\Journey\Method;
 use App\Entity\OtpUserInterface;
-use App\Entity\User;
 use App\Entity\Vehicle;
 use Doctrine\ORM\EntityRepository;
 use Ghost\GovUkFrontendBundle\Form\Type\ButtonGroupType;
@@ -27,7 +26,7 @@ class VehicleType extends AbstractType
         $this->security = $security;
     }
 
-    public function buildForm(FormBuilderInterface $builder, array $options)
+    public function buildForm(FormBuilderInterface $builder, array $options): void
     {
         /** @var OtpUserInterface $user */
         $user = $this->security->getUser();
@@ -56,11 +55,16 @@ class VehicleType extends AbstractType
             ])
             ->add('method', EntityType::class, [
                 'class' => Method::class,
-                'choice_label' => fn(Method $x) => "stage.method.choices.{$x->getDescriptionTranslationKey()}",
+                'choice_label' => fn(Method $x) => $x->getPrefixedDescriptionTranslationKey('stage.method.choices.', true),
                 'query_builder' => fn(EntityRepository $er) => $er
                     ->createQueryBuilder('m')
-                    ->where('m.code IN (:codes)')
-                    ->setParameter('codes', Vehicle::VALID_METHOD_CODES),
+                    ->where('m.descriptionTranslationKey IN (:keys)')
+                    ->andWhere('m.type = :type')
+                    ->setParameters([
+                        'keys' => Vehicle::VALID_METHOD_KEYS,
+                        'type' => 'private',
+                    ])
+                    ->orderBy('m.id'),
                 'choice_translation_domain' => 'travel-diary',
                 'label' => "vehicle.form.method.label",
                 'help' => "vehicle.form.method.help",
@@ -80,7 +84,7 @@ class VehicleType extends AbstractType
             ]);
     }
 
-    public function configureOptions(OptionsResolver $resolver)
+    public function configureOptions(OptionsResolver $resolver): void
     {
         $resolver->setDefaults([
             'data_class' => Vehicle::class,

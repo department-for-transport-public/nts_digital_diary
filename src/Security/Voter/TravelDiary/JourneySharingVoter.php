@@ -5,7 +5,9 @@ namespace App\Security\Voter\TravelDiary;
 use App\Entity\DiaryKeeper;
 use App\Entity\Journey\Journey;
 use App\Entity\User;
+use Symfony\Component\Security\Core\Authentication\Token\SwitchUserToken;
 use Symfony\Component\Security\Core\Authentication\Token\TokenInterface;
+use Symfony\Component\Security\Core\Authorization\AccessDecisionManagerInterface;
 use Symfony\Component\Security\Core\Authorization\Voter\Voter;
 
 class JourneySharingVoter extends Voter
@@ -13,6 +15,9 @@ class JourneySharingVoter extends Voter
     const CAN_SHARE_JOURNEY = 'CAN_SHARE_JOURNEY';
     const CAN_SHARE_JOURNEYS = 'CAN_SHARE_JOURNEYS';
     const CAN_SHARE_WITH_DIARY_KEEPER = 'CAN_SHARE_WITH_DIARY_KEEPER';
+
+    public function __construct(protected AccessDecisionManagerInterface $accessDecisionManager)
+    {}
 
     protected function supports(string $attribute, $subject): bool
     {
@@ -73,7 +78,17 @@ class JourneySharingVoter extends Voter
                 //      due to having already shared it with them.
                 /** @var $subject DiaryKeeper */
 
-                if (!in_array($subject->getDiaryState(), [DiaryKeeper::STATE_NEW, DiaryKeeper::STATE_IN_PROGRESS])) {
+                $validTargetDiaryStates = [
+                    DiaryKeeper::STATE_NEW,
+                    DiaryKeeper::STATE_IN_PROGRESS,
+                ];
+
+                if ($this->isInterviewerImpersonatingDiaryKeeper($token)) {
+                    // Interviewers can impersonate diary-keepers and edit diaries that are in the completed state
+                    $validTargetDiaryStates[] = DiaryKeeper::STATE_COMPLETED;
+                }
+
+                if (!in_array($subject->getDiaryState(), $validTargetDiaryStates)) {
                     return false;
                 }
 
@@ -94,5 +109,18 @@ class JourneySharingVoter extends Voter
         return ($user instanceof User) ?
             $user->getDiaryKeeper() :
             null;
+    }
+
+    protected function isInterviewerImpersonatingDiaryKeeper(TokenInterface $token): bool
+    {
+        if (!$token instanceof SwitchUserToken) {
+            return false;
+        }
+
+        // N.B. Can't just check ($originalUser->getInterviewer() !== null) as this is not populated in the token
+        //      retrieved from the session.
+        //
+        //      Also can't use $security->isGranted() as that checks permissions using the *current* token.
+        return $this->accessDecisionManager->decide($token->getOriginalToken(), [User::ROLE_INTERVIEWER]);
     }
 }

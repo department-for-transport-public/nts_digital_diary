@@ -15,9 +15,4 @@ class Reference
     public const FORGOTTEN_PASSWORD_TEMPLATE_ID = 'a7400098-f7e8-49a1-bf7e-5814102db784';
     public const FORGOTTEN_PASSWORD_EVENT = 'forgotten-password';
     public const FORGOTTEN_PASSWORD_LINK_EXPIRY = 1*24*60*60;
-
-    public const DIARY_COMPLETE_ACKNOWLEDGEMENT = [
-        'templateId' => '',
-        'eventName' => 'diary-complete-acknowledgement',
-    ];
 }

@@ -20,6 +20,10 @@ use Doctrine\ORM\Mapping\UniqueConstraint;
  */
 class Household
 {
+    const STATE_APPROVED = 'approved';
+    const STATE_COMPLETED = 'completed';
+    const STATE_IN_PROGRESS = 'in-progress';
+    const STATE_NEW = 'new';
     const STATE_SUBMITTED = 'submitted';
 
     use IdTrait;
@@ -41,8 +45,8 @@ class Household
     /**
      * @ORM\Column(type="date", nullable=true)
      * @Assert\NotBlank(groups={"wizard.on-boarding.household"}, message="wizard.on-boarding.household.start-date.not-blank")
-     * @Assert\Expression(groups={"wizard.on-boarding.household"},"value >= this.getAreaPeriod().getFirstValidDiaryStartDate()")
-     * @Assert\Expression(groups={"wizard.on-boarding.household"},"value < this.getAreaPeriod().getLastValidDiaryStartDate()")
+     * @Assert\Expression(groups={"wizard.on-boarding.household"},"!value or value >= this.getAreaPeriod().getFirstValidDiaryStartDate()", message="wizard.on-boarding.household.start-date.too-early")
+     * @Assert\Expression(groups={"wizard.on-boarding.household"},"!value or value <= this.getAreaPeriod().getLastValidDiaryStartDate()", message="wizard.on-boarding.household.start-date.too-late")
      */
     private ?DateTime $diaryWeekStartDate;
 
@@ -235,12 +239,18 @@ class Household
         return $this;
     }
 
-    public function getSerialNumber(?int $diaryKeeperNumber = null): string
+    public function getSerialNumber(?int $diaryKeeperNumber = null, bool $padAddressPart=true, bool $spacesBetweenParts=true): string
     {
-        $addressPart = str_pad($this->getAddressNumber(), 2, '0', STR_PAD_LEFT);
-        $diaryKeeperPart = $diaryKeeperNumber ? " / $diaryKeeperNumber" : '';
+        $addressPart = $this->getAddressNumber();
 
-        return "{$this->getAreaPeriod()->getArea()} / {$addressPart} / {$this->getHouseholdNumber()}{$diaryKeeperPart}";
+        if ($padAddressPart) {
+            $addressPart = str_pad($addressPart, 2, '0', STR_PAD_LEFT);
+        }
+
+        $separator = $spacesBetweenParts ? ' / ' : '/';
+        $diaryKeeperPart = $diaryKeeperNumber ? "{$separator}{$diaryKeeperNumber}" : '';
+
+        return "{$this->getAreaPeriod()->getArea()}{$separator}{$addressPart}{$separator}{$this->getHouseholdNumber()}{$diaryKeeperPart}";
     }
 
     public function getAreaPeriod(): ?AreaPeriod
@@ -281,9 +291,34 @@ class Household
     public function getState(): string
     {
         if ($this->submittedAt !== null) {
-            return self::STATE_SUBMITTED;
+            return Household::STATE_SUBMITTED;
         }
 
+        [
+            DiaryKeeper::STATE_NEW => $newCount,
+            DiaryKeeper::STATE_IN_PROGRESS => $inProgressCount,
+            DiaryKeeper::STATE_COMPLETED => $completedCount,
+            DiaryKeeper::STATE_APPROVED => $approvedCount,
+            DiaryKeeper::STATE_DISCARDED => $discardedCount,
+        ] = $this->getDiaryKeeperStateCounts();
+        $numDiaryKeepers = count($this->diaryKeepers);
+
+        if ($numDiaryKeepers === $approvedCount + $discardedCount) {
+            return Household::STATE_APPROVED;
+        } else if ($numDiaryKeepers === $newCount) {
+            return Household::STATE_NEW;
+        } else if ($numDiaryKeepers === ($completedCount + $approvedCount + $discardedCount)) {
+            return Household::STATE_COMPLETED;
+        } else {
+            return Household::STATE_IN_PROGRESS;
+        }
+    }
+
+    /**
+     * @return array<string, int>
+     */
+    public function getDiaryKeeperStateCounts(): array
+    {
         $stateCounts = [
             DiaryKeeper::STATE_NEW => 0,
             DiaryKeeper::STATE_IN_PROGRESS => 0,
@@ -296,17 +331,7 @@ class Household
             $stateCounts[$diaryKeeper->getDiaryState() ?? DiaryKeeper::STATE_NEW]++;
         }
 
-        $numDiaryKeepers = count($this->diaryKeepers);
-
-        if ($numDiaryKeepers === $stateCounts[DiaryKeeper::STATE_APPROVED]) {
-            return DiaryKeeper::STATE_APPROVED;
-        } else if ($numDiaryKeepers === $stateCounts[DiaryKeeper::STATE_NEW]) {
-            return DiaryKeeper::STATE_NEW;
-        } else if ($numDiaryKeepers === ($stateCounts[DiaryKeeper::STATE_COMPLETED] + $stateCounts[DiaryKeeper::STATE_APPROVED])) {
-            return DiaryKeeper::STATE_COMPLETED;
-        } else {
-            return DiaryKeeper::STATE_IN_PROGRESS;
-        }
+        return $stateCounts;
     }
 
     public function getSubmittedBy(): ?string

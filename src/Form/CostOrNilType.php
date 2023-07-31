@@ -13,7 +13,7 @@ class CostOrNilType extends AbstractType
 {
     public const BOOLEAN_FIELD_NAME = 'hasCost';
     public const COST_FIELD_NAME = 'cost';
-    public function buildForm(FormBuilderInterface $builder, array $options)
+    public function buildForm(FormBuilderInterface $builder, array $options): void
     {
         $translationPrefix = $options['translation_prefix'];
         $builder
@@ -42,7 +42,7 @@ class CostOrNilType extends AbstractType
             ;
     }
 
-    public function configureOptions(OptionsResolver $resolver)
+    public function configureOptions(OptionsResolver $resolver): void
     {
         $resolver->setDefaults([
             'translation_domain' => 'travel-diary',

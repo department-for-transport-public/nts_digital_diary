@@ -4,6 +4,7 @@ namespace App\Serializer\ExportApi\v1;
 
 use App\Entity\Journey\Stage;
 use App\Serializer\ExportApi\Utils;
+use Brick\Math\BigDecimal;
 use Symfony\Component\Serializer\Exception\ExceptionInterface;
 use Symfony\Component\Serializer\Normalizer\AbstractObjectNormalizer;
 use Symfony\Component\Serializer\Normalizer\ContextAwareNormalizerInterface;
@@ -27,20 +28,26 @@ class StageNormalizer implements ContextAwareNormalizerInterface, NormalizerAwar
      */
     public function normalize($object, string $format = null, array $context = []): array
     {
+        // N.B. SQLite does not store decimals with fixed places, so we need to additionally scale here to make
+        //      output consistent across both site usage and tests.
+        $decimalToString = fn(?BigDecimal $decimal) => $decimal === null ?
+            null :
+            strval($decimal->toScale(2));
+
         return [
             '#' => $object->getNumber(),
             'methodCode' => $object->getMethod()->getCode(),
             'methodOther' => $object->getMethodOther(),
-            'distance' => $object->getDistanceTravelled()->getValue(),
+            'distance' => $decimalToString($object->getDistanceTravelled()->getValue()),
             'distanceUnit' => $object->getDistanceTravelled()->getUnit(),
             'childCount' => $object->getChildCount() ?? 0,
             'adultCount' => $object->getAdultCount() ?? 0,
             'travelTime' => $object->getTravelTime(),
             'boardingCount' => $object->getBoardingCount(),
-            'ticketCost' => Utils::formatFloat($object->getTicketCost()->getCost()),
+            'ticketCost' => $object->getTicketCost()?->encodeToSingleValue(),
             'ticketType' => $object->getTicketType(),
             'isDriver' => $object->getIsDriver(),
-            'parkingCost' => Utils::formatFloat($object->getParkingCost()?->getCost()),
+            'parkingCost' => $object->getParkingCost()?->encodeToSingleValue(),
             'vehicle' => $object->getVehicle() ? $object->getVehicle()->getFriendlyName() : $object->getVehicleOther(),
             'vehicleCapiNumber' => $object->getVehicle() ?->getCapiNumber(),
 

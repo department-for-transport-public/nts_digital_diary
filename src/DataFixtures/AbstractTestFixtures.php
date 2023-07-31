@@ -15,6 +15,7 @@ use App\Entity\Journey\Stage;
 use App\Entity\User;
 use App\Entity\Vehicle;
 use App\Features;
+use Brick\Math\BigDecimal;
 use DateInterval;
 use DateTime;
 use Doctrine\Bundle\FixturesBundle\Fixture;
@@ -68,7 +69,7 @@ abstract class AbstractTestFixtures extends Fixture implements FixtureGroupInter
         $entities[] = $j = $this->createJourney($dk, 1, "Home", "Huddersfield", "13:30", "14:52", "To go shopping");
         $entities[] = $this->createPrivateStage($j, 'car', null, $vehicle, '12', 1, 24, 560);
         $entities[] = $this->createSimpleStage($j, 'walk', null, "0.3", 1, 8);
-        $entities[] = $this->createPublicStage($j, 'train', null, "45", 1, 40, 780, 2, "Standard return");
+        $entities[] = $this->createPublicStage($j, 'train', null, "45", 1, 40, "7.80", 2, "Standard return");
         return $entities;
     }
 
@@ -164,7 +165,7 @@ abstract class AbstractTestFixtures extends Fixture implements FixtureGroupInter
         $method = $this->getMethodByKey($methodKey);
 
         $distanceTravelled = (new Distance())
-            ->setValue($distance)
+            ->setValue(BigDecimal::of($distance))
             ->setUnit(Distance::UNIT_MILES);
 
         return (new Stage())
@@ -183,18 +184,18 @@ abstract class AbstractTestFixtures extends Fixture implements FixtureGroupInter
         return $stage;
     }
 
-    protected function createPublicStage(Journey $journey, string $methodKey, ?string $methodOther, string $distance, int $adultCount, int $travelTime, int $ticketCost, int $boardingCount, string $ticketType): Stage {
+    protected function createPublicStage(Journey $journey, string $methodKey, ?string $methodOther, string $distance, int $adultCount, int $travelTime, ?string $ticketCost, int $boardingCount, string $ticketType): Stage {
         $stage = $this->createBaseStage($methodKey, $methodOther, $distance, $adultCount, $travelTime);
         assertSame(Method::TYPE_PUBLIC, $stage->getMethod()->getType());
         $stage
-            ->setTicketCost((new CostOrNil())->setCost($ticketCost))
+            ->setTicketCost((new CostOrNil())->decodeFromSingleValue($ticketCost))
             ->setBoardingCount($boardingCount)
             ->setTicketType($ticketType);
         $journey->addStage($stage);
         return $stage;
     }
 
-    protected function createPrivateStage(Journey $journey, string $methodKey, ?string $methodOther, $vehicle, string $distance, int $adultCount, int $travelTime, int $parkingCost = null, bool $isDriver = true): Stage {
+    protected function createPrivateStage(Journey $journey, string $methodKey, ?string $methodOther, $vehicle, string $distance, int $adultCount, int $travelTime, ?string $parkingCost = null, bool $isDriver = true): Stage {
         $stage = $this->createBaseStage($methodKey, $methodOther, $distance, $adultCount, $travelTime);
         assertSame(Method::TYPE_PRIVATE, $stage->getMethod()->getType());
 
@@ -205,7 +206,7 @@ abstract class AbstractTestFixtures extends Fixture implements FixtureGroupInter
         if ($journey->getDiaryDay()->getDiaryKeeper()->getIsAdult()) {
             $stage
                 ->setIsDriver($isDriver)
-                ->setParkingCost((new CostOrNil())->setCost($parkingCost));
+                ->setParkingCost((new CostOrNil())->decodeFromSingleValue($parkingCost));
         }
         $journey->addStage($stage);
         return $stage;

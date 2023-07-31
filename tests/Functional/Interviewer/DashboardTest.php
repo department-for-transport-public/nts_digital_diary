@@ -18,7 +18,7 @@ class DashboardTest extends AbstractFunctionalTestCase
 
     public function testDashboard(): void
     {
-        $this->client->request('GET', '/interviewer/');
+        $this->client->request('GET', '/interviewer/areas-archived');
 
         $tableData = $this->getTableData();
         $this->assertDataSize($tableData, 1);
@@ -31,7 +31,7 @@ class DashboardTest extends AbstractFunctionalTestCase
 
     public function testArea(): void
     {
-        $this->client->request('GET', '/interviewer/');
+        $this->client->request('GET', '/interviewer/areas-archived');
         $this->clickLinkContaining('View');
         $tableData = $this->getTableData();
 
@@ -55,7 +55,7 @@ class DashboardTest extends AbstractFunctionalTestCase
 
     public function testHouseholdWithDiaryKeepers(): void
     {
-        $this->client->request('GET', '/interviewer/');
+        $this->client->request('GET', '/interviewer/areas-archived');
         $this->clickLinkContaining('View');
         $this->clickLinkContaining('View', 0);
 
@@ -73,12 +73,12 @@ class DashboardTest extends AbstractFunctionalTestCase
 
     public function testDashboardBreadcrumbs(): void
     {
-        $this->doBreadcrumbsTestStartingAt('/interviewer/', 3);
+        $this->doBreadcrumbsTestStartingAt('/interviewer', 4, ['View archived areas']);
     }
 
     public function testDashboardBackLinks(): void
     {
-        $this->doBackLinksTestStartingAt('/interviewer/', 3);
+        $this->doBackLinksTestStartingAt('/interviewer/areas-archived', 3);
     }
 
     protected function expectHouseholdDiaryWeekStartDate(string $expectedStartDate): void

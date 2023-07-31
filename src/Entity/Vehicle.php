@@ -19,7 +19,12 @@ use Symfony\Component\Validator\Constraints as Assert;
  */
 class Vehicle implements \JsonSerializable
 {
-    public const VALID_METHOD_CODES = [4, 5, 6];
+    public const VALID_METHOD_KEYS = [
+        'car',
+        'motorcycle',
+        'van-or-lorry',
+        'other-private',
+    ];
 
     public const ODOMETER_UNIT_MILES = 'miles';
     public const ODOMETER_UNIT_KILOMETERS = 'kilometers';
@@ -80,6 +85,7 @@ class Vehicle implements \JsonSerializable
 
     /**
      * @ORM\Column(type="string", length=12, nullable=true)
+     * @Assert\Expression("!isNull(value) || (isNull(this.getWeekStartOdometerReading()) && isNull(this.getWeekEndOdometerReading()))", groups={"vehicle.odometer-readings"}, message="vehicle.odometer-readings.units-required")
      */
     private ?string $odometerUnit;
 

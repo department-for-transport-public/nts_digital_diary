@@ -134,7 +134,7 @@ class AbstractFunctionalTestCase extends PantherTestCase
         return $elements[$elementNumber];
     }
 
-    protected function doBreadcrumbsTestStartingAt(string $url, int $numberOfLevels): void
+    protected function doBreadcrumbsTestStartingAt(string $url, int $numberOfLevels, array $linkTextOverrides = []): void
     {
         $this->client->request('GET', $url);
 
@@ -146,7 +146,7 @@ class AbstractFunctionalTestCase extends PantherTestCase
         //
         // This is repeated twice, since there are a total of three pages involved (dashboard > household > diary keeper)
         for($i = 0; $i < ($numberOfLevels - 1); $i++) {
-            $this->clickLinkContaining('View');
+            $this->clickLinkContaining($linkTextOverrides[$i] ?? 'View');
             $urls[] = $this->getCurrentPath();
 
             $breadcrumbs = $this->client->findElements(WebDriverBy::xpath("//ol[@class='govuk-breadcrumbs__list']/li/a[@class='govuk-breadcrumbs__link']"));
@@ -156,7 +156,7 @@ class AbstractFunctionalTestCase extends PantherTestCase
             $allButTheLastUrl = array_slice($urls, 0, -1);
 
             foreach($allButTheLastUrl as $idx => $url) {
-                $this->assertEquals($url, $breadcrumbUrls[$idx]);
+                $this->assertEquals($url, $breadcrumbUrls[$idx] ?? null, "Breadcrumb url [$idx] should be $url at ".$this->getCurrentPath());
             }
         }
     }

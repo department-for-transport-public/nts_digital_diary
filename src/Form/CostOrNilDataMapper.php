@@ -3,6 +3,7 @@
 namespace App\Form;
 
 use App\Entity\CostOrNil;
+use Brick\Math\BigDecimal;
 use Symfony\Component\Form\Extension\Core\DataMapper\DataMapper;
 use Symfony\Component\Form\FormInterface;
 use Traversable;
@@ -17,12 +18,16 @@ class CostOrNilDataMapper extends DataMapper
     {
         $forms = iterator_to_array($forms);
         /** @var FormInterface[] $forms */
+
         $cost = $data?->getCost();
-        switch(true) {
-            case $cost > 0 : $forms[CostOrNilType::COST_FIELD_NAME]->setData($cost); break;
-            default: $forms[CostOrNilType::COST_FIELD_NAME]->setData(null); break;
+        $hasCost = $data?->getHasCost();
+
+        if ($cost instanceof BigDecimal && $cost->isZero()) {
+            $hasCost = false;
         }
-        $forms[CostOrNilType::BOOLEAN_FIELD_NAME]->setData($data?->getHasCost());
+
+        $forms[CostOrNilType::BOOLEAN_FIELD_NAME]->setData($hasCost);
+        $forms[CostOrNilType::COST_FIELD_NAME]->setData($hasCost === true ? $cost : null);
     }
 
     /**
@@ -33,11 +38,22 @@ class CostOrNilDataMapper extends DataMapper
     {
         $forms = iterator_to_array($forms);
         /** @var FormInterface[] $forms */
-        $data->setHasCost($hasPaid = $forms[CostOrNilType::BOOLEAN_FIELD_NAME]->getData());
-        switch(true) {
-            case is_null($hasPaid) : $data->setCost(null); break;
-            case $hasPaid === true : $data->setCost($forms[CostOrNilType::COST_FIELD_NAME]->getData()); break;
-            default : $data->setCost(0); break;
+
+        $hasCost = $forms[CostOrNilType::BOOLEAN_FIELD_NAME]->getData();
+        $cost = $forms[CostOrNilType::COST_FIELD_NAME]->getData();
+
+        if ($cost instanceof BigDecimal && $cost->isZero()) {
+            $hasCost = false;
+        }
+
+        $data->setHasCost($hasCost);
+
+        if ($hasCost === null) {
+            $data->setCost(null);
+        } else if ($hasCost === false) {
+            $data->setCost(BigDecimal::zero()->toScale(2));
+        } else if ($hasCost === true) {
+            $data->setCost($cost);
         }
     }
 }

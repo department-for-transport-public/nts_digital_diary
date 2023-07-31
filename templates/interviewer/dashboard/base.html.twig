@@ -18,6 +18,17 @@
                 text: 'breadcrumbs.dashboard' | trans,
             }
         ] -%}
+        {%- if
+            (action is defined and action == 'archived-areas') or
+            (areaPeriod is defined) and areaPeriod.isArchived()
+        -%}
+            {% set breadcrumbItems = breadcrumbItems | merge([
+                {
+                    href: path("interviewer_dashboard_archived_areas"),
+                    text: 'survey-areas.archived.breadcrumb' | trans,
+                }
+            ]) %}
+        {%- endif -%}
         {%- if areaPeriod is defined %}{% set breadcrumbItems = breadcrumbItems | merge([
             {
                 href: path('interviewer_dashboard_area', {areaPeriod: areaPeriod.id}),
@@ -83,6 +94,13 @@
                 {
                     href: path("interviewer_household_submit", {household: household.id}),
                     text: 'household.submit.breadcrumb' | trans,
+                }
+            ]) %}
+        {%- endif -%}
+        {%- if action is defined and action == 'compare-household' -%}
+            {% set breadcrumbItems = breadcrumbItems | merge([
+                {
+                    text: 'compare-household.breadcrumb' | trans,
                 }
             ]) %}
         {%- endif -%}

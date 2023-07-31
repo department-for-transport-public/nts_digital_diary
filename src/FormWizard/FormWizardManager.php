@@ -67,7 +67,11 @@ class FormWizardManager
         $placeMetadata['translation_parameters'] = PropertyAccessHelper::resolveMap($state, $placeMetadata['translation_parameters']);
         $placeMetadata['view_data'] = PropertyAccessHelper::resolveMap($state, $placeMetadata['view_data']);
         $placeMetadata['view_data']['translation_parameters'] = $placeMetadata['translation_parameters'];
-        $placeMetadata['view_data']['translation_parameters']['activity'] = $state->getSubject() && $state->getSubject()->getId() ? 'editing' : 'adding';
+
+        $subject = $state->getSubject();
+        $isEditing = $subject && method_exists($subject, 'getId') && $subject->getId();
+
+        $placeMetadata['view_data']['translation_parameters']['activity'] = $isEditing ? 'editing' : 'adding';
         return $placeMetadata;
     }
 
@@ -156,7 +160,15 @@ class FormWizardManager
 
         if ($transitionMetadata['persist'] ?? false)
         {
-            $this->persistSubject($state->getSubject());
+            $subject = $state->getSubject();
+
+            if ($subject instanceof MultipleEntityInterface) {
+                foreach($subject->getEntitiesToPersist() as $entity) {
+                    $this->persistSubject($entity);
+                }
+            } else {
+                $this->persistSubject($subject);
+            }
         }
 
         if ($notificationBanner = $transitionMetadata['notification_banner'] ?? false) {
@@ -198,7 +210,7 @@ class FormWizardManager
         ];
     }
 
-    protected function persistSubject($subject)
+    protected function persistSubject($subject): void
     {
         if (!$this->entityManager->contains($subject)) {
             $this->entityManager->persist($subject);
@@ -206,7 +218,7 @@ class FormWizardManager
         $this->entityManager->flush();
     }
 
-    protected function handleNotificationBanners(array $notificationBanner, FormWizardStateInterface $state)
+    protected function handleNotificationBanners(array $notificationBanner, FormWizardStateInterface $state): void
     {
         if (($notificationBanner['title'] ?? false) && ($notificationBanner['heading'] ?? false) && ($notificationBanner['content'] ?? false)) {
             $translationParameters = PropertyAccessHelper::resolveMap($state, $notificationBanner['translation_parameters'] ?? []);

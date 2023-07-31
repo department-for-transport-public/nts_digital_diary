@@ -6,10 +6,11 @@
 {% block content %}
     {% from 'on_boarding/macros.html.twig' import showHouseholdDetails %}
     {{ showHouseholdDetails({showActions: false}) }}
-
-    {%- from '@GhostGovUkFrontend/components/macros.html.twig' import actionlessSummaryListRow, summaryListRow -%}
+    {% include 'on_boarding/submit/include/diary_keepers_summary.html.twig' %}
+    {% include 'on_boarding/submit/include/vehicles_summary.html.twig' %}
 
     {% if is_feature_enabled(constant('App\\Features::REVEAL_INVITE_LINKS')) %}
+        {%- from '@GhostGovUkFrontend/components/macros.html.twig' import summaryListRow -%}
         <h2 class="govuk-heading-m">Diary Keeper links</h2>
         <div class="govuk-summary-list">
             {% for dk in app.user.household.diaryKeepers | filter(dk => dk.hasIdentifierForLogin) %}

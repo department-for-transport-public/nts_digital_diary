@@ -3,10 +3,20 @@
 namespace App\Tests\Serializer\ChangeSet;
 
 use App\Serializer\ChangeSet\JourneyChangeSetNormalizer;
-use PHPUnit\Framework\TestCase;
+use Symfony\Bundle\FrameworkBundle\Test\KernelTestCase;
 
-class JourneyNormalizerTest extends TestCase
+class JourneyNormalizerTest extends KernelTestCase
 {
+    protected JourneyChangeSetNormalizer $journeyChangeSetNormalizer;
+
+    public function setUp(): void
+    {
+        parent::setUp();
+
+        static::bootKernel();
+        $this->journeyChangeSetNormalizer = static::getContainer()->get(JourneyChangeSetNormalizer::class);
+    }
+
     public function dataFieldChanges(): array
     {
         return [
@@ -81,7 +91,6 @@ class JourneyNormalizerTest extends TestCase
      */
     public function testFieldChanges(array $input, array $expectedOutput): void
     {
-        $normalizer = new JourneyChangeSetNormalizer();
-        $this->assertEqualsCanonicalizing($expectedOutput, $normalizer->normalize($input));
+        $this->assertEqualsCanonicalizing($expectedOutput, $this->journeyChangeSetNormalizer->normalize($input));
     }
 }

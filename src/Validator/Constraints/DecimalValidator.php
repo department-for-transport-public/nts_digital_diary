@@ -2,18 +2,16 @@
 
 namespace App\Validator\Constraints;
 
-use Ghost\GovUkFrontendBundle\Form\DataTransformer\DecimalToStringTransformer;
+use Brick\Math\BigDecimal;
+use Brick\Math\Exception\MathException;
 use Symfony\Component\Validator\Constraint;
-use Symfony\Component\Validator\Constraints\NotBlank;
-use Symfony\Component\Validator\Constraints\Positive;
-use Symfony\Component\Validator\Constraints\PositiveOrZero;
 use Symfony\Component\Validator\ConstraintValidator;
 use Symfony\Component\Validator\Exception\UnexpectedTypeException;
 use Symfony\Component\Validator\Exception\UnexpectedValueException;
 
 class DecimalValidator extends ConstraintValidator
 {
-    public function validate($value, Constraint $constraint)
+    public function validate($value, Constraint $constraint): void
     {
         if (!$constraint instanceof Decimal) {
             throw new UnexpectedTypeException($constraint, Decimal::class);
@@ -23,17 +21,19 @@ class DecimalValidator extends ConstraintValidator
             return;
         }
 
-        if (!preg_match(DecimalToStringTransformer::VALIDATION_REGEX, $value, $matches)) {
-            throw new UnexpectedValueException($value, 'decimal woo');
+        try {
+            $decimal = BigDecimal::of($value);
+        } catch (MathException) {
+            throw new UnexpectedValueException($value, 'Not a valid decimal');
         }
 
         $max = pow(10, $constraint->precision - $constraint->scale);
-        if ($value > $max) {
+        if ($decimal->isGreaterThan($max)) {
             $this->context->buildViolation("$constraint->translationPrefix.$constraint->maxMessageKey")
                 ->setParameter('max', $max)
                 ->addViolation();
         }
-        if (strlen($matches['dec'] ?? '') > $constraint->scale) {
+        if ($decimal->getScale() > $constraint->scale) {
             $this->context->buildViolation("$constraint->translationPrefix.$constraint->placesMessageKey")
                 ->setParameter('scale', $constraint->scale)
                 ->addViolation();

@@ -4,16 +4,16 @@ namespace App\Validator\Constraints;
 
 use App\Entity\CostOrNil as CostOrNilEntity;
 use App\Form\CostOrNilType;
+use Brick\Math\BigDecimal;
 use Symfony\Component\Validator\Constraint;
 use Symfony\Component\Validator\Constraints\NotNull;
-use Symfony\Component\Validator\Constraints\Positive;
 use Symfony\Component\Validator\ConstraintValidator;
 use Symfony\Component\Validator\Exception\UnexpectedTypeException;
 use Symfony\Component\Validator\Exception\UnexpectedValueException;
 
 class CostOrNilValidator extends ConstraintValidator
 {
-    public function validate($value, Constraint $constraint)
+    public function validate($value, Constraint $constraint): void
     {
         if (!$constraint instanceof CostOrNil) {
             throw new UnexpectedTypeException($constraint, CostOrNil::class);
@@ -29,7 +29,7 @@ class CostOrNilValidator extends ConstraintValidator
 
         $validator = $this->context->getValidator()->inContext($this->context);
 
-        if (!$constraint->allowBlank) {
+        if (!$constraint->allowBlankHasCost) {
             $validators = [
                 new NotNull(['message' => "{$constraint->translationPrefix}.has-cost.not-null"]),
             ];
@@ -37,11 +37,25 @@ class CostOrNilValidator extends ConstraintValidator
         }
 
         if ($value->getHasCost()) {
-            $validators = [
-                new NotNull(['message' => "{$constraint->translationPrefix}.cost.not-null"]),
-                new Positive(['message' => "{$constraint->translationPrefix}.cost.positive"]),
-            ];
-            $validator->atPath(CostOrNilType::COST_FIELD_NAME)->validate($value->getCost(), $validators, ['Default']);
+            $cost = $value->getCost();
+
+            if ($cost instanceof BigDecimal && $cost->isNegative()) {
+                $this->context
+                    ->buildViolation("{$constraint->translationPrefix}.cost.positive")
+                    ->atPath(CostOrNilType::COST_FIELD_NAME)
+                    ->addViolation();
+            } else {
+                $validators = $constraint->allowBlankCost ?
+                    [] :
+                    [new NotNull(['message' => "{$constraint->translationPrefix}.cost.not-null"])];
+
+                $validators[] = new Decimal([
+                    'precision' => $constraint->precision,
+                    'scale' => $constraint->scale,
+                    'translationPrefix' => "{$constraint->translationPrefix}.cost",
+                ]);
+                $validator->atPath(CostOrNilType::COST_FIELD_NAME)->validate($value->getCost(), $validators, ['Default']);
+            }
         }
     }
 }

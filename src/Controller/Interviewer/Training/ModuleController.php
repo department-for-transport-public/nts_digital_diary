@@ -5,34 +5,33 @@ namespace App\Controller\Interviewer\Training;
 use App\Entity\InterviewerTrainingRecord;
 use App\Security\OneTimePassword\PasscodeGenerator;
 use App\Security\OneTimePassword\TrainingUserProvider;
-use App\Security\Voter\Interviewer\TrainingModuleVoter;
 use App\Utility\ConfirmAction\Interviewer\RetakeTrainingModuleConfirmAction;
 use App\Utility\InterviewerTraining\InterviewerTrainingHelper;
 use App\Utility\UrlSigner;
-use DateTime;
-use DateTimeImmutable;
 use Doctrine\ORM\EntityManagerInterface;
 use Sensio\Bundle\FrameworkExtraBundle\Configuration\Entity;
-use Sensio\Bundle\FrameworkExtraBundle\Configuration\IsGranted;
 use Sensio\Bundle\FrameworkExtraBundle\Configuration\Template;
+use Symfony\Component\HttpFoundation\JsonResponse;
 use Symfony\Component\HttpFoundation\RedirectResponse;
 use Symfony\Component\HttpFoundation\Request;
 use Symfony\Component\HttpFoundation\Response;
 use Symfony\Component\Routing\Annotation\Route;
 use Symfony\Component\Security\Core\Security;
+use Symfony\Component\Workflow\Registry;
+use Symfony\Contracts\Translation\TranslatorInterface;
 
 #[Route('/training/module/{moduleName}', name: 'training_module_')]
 #[Entity('trainingRecord', expr: 'repository.findLatestByModuleName(moduleName)')]
 class ModuleController extends AbstractController
 {
-    private UrlSigner $urlSigner;
-    private PasscodeGenerator $passcodeGenerator;
-
-    public function __construct(EntityManagerInterface $entityManager, InterviewerTrainingHelper $trainingHelper, Security $security, UrlSigner $urlSigner, PasscodeGenerator $passcodeGenerator)
-    {
+    public function __construct(
+        EntityManagerInterface $entityManager, InterviewerTrainingHelper $trainingHelper, Security $security,
+        protected UrlSigner $urlSigner,
+        protected PasscodeGenerator $passcodeGenerator,
+        protected Registry $workflowRegistry,
+        protected TranslatorInterface $translator,
+    ) {
         parent::__construct($entityManager, $trainingHelper, $security);
-        $this->urlSigner = $urlSigner;
-        $this->passcodeGenerator = $passcodeGenerator;
     }
 
     #[Route(name: 'index')]
@@ -62,23 +61,31 @@ class ModuleController extends AbstractController
     }
 
     #[Route('/start', name: 'start', methods: ["POST"])]
-    #[IsGranted(TrainingModuleVoter::CAN_START, subject: 'trainingRecord')]
-    public function startModule(InterviewerTrainingRecord $trainingRecord): RedirectResponse
+    public function startModule(InterviewerTrainingRecord $trainingRecord): Response
     {
-        $trainingRecord->setStartedAt(new DateTimeImmutable());
-        $this->entityManager->flush();
-        return $this->redirect($this->generateUrl('interviewer_training_module_index', ['moduleName' => $trainingRecord->getModuleName()]));
+        return $this->attemptWorkflowTransition($trainingRecord, InterviewerTrainingRecord::TRANSITION_START);
     }
 
     #[Route('/complete', name: 'complete', methods: ["POST"])]
-    #[IsGranted(TrainingModuleVoter::CAN_COMPLETE, subject: 'trainingRecord')]
-    public function completeModule(InterviewerTrainingRecord $trainingRecord): RedirectResponse
+    public function completeModule(InterviewerTrainingRecord $trainingRecord): Response
     {
-        $trainingRecord->setCompletedAt(new DateTimeImmutable());
-        $this->entityManager->flush();
-        return $this->redirect($this->generateUrl('interviewer_training_module_index', ['moduleName' => $trainingRecord->getModuleName()]));
+        return $this->attemptWorkflowTransition($trainingRecord, InterviewerTrainingRecord::TRANSITION_COMPLETE);
     }
 
+    protected function attemptWorkflowTransition(InterviewerTrainingRecord $trainingRecord, string $transition): Response
+    {
+        $workflow = $this->workflowRegistry->get($trainingRecord);
+        if ($workflow->can($trainingRecord, $transition)) {
+            $workflow->apply($trainingRecord, $transition);
+            $this->entityManager->flush();
+        }
+        return new JsonResponse([
+            'newState' => [
+                'text' => $this->translator->trans('training.state.label', ['state' => $trainingRecord->getState()], 'interviewer'),
+                'color' => $this->translator->trans('training.state.color', ['state' => $trainingRecord->getState()], 'interviewer'),
+            ],
+        ]);
+    }
 
     public function getViewDataForModule(InterviewerTrainingRecord $trainingRecord): array
     {
@@ -88,7 +95,7 @@ class ModuleController extends AbstractController
                     "_switch_user" => $trainingRecord->getInterviewer()->getTrainingPersonalDiaryKeeper()->getUser()->getUserIdentifier(),
                 ]),
             ],
-            InterviewerTrainingRecord::MODULE_ONBOARDING => [
+            InterviewerTrainingRecord::MODULE_ONBOARDING_PRACTICE => [
                 'practicalUrl' => $this->urlSigner->sign(
                     $this->generateUrl(
                         'onboarding_login',

@@ -22,10 +22,10 @@ class JourneyFixtures extends AbstractFixture implements DependentFixtureInterfa
     {
         return [
             'journey:1' => new JourneyDefinition(1, 'Home', '2020-01-01 8:26', 'Wobble', '2020-01-01 8:56', 'to-work', [
-                'journey:1/stage:1'=> new PrivateStageDefinition(1, 'car', Distance::miles("30"), 30, 1, 0, true, 0, 'Red Tesla'),
+                'journey:1/stage:1'=> new PrivateStageDefinition(1, 'car', Distance::miles("30"), 30, 1, 0, true, '0', 'Red Tesla'),
             ]),
             'journey:2' => new JourneyDefinition(1, 'Wobble', '2020-01-01 16:00', 'Home', '2020-01-01 17:00', 'to-home', [
-                'journey:2/stage:1'=> new PublicStageDefinition(1, 'bus-or-coach', Distance::miles("28"), 35, 1, 0, 350, 'standard-ticket', 1),
+                'journey:2/stage:1'=> new PublicStageDefinition(1, 'bus-or-coach', Distance::miles("28"), 35, 1, 0, '3.50', 'standard-ticket', 1, 'London bus'),
                 'journey:2/stage:2'=> new OtherStageDefinition(2, 'walk', Distance::miles("2"), 25, 1, 0),
             ]),
         ];
@@ -35,7 +35,7 @@ class JourneyFixtures extends AbstractFixture implements DependentFixtureInterfa
     {
         return [
             'journey:3' => new JourneyDefinition(7, 'Start', '2020-01-07 8:26', 'Finish', '2020-01-07 8:56', 'purpose', [
-                'journey:3/stage:1'=> new PrivateStageDefinition(1, 'car', Distance::miles("30"), 30, 1, 1, true, 0, 'Red Tesla'),
+                'journey:3/stage:1'=> new PrivateStageDefinition(1, 'car', Distance::miles("30"), 30, 1, 1, true, '0', 'Red Tesla'),
             ]),
         ];
     }

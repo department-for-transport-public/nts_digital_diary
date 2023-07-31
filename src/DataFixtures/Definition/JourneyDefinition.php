@@ -4,25 +4,15 @@ namespace App\DataFixtures\Definition;
 
 class JourneyDefinition
 {
-    protected string $startLocation;
-    protected string $startTime;
-    protected string $endLocation;
-    protected string $endTime;
-    protected string $purpose;
-
-    protected array $stageDefinitions;
-    private int $dayNumber;
-
-    public function __construct(int $dayNumber, string $startLocation, string $startTime, string $endLocation, string $endTime, string $purpose, array $stageDefinitions)
-    {
-        $this->startLocation = $startLocation;
-        $this->startTime = $startTime;
-        $this->endLocation = $endLocation;
-        $this->endTime = $endTime;
-        $this->purpose = $purpose;
-        $this->stageDefinitions = $stageDefinitions;
-        $this->dayNumber = $dayNumber;
-    }
+    public function __construct(
+        protected int $dayNumber,
+        protected string $startLocation,
+        protected string $startTime,
+        protected string $endLocation,
+        protected string $endTime,
+        protected string $purpose,
+        protected array $stageDefinitions
+    ) {}
 
     public function getDayNumber(): int
     {

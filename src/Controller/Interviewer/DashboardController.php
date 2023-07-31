@@ -11,7 +11,6 @@ use Sensio\Bundle\FrameworkExtraBundle\Configuration\Security;
 use Sensio\Bundle\FrameworkExtraBundle\Configuration\Template;
 use Symfony\Component\Form\FormInterface;
 use Symfony\Component\Routing\Annotation\Route;
-use Symfony\Component\Security\Core\User\UserInterface;
 
 /**
  * @Route(name="dashboard")
@@ -24,12 +23,38 @@ class DashboardController extends AbstractController
      */
     public function areas(): array
     {
-        $interviewer = $this->getInterviewer();
+        return $this->getAreasListData(
+            fn(AreaPeriod $period) => $period->getLastValidDiaryStartDate() >= AreaPeriod::getArchiveThreshold(),
+            false
+        );
+    }
 
-        return [
-            'interviewer' => $interviewer,
-            'areaPeriodsByYear' => AreaPeriodRepository::groupAreaPeriodsByYear($interviewer->getAreaPeriods()),
-        ];
+    /**
+     * @Route("/areas-archived", name="_archived_areas")
+     * @Template("interviewer/dashboard/areas_archived.html.twig")
+     */
+    public function archived(): array
+    {
+        return $this->getAreasListData(
+            fn(AreaPeriod $period) => $period->getLastValidDiaryStartDate() < AreaPeriod::getArchiveThreshold(),
+            true
+        );
+    }
+
+    protected function getAreasListData(\Closure $filterCondition, bool $groupAreas): array
+    {
+        $interviewer = $this->getInterviewer();
+        $data = ['interviewer' => $interviewer];
+
+        $areaPeriods = $interviewer->getAreaPeriods()->filter($filterCondition);
+
+        if ($groupAreas) {
+            $data['areaPeriodsByYear'] = AreaPeriodRepository::groupAreaPeriodsByYear($areaPeriods);
+        } else {
+            $data['areaPeriods'] = $areaPeriods;
+        }
+
+        return $data;
     }
 
     /**

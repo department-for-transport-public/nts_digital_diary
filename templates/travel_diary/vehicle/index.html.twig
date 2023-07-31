@@ -1,6 +1,9 @@
 {% extends 'travel_diary/base_form.html.twig' %}
 
 {% set title_translation_prefix = 'vehicle.odometer-readings' %}
+{% set title_translation_parameters = {
+    vehicle: form.vars.data.friendlyName
+} %}
 {% trans_default_domain 'travel-diary' %}
 
 {% block formContext %}

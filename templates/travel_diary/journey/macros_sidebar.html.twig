@@ -39,35 +39,34 @@
         </p>
     {%- endif -%}
 
-    {%- if journey.purpose is not null -%}
-        <h3 class="{{ h3Class }} govuk-!-margin-bottom-1">{{ "#{translation_prefix}.title.purpose" | trans }}</h3>
-        <p class="{{ bodyClass }}">{{- journey.purpose -}}</p>
+    {%- if options.show_purpose ?? true -%}
+        {%- if journey.purpose is not null -%}
+            <h3 class="{{ h3Class }} govuk-!-margin-bottom-1">{{ "#{translation_prefix}.title.purpose" | trans }}</h3>
+            <p class="{{ bodyClass }}">{{- journey.purpose -}}</p>
+        {%- endif -%}
     {%- endif -%}
 
-    {%- if journey.stages is not empty -%}
-        <h3 class="{{ h3Class }} govuk-!-margin-bottom-1">{{ "#{translation_prefix}.title.stages" | trans }}</h3>
-        <ul class="govuk-list govuk-list--number nts-stagelist govuk-!-font-size-16">
-            {%- for stage in journey.stages -%}
-                {{- _self.renderStage(stage, translation_prefix, options) -}}
-            {%- endfor -%}
-            {%- if options.isAdd | default(false) -%}
-                {{- _self.renderStage(options.stageInProgress, translation_prefix, options) -}}
-            {%- endif -%}
-        </ul>
+    {%- if options.show_stages ?? true -%}
+        {%- if journey.stages is not empty or (options.isAdd ?? false) -%}
+            <h3 class="{{ h3Class }} govuk-!-margin-bottom-1">{{ "#{translation_prefix}.title.stages" | trans }}</h3>
+            <ul class="govuk-list govuk-list--number nts-stagelist govuk-!-font-size-16">
+                {%- for stage in journey.stages -%}
+                    {{- _self.renderStage(stage, translation_prefix, options) -}}
+                {%- endfor -%}
+                {%- if options.isAdd ?? false -%}
+                    {{- _self.renderStage(options.stageInProgress, translation_prefix, options) -}}
+                {%- endif -%}
+            </ul>
+        {%- endif -%}
     {%- endif -%}
 {%- endmacro -%}
 
 {%- macro renderStage(stage, translation_prefix, options) -%}
     {%- set isCurrentStage = stage.id == (options.currentStageId ?? null) -%}
     <li{% if isCurrentStage %} class="nts-stagelist--current"{% endif %}>
-        {%- if stage.method is null -%}
-            {%- set method = null %}
-        {%- else -%}
-            {%- set method = stage.methodOther is not null ?
-                stage.methodOther :
-                "stage.method.choices.#{stage.method.descriptionTranslationKey}" | trans
-            -%}
-        {%- endif -%}
+        {%- set method = stage.methodForDisplay(true) -%}
+        {%- if method is not null -%}{%- set method = method | trans -%}{%- endif -%}
+
         {%- set argState = method is null ? 'empty' : (stage.travelTime is null ? 'noTravelTime': 'other') -%}
         {{- "#{translation_prefix}.stage" | trans({
             number: stage.number,

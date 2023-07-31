@@ -19,6 +19,8 @@
 
     <testsuites>
         <testsuite name="unit">
+            <directory>tests/EventSubscriber</directory>
+            <directory>tests/Form</directory>
             <directory>tests/FormWizard</directory>
             <directory>tests/Ghost</directory>
             <directory>tests/Messenger</directory>

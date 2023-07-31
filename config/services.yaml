@@ -21,6 +21,7 @@ parameters:
     hostnames.frontend: '%domain_name%'
     hostnames.admin: 'admin%env(default:default_host_separator:string:APP_HOSTNAME_SEPARATOR)%%domain_name%'
     screenshots.path: '%env(resolve:SCREENSHOTS_PATH)%'
+    gcp_database_command_config: '%env(json:GCP_DATABASE_COMMAND_CONFIG)%'
 
 services:
     # default configuration for services in *this* file
@@ -54,6 +55,9 @@ services:
             tags: [ 'workflow.expression_language_provider' ]
         App\FormWizard\FormWizardStateInterface:
             tags: [ 'app.form_wizard.state' ]
+        App\Utility\Comparator\ComparatorInterface:
+            tags: [ 'app.comparator' ]
+            lazy: true
         Doctrine\Common\EventSubscriber:
             tags: [ 'doctrine.event_subscriber' ]
         Symfony\Component\ExpressionLanguage\ExpressionFunctionProviderInterface:
@@ -62,6 +66,9 @@ services:
                 - { name: 'router.expression_language_provider' }
                 - { name: 'workflow.expression_language_provider' }
                 - { name: 'validator.expression_language_provider' }
+        App\Command\GcpDatabaseTools\AbstractGcpDatabaseCommand:
+            bind:
+                $config: '%gcp_database_command_config%'
 
     App\Command\NtsScreenshotsCommand:
         lazy: true
@@ -98,3 +105,4 @@ services:
 
     App\Utility\TranslatableParameterTranslator:
         decorates: 'translator'
+

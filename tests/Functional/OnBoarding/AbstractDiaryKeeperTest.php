@@ -99,6 +99,15 @@ abstract class AbstractDiaryKeeperTest extends AbstractOtpTest
                     '#user_identifier_user_username',
 //                    '#user_identifier_user_consent'
                 ]),
+                // Test with existing diary keeper user identifier, to ensure uniqueness
+                new FormTestCase([
+                    'user_identifier[mediaType]' => DiaryKeeper::MEDIA_TYPE_DIGITAL,
+                    'user_identifier[user][username]' => 'diary-keeper-adult@example.com',
+//                    'user_identifier[user][consent]' => '',
+                ], [
+                    '#user_identifier_user_username',
+//                    '#user_identifier_user_consent'
+                ]),
 //                new FormTestCase([
 //                    'user_identifier[user][username]' => $email,
 //                    'user_identifier[user][consent]' => '',

@@ -1,0 +1,8 @@
+@import "node_modules/govuk-frontend/govuk/helpers/spacing";
+
+.govuk-list--inline {
+  li {
+    display: inline;
+    margin-right: govuk-spacing(5);
+  }
+}

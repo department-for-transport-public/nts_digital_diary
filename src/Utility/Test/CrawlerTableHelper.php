@@ -3,16 +3,19 @@
 namespace App\Utility\Test;
 
 use Symfony\Component\DomCrawler\Crawler;
+use Symfony\Component\Panther\DomCrawler\Crawler as PantherCrawler;
 
 class CrawlerTableHelper
 {
     protected Crawler $crawler;
+    protected string $crawlerClass;
     protected array $headers;
     protected string $tableXpath;
 
     public function __construct(Crawler $crawler, string $tableXpath="//table[contains(concat(' ',normalize-space(@class),' '),' govuk-table ')]")
     {
         $this->crawler = $crawler;
+        $this->crawlerClass = get_class($crawler);
         $this->tableXpath = $tableXpath;
         $this->headers = $crawler->filterXPath($this->tableXpath . "/thead/tr/th")->each(fn(Crawler $node, $i) => $node->text());
     }
@@ -41,7 +44,18 @@ class CrawlerTableHelper
 
     public function getMatchingTableRow(array $searchTerms): ?array {
         foreach($this->crawler->filterXPath($this->tableXpath . "/tbody/tr") as $row) {
-            $rowData = (new Crawler($row))->filter('th,td')->each(fn(Crawler $node, $j) => $node->html());
+            $rowData = ($this->createCrawlerClass($row))
+                ->filter('th,td');
+
+            $rowData = $rowData->each(function($node, $j) {
+                if ($this->isPanther()) {
+                    // https://github.com/symfony/panther/issues/490#issuecomment-1070773112
+                    // It seems that ->html() is broken for Panther
+                    return $node->getElement(0)->getDomProperty('innerHTML');
+                } else {
+                    return $node->html();
+                }
+            });
 
             if ($this->rowMatchesSearchTerms($rowData, $searchTerms)) {
                 return $rowData;
@@ -57,9 +71,12 @@ class CrawlerTableHelper
      */
     public function getLinkUrl(array $rowData, string $linkText, bool $exactMatch=true): ?string {
         $linksColumn = $this->getRowDataForColumn($rowData, 'Action links');
+
+        // We use a normal Crawler because we're passing it HTML data
         $crawler = new Crawler($linksColumn);
 
         $anchors = $crawler->filter('a');
+
         foreach($anchors as $anchor) {
             $anchorCrawler = new Crawler($anchor);
             $anchorText = $anchorCrawler->text();
@@ -76,5 +93,19 @@ class CrawlerTableHelper
     {
         $rowData = $this->getMatchingTableRow($searchTerms);
         return $rowData === null ? null : $this->getLinkUrl($rowData, $linkText, $exactMatch);
+    }
+
+    public function isPanther(): bool
+    {
+        return $this->crawlerClass === PantherCrawler::class;
+    }
+
+    protected function createCrawlerClass($node) {
+        if ($this->isPanther() && !is_array($node)) {
+            // Panther's crawler only accepts arrays of things...
+            $node = [$node];
+        }
+
+        return new $this->crawlerClass($node);
     }
 }

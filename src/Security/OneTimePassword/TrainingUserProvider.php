@@ -59,12 +59,12 @@ class TrainingUserProvider implements UserProviderInterface
         if ($household) {
             // save reference to household
             $interviewer
-                ->getLatestTrainingRecordForModule(InterviewerTrainingRecord::MODULE_ONBOARDING)
+                ->getLatestTrainingRecordForModule(InterviewerTrainingRecord::MODULE_ONBOARDING_PRACTICE)
                 ->setHousehold($household);
         } else {
             // retrieve household from most recent onboarding module record
             $household = $interviewer
-                ->getLatestTrainingRecordForModule(InterviewerTrainingRecord::MODULE_ONBOARDING)
+                ->getLatestTrainingRecordForModule(InterviewerTrainingRecord::MODULE_ONBOARDING_PRACTICE)
                 ->getHousehold();
         }
 

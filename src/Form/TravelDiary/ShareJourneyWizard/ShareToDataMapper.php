@@ -72,6 +72,10 @@ class ShareToDataMapper implements DataMapperInterface
     {
         $targetJourney = $this->propertyMerger->clone($sourceJourney, Journey::SHARE_JOURNEY_CLONE_PROPERTIES);
 
+        if ($sourceJourney->isGoingHome()) {
+            $targetJourney->setPurpose(Journey::TO_GO_HOME);
+        }
+
         /** @var Stage $sourceStage */
         foreach ($sourceJourney->getStages()->toArray() as $sourceStage) {
             $targetStage = $this->propertyMerger->clone($sourceStage, Stage::SHARE_JOURNEY_CLONE_PROPERTIES);

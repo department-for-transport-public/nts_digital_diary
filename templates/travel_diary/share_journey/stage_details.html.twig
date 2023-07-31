@@ -5,7 +5,8 @@
 {%- set current_stage = formWizardState.contextStage -%}
 
 {%- set translation_parameters = {
-    stage_number: current_stage.number
+    stage_number: current_stage.number,
+    method: current_stage.methodForDisplay(true) | trans
 } -%}
 
 {%- set methodType = current_stage.method.type ?? null -%}

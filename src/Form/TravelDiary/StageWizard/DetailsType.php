@@ -11,7 +11,7 @@ use Symfony\Component\Form\AbstractType;
 use Symfony\Component\Form\FormBuilderInterface;
 use Symfony\Component\OptionsResolver\OptionsResolver;
 
-class   DetailsType extends AbstractType
+class DetailsType extends AbstractType
 {
     const INJECT_TRANSLATION_PARAMETERS = [
         'method_type' => 'method.type',
@@ -20,7 +20,7 @@ class   DetailsType extends AbstractType
     const VALUE_OPTIONS = [
         'label' => 'unit.distance.value.label',
         'translation_domain' => 'messages',
-        'is_decimal' => true,
+        'number_type' => NumberType::TYPE_DECIMAL,
         'attr' => ['class' => 'govuk-input--width-5'],
     ];
     const UNIT_OPTIONS = [
@@ -30,7 +30,7 @@ class   DetailsType extends AbstractType
         'choice_translation_domain' => 'messages',
     ];
 
-    public function buildForm(FormBuilderInterface $builder, array $options)
+    public function buildForm(FormBuilderInterface $builder, array $options): void
     {
         $transPrefix = "stage.details";
         $builder
@@ -75,7 +75,7 @@ class   DetailsType extends AbstractType
         ;
     }
 
-    public function configureOptions(OptionsResolver $resolver)
+    public function configureOptions(OptionsResolver $resolver): void
     {
         $resolver->setDefaults([
             'data_class' => Stage::class,

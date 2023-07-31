@@ -4,14 +4,17 @@ namespace App\Tests\Functional\DiaryKeeper;
 
 use App\DataFixtures\Definition\PrivateStageDefinition;
 use App\DataFixtures\Definition\PublicStageDefinition;
+use App\Entity\CostOrNil;
 use App\Tests\DataFixtures\JourneyFixtures;
 use App\Tests\DataFixtures\StageFixtures;
 use App\Tests\Functional\AbstractFunctionalTestCase;
+use App\Twig\CostOrNilExtension;
 use App\Utility\DateTimeFormats;
 use Symfony\Contracts\Translation\TranslatorInterface;
 
 class DashboardTest extends AbstractFunctionalTestCase
 {
+    protected CostOrNilExtension $costOrNilExtension;
     protected TranslatorInterface $translator;
 
     public function setUp(): void
@@ -23,6 +26,7 @@ class DashboardTest extends AbstractFunctionalTestCase
         $this->loginUser('diary-keeper-adult@example.com');
 
         $container = self::$kernel->getContainer()->get('test.service_container');
+        $this->costOrNilExtension = $container->get(CostOrNilExtension::class);
         $this->translator = $container->get(TranslatorInterface::class);
     }
 
@@ -101,15 +105,22 @@ class DashboardTest extends AbstractFunctionalTestCase
                 // Read the data from the summary list
                 $data = $this->getSummaryListData("//*[@id='stage-{$stageDefinition->getNumber()}']/dl/div");
 
+                $method = $this->translator->trans("stage.method.choices.{$stageDefinition->getMethod()}", [], 'travel-diary');
+                $methodOther = $stageDefinition->getMethodOther();
+
+                if ($methodOther) {
+                    $method .= ": ". $methodOther;
+                }
+
                 $this->assertDataHasKeyValuePair($data,
                     'Transport method',
-                    $this->translator->trans("stage.method.choices.{$stageDefinition->getMethod()}", [], 'travel-diary')
+                    $method
                 );
 
                 $distance = $stageDefinition->getDistance();
                 $this->assertDataHasKeyValuePair($data,
                     'Distance',
-                    $this->translator->trans("distance.{$distance->getUnit()}", ['value' => $distance->getValue()], 'messages')
+                    $this->translator->trans("distance.{$distance->getUnit()}", ['value' => $distance->getValue()->toFloat()], 'messages')
                 );
 
                 $this->assertDataHasKeyValuePair($data,
@@ -135,7 +146,7 @@ class DashboardTest extends AbstractFunctionalTestCase
                     $ticketCost = $stageDefinition->getTicketCost();
                     $this->assertDataHasKeyValuePair($data,
                         'Ticket cost',
-                        !is_null($ticketCost) ? $this->translator->trans("stage.view.ticket-cost.value", ['cost' => $ticketCost / 100], 'travel-diary') : '-'
+                        $this->costOrNilExtension->format_cost_or_nil((new CostOrNil())->decodeFromSingleValue($ticketCost), 'stage.view.ticket-cost.value', '-')
                     );
 
                     $this->assertDataHasKeyValuePair($data,
@@ -153,7 +164,7 @@ class DashboardTest extends AbstractFunctionalTestCase
                     $parkingCost = $stageDefinition->getParkingCost();
                     $this->assertDataHasKeyValuePair($data,
                         'Parking cost',
-                        !is_null($parkingCost) ? $this->translator->trans('stage.view.parking-cost.value', ['cost' => $parkingCost / 100], 'travel-diary') : '-'
+                        $this->costOrNilExtension->format_cost_or_nil((new CostOrNil())->decodeFromSingleValue($parkingCost), 'stage.view.parking-cost.value', '-')
                     );
                 }
             }

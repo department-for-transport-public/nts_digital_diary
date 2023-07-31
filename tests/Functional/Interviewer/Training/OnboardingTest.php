@@ -4,6 +4,9 @@ namespace App\Tests\Functional\Interviewer\Training;
 
 use App\Entity\AreaPeriod;
 use App\Entity\DiaryKeeper;
+use App\Entity\Interviewer;
+use App\Entity\InterviewerTrainingRecord;
+use App\Entity\User;
 use App\Security\OneTimePassword\PasscodeGenerator;
 use App\Tests\DataFixtures\UserFixtures;
 use App\Tests\Functional\OnBoarding\AbstractOtpTest;
@@ -15,6 +18,7 @@ use Symfony\Component\Panther\ServerExtension;
 class OnboardingTest extends AbstractOtpTest
 {
     private const PASSCODE = '12345678';
+    private EntityManagerInterface $entityManager;
 
     public function setUp(): void
     {
@@ -22,6 +26,7 @@ class OnboardingTest extends AbstractOtpTest
             UserFixtures::class
         ]);
         $this->passcodeGenerator = self::getContainer()->get(PasscodeGenerator::class);
+        $this->entityManager = self::getContainer()->get(EntityManagerInterface::class);
     }
 
     protected function tearDown(): void
@@ -45,8 +50,10 @@ class OnboardingTest extends AbstractOtpTest
         $this->loginUser('interviewer@example.com', 'password');
         $this->client->get('/interviewer/training');
 
+        $this->assertModuleHasState(InterviewerTrainingRecord::STATE_NEW);
+
         // find onboarding link
-        $this->client->clickLink('Module 3: onboarding practice');
+        $this->client->clickLink('Module 5: Onboarding practice');
 
         // find onboarding link
         $this->client->clickLink('Access onboarding training');
@@ -57,6 +64,7 @@ class OnboardingTest extends AbstractOtpTest
             'otp_login[group][passcode]' => $this->passcodeGenerator->getPasswordForUserIdentifier(self::PASSCODE),
         ]);
         $this->assertEquals('/onboarding/household/introduction', $this->getUrlPath());
+        $this->assertModuleHasState(InterviewerTrainingRecord::STATE_IN_PROGRESS);
 
         $this->client->submitForm('form[button_group][continue]');
         $this->assertEquals('/onboarding/household/details', $this->getUrlPath());
@@ -66,9 +74,9 @@ class OnboardingTest extends AbstractOtpTest
             'household[addressNumber]' => '1',
             'household[householdNumber]' => '1',
             'household[checkLetter]' => SerialHelper::getCheckLetter(AreaPeriod::TRAINING_ONBOARDING_AREA_SERIAL, 1, 1),
-            'household[diaryWeekStartDate][day]' => $now->format('j'),
-            'household[diaryWeekStartDate][month]' => $now->format('n'),
-            'household[diaryWeekStartDate][year]' => $now->format('Y'),
+            'household[diaryWeekStartDate][day]' => '1',
+            'household[diaryWeekStartDate][month]' => '1',
+            'household[diaryWeekStartDate][year]' => '2023',
         ]);
         $this->takeScreenshotIfTestFailed();
 //        ServerExtension::takeScreenshots('info', 'onboarding');
@@ -85,9 +93,13 @@ class OnboardingTest extends AbstractOtpTest
         ]);
         $this->assertEquals('/onboarding/diary-keeper/add/identity', $this->getUrlPath());
 
+        /** @var DiaryKeeper $diaryKeeperAdult */
+        $diaryKeeperAdult = $this->getFixtureByReference('diary-keeper:adult');
+        // User the same user identifier as an existing DiaryKeeper, to ensure uniqueness is relative
+        // to the training interviewer
         $this->client->submitForm('user_identifier[button_group][continue]', [
             'user_identifier[mediaType]' => DiaryKeeper::MEDIA_TYPE_DIGITAL,
-            'user_identifier[user][username]' => 'dk.1@example.com',
+            'user_identifier[user][username]' => $diaryKeeperAdult->getUser()->getUserIdentifier(),
         ]);
         $this->assertEquals('/onboarding/diary-keeper/add/add-another', $this->getUrlPath());
 
@@ -134,10 +146,20 @@ class OnboardingTest extends AbstractOtpTest
         $this->client->submitForm('confirm_household[button_group][confirm]');
         $this->assertEquals('/onboarding', $this->getUrlPath());
 
+        $this->assertModuleHasState(InterviewerTrainingRecord::STATE_COMPLETE);
+
         // ensure messenger_messages table is empty / notify messages not sent
         $container = static::getContainer();
         $entityManager = $container->get(EntityManagerInterface::class);
         $messages = $entityManager->getConnection()->fetchAssociative('SELECT * FROM messenger_messages WHERE queue_name = ?', ['govuk-notify']);
         $this->assertEmpty($messages, 'Notify messages being sent');
+    }
+
+    protected function assertModuleHasState($expectedState)
+    {
+        $user = $this->entityManager->getRepository(User::class)->loadUserByIdentifier('interviewer@example.com');
+        $trainingRecord = $user->getInterviewer()->getLatestTrainingRecordForModule(InterviewerTrainingRecord::MODULE_ONBOARDING_PRACTICE);
+        $this->entityManager->refresh($trainingRecord);
+        $this->assertEquals($expectedState, $trainingRecord->getState());
     }
 }

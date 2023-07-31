@@ -41,8 +41,8 @@ class DiaryKeeperNormalizer implements ContextAwareNormalizerInterface, Normaliz
             'mediaType' => $object->getMediaType(),
             'state' => $object->getDiaryState(),
             'hasUsedPracticeDay' => $object->getPracticeDay()->getJourneys()?->count() > 0,
-            'emptyDaysVerifiedBy' => $object->getEmptyDaysVerifiedBy(),
-            'emptyDaysVerifiedAt' => $this->normalizer->normalize($object->getEmptyDaysVerifiedAt(), $format, $context),
+            'approvalChecklistVerifiedBy' => $object->getApprovalChecklistVerifiedBy(),
+            'approvalChecklistVerifiedAt' => $this->normalizer->normalize($object->getApprovalChecklistVerifiedAt(), $format, $context),
             'days' => $this->normalizer->normalize($object->getDiaryDays()->getValues(), $format, $dayContext),
         ];
     }

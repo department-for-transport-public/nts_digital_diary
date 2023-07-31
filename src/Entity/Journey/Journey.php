@@ -9,6 +9,7 @@ use App\Entity\DiaryKeeper;
 use App\Entity\IdTrait;
 use App\Entity\PropertyChangeLoggable;
 use App\Repository\Journey\JourneyRepository;
+use App\Validator\JourneySharingValidator;
 use DateTime;
 use Doctrine\Common\Collections\ArrayCollection;
 use Doctrine\Common\Collections\Collection;
@@ -16,7 +17,6 @@ use Doctrine\ORM\Mapping as ORM;
 use RuntimeException;
 use Symfony\Component\Validator\Constraints as Assert;
 use Symfony\Component\Validator\Context\ExecutionContextInterface;
-use App\Validator\JourneySharingValidator;
 
 /**
  * @ORM\Entity(repositoryClass=JourneyRepository::class)
@@ -52,10 +52,10 @@ class Journey implements PropertyChangeLoggable, BasicMetadataInterface
 
     /**
      * @ORM\Column(type="string", length=255, nullable=true)
-     * @Assert\NotNull(groups={"wizard.journey.purpose"}, message="wizard.journey.purpose.not-null")
+     * @Assert\NotNull(groups={"wizard.journey.purpose", "wizard.split-journey.purpose"}, message="wizard.journey.purpose.not-null")
      * @Assert\NotNull(groups={"wizard.share-journey.purpose.entry"}, message="wizard.share-journey.purpose.not-null")
      * @Assert\Length(
-     *     groups={"wizard.journey.purpose", "wizard.share-journey.purpose.entry"},
+     *     groups={"wizard.journey.purpose", "wizard.share-journey.purpose.entry", "wizard.split-journey.purpose"},
      *     maxMessage="common.string.max-length", max=255
      * )
      */
@@ -96,7 +96,8 @@ class Journey implements PropertyChangeLoggable, BasicMetadataInterface
     /**
      * @ORM\Column(type="string", length=255, nullable=true)
      * @Assert\NotNull(groups={"wizard.journey.locations.end-other"}, message="wizard.journey.end-other.not-null")
-     * @Assert\Length(groups={"wizard.journey.locations.end-general"}, maxMessage="common.string.max-length", max=255)
+     * @Assert\NotNull(groups={"wizard.split-journey.midpoint-other"}, message="wizard.split-journey.midpoint-other.not-null")
+     * @Assert\Length(groups={"wizard.journey.locations.end-general", "wizard.split-journey.midpoint-other"}, maxMessage="common.string.max-length", max=255)
      */
     private ?string $endLocation;
 

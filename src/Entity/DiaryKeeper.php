@@ -115,12 +115,12 @@ class DiaryKeeper implements UserPersonInterface
     /**
      * @ORM\Column(type="string", length=255, nullable=true)
      */
-    private ?string $emptyDaysVerifiedBy;
+    private ?string $approvalChecklistVerifiedBy;
 
     /**
      * @ORM\Column(type="datetime_immutable", nullable=true)
      */
-    private ?DateTimeImmutable $emptyDaysVerifiedAt;
+    private ?DateTimeImmutable $approvalChecklistVerifiedAt;
 
     public function __construct()
     {
@@ -164,6 +164,8 @@ class DiaryKeeper implements UserPersonInterface
     public function setHousehold(?Household $household): self
     {
         $this->household = $household;
+        // Set the training interviewer if there is one
+        $this->getUser()?->setTrainingInterviewer($household?->getAreaPeriod()?->getTrainingInterviewer());
         return $this;
     }
 
@@ -423,31 +425,40 @@ class DiaryKeeper implements UserPersonInterface
         return $this;
     }
 
-    public function getEmptyDaysVerifiedBy(): ?string
+    public function getApprovalChecklistVerifiedBy(): ?string
     {
         return $this->getDiaryState() === self::STATE_APPROVED
-            ? $this->emptyDaysVerifiedBy
+            ? $this->approvalChecklistVerifiedBy
             : null;
     }
 
-    public function setEmptyDaysVerifiedBy(?string $emptyDaysVerifiedBy): self
+    public function setApprovalChecklistVerifiedBy(?string $approvalChecklistVerifiedBy): self
     {
-        $this->emptyDaysVerifiedBy = $emptyDaysVerifiedBy;
+        $this->approvalChecklistVerifiedBy = $approvalChecklistVerifiedBy;
 
         return $this;
     }
 
-    public function getEmptyDaysVerifiedAt(): ?DateTimeImmutable
+    public function getApprovalChecklistVerifiedAt(): ?DateTimeImmutable
     {
         return $this->getDiaryState() === self::STATE_APPROVED
-            ? $this->emptyDaysVerifiedAt
+            ? $this->approvalChecklistVerifiedAt
             : null;
     }
 
-    public function setEmptyDaysVerifiedAt(?DateTimeImmutable $emptyDaysVerifiedAt): self
+    public function setApprovalChecklistVerifiedAt(?DateTimeImmutable $approvalChecklistVerifiedAt): self
     {
-        $this->emptyDaysVerifiedAt = $emptyDaysVerifiedAt;
+        $this->approvalChecklistVerifiedAt = $approvalChecklistVerifiedAt;
 
         return $this;
     }
+
+    public function hasEmptyDays(): bool
+    {
+        return !$this
+            ->getDiaryDays()
+            ->filter(fn(DiaryDay $d) => $d->getJourneys()->isEmpty())
+            ->isEmpty();
+    }
+
 }

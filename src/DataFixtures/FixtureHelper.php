@@ -12,6 +12,7 @@ use App\Entity\Journey\Journey;
 use App\Entity\Journey\Method;
 use App\Entity\Journey\Stage;
 use App\Repository\Journey\MethodRepository;
+use Brick\Math\BigDecimal;
 use Symfony\Component\PropertyAccess\PropertyAccess;
 
 class FixtureHelper
@@ -21,8 +22,8 @@ class FixtureHelper
         $journey = (new Journey())
             ->setStartTime(new \DateTime($definition->getStartTime()))
             ->setEndTime(new \DateTime($definition->getEndTime()))
-            ->setDiaryDay($day)
             ->setPurpose($definition->getPurpose());
+        $day->addJourney($journey);
 
         self::setHomeAndLocation($journey, 'Start', $definition);
         self::setHomeAndLocation($journey, 'End', $definition);
@@ -40,6 +41,7 @@ class FixtureHelper
 
     public static function createStage(StageDefinition $definition, MethodRepository $methodRepository, array $vehicles): Stage {
         $method = $methodRepository->findOneBy(['descriptionTranslationKey' => $definition->getMethod()]);
+        $methodOther = $definition->getMethodOther();
 
         if (!$method) {
             throw new \RuntimeException("Invalid method: {$definition->getMethod()}");
@@ -48,24 +50,33 @@ class FixtureHelper
         $stage = (new Stage())
             ->setNumber($definition->getNumber())
             ->setMethod($method)
-            ->setMethodOther($definition->getMethodOther())
+            ->setMethodOther($methodOther)
             ->setDistanceTravelled($definition->getDistance())
             ->setTravelTime($definition->getTravelTime())
             ->setAdultCount($definition->getAdultCount())
             ->setChildCount($definition->getChildCount());
 
+        if ($method->getCode() === null && $methodOther === null) {
+            throw new \RuntimeException("Either method must have a non-null code, or methodOther must be set [method: {$definition->getMethod()}]");
+        }
+
         switch($method->getType() ?? null) {
             case Method::TYPE_PUBLIC:
-                if (!$definition instanceof PublicStageDefinition) throw new \RuntimeException('invalid type');
+                if (!$definition instanceof PublicStageDefinition) {
+                    throw new \RuntimeException('invalid type');
+                }
 
                 $stage
                     ->setTicketType($definition->getTicketType())
-                    ->setTicketCost((new CostOrNil())->setCost($definition->getTicketCost()))
+                    ->setTicketCost((new CostOrNil())->decodeFromSingleValue($definition->getTicketCost()))
                     ->setBoardingCount($definition->getBoardingCount());
                 break;
 
             case Method::TYPE_PRIVATE:
-                if (!$definition instanceof PrivateStageDefinition) throw new \RuntimeException('invalid type');
+                if (!$definition instanceof PrivateStageDefinition) {
+                    throw new \RuntimeException('invalid type');
+                }
+
                 $vehicle = $vehicles[$definition->getVehicle()] ?? null;
 
                 if ($vehicle) {
@@ -80,7 +91,7 @@ class FixtureHelper
 
                 $stage
                     ->setIsDriver($definition->getIsDriver())
-                    ->setParkingCost((new CostOrNil())->setCost($definition->getParkingCost()));
+                    ->setParkingCost((new CostOrNil())->decodeFromSingleValue($definition->getParkingCost()));
         }
 
         return $stage;

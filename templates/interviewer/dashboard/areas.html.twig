@@ -7,40 +7,15 @@
 } %}
 
 {% block content %}
-    {%- import "@GhostGovUkFrontend/components/macros.html.twig" as m -%}
-    {%- for year, areaPeriods in areaPeriodsByYear -%}
-    <table class="govuk-table">
-        <caption class="govuk-table__caption govuk-table__caption--m">{{ year }}</caption>
-        <thead class="govuk-table__head">
-        <tr class="govuk-table__row">
-            <th scope="col" class="govuk-table__header">{{ "survey-areas.table.area" | trans }}</th>
-            <th scope="col" class="govuk-table__header">{{ "survey-areas.table.active-households" | trans }}</th>
-            <th scope="col" class="govuk-table__header"><span class="govuk-visually-hidden">{{ 'table.action-links'|trans({}, 'messages') }}</span></th>
-        </tr>
-        </thead>
-        <tbody class="govuk-table__body">
-        {% for areaPeriod in areaPeriods %}
-            <tr class="govuk-table__row">
-                <td class="govuk-table__cell">{{ areaPeriod.area }}</td>
-                <td class="govuk-table__cell">{{ areaPeriod.households.toArray | filter(h => h.isOnboardingComplete) | length }}</td>
-                <td class="govuk-table__cell govuk-table__cell--numeric">
-                    {{ m.actionLinks({
-                        (path('interviewer_dashboard_area', {areaPeriod: areaPeriod.id})): {
-                            label: 'survey-areas.view',
-                            labelDomain: 'interviewer',
-                            srHiddenSuffix: 'survey-areas.view-sr-hidden-suffix',
-                            srHiddenSuffixParams: {area: areaPeriod.area},
-                            srHiddenSuffixDomain: 'interviewer',
-                        }
-                    }) }}
-                </td>
-            </tr>
-        {% else %}
-            <tr>
-                <td colspan="3" class="govuk-table__cell">{{ "survey-areas.no-active-areas" | trans }}</td>
-            </tr>
-        {% endfor %}
-        </tbody>
-    </table>
-    {% endfor %}
+    {%- import "interviewer/dashboard/macros.html.twig" as d -%}
+
+    {{- d.areaPeriodList(
+        areaPeriods,
+        "survey-areas.current.title" | trans,
+        "survey-areas.current.no-areas" | trans
+    ) -}}
+
+    <p class="govuk-body">
+        <a class="govuk-link" href="{{ path('interviewer_dashboard_archived_areas') }}">{{ 'survey-areas.view-archived' | trans }}</a>
+    </p>
 {% endblock %}

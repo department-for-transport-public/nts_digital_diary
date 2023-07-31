@@ -55,7 +55,7 @@ class SecurityExtension extends AbstractExtension
         }
 
         $impersonator = $token->getOriginalToken()->getUser();
-        return $this->userRepository->findOneBy(['username' => $impersonator->getUserIdentifier()]);
+        return $this->userRepository->loadUserByIdentifier($impersonator->getUserIdentifier());
     }
 
     public function isImpersonatorGranted($attribute, $subject = null): bool {

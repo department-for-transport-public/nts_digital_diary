@@ -1,3 +1,7 @@
+common:
+  cost:
+    nil: Nil
+
 descriptions:
   day: &dayDescription >-
     {dayNumber, select,
@@ -72,20 +76,20 @@ days:
         other {# journeys}
     }
   primary-driver-vehicles: Vehicles
-  enter-odometer-readings: Enter odometer readings for "{vehicle}"
+  enter-odometer-readings: Enter/edit milometer readings for "{vehicle}"
 
 vehicle.odometer-readings:
-  page-title: Vehicle odometer readings
+  page-title: Milometer readings for "{vehicle}"
   week-start: First day of diary week
   week-end: Last day of diary week
   week-start-reading:
-    label: Odometer reading at start of diary week
+    label: Milometer reading at start of diary week
     help: ''
   week-end-reading:
-    label: Odometer reading at end of diary week
+    label: Milometer reading at end of diary week
     help: ''
   unit:
-    label: Odometer units
+    label: Milometer units
     help: ''
 
 day:
@@ -129,7 +133,7 @@ day:
     edit-notes: Edit notes
     interviewers-notes: Interviewer's notes
     notes: My notes
-    no-notes: No notes
+    no-notes: -- No notes --
 
   practice:
     help-details:
@@ -257,6 +261,7 @@ journey.view:
   shared-from: Journey shared by {name}
   shared-to: Journey shared with {names}
   share-journey: Share this journey
+  split-journey: Split journey (Interviewer only)
   start-location-time:
     change-sr-hidden-suffix: start location and time
     key: Start Location / Time
@@ -367,8 +372,10 @@ stage.method:
     mobility-scooter: Mobility scooter
     motorcycle: Motorcycle
     van-or-lorry: Van or lorry
+    other: Other # N.B. Used for VehicleType form during Onboarding
     other-private: Other private transport
     other-private-other: "Other private transport: {other}"
+    other-generic: "{other}"
 
     bus-or-coach: Bus/Coach
     bus-or-coach-other: "Bus/Coach: {other}"
@@ -542,7 +549,7 @@ stage.view:
 
 repeat-journey.full-introduction:
   page-title: Repeat a previous journey
-  pre-form: This form will enable you to copy/duplicate a previous journey.
+  pre-form: You are filling in day {dayNumber} of your diary. This form will enable you to copy/duplicate a previous journey to this day.
 repeat-journey.alt-introduction:
   page-title: Repeat a previous journey
   pre-form: This form will enable you to copy/duplicate the journey from {startLocation} to {endLocation}.
@@ -557,7 +564,7 @@ repeat-journey.select-source-day:
 
 repeat-journey.select-journey:
   label: Which journey do you want to repeat?
-  help: ''
+  help: 'You will be asked to confirm details for this journey where they may differ from the original.'
   choice:
     label: "From {startLocation} to {endLocation} ({purpose}), at {time}"
 
@@ -582,35 +589,37 @@ repeat-journey.stage-details:
 repeat-journey.summary:
   page-title: "Summary: repeat a previous journey"
 
+repeat-journey:
+  sidebar:
+    title: Original journey
 
-return-journey.introduction:
-  page-title: Make a return journey (from {startLocation} to {endLocation})
-  pre-form: >-
-    This will create a journey from {startLocation} to {endLocation}, {stageCount, select,
-      0     {with no stages.}
-      other {with the following stages:}
-    }
-
-return-journey.purpose:
-  label: What was the main purpose of this return journey?
-  help: 'Describe the **main** purpose of the journey. For example "to go to main place of work", "to go shopping for groceries" or "to take children to school"'
-
-return-journey.select-day:
-  label: On which day did you make the return journey?
-  help: ''
-  choice-label: "{dayNumber, select,
-      0 {Practice day}
-      other {Day {dayNumber} — {date}{index, select, 0 { (The same day)} other {}}}
-    }"
-
-return-journey.journey-times:
-  page-title: 'When did the return journey start and end?'
-  help: ''
-
-return-journey.stage-details:
-  page-title: "Details for return stage #{number} ({method})"
-  ticket-cost: *ticketCost
-  parking-cost: *parkingCost
+return-journey:
+  introduction:
+    page-title: Make a return journey (from {startLocation} to {endLocation})
+    pre-form: >-
+      This will create a journey from {startLocation} to {endLocation}, {stageCount, select,
+        0     {with no stages.}
+        other {with the following stages:}
+      }
+  journey-times:
+    page-title: 'When did the return journey start and end?'
+    help: ''
+  purpose:
+    label: What was the main purpose of this return journey?
+    help: 'Describe the **main** purpose of the journey. For example "to go to main place of work", "to go shopping for groceries" or "to take children to school"'
+  select-day:
+    label: On which day did you make the return journey?
+    help: ''
+    choice-label: "{dayNumber, select,
+        0 {Practice day}
+        other {Day {dayNumber} — {date}{index, select, 0 { (The same day)} other {}}}
+      }"
+  sidebar:
+    title: Outward journey
+  stage-details:
+    page-title: "Details for return stage #{number} ({method})"
+    ticket-cost: *ticketCost
+    parking-cost: *parkingCost
 
 share-journey:
   context-header: Journey details
@@ -646,10 +655,10 @@ share-journey:
 
   stage-details:
     private:
-      page-title: Driver and parking cost details for stage {stage_number} of the journey
+      page-title: Driver and parking cost details for stage {stage_number} ({method})
       source-was-driver-introduction: Since you were the driver for this stage of the journey, these diary keepers have been marked as passengers.
     public:
-      page-title: Ticket details for stage {stage_number} of the journey
+      page-title: Ticket details for stage {stage_number} ({method})
       introduction: Please add the ticket types for each household member who was on this journey with you. Ticket types may vary from passenger to passenger.
     shared-with-section-title: 'Stage {stageNumber} details for {name}'
 
@@ -688,3 +697,36 @@ share-journey:
       other {}
     }"
     sharing-help: You can only share journeys with other household members for whom you are acting as a proxy
+
+split-journey:
+  introduction:
+    page-title: Split journey (Interviewer only)
+    copy: |
+      This tool is designed to allow you to fix single-stage journeys with the same start and end locations by splitting them into two separate journeys, as is required for the National Travel Survey.
+        
+      Diary Keepers often make this mistake when recording leisure walks or runs (e.g. walking the dog) from their home back to their home.  
+
+  common-other.help: ''
+
+  success-notification:
+    heading: "Journey successfully split"
+    content: "The original journey was split into two equally-sized journeys"
+
+  day-boundary-notification:
+    heading: "Journey successfully split"
+    content: "Note: The return journey can be found on day {returnDayNumber}, as it started after midnight"
+
+  midpoint-choice:
+    label: Where was the midpoint of the journey?
+    help: ''
+    home-disabled:
+      help: 'The original journey started or ended at home, so home is not a valid choice for the midpoint'
+
+  midpoint-other.label: What was the location?
+
+  purpose:
+    label: What was the purpose of the journey from {start} to {end}?
+    help: ''
+
+  sidebar:
+    title: Original journey

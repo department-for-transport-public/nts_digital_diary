@@ -51,6 +51,7 @@ class Stage implements PropertyChangeLoggable, BasicMetadataInterface
         /* driver form (without parkingCost) */   'isDriver',
         /* cost form (without ticketCost) */     'boardingCount',
     ];
+
     const MERGE_PROPERTIES = [
         'journey',
         ...self::COMMON_PROPERTIES,
@@ -190,8 +191,8 @@ class Stage implements PropertyChangeLoggable, BasicMetadataInterface
     /**
      * Cost in pence
      * @ORM\Embedded(class=CostOrNil::class)
-     * @AppAssert\CostOrNil(translationPrefix="wizard.stage.parking-cost", groups={"wizard.stage.driver-and-parking", "wizard.return-journey.stage-details"})
-     * @AppAssert\CostOrNil(translationPrefix="wizard.share-journey.parking-cost", groups={"wizard.share-journey.driver-and-parking.entry"})
+     * @AppAssert\CostOrNil(translationPrefix="wizard.stage.parking-cost", groups={"wizard.stage.driver-and-parking", "wizard.return-journey.stage-details"}, allowBlankCost=true)
+     * @AppAssert\CostOrNil(translationPrefix="wizard.share-journey.parking-cost", groups={"wizard.share-journey.driver-and-parking.entry"}, allowBlankCost=true)
      */
     private ?CostOrNil $parkingCost;
 
@@ -205,8 +206,8 @@ class Stage implements PropertyChangeLoggable, BasicMetadataInterface
 
     /**
      * @ORM\Embedded(class=CostOrNil::class)
-     * @AppAssert\CostOrNil(translationPrefix="wizard.stage.ticket-cost", groups={"wizard.ticket-cost-and-boardings", "wizard.return-journey.stage-details"})
-     * @AppAssert\CostOrNil(translationPrefix="wizard.share-journey.ticket-cost", groups={"wizard.share-journey.ticket-type-and-cost.entry"})
+     * @AppAssert\CostOrNil(translationPrefix="wizard.stage.ticket-cost", groups={"wizard.ticket-cost-and-boardings", "wizard.return-journey.stage-details"}, allowBlankCost=true)
+     * @AppAssert\CostOrNil(translationPrefix="wizard.share-journey.ticket-cost", groups={"wizard.share-journey.ticket-type-and-cost.entry"}, allowBlankCost=true)
      */
     private ?CostOrNil $ticketCost;
 
@@ -389,15 +390,39 @@ class Stage implements PropertyChangeLoggable, BasicMetadataInterface
         return $this;
     }
 
-    public function getMethodForDisplay(): TranslatableMessage
+    public function getMethodForDisplay(bool $omitTypePrefixWhenOther = false): ?TranslatableMessage
+    {
+        $methodOther = $this->getMethodOther();
+
+        if ($methodOther !== null && $omitTypePrefixWhenOther) {
+            $message = "stage.method.choices.other-generic";
+        } else {
+            $method = $this->getMethod();
+
+            if (!$method) {
+                return null;
+            }
+
+            $hasOtherSuffix = ($methodOther !== null) ? '-other' : '';
+            $message = "stage.method.choices.{$method->getDescriptionTranslationKey()}{$hasOtherSuffix}";
+        }
+
+        return new TranslatableMessage(
+            $message,
+            ['other' => $methodOther],
+            'travel-diary'
+        );
+    }
+
+    public function getMethodForDisplayCompareHousehold(): TranslatableMessage
     {
         $hasOtherSuffix = ($this->methodOther !== null) ? '-other' : '';
 
-        return $this->method
-            ? new TranslatableMessage("stage.method.choices.{$this->method->getDescriptionTranslationKey()}{$hasOtherSuffix}", [
-                'other' => $this->methodOther
-            ], 'travel-diary')
-            : new TranslatableMessage("stage.view.method.other", ['method' => $this->methodOther], 'travel-diary');
+        return new TranslatableMessage(
+            "compare-household.method-descriptions.{$this->method->getDescriptionTranslationKey()}{$hasOtherSuffix}",
+            ['other' => $this->methodOther],
+            'interviewer'
+        );
     }
 
     public function getVehicleOther(): ?string

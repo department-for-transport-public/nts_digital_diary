@@ -24,7 +24,9 @@ diary-keeper:
   no-journeys: No journeys
   no-stages: No stages
 
-  shared: Shared
+  shared:
+    sharer: Sharer
+    sharee: Sharee
 
   boardings: Boardings
   day: Day {dayNumber} — {date}
@@ -43,12 +45,17 @@ diary-keeper:
   ticket-type: Ticket type
   vehicle: Vehicle
 
+vehicle:
+  milometer-readings:
+    start: Reading at start
+    end: Reading at end
+    unit: Units
 
 household:
   page-title: "Household: {serial}"
 
   back: Back to survey area
-  diary-keeper-summary: View / approve
+  diary-keeper-summary: Summary / actions
   diary-keeper-summary-sr-hidden-suffix: " diary for {name}"
   diary-keepers: Diary keepers
   diary-week-start-date: Diary week start date
@@ -96,6 +103,11 @@ diary-state:
     confirm: Mark diary as approved
     empty-journeys-copy: The following days have no journeys
     confirm-empty-journeys: I have verified with the diary keeper ({name}) that there were no qualifying journeys on these days
+    also-verify.label: I confirm that I have also
+    confirm-return-journeys: Checked that every outgoing trip has a return journey
+    split-round-trips: Split any round trip journeys (e.g. home-to-home) into two separate journeys
+    corrected-no-stages: Corrected or deleted any journeys with no stages
+    checked-vehicles: Checked that milometer readings have been entered for all household vehicles
     confirmed-notification:
       heading: Diary approved for {name}
       content: The diary for {name} has been marked as approved
@@ -165,13 +177,23 @@ survey-area:
 survey-areas:
   page-title: Interviewer dashboard ({name})
 
-  no-active-areas: No active areas
+  current:
+    title: Currently active areas
+    no-areas: No currently active areas
+
+  archived:
+    breadcrumb: Archived areas
+    page-title: Archived areas
+    no-areas: No archived areas
 
   view: View
+  view-archived: View archived areas
+  view-dashboard: View current areas
   view-sr-hidden-suffix: "area {area}"
 
   table:
-    active-households: Active households
+    onboarded-households: Households
+    submitted-households: Submitted
     area: Area ID
 
 
@@ -179,9 +201,12 @@ training:
   module:
     number: module {number}
     title:
+      introduction: introduction
       personal-diary: personal travel diary
-      walkthrough: video walkthrough
-      onboarding: onboarding practice
+      interviewer-dashboard: the interviewer dashboard
+      onboarding-introduction: introduction to onboarding
+      onboarding-practice: onboarding practice
+      editing-diaries: editing diaries
       diary-correction: correcting a travel diary
       diary-correction-answers: diary correction answers
     created: Created
@@ -208,8 +233,20 @@ training:
 
   dashboard:
     page-title: Interviewer Training Dashboard for {name}
+    introduction: "Welcome to the National Travel Survey Project.\n 
+      \n
+      Your NatCen manager will have provided training materials for you to review ahead of starting your digital training. As you work through the modules, you will be required to:\n
+      \n
+      - Read the instructions on each module carefully\n
+      - Watch the videos all the way through\n
+      - Fully complete each module before moving on to the next\n
+      "
     table:
       caption: Current training modules
+      section:
+        pre-briefing: Pre-briefing
+        in-briefing: In-briefing
+      introduction: 'interviewer'
   retake:
     page-title: "Retake {moduleNumber}: {moduleName}"
     copy: 'Do you wish to retake the {moduleName} training module?'
@@ -218,3 +255,23 @@ training:
     confirmed-notification:
       heading: Retaking {moduleName}
       content: The {moduleName} training module has been set up for retaking.
+
+compare-household:
+  breadcrumb: 'Compare household'
+  method-descriptions:
+    walk: Walk
+    bicycle: Bicycle
+    car: Car
+    e-bike: eBike
+    e-scooter: eScooter
+    mobility-scooter: Mobility scooter
+    motorcycle: Motorcycle
+    van-or-lorry: Van or lorry
+    other-private-other: "Other private: {other}"
+    bus-or-coach-other: "Bus/Coach: {other}"
+    ferry: Ferry
+    light-rail: Tram
+    london-underground: Underground
+    taxi: Taxi
+    train: Train
+    other-public-other: "Other public: {other}"

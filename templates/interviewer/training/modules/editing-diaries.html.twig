@@ -1,0 +1,12 @@
+<div class="prose-scope">
+{%- apply markdown_to_html -%}
+As part of your role as an NTS Interviewer, you will need to check, edit, and correct respondent travel diaries before
+submitting the household data for processing. The below video will show you how to do this. In the next module, you
+will be required to review a travel diary and fix any mistakes, so please watch carefully.
+
+You can watch this video as many times as you need before marking the module as complete. You may also come back to review it later.
+{%- endapply -%}
+</div>
+
+{% from 'interviewer/training/macros.html.twig' import trainingVideo %}
+{{ trainingVideo(vimeo_ids.interviewer_editing, 'Impersonating and editing diaries', trainingRecord) }}

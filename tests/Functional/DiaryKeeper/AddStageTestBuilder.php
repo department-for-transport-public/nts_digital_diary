@@ -3,6 +3,7 @@
 namespace App\Tests\Functional\DiaryKeeper;
 
 use App\Entity\Distance;
+use App\Entity\Journey\Method;
 use App\Entity\Journey\Stage;
 use App\Entity\User;
 use App\Entity\Vehicle;
@@ -120,7 +121,7 @@ class AddStageTestBuilder
 
             $testCase = $context->getTestCase();
             $testCase->assertEquals($methodId, $stage->getMethod()->getId());
-            $testCase->assertEquals(25, $stage->getDistanceTravelled()->getValue());
+            $testCase->assertEquals('25', strval($stage->getDistanceTravelled()->getValue()));
             $testCase->assertEquals(Distance::UNIT_MILES, $stage->getDistanceTravelled()->getUnit());
             $testCase->assertEquals(50, $stage->getTravelTime());
             $testCase->assertEquals(1, $stage->getAdultCount());
@@ -134,7 +135,14 @@ class AddStageTestBuilder
             $stage = self::getStage($context->getEntityManager(), $diaryKeeperUsername);
 
             $testCase = $context->getTestCase();
-            if (in_array($methodId, Vehicle::VALID_METHOD_CODES)) {
+
+            /** @var Method $method */
+            $method = $context
+                ->getEntityManager()
+                ->getRepository(Method::class)
+                ->find($methodId);
+
+            if (in_array($method->getDescriptionTranslationKey(), Vehicle::VALID_METHOD_KEYS)) {
                 if ($isVehicleOther) {
                     // Either:
                     // a) Is a vehicle directly added via other
@@ -147,14 +155,14 @@ class AddStageTestBuilder
                 }
 
                 $testCase->assertEquals(true, $stage->getIsDriver());
-                $testCase->assertEquals(360, $stage->getParkingCost()->getCost());
+                $testCase->assertTrue($stage->getParkingCost()->getCost()->isEqualTo('3.60'));
             }
         });
     }
 
     private static function getStage(EntityManagerInterface $entityManager, string $diaryKeeperUsername): Stage
     {
-        $diaryKeeper = $entityManager->getRepository(User::class)->getDiaryKeeperJourneysAndStages($diaryKeeperUsername);
+        $diaryKeeper = $entityManager->getRepository(User::class)->getDiaryKeeperJourneysAndStagesForTests($diaryKeeperUsername);
         $journeys = $diaryKeeper->getDiaryDayByNumber(1)->getJourneys();
         $stages = $journeys[0]->getStages();
         return $stages->last();

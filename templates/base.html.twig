@@ -87,10 +87,13 @@
 {% endblock %}
 
 {% block bodyEnd %}
+    {%- if isVimeoUsed() -%}
+        <script type="text/javascript" src="https://player.vimeo.com/api/player.js" defer></script>
+    {%- endif -%}
     {{ encore_entry_script_tags('app') }}
     {{ include('includes/smartlook-session-recording.html.twig') }}
     {%- if isRecaptchaUsed() -%}
-    <script type="text/javascript" src="https://www.google.com/recaptcha/api.js" async defer></script>
+        <script type="text/javascript" src="https://www.google.com/recaptcha/api.js" async defer></script>
     {%- endif -%}
 {% endblock %}
 

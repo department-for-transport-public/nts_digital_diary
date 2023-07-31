@@ -4,14 +4,16 @@ namespace App\Controller\Interviewer;
 
 use App\Entity\AreaPeriod;
 use App\Entity\OtpUser;
+use App\Features;
 use App\Repository\OtpUserRepository;
 use App\Security\OneTimePassword\PasscodeGenerator;
 use App\Utility\AreaPeriodHelper;
 use Doctrine\ORM\EntityManagerInterface;
+use Sensio\Bundle\FrameworkExtraBundle\Configuration\Security as SecurityAnnotation;
 use Sensio\Bundle\FrameworkExtraBundle\Configuration\Template;
+use Symfony\Component\HttpKernel\Exception\NotFoundHttpException;
 use Symfony\Component\Routing\Annotation\Route;
 use Symfony\Component\Security\Core\Security;
-use Symfony\Component\Security\Core\User\UserInterface;
 
 class OnboardingCodesController extends AbstractController
 {
@@ -33,6 +35,10 @@ class OnboardingCodesController extends AbstractController
      */
     public function onboardingCodes(AreaPeriod $areaPeriod): array
     {
+        if (!Features::isEnabled(Features::SHOW_ONBOARDING_CODES)) {
+            throw new NotFoundHttpException();
+        }
+
         $interviewer = $this->getInterviewer();
         $this->checkInterviewerIsSubscribedToAreaPeriod($areaPeriod, $interviewer);
 

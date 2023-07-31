@@ -5,8 +5,6 @@ namespace App\Form\TravelDiary\StageWizard;
 use App\Entity\Journey\Stage;
 use Ghost\GovUkFrontendBundle\Form\Type\BooleanChoiceType;
 use App\Form\CostOrNilType;
-use Ghost\GovUkFrontendBundle\Form\Type\MoneyNilType;
-use Ghost\GovUkFrontendBundle\Form\Type\MoneyType;
 use Symfony\Component\Form\AbstractType;
 use Symfony\Component\Form\FormBuilderInterface;
 use Symfony\Component\OptionsResolver\OptionsResolver;

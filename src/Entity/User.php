@@ -117,7 +117,7 @@ class User implements UserInterface, PasswordAuthenticatedUserInterface
     private ?Interviewer $trainingInterviewer;
 
     /**
-     * @ORM\Column(type="string", insertable=false, updatable=false, columnDefinition="VARCHAR(26) GENERATED ALWAYS AS (ifNull(training_interviewer_id, 'no-interviewer')) VIRTUAL")
+     * @ORM\Column(type="string", length=26, insertable=false, updatable=false, generated="ALWAYS", columnDefinition="VARCHAR(26) GENERATED ALWAYS AS (ifNull(training_interviewer_id, 'no-interviewer')) VIRTUAL")
      */
     private ?string $virtualColumnTrainingInterviewerId;
 

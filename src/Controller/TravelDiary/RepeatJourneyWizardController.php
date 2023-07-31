@@ -8,11 +8,15 @@ use App\Entity\DiaryKeeper;
 use App\Entity\Journey\Journey;
 use App\Entity\Journey\Stage;
 use App\Entity\User;
+use App\FormWizard\FormWizardManager;
 use App\FormWizard\FormWizardStateInterface;
 use App\FormWizard\Place;
+use App\FormWizard\PropertyMerger;
 use App\FormWizard\TravelDiary\RepeatJourneyState;
+use Doctrine\ORM\EntityManagerInterface;
 use Symfony\Component\HttpFoundation\RedirectResponse;
 use Symfony\Component\HttpFoundation\Request;
+use Symfony\Component\HttpFoundation\RequestStack;
 use Symfony\Component\HttpFoundation\Response;
 use Symfony\Component\Routing\Annotation\Route;
 use Symfony\Component\Serializer\Exception\ExceptionInterface;
@@ -25,6 +29,16 @@ class RepeatJourneyWizardController extends AbstractSessionStateFormWizardContro
 {
     private int $targetDayNumber;
 
+    public function __construct(
+        FormWizardManager $formWizardManager,
+        RequestStack $requestStack,
+        PropertyMerger $propertyMerger,
+        protected EntityManagerInterface $entityManager
+    ) {
+        parent::__construct($formWizardManager, $requestStack, $propertyMerger);
+    }
+
+
     /**
      * @Route(name="start")
      * @Route("/{place}/{stageNumber}", name="place")
@@ -35,7 +49,15 @@ class RepeatJourneyWizardController extends AbstractSessionStateFormWizardContro
         $this->targetDayNumber = $dayNumber;
         if ($place !== null) $place = new Place($place, $stageNumber > 0 ? ['stageNumber' => intval($stageNumber)] : []);
 
-        return $this->doWorkflow($request, $place);
+        $getAdditionalViewData = function(RepeatJourneyState $state) {
+            $sourceJourney = $state->sourceJourneyId !== null ?
+                $this->entityManager->find(Journey::class, $state->sourceJourneyId) :
+                null;
+
+            return ['sourceJourney' => $sourceJourney];
+        };
+
+        return $this->doWorkflow($request, $place, $getAdditionalViewData);
     }
 
     protected function getState(): FormWizardStateInterface

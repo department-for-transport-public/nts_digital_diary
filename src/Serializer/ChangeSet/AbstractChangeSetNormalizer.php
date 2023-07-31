@@ -2,6 +2,7 @@
 
 namespace App\Serializer\ChangeSet;
 
+use Brick\Math\BigDecimal;
 use Symfony\Component\Serializer\Normalizer\ContextAwareNormalizerInterface;
 
 abstract class AbstractChangeSetNormalizer implements ContextAwareNormalizerInterface
@@ -43,6 +44,19 @@ abstract class AbstractChangeSetNormalizer implements ContextAwareNormalizerInte
     {
         if (isset($changeSet[$name])) {
             unset($changeSet[$name]);
+        }
+    }
+
+    protected function decimalToString(array &$changeSet, string $field): void
+    {
+        if (!array_key_exists($field, $changeSet)) {
+            return;
+        }
+
+        foreach($changeSet[$field] as $idx => $value) {
+            if ($value instanceof BigDecimal) {
+                $changeSet[$field][$idx] = strval($value);
+            }
         }
     }
 }

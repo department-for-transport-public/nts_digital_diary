@@ -17,6 +17,8 @@ return static function (ContainerConfigurator $container) {
         ],
     ];
 
+    $defaultTemplate = 'travel_diary/repeat_journey/wizard_form.html.twig';
+
     $container->extension('framework', [
         'workflows' => [
             'form_wizard.travel_diary.repeat_journey' => [
@@ -29,22 +31,24 @@ return static function (ContainerConfigurator $container) {
                 'supports' => [State::class],
 
                 'places' => [
-                    td_place(State::STATE_FULL_INTRODUCTION,null, 'repeat-journey.full-introduction', [], 'travel_diary/repeat_journey/wizard_full_introduction.html.twig'),
+                    td_place(State::STATE_FULL_INTRODUCTION,null, 'repeat-journey.full-introduction', [
+                        'translation_parameters' => ['dayNumber' => 'targetDayNumber']
+                    ], 'travel_diary/repeat_journey/wizard_full_introduction.html.twig'),
                     td_place(State::STATE_SELECT_SOURCE_DAY,SourceDayType::class, 'repeat-journey.select-source-day', [
                         'form_data_property' => null,
                         'form_options' => ['is_practice' => 'isPracticeDay'],
-                    ]),
+                    ], $defaultTemplate),
                     td_place(State::STATE_SELECT_SOURCE_JOURNEY,SourceJourneyType::class, 'repeat-journey.select-source-journey', [
                         'form_data_property' => null,
-                    ]),
-                    td_place(State::STATE_PURPOSE,PurposeType::class, 'repeat-journey.purpose'),
-                    td_place(State::STATE_ADJUST_TIMES,TimesType::class, 'repeat-journey.adjust-times'),
+                    ], $defaultTemplate),
+                    td_place(State::STATE_PURPOSE,PurposeType::class, 'repeat-journey.purpose', [], $defaultTemplate),
+                    td_place(State::STATE_ADJUST_TIMES,TimesType::class, 'repeat-journey.adjust-times', [], $defaultTemplate),
                     td_place(State::STATE_ADJUST_STAGE_DETAILS,StageDetailsType::class, 'repeat-journey.stage-details', [
                         'form_data_property' => 'contextStage',
                         'view_data' => [
                             'title_translatable_message' => 'stageDetailsTitle',
                         ],
-                    ]),
+                    ], $defaultTemplate),
                     ['name' => State::STATE_FINISH],
                 ],
 

@@ -7,3 +7,12 @@
         text: "training.state.label" | trans({state: trainingRecord.state})
     }) -}}
 {%- endmacro -%}
+
+{% macro trainingVideo(id, title, trainingRecord) %}
+    {% from 'macros/vimeo-container.html.twig' import videoContainer %}
+    {% if trainingRecord.id ?? false %}
+        {{ videoContainer(id, title, {attributes: {'data-training-record': trainingRecord.id}}) }}
+    {% else %}
+        {{ videoContainer(id, title) }}
+    {% endif %}
+{% endmacro %}

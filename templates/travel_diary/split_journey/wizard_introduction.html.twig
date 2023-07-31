@@ -1,0 +1,9 @@
+{%- extends 'travel_diary/split_journey/wizard_form.html.twig' -%}
+
+{%- trans_default_domain 'travel-diary' -%}
+
+{% block preFormContent %}
+    <p class="govuk-body">
+        {{ 'split-journey.introduction.copy' | trans | nl2br }}
+    </p>
+{% endblock %}

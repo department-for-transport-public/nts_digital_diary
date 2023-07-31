@@ -59,7 +59,7 @@ class FixtureManager
     public function deleteExistingInterviewer(): void
     {
         $userRepository = $this->entityManager->getRepository(User::class);
-        $user = $userRepository->findOneBy(['username' => self::USERNAME]);
+        $user = $userRepository->loadUserByIdentifier(self::USERNAME);
 
         if (!$user) {
             return;

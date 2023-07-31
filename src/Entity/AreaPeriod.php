@@ -118,6 +118,9 @@ class AreaPeriod implements ApiIdInterface
         return $this;
     }
 
+    /**
+     * @return Collection<Household>
+     */
     public function getHouseholds(): Collection
     {
         return $this->households;
@@ -253,7 +256,9 @@ class AreaPeriod implements ApiIdInterface
 
     public function getLastValidDiaryStartDate(): DateTime
     {
-        return $this->getFirstValidDiaryStartDate()->add(DateInterval::createFromDateString('2 months'));
+        return $this->getFirstValidDiaryStartDate()
+            ->add(DateInterval::createFromDateString('2 months'))
+            ->sub(DateInterval::createFromDateString('1 second'));
     }
 
     public function getApiId(): ?string
@@ -280,5 +285,36 @@ class AreaPeriod implements ApiIdInterface
             throw new UnexpectedValueException("Cannot find training module for {$this->area}");
         }
         return $this->trainingInterviewer->getLatestTrainingRecordForModule($module);
+    }
+
+    /**
+     * @return array{onboarded: int, submitted: int, non-submitted: int}
+     */
+    public function getHouseholdSubmittedCounts(): array
+    {
+        $stateCounts = [
+            'onboarded' => 0,
+            'submitted' => 0,
+            'total' => 0,
+        ];
+
+        foreach($this->households as $household) {
+            $stateCounts['onboarded'] += $household->getIsOnboardingComplete() ? 1 : 0;
+            $stateCounts['submitted'] += $household->getIsSubmitted() ? 1 : 0;
+            $stateCounts['total'] += 1;
+        }
+
+        return $stateCounts;
+    }
+
+    public static function getArchiveThreshold(): \DateTime
+    {
+        return (new \DateTime())->sub(new \DateInterval('P9W'));
+    }
+
+    public function isArchived(): bool
+    {
+        // N.B. Logic matches that in (Interviewer) DashboardController
+        return $this->getLastValidDiaryStartDate() < self::getArchiveThreshold();
     }
 }

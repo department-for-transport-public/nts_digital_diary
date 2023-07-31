@@ -47,7 +47,10 @@
     </table>
 
     <div class="govuk-button-group">
-        <a href="{{ path('interviewer_area_onboarding_codes', {areaPeriod: areaPeriod.id}) }}" class="govuk-button">{{ "survey-area.onboarding-codes" | trans }}</a>
-        <a href="{{ path('interviewer_dashboard') }}" class="govuk-link">{{ "survey-area.back" | trans }}</a>
+        {% if is_feature_enabled(constant('\\App\\Features::SHOW_ONBOARDING_CODES')) %}
+            <a href="{{ path('interviewer_area_onboarding_codes', {areaPeriod: areaPeriod.id}) }}" class="govuk-button">{{ "survey-area.onboarding-codes" | trans }}</a>
+        {% endif %}
+        {%- set backRoute = areaPeriod.isArchived ? 'interviewer_dashboard_archived_areas' : 'interviewer_dashboard' %}
+        <a href="{{ path(backRoute) }}" class="govuk-link">{{ "survey-area.back" | trans }}</a>
     </div>
 {% endblock %}

@@ -18,6 +18,8 @@ class DiaryAccessTest extends AbstractFunctionalWebTestCase
     private const IGNORED_ROUTES = [
         'traveldiary_return_journey_wizard_start',
         'traveldiary_share_journey_wizard_start',
+        'traveldiary_split_journey_wizard_start',
+        'traveldiary_split_journey_wizard_place',
         'traveldiary_stage_wizard_start',
     ];
 
@@ -51,7 +53,11 @@ class DiaryAccessTest extends AbstractFunctionalWebTestCase
 
     /**
      * Enumerate all routes containing journey, stage or vehicle parameters and ensure that our test data
-     * contains all of them
+     * contains all of them.
+     *
+     * The data in dataAccess is used in testAccess to check whether a user can mess with URL parts and
+     * access another users data. This test is used to check whether the test data is comprehensive, and
+     * covering all relevant travel diary routes.
      */
     public function testData()
     {

@@ -2,8 +2,20 @@
 
 namespace App\Utility\Screenshots;
 
+use Nesk\Puphpeteer\Resources\Browser;
+
 class DiaryKeeperScreenshotter extends AbstractScreenshotter
 {
+    public function __construct(
+        Browser $browser,
+        string $screenshotsBaseDir,
+        string $hostname,
+        protected bool $addExtraStages=false
+    ) {
+        parent::__construct($browser, $screenshotsBaseDir, $hostname);
+    }
+
+
     /**
      * @throws ScreenshotsException
      */
@@ -53,6 +65,15 @@ class DiaryKeeperScreenshotter extends AbstractScreenshotter
         $this->clickLinkWithText('Add a stage');
         $this->addTrainStageFlow();
 
+        if ($this->addExtraStages) {
+            $this->clickLinkWithText('Add a stage');
+            $this->addPublicOtherStageFlow();
+            $this->clickLinkWithText('Add a stage');
+            $this->addCoachStageFlow();
+            $this->clickLinkWithText('Add a stage');
+            $this->addPrivateOtherStageFlow();
+        }
+
         // Re-order stages
         $this->clickLinkWithText('Re-order stages');
         $this->screenshot('add-stage/2-reorder-stages.png');
@@ -60,9 +81,8 @@ class DiaryKeeperScreenshotter extends AbstractScreenshotter
 
         // Journey dashboard, delete journey, delete stage
         $this->clickLinkWithText('Stage 1', 0, false);
-        $this->page->click('body', []); // Remove focus from link
+        $this->page->click('.govuk-heading-xl', []); // Remove focus from link
         $this->screenshot('view-journey/1-dashboard.png');
-
         $this->clickLinkWithText('Delete this stage');
         $this->screenshot('view-journey/2-delete-stage.png');
         $this->page->goBack([]);
@@ -74,8 +94,15 @@ class DiaryKeeperScreenshotter extends AbstractScreenshotter
         // Share journey
         $this->shareJourneyFlow();
 
+        $this->clickLinkWithText('My travel diary');
+        $this->clickLinkWithText('View', 1); // We want to repeat onto day 2
+
         // Repeat journey
         $this->repeatJourneyFlow();
+
+        $this->clickLinkWithText('My travel diary');
+        $this->clickLinkWithText('View', 0); // Back to day 1
+        $this->clickLinkWithText('View', 0); // View the first (and only) journey
 
         // Return journey
         $this->returnJourneyFlow();
@@ -93,6 +120,12 @@ class DiaryKeeperScreenshotter extends AbstractScreenshotter
         // Diary dashboard
         $this->clickLinkWithTextThatStartsWith('Back to diary');
         $this->screenshot('3b-dashboard-in-progress.png');
+
+        // Mileometer readings
+        $this->milometerReadingsFlow();
+
+        $this->addJourneyForSplitterDemonstration(5, 'Home', 'Walk the dog');
+        $this->addJourneyForSplitterDemonstration(6, 'Portsmouth', 'Collect a package');
 
         // Mark diary as complete
         $this->clickLinkWithText('Mark travel diary as complete');
@@ -130,7 +163,7 @@ class DiaryKeeperScreenshotter extends AbstractScreenshotter
                 'am' => true,
             ],
             'What time did you finish the journey?' => [
-                'Hour' => '12',
+                'Hour' => '1',
                 'Minute' => '30',
                 'pm' => true,
             ],
@@ -170,14 +203,12 @@ class DiaryKeeperScreenshotter extends AbstractScreenshotter
             'Describe the vehicle you used' => "Friend's car 🚗",
         ], 'Continue');
 
-
         $this->fillForm([
             '#driver_and_parking_parkingCost' => [
                 'Yes' => true,
             ],
         ]);
         $this->screenshot('add-stage/private/4-parking-costs-and-driver.png');
-
 
         $this->submit([
             'Driver' => true,
@@ -186,7 +217,6 @@ class DiaryKeeperScreenshotter extends AbstractScreenshotter
                 'How much did you pay for parking' => '8.50',
             ],
         ], 'Save and continue');
-
     }
 
     /**
@@ -251,6 +281,98 @@ class DiaryKeeperScreenshotter extends AbstractScreenshotter
     /**
      * @throws ScreenshotsException
      */
+    public function addCoachStageFlow(): void
+    {
+        $this->submit([
+            'Bus/Coach' => true,
+            '#method_other-bus-or-coach' => 'Local red bus',
+        ], 'Continue');
+
+        $this->submit([
+            'Distance' => '10',
+            'Miles' => true,
+            'How long did you spend travelling, in minutes' => '15',
+            'Adults' => '1',
+            'Children' => '1',
+        ], 'Continue');
+
+        $this->submit([
+            'Tell us about the ticket' => 'Single',
+        ], 'Continue');
+
+        $this->submit([
+            '#ticket_cost_and_boardings_ticketCost' => [
+                'Yes' => true,
+                'How much did your ticket cost' => '4.00',
+            ],
+            'How many times did you board' => '1',
+        ], 'Save and continue');
+    }
+
+    /**
+     * @throws ScreenshotsException
+     */
+    public function addPublicOtherStageFlow(): void
+    {
+        $this->submit([
+            'Other public transport' => true,
+            '#method_other-other-public' => 'Hovercraft'
+        ], 'Continue');
+
+        $this->submit([
+            'Distance' => '30',
+            'Miles' => true,
+            'How long did you spend travelling, in minutes' => '25',
+            'Adults' => '1',
+            'Children' => '1',
+        ], 'Continue');
+
+        $this->submit([
+            'Tell us about the ticket' => 'Single hover-pass',
+        ], 'Continue');
+
+        $this->submit([
+            '#ticket_cost_and_boardings_ticketCost' => [
+                'Yes' => true,
+                'How much did your ticket cost' => '3.75',
+            ],
+            'How many times did you board' => '1',
+        ], 'Save and continue');
+    }
+
+    /**
+     * @throws ScreenshotsException
+     */
+    public function addPrivateOtherStageFlow(): void
+    {
+        $this->submit([
+            'Other private transport' => true,
+            '#method_other-other-private' => 'Golf cart'
+        ], 'Continue');
+
+        $this->submit([
+            'Distance' => '2',
+            'Miles' => true,
+            'How long did you spend travelling, in minutes' => '5',
+            'Adults' => '1',
+            'Children' => '1',
+        ], 'Continue');
+
+        $this->submit([
+            'Describe the vehicle you used' => "Borrowed golf cart",
+        ], 'Continue');
+
+        $this->submit([
+            'Driver' => true,
+            '#driver_and_parking_parkingCost' => [
+                'No' => true,
+            ],
+        ], 'Save and continue');
+    }
+
+    /**
+     * @throws ScreenshotsException
+     */
     public function shareJourneyFlow(): void
     {
         $this->clickLinkWithText('Share this journey');
@@ -268,36 +390,38 @@ class DiaryKeeperScreenshotter extends AbstractScreenshotter
             'Purpose of journey for Linda' => 'To go shopping for groceries',
         ], 'Continue');
 
-        $this->fillForm([
-            '#stage_details_collection_0_parkingCost' => [
-                'Yes' => true,
-            ],
-        ]);
-        $this->screenshot('share-journey/4-details-for-stage-1.png');
+        $stageTypes = $this->addExtraStages ?
+            [1 => 'parking', 3 => 'ticket', 4 => 'ticket', 5 => 'ticket', 6 => 'parking'] :
+            [1 => 'parking', 3 => 'ticket'];
 
-        $this->submit([
-            '#stage_details_collection_0_parkingCost' => [
-                'No' => true,
-            ],
-        ], 'Continue');
+        $lastStageKey = array_key_last($stageTypes);
 
+        $getData = function(string $stageType): array {
+            return $stageType === 'walk' ?
+                [] :
+                [
+                    "#stage_details_collection_0_{$stageType}Cost" => [
+                        'Yes' => true
+                    ],
+                ];
+        };
 
-        $this->fillForm([
-            '#stage_details_collection_0_ticketCost' => [
-                'Yes' => true,
-            ],
-        ]);
-        $this->screenshot('share-journey/5-details-for-stage-3.png');
+        $wizardStepNum = 3;
+        foreach($stageTypes as $stageNum => $stageType) {
+            $wizardStepNum += 1;
 
-        $this->submit([
-            '#stage_details_collection_0_ticketCost' => [
-                'No' => true,
-            ],
-        ], 'Save and continue'); // N.B. Already pre-filled
+            $this->fillForm($getData($stageType));
+            $this->screenshot("share-journey/{$wizardStepNum}-details-for-stage-{$stageNum}.png");
+
+            $buttonText = ($stageNum === $lastStageKey) ?
+                'Save and continue' :
+                'Continue';
+
+            $this->submit($getData($stageType), $buttonText); // N.B. Pre-filled
+        }
     }
 
     /**
-     * @return void
      * @throws ScreenshotsException
      */
     public function returnJourneyFlow(): void
@@ -309,7 +433,7 @@ class DiaryKeeperScreenshotter extends AbstractScreenshotter
         $this->screenshot('return-journey/2-which-day.png');
 
         $this->submit([
-            'Day 2' => true,
+            'Day 1' => true,
         ], 'Continue');
         $this->screenshot('return-journey/3-times.png');
 
@@ -326,44 +450,42 @@ class DiaryKeeperScreenshotter extends AbstractScreenshotter
             ],
         ], 'Continue');
 
-        $this->fillForm([
-            '#stage_details_ticketCost' => [
-                'Yes' => true
-            ],
-        ]);
-        $this->screenshot('return-journey/4-details-for-stage-1.png');
+        $stageTypes = $this->addExtraStages ?
+            ['parking', 'ticket', 'ticket', 'ticket', 'walk', 'parking'] :
+            ['ticket', 'walk', 'parking'];
 
-        $this->submit([
-            '#stage_details_ticketCost' => [
-                'No' => true
-            ],
-        ], 'Continue'); // N.B. Pre-filled
-        $this->screenshot('return-journey/5-details-for-stage-2.png');
+        $lastStageKey = array_key_last($stageTypes);
 
-        $this->submit([], 'Continue'); // N.B. Pre-filled
+        $getFormData = function(string $stageType): array {
+            return $stageType === 'walk' ?
+                [] :
+                [
+                    "#stage_details_{$stageType}Cost" => [
+                        'Yes' => true
+                    ],
+                ];
+        };
 
-        $this->fillForm([
-            '#stage_details_parkingCost' => [
-                'Yes' => true,
-            ],
-        ]);
-        $this->screenshot('return-journey/6-details-for-stage-3.png');
+        foreach($stageTypes as $i => $stageType) {
+            $stageNum = $i + 1;
+            $wizardStepNum = $i + 4;
 
-        $this->submit([
-            '#stage_details_parkingCost' => [
-                'No' => true,
-            ],
-        ], 'Save and continue'); // N.B. Pre-filled
+            $this->fillForm($getFormData($stageType));
+            $this->screenshot("return-journey/{$wizardStepNum}-details-for-stage-{$stageNum}.png");
+
+            $buttonText = ($i === $lastStageKey) ?
+                'Save and continue' :
+                'Continue';
+
+            $this->submit($getFormData($stageType), $buttonText); // N.B. Pre-filled
+        }
     }
 
     /**
-     * @return void
      * @throws ScreenshotsException
      */
     public function repeatJourneyFlow(): void
     {
-        $this->clickLinkWithTextThatStartsWith('Back to day');
-
         $this->clickLinkWithText('Repeat a journey');
         $this->screenshot('repeat-journey/1-intro.png');
 
@@ -383,26 +505,92 @@ class DiaryKeeperScreenshotter extends AbstractScreenshotter
         $this->submit([], 'Continue'); // N.B. Pre-filled
         $this->screenshot('repeat-journey/5-what-time.png');
 
-        $this->submit([
-            'What time did you start the journey?' => [
-                'Hour' => '11',
-                'Minute' => '20',
-                'am' => true,
-            ],
-            'What time did you finish the journey?' => [
-                'Hour' => '12',
-                'Minute' => '30',
-                'pm' => true,
-            ],
-        ], 'Continue');
+        $this->submit([], 'Continue');
         $this->screenshot('repeat-journey/6-details-for-stage-1.png');
 
         $this->submit([], 'Continue'); // N.B. Pre-filled
         $this->screenshot('repeat-journey/7-details-for-stage-2.png');
 
-        $this->submit([], 'Continue'); // N.B. Pre-filled
+        $this->submit([], 'Continue');
         $this->screenshot('repeat-journey/8-details-for-stage-3.png');
 
-        $this->submit([], 'Save and continue'); // N.B. Pre-filled
+        if ($this->addExtraStages) {
+            $this->submit([], 'Continue');
+            $this->screenshot('repeat-journey/9-details-for-stage-4.png');
+
+            $this->submit([], 'Continue');
+            $this->screenshot('repeat-journey/10-details-for-stage-5.png');
+
+            $this->submit([], 'Continue');
+            $this->screenshot('repeat-journey/11-details-for-stage-6.png');
+        }
+
+        $this->submit([], 'Save and continue');
+    }
+
+    /**
+     * @throws ScreenshotsException
+     */
+    protected function milometerReadingsFlow(): void
+    {
+        $this->clickLinkWithText('Enter/edit milometer readings for "Blue golf"');
+        $this->screenshot('milometer/1-enter-readings.png');
+
+        $this->submit([
+            'Miles' => true,
+            'Milometer reading at start of diary week' => '17595',
+            'Milometer reading at end of diary week' => '17843',
+        ], 'Save');
+    }
+
+    /**
+     * @throws ScreenshotsException
+     */
+    protected function addJourneyForSplitterDemonstration(int $day, string $sourceAndDestination, string $purpose): void
+    {
+        $this->clickLinkWithText('View', $day - 1);
+        $this->clickLinkWithText('Add journey');
+
+        $this->submit([
+            'Where did the journey start?' => [
+                $sourceAndDestination => true,
+            ],
+            'Where did you go?' => [
+                $sourceAndDestination=> true,
+            ],
+        ], 'Continue');
+
+        $this->submit([
+            'What time did you start the journey?' => [
+                'Hour' => '8',
+                'Minute' => '00',
+                'am' => true,
+            ],
+            'What time did you finish the journey?' => [
+                'Hour' => '8',
+                'Minute' => '30',
+                'am' => true,
+            ],
+        ], 'Continue');
+
+        $this->submit([
+            'What was the main purpose of this journey?' => $purpose,
+        ], 'Save and continue');
+
+        $this->submit([], 'Continue');
+
+        $this->submit([
+            'Walk or run' => true,
+        ], 'Continue');
+
+        $this->submit([
+            'Distance' => '1',
+            'Miles' => true,
+            'How long did you spend travelling, in minutes' => '20',
+            'Adults' => '1',
+            'Children' => '0',
+        ], 'Save and continue');
+
+        $this->clickLinkWithText('My travel diary');
     }
 }

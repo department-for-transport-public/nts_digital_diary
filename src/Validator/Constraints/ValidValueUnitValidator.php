@@ -13,7 +13,7 @@ use Symfony\Component\Validator\Exception\UnexpectedValueException;
 
 class ValidValueUnitValidator extends ConstraintValidator
 {
-    public function validate($value, Constraint $constraint)
+    public function validate($value, Constraint $constraint): void
     {
         if (!$constraint instanceof ValidValueUnit) {
             throw new UnexpectedTypeException($constraint, ValidValueUnit::class);
@@ -42,7 +42,7 @@ class ValidValueUnitValidator extends ConstraintValidator
                     'translationPrefix' => "$constraint->translationPrefix.value",
                 ]);
             }
-            $validator->atPath('value')->validate($value->getValue(), $validators, ['Default']);
+            $validator->atPath('value')->validate(strval($value->getValue()), $validators, ['Default']);
 
             $validator->atPath('unit')->validate($value->getUnit(), [
                 new NotBlank(['message' => "{$constraint->translationPrefix}.{$constraint->unitBlankTranslationKey}"]),

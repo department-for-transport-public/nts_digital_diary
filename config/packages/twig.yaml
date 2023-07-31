@@ -22,6 +22,11 @@ twig:
             frontend: '%hostnames.frontend%'
             admin: '%hostnames.admin%'
 
+        vimeo_ids:
+            diary_keeper_help: '842532134/9245923960'
+            interviewer_editing: '842536266/4a1efa2060'
+
+
 when@test:
     twig:
         strict_variables: true

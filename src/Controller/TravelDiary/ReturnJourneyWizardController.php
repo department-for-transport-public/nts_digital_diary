@@ -6,19 +6,15 @@ use App\Annotation\Redirect;
 use App\Controller\FormWizard\AbstractSessionStateFormWizardController;
 use App\Entity\Journey\Journey;
 use App\Entity\Journey\Stage;
-use App\FormWizard\FormWizardManager;
 use App\FormWizard\FormWizardStateInterface;
 use App\FormWizard\Place;
-use App\FormWizard\PropertyMerger;
 use App\FormWizard\TravelDiary\RepeatJourneyState;
 use App\FormWizard\TravelDiary\ReturnJourneyState;
 use App\Security\Voter\TravelDiary\DiaryAccessVoter;
-use Doctrine\ORM\EntityManagerInterface;
 use Sensio\Bundle\FrameworkExtraBundle\Configuration\Entity;
 use Sensio\Bundle\FrameworkExtraBundle\Configuration\IsGranted;
 use Symfony\Component\HttpFoundation\RedirectResponse;
 use Symfony\Component\HttpFoundation\Request;
-use Symfony\Component\HttpFoundation\RequestStack;
 use Symfony\Component\HttpFoundation\Response;
 use Symfony\Component\Routing\Annotation\Route;
 use Symfony\Component\Serializer\Exception\ExceptionInterface;
@@ -47,7 +43,7 @@ class ReturnJourneyWizardController extends AbstractSessionStateFormWizardContro
         $this->sourceJourney = $sourceJourney;
         if ($place !== null) $place = new Place($place, $stageNumber > 0 ? ['stageNumber' => intval($stageNumber)] : []);
 
-        return $this->doWorkflow($request, $place);
+        return $this->doWorkflow($request, $place, ['sourceJourney' => $sourceJourney]);
     }
 
     protected function getState(): FormWizardStateInterface

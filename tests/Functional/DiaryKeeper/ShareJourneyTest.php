@@ -15,7 +15,7 @@ class ShareJourneyTest extends AbstractProceduralWizardTest
 {
     const TEST_USERNAME = 'diary-keeper-adult@example.com';
 
-    protected function performTest(string $journeyFixtureRef, bool $overwriteStageDetails): void
+    protected function performTest(string $journeyFixtureRef, bool $isGoingHome): void
     {
         $journeyFixture = $this->getFixtureByReference($journeyFixtureRef);
         $this->assertInstanceOf(Journey::class, $journeyFixture);
@@ -59,10 +59,10 @@ class ShareJourneyTest extends AbstractProceduralWizardTest
 //        dump(array_map(fn ($e) => $e->getAttribute('name'), $this->context->getClient()->findElements(WebDriverBy::xpath('//div[@id="purpose_collection"]/div/div/div/input'))));
 //        exit(1);
 
-        $this->formTestAction(
-            $url('/share-journey/purposes'),
-            'purpose_collection_button_group_continue',
-            [
+        if ($isGoingHome) {
+            $purposeTests = [new FormTestCase([])]; // Purpose is pre-filled if the source journey is "going home"
+        } else {
+            $purposeTests = [
                 new FormTestCase([], ['#purpose_collection_0_purpose', '#purpose_collection_1_purpose']),
                 new FormTestCase(['purpose_collection[0][purpose]' => 'shared purpose 0'], ['#purpose_collection_1_purpose']),
                 new FormTestCase(['purpose_collection[1][purpose]' => 'shared purpose 1'], ['#purpose_collection_0_purpose']),
@@ -70,7 +70,13 @@ class ShareJourneyTest extends AbstractProceduralWizardTest
                     'purpose_collection[0][purpose]' => 'shared purpose 0',
                     'purpose_collection[1][purpose]' => 'shared purpose 1',
                 ], []),
-            ],
+            ];
+        }
+
+        $this->formTestAction(
+            $url('/share-journey/purposes'),
+            'purpose_collection_button_group_continue',
+            $purposeTests,
             $options
         );
 
@@ -90,21 +96,11 @@ class ShareJourneyTest extends AbstractProceduralWizardTest
                                 // isDriver values should be ignored, as they are disabled
                                 new FormTestCase([
                                     'stage_details_collection[0][isDriver]' => '',
-                                    'stage_details_collection[0][parkingCost][hasCost]' => 'true',
-                                    'stage_details_collection[0][parkingCost][cost]' => '',
                                     'stage_details_collection[1][isDriver]' => '',
-                                    'stage_details_collection[1][parkingCost][hasCost]' => 'false',
+                                    'stage_details_collection[1][parkingCost][hasCost]' => 'true',
+                                    'stage_details_collection[1][parkingCost][cost]' => '3.45',
                                 ], [
-                                    '#stage_details_collection_0_parkingCost_cost',
-                                ]),
-                                new FormTestCase([
-                                    'stage_details_collection[0][isDriver]' => 'true',
-                                    'stage_details_collection[0][parkingCost][hasCost]' => 'true',
-                                    'stage_details_collection[0][parkingCost][cost]' => '',
-                                    'stage_details_collection[1][isDriver]' => 'true',
-                                ], [
-                                    '#stage_details_collection_0_parkingCost_cost',
-                                    '#stage_details_collection_1_parkingCost_hasCost',
+                                    '#stage_details_collection_0_parkingCost_hasCost',
                                 ]),
                                 new FormTestCase([
                                     'stage_details_collection[0][parkingCost][hasCost]' => 'false',
@@ -120,20 +116,12 @@ class ShareJourneyTest extends AbstractProceduralWizardTest
                                     'stage_details_collection[1][isDriver]' => 'true',
                                     'stage_details_collection[1][parkingCost][hasCost]' => 'false',
                                 ], [
-//                                    '#some_error',
                                     '#stage_details_collection_0_isDriver',
                                     '#stage_details_collection_1_isDriver',
                                 ]),
                                 // zero drivers allowed
                                 new FormTestCase([
                                     'stage_details_collection[0][isDriver]' => 'false',
-                                    'stage_details_collection[0][parkingCost][hasCost]' => 'false',
-                                    'stage_details_collection[1][isDriver]' => 'false',
-                                ], [
-                                    '#stage_details_collection_1_parkingCost_hasCost',
-                                ]),
-                                new FormTestCase([
-                                    'stage_details_collection[0][isDriver]' => 'true',
                                     'stage_details_collection[0][parkingCost][hasCost]' => 'true',
                                     'stage_details_collection[0][parkingCost][cost]' => '3.45',
                                     'stage_details_collection[1][isDriver]' => 'false',
@@ -158,7 +146,6 @@ class ShareJourneyTest extends AbstractProceduralWizardTest
                                 'stage_details_collection[1][ticketCost][hasCost]' => 'false',
                             ], [
                                 '#stage_details_collection_0_ticketType',
-                                '#stage_details_collection_0_ticketCost_cost',
                             ]),
                             new FormTestCase([
                                 'stage_details_collection[0][ticketType]' => 'ticket type 0',
@@ -199,22 +186,23 @@ class ShareJourneyTest extends AbstractProceduralWizardTest
     {
         return
             [
-                'Day 6 journey' => ['sharing-journey:1', false],
+                'Day 6 journey to non-home' => ['sharing-journey:1', 0, false],
+                'Day 6 journey to home' => ['sharing-journey:2', 1, true],
             ];
     }
 
     /**
      * @dataProvider wizardData
      */
-    public function testShareJourneyWizard(string $journeyFixtureRef, bool $overwriteStageDetails)
+    public function testShareJourneyWizard(string $journeyFixtureRef, int $journeyIndex, bool $isGoingHome)
     {
         $this->initialiseClientAndLoadFixtures([ShareJourneyTestFixtures::class]);
         $this->loginUser(self::TEST_USERNAME);
         $this->client->request('GET', '/travel-diary/day-6');
-        $this->clickLinkContaining('View');
+        $this->clickLinkContaining('View', $journeyIndex);
         $this->clickLinkContaining('Share this journey');
 
         $this->context = $this->createContext('');
-        $this->performTest($journeyFixtureRef, $overwriteStageDetails);
+        $this->performTest($journeyFixtureRef, $isGoingHome);
     }
 }

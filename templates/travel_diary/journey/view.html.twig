@@ -72,13 +72,23 @@
         </li>
         {%- endif %}
         {%- set day_parameters = { dayNumber: day.number } -%}
-        <li><a class="govuk-link" href="{{ path('traveldiary_return_journey_wizard_start', {journeyId: journey.id}) }}">{{- "journey.view.return-journey" | trans({startLocation: journey.startLocationForDisplay, endLocation: journey.endLocationForDisplay}) -}}</a></li>
-
+        <li>
+            <a class="govuk-link" href="{{ path('traveldiary_return_journey_wizard_start', {journeyId: journey.id}) }}">
+                {{- "journey.view.return-journey" | trans({startLocation: journey.startLocationForDisplay, endLocation: journey.endLocationForDisplay}) -}}
+            </a>
+        </li>
         <li>
             <a class="govuk-link" href="{{ path('traveldiary_journey_delete', {journeyId: journey.id}) }}">
                 {{- "journey.view.delete-journey" | trans -}}
             </a>
         </li>
+        {%- if is_impersonator_granted('CAN_SPLIT_JOURNEY', journey) %}
+            <li>
+                <a class="govuk-link" href="{{ path('traveldiary_split_journey_wizard_start', {journeyId: journey.id}) }}">
+                    {{- "journey.view.split-journey" | trans -}}
+                </a>
+            </li>
+        {%- endif -%}
     </ul>
 
 

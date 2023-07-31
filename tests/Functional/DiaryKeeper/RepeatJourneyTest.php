@@ -73,9 +73,14 @@ class RepeatJourneyTest extends AbstractJourneyTest
             $url('/repeat-journey/adjust-times'),
             "times_button_group_continue",
             array_merge(
-                [new FormTestCase([], ["#times_startTime", "#times_endTime"])],
-                $this->generateTimeTests("startTime", "endTime"),
-                $this->generateTimeTests("endTime", "startTime"),
+                [new FormTestCase([
+                    "times[startTime][hour]" => "",
+                    "times[startTime][minute]" => "",
+                    "times[startTime][am_or_pm]" => "",
+                    "times[endTime][hour]" => "",
+                    "times[endTime][minute]" => "",
+                    "times[endTime][am_or_pm]" => "",
+                ], ["#times_startTime", "#times_endTime"])],
                 [
                     new FormTestCase([
                         "times[startTime][hour]" => "1",
@@ -103,7 +108,7 @@ class RepeatJourneyTest extends AbstractJourneyTest
 
         $tests[] = new CallbackAction(function (Context $context)
         use ($overwriteStageDetails, $sourceJourneyIndex) {
-            $dk = $context->getEntityManager()->getRepository(User::class)->getDiaryKeeperJourneysAndStages(self::TEST_USERNAME);
+            $dk = $context->getEntityManager()->getRepository(User::class)->getDiaryKeeperJourneysAndStagesForTests(self::TEST_USERNAME);
 
             $dayOneJourneys = $dk->getDiaryDayByNumber(1)->getJourneys();
             $testCase = $context->getTestCase();
@@ -133,7 +138,7 @@ class RepeatJourneyTest extends AbstractJourneyTest
     {
         return
             [
-                'Repeat ' => $this->generateTest(false, 0, 1),
+                'Repeat' => $this->generateTest(false, 0, 1),
                 'Return w/stage details overwrite' => $this->generateTest(true, 0, 1),
             ];
     }

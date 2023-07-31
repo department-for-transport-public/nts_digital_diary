@@ -6,8 +6,8 @@
 
 ### `GET /survey-data` 
 
-This endpoint will return survey data for all diaries whose travel-week-start-date is greater than or equal to startTime
-and less than endTime.
+This endpoint will return survey data for all households that have been submitted for export at or after startTime
+and before endTime.
 
 #### Parameters
 
@@ -92,8 +92,8 @@ Successful response will be an array of [household](#household) objects
 - `mediaType` string (enum: `digital`, `paper`)
 - `state` string (enum: `approved`, `discarded`)
 - `hasUsedPracticeDay` boolean
-- `emptyDiaryDaysVerirfiedBy` string (email address)
-- `emptyDiaryDaysVerirfiedAt` string (formatted date/time)
+- `approvalChecklistDaysVerirfiedBy` string (email address)
+- `approvalChecklistDaysVerirfiedAt` string (formatted date/time)
 - `days` array
 
 #### Example
@@ -105,8 +105,8 @@ Successful response will be an array of [household](#household) objects
   "mediaType": "digital",
   "state": "approved",
   "hasUsedPracticeDay": false,
-  "emptyDaysVerifiedBy": "bob@example.com",
-  "emptyDaysVerifiedAt": "2023-05-22T15:06:50+01:00",
+  "approvalChecklistVerifiedBy": "bob@example.com",
+  "approvalChecklistVerifiedAt": "2023-05-22T15:06:50+01:00",
   "days": [...]
 ```
 
@@ -159,6 +159,9 @@ Successful response will be an array of [household](#household) objects
 ```
 
 ### Stage
+
+**NB** - with cost values (parkingCost, ticketCost), a zero value indicates there was no cost (NIL on paper form), but
+null indicates there was a cost but that the diary keeper didn't know how much.
 
 - `#` int (sequential, stage number)
 - `methodCode` int | null

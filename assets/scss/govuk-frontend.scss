@@ -12,6 +12,7 @@
 @import "govuk-frontend/stagelist";
 @import "govuk-frontend/summary-list-reorder";
 @import "govuk-frontend/warning-text";
+@import "govuk-frontend/list";
 
 .govuk-visually-hidden-when-larger-than-mobile {
   @include govuk-media-query($from: tablet) {

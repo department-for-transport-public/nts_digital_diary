@@ -3,6 +3,7 @@
 namespace App\Tests\Functional\OnBoarding;
 
 use App\Tests\DataFixtures\OtpUserFixtures;
+use App\Tests\DataFixtures\UserFixtures;
 use App\Tests\Functional\Wizard\Action\CallbackAction;
 use App\Tests\Functional\Wizard\Action\PathTestAction;
 use App\Tests\Functional\Wizard\Action\FormTestAction;
@@ -76,7 +77,7 @@ class DiaryKeeperTest extends AbstractDiaryKeeperTest
      */
     public function testOnboardingDiaryKeeperWizard(array $wizardData)
     {
-        $this->initialiseClientAndLoadFixtures([OtpUserFixtures::class]);
+        $this->initialiseClientAndLoadFixtures([OtpUserFixtures::class, UserFixtures::class]);
         $identifier = self::USER_IDENTIFIER; // OTP user where address #, household #, and diary week start date already entered
         $this->loginOtpUser($identifier, $this->passcodeGenerator->getPasswordForUserIdentifier($identifier));
 

@@ -3,28 +3,18 @@
 namespace App\Controller\OnBoarding;
 
 use App\Controller\AbstractController;
-use App\Entity\Household;
 use App\Entity\OtpUser;
-use App\Features;
+use App\Event\CompleteOnboardingEvent;
 use App\Form\OnBoarding\ConfirmHouseholdType;
-use App\Utility\AccountCreationHelper;
-use Doctrine\ORM\EntityManagerInterface;
+use Psr\EventDispatcher\EventDispatcherInterface;
 use Sensio\Bundle\FrameworkExtraBundle\Configuration\IsGranted;
-use Symfony\Component\HttpFoundation\RedirectResponse;
 use Symfony\Component\HttpFoundation\Request;
 use Symfony\Component\HttpFoundation\Response;
 use Symfony\Component\Routing\Annotation\Route;
 
 class SubmitController extends AbstractController
 {
-    private AccountCreationHelper $accountCreationHelper;
-    private EntityManagerInterface $entityManager;
-
-    public function __construct(AccountCreationHelper $accountCreationHelper, EntityManagerInterface $entityManager)
-    {
-        $this->accountCreationHelper = $accountCreationHelper;
-        $this->entityManager = $entityManager;
-    }
+    public function __construct(private readonly EventDispatcherInterface $eventDispatcher) {}
 
     /**
      * @Route("/submit", name="submit")
@@ -48,26 +38,12 @@ class SubmitController extends AbstractController
 
         $form->handleRequest($request);
         if ($form->isSubmitted() && $form->isValid()) {
-            return $this->submitOnboarding($household);
+            $this->eventDispatcher->dispatch(new CompleteOnboardingEvent($household));
+            return $this->redirectToRoute('onboarding_dashboard');
         }
 
         return $this->render('on_boarding/submit/index.html.twig', [
             'form' => $form->createView(),
         ]);
-    }
-
-    protected function submitOnboarding(Household $household): RedirectResponse
-    {
-        // disable/delete the onboarding code
-        $household->setIsOnboardingComplete(true);
-        $this->entityManager->flush();
-
-        foreach ($household->getDiaryKeepers() as $diaryKeeper) {
-            if ($diaryKeeper->hasIdentifierForLogin()) {
-                $this->accountCreationHelper->sendAccountCreationEmail($diaryKeeper);
-            }
-        }
-
-        return $this->redirectToRoute('onboarding_dashboard');
     }
 }

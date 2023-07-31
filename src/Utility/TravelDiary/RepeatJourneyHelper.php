@@ -11,6 +11,7 @@ class RepeatJourneyHelper
     private PropertyMerger $propertyMerger;
 
     private const JOURNEY_CLONE_PROPERTIES = [
+        /* times */             'startTime', 'endTime',
         /* purpose form */      'purpose',
         /* locations form */    'startLocation', 'isStartHome', 'endLocation', 'isEndHome',
     ];

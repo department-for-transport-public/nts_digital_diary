@@ -4,6 +4,7 @@ namespace App\Tests\Functional\Api;
 
 use App\Entity\ApiUser;
 use App\Entity\AreaPeriod;
+use App\Entity\Household;
 use App\Entity\User;
 use App\Security\HmacAuth\SecretGenerator;
 use App\Tests\Functional\AbstractFunctionalWebTestCase;
@@ -15,6 +16,13 @@ abstract class AbstractApiWebTestCase extends AbstractFunctionalWebTestCase
 {
     protected EntityManagerInterface $entityManager;
     private ?SecretGenerator $secretGenerator;
+
+    public function getHousehold(string $reference): Household
+    {
+        $household = $this->fixtureReferenceRepository->getReference($reference);
+        $this->assertInstanceOf(Household::class, $household);
+        return $household;
+    }
 
     protected function setUp(): void
     {

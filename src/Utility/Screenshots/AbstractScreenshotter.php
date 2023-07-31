@@ -27,8 +27,13 @@ abstract class AbstractScreenshotter
     {
         $page = $this->browser->newPage();
         $page->setCacheEnabled(false);
-        $page->setViewport(["width" => 1003, "height" => 200]);
+        $this->setViewportSize($page);
+
         return $page;
+    }
+
+    protected function setViewportSize(Page $page, int $width = 1003, int $height = 200): void {
+        $page->setViewport(["width" => $width, "height" => $height]);
     }
 
     public function getWaitForOptions(): array
@@ -147,7 +152,7 @@ abstract class AbstractScreenshotter
     /**
      * @throws ScreenshotsException
      */
-    protected function fillForm(array $fields, string $xpathPrefix = '//form', bool $overwriteFields = false)
+    protected function fillForm(array $fields, string $xpathPrefix = '//form', bool $overwriteFields = false): void
     {
         foreach($fields as $labelOrId => $value) {
             if (is_array($value)) {
@@ -188,12 +193,5 @@ abstract class AbstractScreenshotter
                 $this->page->type($targetId, $value, []);
             }
         }
-    }
-
-    protected function getFormElementXPath(string $xpathPrefix, string $tag, string $idOrTextStartsWith): string
-    {
-        return str_starts_with($idOrTextStartsWith, '#')
-            ? '//*[@id="' . substr($idOrTextStartsWith, 1) . '"]'
-            : (new XPath())->withPrefix($xpathPrefix)->withTag($tag)->withTextStartsWith($label)->$xpath->withSuffix('/..');
     }
 }

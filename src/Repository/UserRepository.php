@@ -6,12 +6,13 @@ use App\Entity\DiaryKeeper;
 use App\Entity\User;
 use Doctrine\Bundle\DoctrineBundle\Repository\ServiceEntityRepository;
 use Doctrine\ORM\NonUniqueResultException;
+use Doctrine\ORM\Query\Expr;
 use Doctrine\Persistence\ManagerRegistry;
+use DoctrineExtensions\Query\Mysql\Exp;
 use Symfony\Bridge\Doctrine\Security\User\UserLoaderInterface;
 
 /**
  * @method User|null find($id, $lockMode = null, $lockVersion = null)
- * @method User|null findOneBy(array $criteria, array $orderBy = null)
  * @method User[]    findAll()
  * @method User[]    findBy(array $criteria, array $orderBy = null, $limit = null, $offset = null)
  */
@@ -22,7 +23,16 @@ class UserRepository extends ServiceEntityRepository implements UserLoaderInterf
         parent::__construct($registry, User::class);
     }
 
-    public function getDiaryKeeperJourneysAndStages(string $username): ?DiaryKeeper {
+    public function findOneBy(array $criteria, ?array $orderBy = null)
+    {
+        if (array_key_exists('username', $criteria)) {
+            throw new \RuntimeException('It is unsafe to use findOneBy(username), use loadUserByIdentifier instead');
+        }
+
+        return parent::findOneBy($criteria, $orderBy);
+    }
+
+    public function getDiaryKeeperJourneysAndStagesForTests(string $username): ?DiaryKeeper {
         $user = $this->createQueryBuilder('u')
             ->select('u, dk, h, d, j, s, m, v')
             ->innerJoin('u.diaryKeeper', 'dk')
@@ -33,6 +43,8 @@ class UserRepository extends ServiceEntityRepository implements UserLoaderInterf
             ->leftJoin('s.method', 'm')
             ->leftJoin('s.vehicle', 'v')
             ->where('u.username = :username')
+            // as this is for tests only, and not ones involving training, it's ok to filter on that
+            ->andWhere('u.trainingInterviewer is null')
             ->setParameter('username', $username)
             ->getQuery()
             ->getOneOrNullResult();
@@ -65,9 +77,15 @@ class UserRepository extends ServiceEntityRepository implements UserLoaderInterf
 
     public function loadUserByUsername(string $username): ?User
     {
+        $noLoginPlaceholder = User::NO_LOGIN_PLACEHOLDER;
         try {
             return $this->createQueryBuilder('u')
                 ->where('u.username = :username')
+                ->andWhere(new Expr\Orx([
+                    'u.trainingInterviewer is null',
+                    // this will exclude users created using onboarding training (which are the ones that might clash)
+                    new Expr\Andx(['u.trainingInterviewer is not null', "u.username LIKE '{$noLoginPlaceholder}:%'"])
+                ]))
                 ->setParameter('username', $username)
                 ->getQuery()
                 ->getOneOrNullResult();
@@ -89,6 +107,9 @@ class UserRepository extends ServiceEntityRepository implements UserLoaderInterf
                 ->leftJoin('household.areaPeriod', 'area')
                 ->leftJoin('user.interviewer', 'int')
                 ->where('user.username = :username')
+                // this method is only ever called with the impersonator's identifier
+                // so it's ok to filter on trainingInterviewer
+                ->andWhere('user.trainingInterviewer is null')
                 ->setParameter('username', $identifier)
                 ->getQuery()
                 ->getOneOrNullResult();

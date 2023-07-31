@@ -1,0 +1,10 @@
+<div class="prose-scope">
+{%- apply markdown_to_html -%}
+To get you started and help you understand your role and responsibilities as an NTS Interviewer, the below video will
+explain more about the week-long travel diary household respondents are asked to keep. This video is aimed at
+householders but we ask that you watch it through to the end before continuing.
+{%- endapply -%}
+</div>
+
+{% from 'interviewer/training/macros.html.twig' import trainingVideo %}
+{{ trainingVideo(vimeo_ids.diary_keeper_help, 'Introduction to the digital diary', trainingRecord) }}

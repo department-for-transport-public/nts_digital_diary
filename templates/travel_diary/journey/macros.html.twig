@@ -77,7 +77,7 @@
         {{ _self.stage_row(stage, "distance",
             stage.distanceTravelled.isBlank
                 ? '-'
-                : "distance.#{stage.distanceTravelled.unit}" | trans({value: stage.distanceTravelled.value}, 'messages'),
+                : "distance.#{stage.distanceTravelled.unit}" | trans({value: stage.distanceTravelled.value.toFloat}, 'messages'),
             options | merge({place: 'details'})
         ) }}
         {{ _self.stage_row(stage, "travel-time",
@@ -100,7 +100,7 @@
                     options | merge({place: 'vehicle'})
                 ) }}
                 {{ _self.stage_row(stage, "parking-cost",
-                    (not (stage.parkingCost.cost ?? null) is same as null) ?"stage.view.parking-cost.value" | trans({cost: stage.parkingCost.cost/100}) : '-',
+                    stage.parkingCost | format_cost_or_nil('stage.view.parking-cost.value'),
                     options | merge({place: 'vehicle'})
                 ) }}
             {%- endif -%}
@@ -111,7 +111,7 @@
             ) }}
 
             {{ _self.stage_row(stage, "ticket-cost",
-                (not (stage.ticketCost.cost ?? null) is same as null) ? ("stage.view.ticket-cost.value" | trans({cost: stage.ticketCost.cost/100})) : '-',
+                stage.ticketCost | format_cost_or_nil('stage.view.ticket-cost.value'),
                 options | merge({place: 'ticket-type'})
             ) }}
 

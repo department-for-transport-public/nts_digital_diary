@@ -38,7 +38,14 @@ class StageChangeSetNormalizer extends AbstractChangeSetNormalizer
             'number' => '#',
             'distanceTravelled.value' => 'distance',
             'distanceTravelled.unit' => 'distanceUnit',
+            'parkingCost.cost' => 'parkingCost',
+            'ticketCost.cost' => 'ticketCost',
+            'parkingCost.hasCost' => 'parkingHasCost',
+            'ticketCost.hasCost' => 'ticketHasCost',
         ]);
+
+        $this->decimalToString($object, 'parkingCost');
+        $this->decimalToString($object, 'ticketCost');
 
         $this->whitelistFields($object, [
             '#',
@@ -49,8 +56,10 @@ class StageChangeSetNormalizer extends AbstractChangeSetNormalizer
             'distanceUnit',
             'isDriver',
             'parkingCost',
+            'parkingHasCost',
             'travelTime',
             'ticketCost',
+            'ticketHasCost',
             'ticketType',
             'vehicle',
         ]);

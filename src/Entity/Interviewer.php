@@ -192,6 +192,9 @@ class Interviewer implements UserPersonInterface, ApiIdInterface
             ->isEmpty();
     }
 
+    /**
+     * @return Collection<InterviewerTrainingRecord>
+     */
     public function getTrainingRecordsForModule(string $module): Collection
     {
         return $this->getTrainingRecords()

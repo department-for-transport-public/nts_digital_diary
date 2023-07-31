@@ -6,14 +6,21 @@
 } %}
 
 {% block content %}
+    <div class="prose-scope govuk-!-margin-bottom-7">{{ 'training.dashboard.introduction' | trans | markdown_to_html }}</div>
+
+
     {%- from 'interviewer/training/macros.html.twig' import statusTag -%}
+
+    {% set trainingSections = {
+        1: 'pre-briefing',
+        3: 'in-briefing',
+    } %}
 
     <table class="govuk-table">
         <caption class="govuk-table__caption govuk-table__caption--m">{{ 'training.dashboard.table.caption' | trans }}</caption>
         <thead class="govuk-table__head">
             <tr class="govuk-table__tr">
                 <th scope="col" class="govuk-table__header"></th>
-                <th scope="col" class="govuk-table__header">{{ 'training.module.created' | trans }}</th>
                 <th scope="col" class="govuk-table__header">{{ 'training.module.started' | trans }}</th>
                 <th scope="col" class="govuk-table__header">{{ 'training.module.completed' | trans }}</th>
                 <th scope="col" class="govuk-table__header">{{ 'training.module.status' | trans }}</th>
@@ -21,14 +28,20 @@
         </thead>
         <tbody class="govuk-table__body">
             {% for trainingRecord in trainingRecords %}
-            {# @var trainingRecord \App\Entity\InterviewerTrainingRecord #}
-            <tr class="govuk-table__tr">
-                <th scope="row" class="govuk-table__header"><a href="{{ path('interviewer_training_module_index', {moduleName: trainingRecord.moduleName}) }}">{{ "training.module.number" | trans({number: trainingRecord.moduleNumber}) | capitalize }}: {{ "training.module.title.#{trainingRecord.moduleName}" | trans }}</a></th>
-                <td class="govuk-table__cell">{{ _self.dateOrHyphen(trainingRecord.createdAt) }}</td>
-                <td class="govuk-table__cell">{{ _self.dateOrHyphen(trainingRecord.startedAt) }}</td>
-                <td class="govuk-table__cell">{{ _self.dateOrHyphen(trainingRecord.completedAt) }}</td>
-                <td class="govuk-table__cell">{{ statusTag(trainingRecord) }}</td>
-            </tr>
+                {# @var trainingRecord \App\Entity\InterviewerTrainingRecord #}
+                {% if attribute(trainingSections, trainingRecord.moduleNumber) ?? false %}
+                    <tr class="govuk-table__tr">
+                        <th scope="col" class="govuk-table__header govuk-!-padding-top-5" colspan="5">
+                            {{ "training.dashboard.table.section.#{attribute(trainingSections, trainingRecord.moduleNumber)}" | trans }}
+                        </th>
+                    </tr>
+                {% endif %}
+                <tr class="govuk-table__tr">
+                    <th scope="row" class="govuk-table__header govuk-!-padding-left-2"><a class="govuk-link" href="{{ path('interviewer_training_module_index', {moduleName: trainingRecord.moduleName}) }}">{{ "training.module.number" | trans({number: trainingRecord.moduleNumber}) | capitalize }}: {{ "training.module.title.#{trainingRecord.moduleName}" | trans | capitalize }}</a></th>
+                    <td class="govuk-table__cell">{{ _self.dateOrHyphen(trainingRecord.startedAt) }}</td>
+                    <td class="govuk-table__cell">{{ _self.dateOrHyphen(trainingRecord.completedAt) }}</td>
+                    <td class="govuk-table__cell">{{ statusTag(trainingRecord) }}</td>
+                </tr>
             {% endfor %}
         </tbody>
     </table>

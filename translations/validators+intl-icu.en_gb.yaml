@@ -127,7 +127,10 @@ wizard.on-boarding:
     household-number:
       not-blank: Enter the household number
       not-in-range: The household number must be between 1 and 99 inclusive
-    start-date.not-blank: Enter the diary week start date
+    start-date:
+      not-blank: Enter the diary week start date
+      too-early: This date is too early. Enter a date in the correct range.
+      too-late: This date is too late. Enter a date in the correct range.
     purpose-form-group.not-blank: Select a test group
   vehicle:
     name:
@@ -161,6 +164,11 @@ wizard.share-journey:
     cost.positive: Enter a positive parking cost for {name}
     cost.not-null: Enter the parking cost for {name}
 
+wizard.split-journey:
+  midpoint-choice.not-null: Enter the midpoint of the journey
+  midpoint.invalid-choice: Enter a valid midpoint
+  midpoint-other.not-null: Specify the location
+
 wizard.stage:
   adult-count:
     at-least-1: The number of adults must be 1 or more
@@ -193,12 +201,27 @@ wizard.stage:
     other-public.not-empty: provide details of the public method of transport
   parking-cost:
     has-cost.not-null: Select an option
-    cost.positive: Enter a positive amount
-    cost.not-null: Enter the amount you paid
+    cost:
+      not-null: Enter the amount you paid
+      positive: Enter a positive amount
+      too-big: "Parking cost must be less than {max, number}"
+      too-many-places: >-
+        Parking cost cannot have more than {scale, plural,
+          one     {1 decimal place}
+          other   {# decimal places}
+        }
+
   ticket-cost:
     has-cost.not-null: Select an option
-    cost.positive: Ticket cost must be a positive amount
-    cost.not-null: Enter the cost of the ticket
+    cost:
+      not-null: Enter the cost of the ticket
+      positive: Ticket cost must be a positive amount
+      too-big: "Ticket cost must be less than {max, number}"
+      too-many-places: >-
+        Ticket cost cannot have more than {scale, plural,
+          one     {1 decimal place}
+          other   {# decimal places}
+        }
   ticket-type.not-null: Enter ticket details
   travel-time:
     positive: Travel time must be greater than zero
@@ -216,3 +239,4 @@ wizard.return-journey:
 
 vehicle.odometer-readings:
     end-not-less-than-start: This cannot be less than the first odometer reading
+    units-required: Select a unit

@@ -44,7 +44,7 @@ abstract class AbstractFormWizardController extends AbstractController
      * @throws Exception
      * @throws ExceptionInterface
      */
-    protected function doWorkflow(Request $request, $place = null, array $additionalViewData = []): Response
+    protected function doWorkflow(Request $request, $place = null, array|\Closure $additionalViewData = []): Response
     {
         $formWizardState = $this->getState();
         $initialPlace = new Place($this->formWizardManager->getInitialPlace($formWizardState));
@@ -75,7 +75,7 @@ abstract class AbstractFormWizardController extends AbstractController
 
         /** @var Form | FormInterface $form */
         $cancelRedirectResponse = $this->getCancelRedirectResponse();
-        $form = $this->formWizardManager->createForm($formWizardState, $cancelRedirectResponse ? $cancelRedirectResponse->getTargetUrl() : null);
+        $form = $this->formWizardManager->createForm($formWizardState, $cancelRedirectResponse?->getTargetUrl());
         $form->handleRequest($request);
         if ($this->eventDispatcher ?? false) {
             $this->eventDispatcher->dispatch(new FormWizardFormDataEvent($form->getData()), FormWizardFormDataEvent::NAME);
@@ -96,6 +96,15 @@ abstract class AbstractFormWizardController extends AbstractController
         }
 
         $stateMetadata = $this->formWizardManager->getStateMetadata($formWizardState);
+
+        if ($additionalViewData instanceof \Closure) {
+            $additionalViewData = $additionalViewData($formWizardState);
+
+            if (!is_array($additionalViewData)) {
+                throw new \RuntimeException('$additionalViewData closure must return an array');
+            }
+        }
+
         return $this->render($stateMetadata['template'], array_merge($additionalViewData, $stateMetadata['view_data'], [
             'form' => $form->createView(),
             'subject' => $formWizardState->getSubject(),
@@ -124,7 +133,7 @@ abstract class AbstractFormWizardController extends AbstractController
         $response = $this->getRedirectResponse($place);
         $url = $response->getTargetUrl();
 
-        if (strpos($url, '#') === false) {
+        if (!str_contains($url, '#')) {
             $response->setTargetUrl($url . '#');
         }
 

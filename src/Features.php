@@ -22,6 +22,7 @@ class Features
     public const PENTEST_FIXTURES = 'pentest-fixtures';
     public const SMARTLOOK_SESSION_RECORDING = 'smartlook-session-recording';
     public const REVEAL_INVITE_LINKS = 'reveal-invite-links';
+    public const SHOW_ONBOARDING_CODES = 'show-onboarding-codes';
 
     private static array $enabledFeatures;
 

@@ -88,6 +88,12 @@ class BasicMetadataSubscriber implements EventSubscriber
             return 'system';
         }
 
+        // while not actually relevant, this is needed to prevent FK integrity issues when deleting
+        // an interviewer who has training modules with shared journeys
+        if ($this->authorizationChecker->isGranted('ROLE_ADMIN')) {
+            return "admin:{$user->getUserIdentifier()}";
+        }
+
         if (
             (!$user instanceof User || ($originalUser && !$originalUser instanceof User))
             && (!$user instanceof ApiUser)
@@ -99,7 +105,7 @@ class BasicMetadataSubscriber implements EventSubscriber
 
         if ($originalUser) {
             // The user retrieved from originalToken->getUser() isn't fully hydrated, so we need to re-fetch it...
-            $originalUser = $this->userRepository->findOneBy(['username' => $originalUser->getUserIdentifier()]);
+            $originalUser = $this->userRepository->loadUserByIdentifier($originalUser->getUserIdentifier());
             if ($this->impersonatorAuthorizationChecker->isGranted(User::ROLE_INTERVIEWER)) {
                 return "interviewer:{$originalUser->getInterviewer()->getSerialId()}";
             } else if ($this->impersonatorAuthorizationChecker->isGranted(User::ROLE_DIARY_KEEPER)) {

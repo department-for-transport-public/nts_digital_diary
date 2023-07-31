@@ -1,0 +1,28 @@
+{%- trans_default_domain 'on-boarding' -%}
+
+<table class="govuk-table">
+    <caption class="govuk-table__caption govuk-table__caption--m">{{ "dashboard.household-vehicles" | trans }}</caption>
+    <thead class="govuk-table__head">
+    <tr class="govuk-table__row">
+        <th scope="col" class="govuk-table__header">{{ "vehicle.form.capi-number.label" | trans }}</th>
+        <th scope="col" class="govuk-table__header">{{ "vehicle.form.name.label" | trans }}</th>
+        <th scope="col" class="govuk-table__header">{{ "vehicle.form.method.label" | trans }}</th>
+        <th scope="col" class="govuk-table__header">{{ "vehicle.form.primary-driver.label" | trans }}</th>
+    </tr>
+    </thead>
+    <tbody class="govuk-table__body">
+    {% for vehicle in app.user.household.vehicles %}
+        {# @var vehicle \App\Entity\Vehicle #}
+        <tr class="govuk-table__row">
+            <th scope="row" class="govuk-table__cell">{{ vehicle.capiNumber }}</th>
+            <td class="govuk-table__cell">{{ vehicle.friendlyName }}</td>
+            <td class="govuk-table__cell">{{ "stage.method.choices.#{vehicle.method.descriptionTranslationKey}" | trans([], 'travel-diary') }}</td>
+            <td class="govuk-table__cell">{{ vehicle.primaryDriver.name }}</td>
+        </tr>
+    {% else %}
+        <tr class="govuk-table__row">
+            <td class="govuk-table__cell" colspan="4">{{ "vehicle.form.no-vehicles" | trans }}</td>
+        </tr>
+    {% endfor %}
+    </tbody>
+</table>

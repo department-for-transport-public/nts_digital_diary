@@ -52,6 +52,21 @@ class DeleteInterviewerConfirmAction extends AbstractConfirmAction
         foreach ($this->subject->getAreaPeriods() as $areaPeriod) {
             $this->subject->removeAreaPeriod($areaPeriod);
         }
+        foreach ($this->subject->getTrainingAreaPeriods() as $areaPeriod) {
+            foreach ($areaPeriod->getHouseholds() as $household) {
+                foreach ($household->getDiaryKeepers() as $diaryKeeper) {
+                    foreach ($diaryKeeper->getDiaryDays() as $day) {
+                        foreach ($day->getJourneys() as $journey) {
+                            foreach ($journey->getSharedTo() as $item) {
+                                $journey->removeSharedTo($item);
+                            }
+                        }
+                    }
+                }
+            }
+        }
+
+
         $this->entityManager->flush();
         $this->entityManager->remove($this->subject->getUser());
         $this->entityManager->remove($this->subject);

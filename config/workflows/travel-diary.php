@@ -35,7 +35,7 @@ return static function (ContainerConfigurator $container) {
                         'name' => DiaryKeeper::TRANSITION_START,
                     ],
                     [
-                        'from' => DiaryKeeper::STATE_IN_PROGRESS,
+                        'from' => [DiaryKeeper::STATE_NEW, DiaryKeeper::STATE_IN_PROGRESS],
                         'to' => DiaryKeeper::STATE_COMPLETED,
                         'name' => DiaryKeeper::TRANSITION_COMPLETE,
                     ],
@@ -45,7 +45,7 @@ return static function (ContainerConfigurator $container) {
                         'name' => DiaryKeeper::TRANSITION_UNDO_COMPLETE,
                     ],
                     [
-                        'from' => [DiaryKeeper::STATE_NEW, DiaryKeeper::STATE_IN_PROGRESS, DiaryKeeper::STATE_COMPLETED],
+                        'from' => DiaryKeeper::STATE_COMPLETED,
                         'to' => DiaryKeeper::STATE_APPROVED,
                         'name' => DiaryKeeper::TRANSITION_APPROVE,
                     ],

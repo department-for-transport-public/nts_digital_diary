@@ -3,6 +3,8 @@
 namespace App\FormWizard;
 
 use App\Entity\IdTrait;
+use App\Utility\Comparator\Comparator;
+use App\Utility\Comparator\Exception\UnsupportedComparisonException;
 use Doctrine\Common\Collections\Collection;
 use Doctrine\Common\Util\ClassUtils;
 use Doctrine\ORM\EntityManagerInterface;
@@ -12,12 +14,12 @@ use Symfony\Component\PropertyAccess\PropertyAccessor;
 
 class PropertyMerger
 {
-    private EntityManagerInterface $entityManager;
-    private PropertyAccessor $propertyAccess;
+    protected PropertyAccessor $propertyAccess;
 
-    public function __construct(EntityManagerInterface $entityManager)
-    {
-        $this->entityManager = $entityManager;
+    public function __construct(
+        protected Comparator $comparator,
+        protected EntityManagerInterface $entityManager,
+    ) {
         $this->propertyAccess = PropertyAccess::createPropertyAccessor();
     }
 
@@ -106,9 +108,12 @@ class PropertyMerger
             $overlayProperty = $this->checkAndReloadFromDatabase($overlayProperty);
         }
 
-        if ($overlayProperty instanceof \DateTimeInterface && $overlayProperty == $this->propertyAccess->getValue($entity, $propertyPath)) {
-            return; // Skip replacing DateTimes with an equivalent value
-        }
+        try {
+            $entityProperty = $this->propertyAccess->getValue($entity, $propertyPath);
+            if ($this->comparator->areEqual($overlayProperty, $entityProperty)) {
+                return; // No need to replace, as the properties are equal (or hold equivalent values)
+            }
+        } catch (UnsupportedComparisonException) {}
 
         if ($overlayProperty instanceof PropertyMergerNonEntityInterface) {
             $overlayProperty = $this->mergeNonEntity($this->propertyAccess->getValue($entity, $propertyPath), $overlayProperty);

@@ -2,7 +2,7 @@
 {% trans_default_domain "interviewer" %}
 
 {%- block modukeHeading -%}
-    {{- "training.module.number" | trans({number: trainingRecord.moduleNumber}) | capitalize }}: {{ "training.module.title.#{trainingRecord.moduleName}" | trans -}}
+    {{- "training.module.number" | trans({number: trainingRecord.moduleNumber}) | capitalize }}: {{ "training.module.title.#{trainingRecord.moduleName}" | trans | capitalize -}}
 {%- endblock -%}
 
 {%- block pageTitlePrefix -%}
@@ -30,23 +30,12 @@
     {%- from '@GhostGovUkFrontend/components/macros.html.twig' import summaryListRow -%}
     {%- from 'interviewer/training/macros.html.twig' import statusTag -%}
 
-    <div class="govuk-summary-list">
-{#
-        {{- summaryListRow('training.module.created' | trans, trainingRecord.createdAt | date(format_date_default)) -}}
-        {%- if trainingRecord.startedAt -%}{{- summaryListRow('training.module.started' | trans, trainingRecord.startedAt | date(format_date_default)) -}}{%- endif -%}
-        {%- if trainingRecord.completedAt -%}{{- summaryListRow('training.module.completed' | trans, trainingRecord.completedAt | date(format_date_default)) -}}{%- endif -%}
-#}
+    <div class="govuk-summary-list" id="training-module-status">
         {{- summaryListRow('training.module.status' | trans, statusTag(trainingRecord)) -}}
+    </div>
 
     {%- set formAction = false -%}
     {%- set buttonText = false -%}
-    {%- if is_granted('CAN_START', trainingRecord) -%}
-        {%- set formAction = path('interviewer_training_module_start', {moduleName: trainingRecord.moduleName}) -%}
-        {%- set buttonText = "Mark module as started" -%}
-    {%- elseif is_granted('CAN_COMPLETE', trainingRecord) -%}
-        {%- set formAction = path('interviewer_training_module_complete', {moduleName: trainingRecord.moduleName}) -%}
-        {%- set buttonText = "Mark module as complete" -%}
-    {%- endif -%}
 
     {%- if formAction -%}
         <form method="post" action="{{ formAction }}" class="govuk-!-margin-top-1">
@@ -56,5 +45,4 @@
         </form>
     {%- endif -%}
 
-    </div>
 {%- endmacro -%}

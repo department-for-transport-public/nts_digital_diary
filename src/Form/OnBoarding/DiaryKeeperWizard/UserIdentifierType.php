@@ -36,13 +36,18 @@ class UserIdentifierType extends AbstractType
             'label' => "diary-keeper.user-identifier.media-type.label",
             'help' => "diary-keeper.user-identifier.media-type.help",
             'label_attr' => ['class' => 'govuk-label--m'],
-
             'choices' => [
-                'diary-keeper.user-identifier.media-type.choices.digital' => DiaryKeeper::MEDIA_TYPE_DIGITAL,
-                'diary-keeper.user-identifier.media-type.choices.paper' => DiaryKeeper::MEDIA_TYPE_PAPER,
+                'diary-keeper.user-identifier.media-type.choices.digital.label' => DiaryKeeper::MEDIA_TYPE_DIGITAL,
+                'diary-keeper.user-identifier.media-type.choices.paper.label' => DiaryKeeper::MEDIA_TYPE_PAPER,
             ],
             'choice_options' => [
-                'diary-keeper.user-identifier.media-type.choices.digital' => ['conditional_form_name' => 'user'],
+                'diary-keeper.user-identifier.media-type.choices.digital.label' => [
+                    'conditional_form_name' => 'user',
+                    'help' => 'diary-keeper.user-identifier.media-type.choices.digital.help',
+                ],
+                'diary-keeper.user-identifier.media-type.choices.paper.label' => [
+                    'help' => 'diary-keeper.user-identifier.media-type.choices.paper.help',
+                ],
             ],
         ]);
 
@@ -56,14 +61,19 @@ class UserIdentifierType extends AbstractType
             $data = $event->getData();
             $form = $event->getForm();
 
+            $isAdult = $data->getIsAdult();
+
             $form->get('user')
                 ->add('username', InputType::class, [
                     'label' => "diary-keeper.user-identifier.user-identifier.label",
-                    'help' => "diary-keeper.user-identifier.user-identifier.help",
+                    'help' => $isAdult ?
+                        "diary-keeper.user-identifier.user-identifier.help" :
+                        "diary-keeper.user-identifier.user-identifier.child-help",
+                    'help_html' => 'markdown',
                     'label_attr' => ['class' => 'govuk-label--s'],
                     'attr' => ['class' => 'govuk-input--width-20'],
                     'property_path' => 'username',
-                    'row_attr' => ['class' => 'govuk-!-margin-top-7'],
+                    'row_attr' => ['class' => 'govuk-!-margin-top-4'],
                 ]);
 //                ->add('consent', CheckboxType::class, [
 //                    'label' => "diary-keeper.user-identifier.consent.label",

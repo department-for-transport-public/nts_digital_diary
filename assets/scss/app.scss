@@ -42,3 +42,60 @@ body {
         @include govuk-responsive-margin(3, "bottom");
     }
 }
+
+.nts-interviewer-household-compare {
+    main {
+        padding-top: govuk-spacing(2);
+    }
+
+    #day-links li {
+        @include govuk-font(14);
+
+        span {
+            @include govuk-font(14, bold);
+        }
+    }
+
+    .govuk-tabs__list-item {
+        @include govuk-font(16);
+    }
+
+    .govuk-tabs__panel {
+        padding-top: govuk-spacing(1);
+        padding-bottom: govuk-spacing(1);
+    }
+
+    .govuk-table__header {
+        @include govuk-font(14, bold);
+    }
+
+    .govuk-table__cell {
+        @include govuk-font(14);
+    }
+    .govuk-tag {
+        font-size: 0.9em;
+        //@include govuk-font(14, bold);
+    }
+
+    .govuk-table__cell, .govuk-table__header {
+        &.govuk-visible-from-wide {
+            display: none;
+        }
+        &.govuk-hidden-from-wide {
+            display: table-cell;
+        }
+
+        @include govuk-media-query($from: 1400px) {
+            &.govuk-visible-from-wide {
+                display: table-cell;
+            }
+            &.govuk-hidden-from-wide {
+                display: none;
+            }
+        }
+
+    }
+    .nowrap {
+        white-space: nowrap;
+    }
+}

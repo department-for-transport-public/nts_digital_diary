@@ -100,7 +100,6 @@ class InterviewerController extends AbstractController
                     $flashBag->add(NotificationBanner::FLASH_BAG_TYPE, $banner);
 
                     $entityManager->persist($interviewer);
-                    $accountCreationHelper->sendAccountCreationEmail($interviewer);
                 } /* else {
                     // TODO: handle changing of interviewer email address
                     if ($originalUsername !== ($newUsername = $interviewer->getUser()->getUsername())) {

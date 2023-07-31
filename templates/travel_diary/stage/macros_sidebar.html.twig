@@ -21,7 +21,7 @@
     {%- if stage.distanceTravelled is not null -%}
         <h3 class="{{ h3class }} govuk-!-margin-bottom-1">{{ "#{translation_prefix}.title.distance-and-time" | trans }}</h3>
         <p class="{{ bodyClass }}">
-            {{- "distance.#{stage.distanceTravelled.unit}" | trans({value: stage.distanceTravelled.value}, 'messages') -}}
+            {{- "distance.#{stage.distanceTravelled.unit}" | trans({value: stage.distanceTravelled.value.toFloat}, 'messages') -}}
             {{- ' / ' -}}
             {{- "stage.view.travel-time.value" | trans({minutes: stage.travelTime}) }}
         </p>
@@ -51,7 +51,7 @@
     {%- if (stage.parkingCost.cost ?? null) is not null -%}
         <h3 class="{{ h3class }} govuk-!-margin-bottom-1">{{ "#{translation_prefix}.title.parking-cost" | trans }}</h3>
         <p class="{{ bodyClass }}">
-            {{ "stage.view.parking-cost.value" | trans({cost: stage.parkingCost.cost/100}) }}
+            {{ stage.parkingCost | format_cost_or_nil("stage.view.parking-cost.value") }}
         </p>
     {%- endif -%}
 {%- endmacro -%}

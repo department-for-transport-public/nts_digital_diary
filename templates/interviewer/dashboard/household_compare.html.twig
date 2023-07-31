@@ -1,0 +1,49 @@
+{% extends "interviewer/dashboard/base.html.twig" %}
+
+{% set htmlClasses = "govuk-full-width nts-interviewer-household-compare" %}
+{% set areaPeriod = household.areaPeriod %}
+{% set action = 'compare-household' %}
+
+{% trans_default_domain "interviewer" %}
+
+{% set title_translation_key = "household.page-title" %}
+{% set title_translation_parameters = {
+    serial: household.serialNumber
+} %}
+{% set heading_class = "govuk-heading-l govuk-!-margin-bottom-2" %}
+
+{% block content %}
+    {# list of day links (current not linked / highlighted) #}
+    <ul class="govuk-list govuk-list--inline" id="day-links">
+        {% for day in 1..7 %}
+            <li>
+                {% set dayText %}{{ 'diary-keeper.day' | trans({dayNumber: day, date: household.diaryKeepers.first.diaryDayByNumber(day).date | date(format_date_short_with_dow)}) }}{% endset %}
+                {% if day == currentDay %}
+                    <span>{{ dayText }}</span>
+                {% else %}
+                    <a class="govuk-link" href="{{ path('interviewer_household_compare_day', {household: household.id, day: day}) }}">
+                        {{ dayText }}
+                    </a>
+                {% endif %}
+            </li>
+        {% endfor %}
+    </ul>
+
+    {# tabs with Diary keepers #}
+    <div class="govuk-tabs" data-module="govuk-tabs" id="diary-keepers">
+        {% from '@GhostGovUkFrontend/components/macros.html.twig' import tabsHead %}
+        {%- set tabs = {} -%}
+        {%- for dk in household.diaryKeepers -%}
+            {%- set tabs = tabs | merge({(dk.name): "tab-diary-keeper-#{dk.number}"}) -%}
+        {%- endfor -%}
+        {{ tabsHead(tabs) }}
+        {% from 'interviewer/dashboard/macros.html.twig' import dayView %}
+        {%- for diaryKeeper in household.diaryKeepers -%}
+            {# @var diaryKeeper \App\Entity\DiaryKeeper #}
+            <div class="govuk-tabs__panel{% if not loop.first %} govuk-tabs__panel--hidden{% endif %}" id="tab-diary-keeper-{{ diaryKeeper.number }}">
+                <a class="govuk-link" href="{{ path('traveldiary_dashboard_day', {_switch_user: diaryKeeper.user.userIdentifier, dayNumber: currentDay}) }}">{{ 'household.impersonate' | trans }}</a>
+                {{ dayView(diaryKeeper.diaryDayByNumber(currentDay), {showCaptions: false, tableClass: ''}) }}
+            </div>
+        {%- endfor -%}
+    </div>
+{% endblock %}

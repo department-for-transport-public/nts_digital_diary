@@ -95,7 +95,7 @@ format: # Unused??
     default: 'd/m/Y'
 
 home:
-  page-title: National Travel Diary
+  page-title: National Travel Survey Diary
   intro: Use this service to complete your travel diary.
   session:
     copy: Sessions expire after 1 hour of inactivity. A warning will be displayed after 55 minutes of inactivity, prompting you to extend the session by another hour.
