@@ -19,6 +19,7 @@ class Features
     public const CHECK_LETTER = 'check-letter';
     public const DEMO_FIXTURES = 'demo-fixtures';
     public const FORM_ERROR_LOG = 'form-error-log';
+    public const MILOMETER = 'milometer';
     public const PENTEST_FIXTURES = 'pentest-fixtures';
     public const SMARTLOOK_SESSION_RECORDING = 'smartlook-session-recording';
     public const REVEAL_INVITE_LINKS = 'reveal-invite-links';
@@ -52,7 +53,7 @@ class Features
     }
 
 
-    protected static function processFeatures()
+    protected static function processFeatures(): void
     {
         self::$enabledFeatures = array_merge(self::detectAutoEnvFeatures(), self::detectAppFeatures());
     }
@@ -74,7 +75,7 @@ class Features
         $oClass = new ReflectionClass(__CLASS__);
         $map = $oClass->getConstants();
         unset($map['AUTO_ENV_MAP']);
-        return array_filter($map, fn($v) => !preg_match('/^AUTOENV-/', $v));
+        return array_filter($map, fn($v) => !str_starts_with($v, 'AUTOENV-'));
     }
 
     private static function detectAutoEnvFeatures(): array

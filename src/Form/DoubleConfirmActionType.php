@@ -10,7 +10,7 @@ use Symfony\Component\Validator\Constraints\NotBlank;
 
 class DoubleConfirmActionType extends AbstractType
 {
-    public function getParent()
+    public function getParent(): ?string
     {
         return ConfirmActionType::class;
     }

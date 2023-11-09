@@ -4,10 +4,10 @@ namespace App\Entity\Journey;
 
 use App\Entity\BasicMetadataInterface;
 use App\Entity\BasicMetadataTrait;
-use App\Entity\CostOrNil;
-use App\Entity\Distance;
+use App\Entity\Embeddable\CostOrNil;
+use App\Entity\Embeddable\Distance;
 use App\Entity\IdTrait;
-use App\Entity\PropertyChangeLoggable;
+use App\Entity\PropertyChangeLoggableInterface;
 use App\Entity\Vehicle;
 use App\Repository\Journey\StageRepository;
 use App\Validator\Constraints as AppAssert;
@@ -23,7 +23,7 @@ use Symfony\Component\Validator\Context\ExecutionContextInterface;
  *
  * @Assert\Callback({JourneySharingValidator::class, "validateStage"}, groups={"wizard.share-journey.driver-and-parking", "wizard.share-journey.ticket-type-and-cost"})
  */
-class Stage implements PropertyChangeLoggable, BasicMetadataInterface
+class Stage implements PropertyChangeLoggableInterface, BasicMetadataInterface
 {
     use IdTrait;
     use BasicMetadataTrait;
@@ -82,7 +82,7 @@ class Stage implements PropertyChangeLoggable, BasicMetadataInterface
      */
     public function validateMethodOther(ExecutionContextInterface $context)
     {
-        if ($this->getMethod() && !$this->getMethod()->getCode()) {
+        if ($this->getMethod() && $this->getMethod()->isOtherRequired()) {
             $transKey = $this->getMethod()->getDescriptionTranslationKey();
             if (!$this->getMethodOther()) {
                 $context->buildViolation("wizard.stage.method-other.$transKey.not-empty")
@@ -113,6 +113,11 @@ class Stage implements PropertyChangeLoggable, BasicMetadataInterface
      *     groups={"wizard.stage.details", "wizard.repeat-journey.stage-details", "wizard.return-journey.stage-details"},
      *     message="wizard.stage.travel-time.positive"
      * )
+     * @Assert\Range(
+     *     groups={"wizard.stage.details", "wizard.repeat-journey.stage-details", "wizard.return-journey.stage-details"},
+     *     maxMessage="common.number.max",
+     *     max=10000
+     * )
      */
     private ?int $travelTime;
 
@@ -126,6 +131,11 @@ class Stage implements PropertyChangeLoggable, BasicMetadataInterface
      *     groups={"wizard.stage.details", "wizard.repeat-journey.stage-details", "wizard.return-journey.stage-details"},
      *     message="wizard.stage.adult-count.positive-or-zero"
      * )
+     * @Assert\Range(
+     *     groups={"wizard.stage.details", "wizard.repeat-journey.stage-details", "wizard.return-journey.stage-details"},
+     *     maxMessage="common.number.max",
+     *     max=1000
+     * )
      */
     private ?int $adultCount;
 
@@ -138,6 +148,11 @@ class Stage implements PropertyChangeLoggable, BasicMetadataInterface
      * @Assert\PositiveOrZero(
      *     groups={"wizard.stage.details", "wizard.repeat-journey.stage-details", "wizard.return-journey.stage-details"},
      *     message="wizard.stage.child-count.positive-or-zero"
+     * )
+     * @Assert\Range(
+     *     groups={"wizard.stage.details", "wizard.repeat-journey.stage-details", "wizard.return-journey.stage-details"},
+     *     maxMessage="common.number.max",
+     *     max=1000
      * )
      */
     private ?int $childCount;
@@ -215,6 +230,11 @@ class Stage implements PropertyChangeLoggable, BasicMetadataInterface
      * @ORM\Column(type="integer", nullable=true)
      * @Assert\NotBlank(groups="wizard.ticket-cost-and-boardings", message="wizard.stage.boarding-count.not-blank")
      * @Assert\Positive(groups="wizard.ticket-cost-and-boardings", message="wizard.stage.boarding-count.positive")
+     * @Assert\Range(
+     *      groups="wizard.ticket-cost-and-boardings",
+     *      maxMessage="common.number.max",
+     *      max=1000
+     *  )
      */
     private ?int $boardingCount;
 
@@ -343,7 +363,7 @@ class Stage implements PropertyChangeLoggable, BasicMetadataInterface
     {
         $sourceJourney = $this->getJourney()->getSharedFrom();
         $matchingStagesBeingAdded = $sourceJourney->getSharedToJourneysBeingAdded()->map(fn(Journey $j) => $j->getStageByNumber($this->getNumber()));
-        return array_sum($matchingStagesBeingAdded->map(fn(Stage $s) => $s->isDriver ? 1 : 0)->toArray());
+        return array_sum($matchingStagesBeingAdded->map(fn(Stage $s) => $s->getIsDriver() ? 1 : 0)->toArray());
     }
 
     public function getParkingCost(): ?CostOrNil

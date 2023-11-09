@@ -2,7 +2,7 @@
 
 namespace App\Twig;
 
-use App\Entity\CostOrNil;
+use App\Entity\Embeddable\CostOrNil;
 use Brick\Math\BigDecimal;
 use Symfony\Contracts\Translation\TranslatorInterface;
 use Twig\Extension\AbstractExtension;

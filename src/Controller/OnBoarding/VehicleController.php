@@ -3,7 +3,7 @@
 namespace App\Controller\OnBoarding;
 
 use App\Entity\Household;
-use App\Entity\OtpUserInterface;
+use App\Security\OneTimePassword\OtpUserInterface;
 use App\Entity\Vehicle;
 use App\Form\OnBoarding\VehicleType;
 use App\Utility\ConfirmAction\OnBoarding\DeleteVehicleConfirmAction;

@@ -15,20 +15,20 @@ login:
 dashboard:
   page-title: Household summary
 
-  add-diary-keeper: Add a diary keeper
+  add-diary-keeper: Add a household member
   add-vehicle: Add a vehicle
   complete-onboarding: Submit household
-  diary-keepers: Diary Keepers
+  diary-keepers: Household members
   household-vehicles: Household vehicles
   vehicle-details: "{method} (primary driver: {name})"
-  no-diary-keepers: No diary keepers
+  no-diary-keepers: No members
   no-vehicles: No vehicles
 
 diary-keeper:
   added.notification-banner:
-    title: Added Diary Keeper
-    heading: Added Diary Keeper
-    content: "Diary Keeper #{number} {name} successfully added"
+    title: Added household member
+    heading: Added household member
+    content: "Household member #{number} {name} successfully added"
   capi-number: 'CAPI #: {number}'
   label: >-
     {hasEmail, select,
@@ -37,33 +37,33 @@ diary-keeper:
     }
 
 diary-keeper.add-another:
-  page-title: Do you need to add another diary keeper?
+  page-title: Do you need to add another household member?
   label: ''
-  help: You can still add more later even if you select 'No'
+  help: ''
 
 diary-keeper.delete:
-  page-title: Delete diary keeper - {name}
+  page-title: Delete household member - {name}
   delete-action-suffix: "{name}"
   confirm-label: "Delete {name}"
   confirmed-notification:
-    heading: "Diary keeper deleted"
-    content: "The diary keeper {name} has been deleted"
+    heading: "Household member deleted"
+    content: "The household member {name} has been deleted"
   warning-notification:
     title: Warning
-    heading: Cannot delete Diary Keeper
+    heading: Cannot delete household member
     content:
-      header: '"{deleteTargetName}" cannot be deleted as it would leave the following Diary Keepers inaccessible:'
-      footer: You will need to either add additional access methods to these Diary Keepers, or remove them first.
+      header: '"{deleteTargetName}" cannot be deleted as it would leave the following household members inaccessible:'
+      footer: You will need to either add additional access methods to these household members, or remove them first.
 
 diary-keeper.details:
   page-title: >-
     {activity, select,
-        editing     {Edit diary keeper details}
-        other       {Add diary keeper details}
+        editing     {Edit household member — details}
+        other       {Add household member — details}
     }
   name:
     label: Name
-    help: A name to identify each diary keeper within the household, e.g. first name
+    help: A name to identify each household member, e.g. first name
   number:
     label: Number
     help: The CAPI person number
@@ -74,8 +74,8 @@ diary-keeper.details:
 diary-keeper.user-identifier:
   page-title: >-
     {activity, select,
-        editing     {Edit diary keeper identity}
-        other       {Add diary keeper identity}
+        editing     {Edit household member — identity}
+        other       {Add household member — identity}
     }
   media-type:
     label: How will this person be recording their travel diary?
@@ -85,10 +85,10 @@ diary-keeper.user-identifier:
         label: Digital diary
         help: ''
       paper:
-        label: Interviewer completing on diary keeper's behalf
-        help: Only use this option if the diary keeper requests digital diary entry by the interviewer
+        label: Interviewer completing on household member's behalf
+        help: Only use this option if the household member requests digital diary entry by the interviewer
   consent:
-    label: This diary keeper is over 12 years old and consents to receive notifications in relation to this survey
+    label: This household member is aged 11 years or over and consents to receive notifications in relation to this survey
     help: ''
   help: Each household member must have their own travel diary, accessed via their own email address and login, or via a proxy. Some householders may require assistance, in which case they can have both their own login and a proxy.
   user-identifier:
@@ -99,25 +99,25 @@ diary-keeper.user-identifier:
         other {(optional)}
       }
     help: >-
-      Enter the email address that this diary keeper will use to sign in to the travel diary.
+      Enter the email address that this household member will use to sign in to the travel diary.
       {onlyDiaryKeeper, select,
         1  {}
         other {If they will not be filling in their own diary, this field can be left blank.}
       }
     child-help: >-
-      **Reminder:** Only participants over the age of 12 may complete their own diary.  
+      **Reminder:** Only participants aged 11 years or over may complete their own diary.  
         
-      Enter the email address that this diary keeper will use to sign in to the travel diary.
+      Enter the email address that this household member will use to sign in to the travel diary.
       {onlyDiaryKeeper, select,
         1  {}
         other {If they will not be filling in their own diary, this field can be left blank.}
       }
   proxy:
     label: 'Choose proxies (optional)'
-    help: Select who will act as a proxy for this diary keeper. Anyone acting as a proxy will be able to access this diary through their own login.
+    help: Select who will act as a proxy for this household member. Anyone acting as a proxy will be able to access this diary through their own login.
 
 diary-keeper.view:
-  page-title: "Diary Keeper #{number} - {name}"
+  page-title: "Household member #{number} - {name}"
   back: Back to summary
   summary:
     name: Name
@@ -137,17 +137,25 @@ diary-keeper.view:
 
 household.details:
   page-title: Household details
-  help: "These details are extremely important and are used to match your travel diaries to your interview data. You must ensure that these details have been confirmed by your interviewer."
+  help: >-
+    These details are extremely important and will be used to match completed travel diaries to the interview/CAPI data.
+
+
+    ![Household serial number]({householdSerialImageUrl})
+    
+
+    The details required below are the same as those found on a paper diary.
   change-action-suffix: household details
   area-number.label: Area number
+  household-serial.label: Household serial
   address-number:
-    label: Address number
+    label: Add
     help: ''
   check-letter:
-    label: Check letter
-    help: This is the letter that you would have previously entered into the CL box on the paper diary
+    label: CL
+    help: ''
   household-number:
-    label: Household number
+    label: H
     help: ''
   diary-start:
     label: Diary week start date
@@ -175,7 +183,7 @@ vehicle.add:
   cant-add-notification:
     title: Add a vehicle
     heading: Can't add a vehicle
-    content: Vehicles can't be added until there is at least one diary keeper who can act as primary driver
+    content: Vehicles can't be added until there is at least one household member who can act as primary driver
 
 vehicle.delete:
   page-title: 'Delete vehicle: "{name}"?'
@@ -206,7 +214,8 @@ vehicle.form:
     help: e.g. "Fred's car" or "Blue Micra"
   primary-driver:
     label: Primary driver
-    help: This person will need to enter the vehicle's odometer reading at the start and end of the diary week
+    milometer-help: This person will need to enter the vehicle's milometer reading at the start and end of the diary week
+    help: ''
   capi-number:
     label: CAPI number
     help: ''

@@ -2,7 +2,7 @@
 
 namespace App\Validator\Constraints;
 
-use App\Entity\CostOrNil as CostOrNilEntity;
+use App\Entity\Embeddable\CostOrNil as CostOrNilEntity;
 use App\Form\CostOrNilType;
 use Brick\Math\BigDecimal;
 use Symfony\Component\Validator\Constraint;

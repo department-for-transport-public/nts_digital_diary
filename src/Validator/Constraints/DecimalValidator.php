@@ -28,7 +28,7 @@ class DecimalValidator extends ConstraintValidator
         }
 
         $max = pow(10, $constraint->precision - $constraint->scale);
-        if ($decimal->isGreaterThan($max)) {
+        if ($decimal->isGreaterThanOrEqualTo($max)) {
             $this->context->buildViolation("$constraint->translationPrefix.$constraint->maxMessageKey")
                 ->setParameter('max', $max)
                 ->addViolation();

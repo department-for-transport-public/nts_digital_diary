@@ -3,7 +3,7 @@
 namespace App\Form\Auth;
 
 use App\Repository\UserRepository;
-use App\Validator\Constraints\EmailNotUsed;
+use App\Validator\Constraints\ChangeUserEmailAddress;
 use Ghost\GovUkFrontendBundle\Form\Type\ButtonGroupType;
 use Ghost\GovUkFrontendBundle\Form\Type\ButtonType;
 use Ghost\GovUkFrontendBundle\Form\Type\EmailType;
@@ -28,11 +28,12 @@ class ChangeEmailType extends AbstractType
         $builder
             ->add('emailAddress', EmailType::class, [
                 'label' => 'change-email.email.label',
+                'label_attr' => ['class' => "govuk-label--s"],
                 'help' => 'change-email.email.help',
                 'constraints' => [
                     new NotBlank(['message' => 'change-email.email.not-blank']),
                     new Email(),
-                    new EmailNotUsed(['userId' => $options['user_id']]),
+                    new ChangeUserEmailAddress(['userId' => $options['user_id']]),
                 ],
                 'attr' => [
                     'class' => 'govuk-input--width-20',

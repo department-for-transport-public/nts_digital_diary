@@ -2,6 +2,7 @@
 
 namespace App\Utility\Screenshots;
 
+use App\Features;
 use App\Utility\XPath;
 
 class InterviewerScreenshotter extends AbstractScreenshotter
@@ -49,22 +50,27 @@ class InterviewerScreenshotter extends AbstractScreenshotter
         $this->page->goBack([]);
         $this->page->goBack([]);
 
-        $this->clickLinkWithTextThatStartsWith('Summary');
+        $this->clickLinkWithTextThatStartsWith('Details');
         $this->screenshot('7a-diary-summary.png');
 
         $this->clickLinkWithTextThatStartsWith('Mark diary as approved');
         $this->screenshot('8a-mark-diary-approved.png');
 
-        $this->submit([
+        $approvalData = [
             '#approve_diary_confirm_action_verifyEmptyDays' => true,
             "#approve_diary_confirm_action_alsoVerified_0" => true,
             "#approve_diary_confirm_action_alsoVerified_1" => true,
             "#approve_diary_confirm_action_alsoVerified_2" => true,
-            "#approve_diary_confirm_action_alsoVerified_3" => true,
-        ], 'Mark diary as approved');
+        ];
+
+        if ($this->features->isEnabled(Features::MILOMETER)) {
+            $approvalData["#approve_diary_confirm_action_alsoVerified_3"] = true;
+        }
+
+        $this->submit($approvalData, 'Mark diary as approved');
 
         // Approve second diary keeper
-        $this->clickLinkWithTextThatStartsWith('Summary', 1);
+        $this->clickLinkWithTextThatStartsWith('Details', 1);
 
         // Can only approve when diary is complete
         $this->clickLinkWithText('Impersonate');
@@ -73,17 +79,11 @@ class InterviewerScreenshotter extends AbstractScreenshotter
         $this->clickLinkWithText('Exit');
 
         $this->clickLinkWithTextThatStartsWith('Mark diary as approved');
-        $this->submit([
-            '#approve_diary_confirm_action_verifyEmptyDays' => true,
-            "#approve_diary_confirm_action_alsoVerified_0" => true,
-            "#approve_diary_confirm_action_alsoVerified_1" => true,
-            "#approve_diary_confirm_action_alsoVerified_2" => true,
-            "#approve_diary_confirm_action_alsoVerified_3" => true,
-        ], 'Mark diary as approved');
+        $this->submit($approvalData, 'Mark diary as approved');
 
         $this->screenshot('5b-household-with-approved-diary-keepers.png');
 
-        $this->clickLinkWithTextThatStartsWith('Summary');
+        $this->clickLinkWithTextThatStartsWith('Details');
         $this->screenshot('7b-diary-keeper-approved.png');
 
         $this->clickLinkWithTextThatStartsWith('Un-approve diary');

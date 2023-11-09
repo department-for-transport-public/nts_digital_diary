@@ -5,6 +5,7 @@ namespace App\Serializer\ExportApi\v1;
 use App\Entity\Journey\Stage;
 use App\Serializer\ExportApi\Utils;
 use Brick\Math\BigDecimal;
+use Brick\Math\Exception\RoundingNecessaryException;
 use Symfony\Component\Serializer\Exception\ExceptionInterface;
 use Symfony\Component\Serializer\Normalizer\AbstractObjectNormalizer;
 use Symfony\Component\Serializer\Normalizer\ContextAwareNormalizerInterface;
@@ -25,6 +26,7 @@ class StageNormalizer implements ContextAwareNormalizerInterface, NormalizerAwar
     /**
      * @param Stage $object
      * @throws ExceptionInterface
+     * @throws RoundingNecessaryException
      */
     public function normalize($object, string $format = null, array $context = []): array
     {
@@ -34,10 +36,14 @@ class StageNormalizer implements ContextAwareNormalizerInterface, NormalizerAwar
             null :
             strval($decimal->toScale(2));
 
+        $method = $object->getMethod();
+
         return [
             '#' => $object->getNumber(),
-            'methodCode' => $object->getMethod()->getCode(),
-            'methodOther' => $object->getMethodOther(),
+            'methodCode' => $method->getCode(),
+            'methodOther' => $method->isOtherRequired()
+                ? $this->normalizer->normalize($object->getMethodForDisplay())
+                : null,
             'distance' => $decimalToString($object->getDistanceTravelled()->getValue()),
             'distanceUnit' => $object->getDistanceTravelled()->getUnit(),
             'childCount' => $object->getChildCount() ?? 0,

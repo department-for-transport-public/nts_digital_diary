@@ -2,7 +2,7 @@
 
 namespace App\DataFixtures\Definition;
 
-use App\Entity\Distance;
+use App\Entity\Embeddable\Distance;
 
 class PublicStageDefinition extends StageDefinition
 {

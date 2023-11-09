@@ -12,6 +12,7 @@ use App\Utility\AccountCreationHelper;
 use App\Utility\ConfirmAction\Admin\DeleteInterviewerConfirmAction;
 use Doctrine\ORM\EntityManagerInterface;
 use Ghost\GovUkFrontendBundle\Model\NotificationBanner;
+use Sensio\Bundle\FrameworkExtraBundle\Configuration\Security;
 use Symfony\Component\Form\SubmitButton;
 use Symfony\Component\HttpFoundation\RedirectResponse;
 use Symfony\Component\HttpFoundation\Request;
@@ -21,6 +22,7 @@ use Symfony\Component\Translation\TranslatableMessage;
 
 /**
  * @Route("/interviewers", name="interviewers_")
+ * @Security("is_granted('ROLE_INTERVIEWER_ADMIN')")
  */
 class InterviewerController extends AbstractController
 {

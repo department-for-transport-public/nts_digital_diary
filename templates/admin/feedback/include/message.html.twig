@@ -1,0 +1,3 @@
+{% trans_default_domain 'admin' %}
+<div class="govuk-inset-text">{{ message.message | nl2br }}</div>
+<div class="govuk-body-s">{{ message.emailAddressOrAnon }}, {{ message.sent | date(format_date_time) }}</div>

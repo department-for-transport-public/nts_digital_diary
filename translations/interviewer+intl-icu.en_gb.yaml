@@ -12,7 +12,7 @@ diary-keeper.states:
 
 
 diary-keeper:
-  page-title: Diary summary for {name}
+  page-title: Details for {name}
 
   back: Back to household
   mark-as-in-progress: Mark diary as in progress (re-open)
@@ -20,6 +20,28 @@ diary-keeper:
   undo-approve: Un-approve diary
   mark-as-discarded: Mark diary as discarded
   undo-discard: Un-discard diary
+
+  has-login: Has a login?
+  login-confirmed: email address confirmed
+  login-not-confirmed: email address not confirmed
+  pending-change: change pending
+  proxied-by: Proxied by
+  proxy-for: Proxy for
+
+  change-proxies:
+    page-title: Change proxies for {name}
+    breadcrumb: Change proxies
+    proxies:
+      label: Select proxies
+      help: ''
+      choice.label: >-
+        {hasEmail, select,
+            1     {{name}}
+            other {{name} (No email address)}
+        }
+    success-banner:
+      heading: Changes saved
+      content: The proxies for {name} have been saved.
 
   no-journeys: No journeys
   no-stages: No stages
@@ -55,8 +77,8 @@ household:
   page-title: "Household: {serial}"
 
   back: Back to survey area
-  diary-keeper-summary: Summary / actions
-  diary-keeper-summary-sr-hidden-suffix: " diary for {name}"
+  diary-keeper-summary: Details / actions
+  diary-keeper-summary-sr-hidden-suffix: " for {name}"
   diary-keepers: Diary keepers
   diary-week-start-date: Diary week start date
   journey-sharing: Journey sharing enabled?
@@ -240,6 +262,8 @@ training:
       - Read the instructions on each module carefully\n
       - Watch the videos all the way through\n
       - Fully complete each module before moving on to the next\n
+      \n
+      Instructions for setting up a mobile hotspot can be found [here]({hotspotInstructionsUrl})
       "
     table:
       caption: Current training modules

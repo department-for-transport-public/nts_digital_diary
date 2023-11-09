@@ -24,6 +24,8 @@ use Symfony\Component\Security\Http\EntryPoint\AuthenticationEntryPointInterface
 
 class FormAuthenticator extends AbstractAuthenticator implements AuthenticationEntryPointInterface, InteractiveAuthenticatorInterface
 {
+    public const TRAINING_INTERVIEWER_SIG_VERIFIED_REQUEST_KEY = 'interviewer_training.login_verified';
+
     private FormFactoryInterface $formFactory;
     private PasscodeGenerator $passcodeGenerator;
     private RouterInterface $router;
@@ -69,7 +71,21 @@ class FormAuthenticator extends AbstractAuthenticator implements AuthenticationE
         }
 
         $credentials = $form->getData();
+        // remove spaces - in order to make them easier to read, we show the passcodes with a space after 4 digits
+        $credentials['identifier'] = str_replace(' ', '', $credentials['identifier']);
+        $credentials['passcode'] = str_replace(' ', '', $credentials['passcode']);
+
         $this->translatedAuthenticationUtils->setLastUsername($credentials['identifier'], '_onboarding');
+
+        // We need to verify the Url signature early, in order to prevent the login rate limiter for onboarding (when training)
+        if ($credentials['identifier'] === TrainingUserProvider::USER_IDENTIFIER)
+        {
+            $this->requestStack->getCurrentRequest()->attributes->set(
+                self::TRAINING_INTERVIEWER_SIG_VERIFIED_REQUEST_KEY,
+                $request->query->has('_interviewer')
+                    && $this->urlSigner->isValid($this->requestStack->getCurrentRequest()->getRequestUri())
+            );
+        }
 
         return new Passport(
             new UserBadge($credentials['identifier']),
@@ -79,10 +95,12 @@ class FormAuthenticator extends AbstractAuthenticator implements AuthenticationE
 
     public function checkCredentials(array $credentials): bool
     {
-        if ($credentials['identifier'] === "12345678") {
-            if (!$this->urlSigner->isValid($this->requestStack->getCurrentRequest()->getRequestUri())) {
-                return false;
-            }
+        // The url signature was verified earlier, but we need to use that result here
+        $requestAttr = $this->requestStack->getCurrentRequest()->attributes;
+        if ($requestAttr->has(self::TRAINING_INTERVIEWER_SIG_VERIFIED_REQUEST_KEY)
+            && !$requestAttr->get(self::TRAINING_INTERVIEWER_SIG_VERIFIED_REQUEST_KEY, false)
+        ) {
+            return false;
         }
         return hash_equals(
             $credentials['passcode'] ?? '',

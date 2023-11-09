@@ -1,0 +1,28 @@
+{% extends 'admin/base.html.twig' %}
+
+{% trans_default_domain 'admin' %}
+{% set title_translation_prefix = 'feedback.view.message' %}
+{% set title_translation_domain = 'admin' %}
+{% set title_translation_parameters = {
+    category: message.category.value,
+} %}
+
+{% block content %}
+    <div class="govuk-grid-row">
+        <div class="govuk-grid-column-two-thirds">
+            {% include 'admin/feedback/include/message.html.twig' %}
+
+            {% set transitions = [constant('App\\Entity\\Feedback\\Message::TRANSITION_ACKNOWLEDGE'), constant('App\\Entity\\Feedback\\Message::TRANSITION_CLOSE')] %}
+            {% for transition in workflow_transitions(message) | map(t => t.name) | filter(t => t in transitions) %}
+                <a class="govuk-button" href="{{ path('admin_feedback_message_transition', {message: message.id, transition: transition}) }}">{{ "feedback.state-transition.#{transition}.label" | trans }}</a>
+            {% endfor %}
+
+            {% include 'admin/feedback/include/notes.html.twig' %}
+            {{ form(form) }}
+        </div>
+        <div class="govuk-grid-column-one-third">
+            {% include 'admin/feedback/include/message_context.html.twig' with {showActions: true} %}
+        </div>
+    </div>
+{% endblock %}
+

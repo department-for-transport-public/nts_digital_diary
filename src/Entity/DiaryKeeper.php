@@ -95,9 +95,21 @@ class DiaryKeeper implements UserPersonInterface
      */
     private ?string $diaryState;
 
+    public const PROXY_VALIDATOR_EXPRESSION = "this.getUser().hasIdentifierForLogin() or this.hasProxies() or this.getHousehold().getDiaryKeepers().count() <= 1";
+
     /**
      * @ORM\ManyToMany(targetEntity=DiaryKeeper::class, inversedBy="actingAsProxyFor")
      * @ORM\JoinTable(name="diary_keeper_proxies")
+     * @Assert\Expression(
+     *     expression=self::PROXY_VALIDATOR_EXPRESSION,
+     *     groups={"wizard.on-boarding.diary-keeper.user-identifier"},
+     *     message="wizard.on-boarding.diary-keeper.identity.at-least-one"
+     * )
+     * @Assert\Expression(
+     *     expression=self::PROXY_VALIDATOR_EXPRESSION,
+     *     groups={"interviewer.diary-keeper.change-proxies"},
+     *     message="change-proxies.at-least-one"
+     * )
      */
     private Collection $proxies;
 

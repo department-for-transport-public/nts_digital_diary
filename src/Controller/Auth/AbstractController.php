@@ -38,7 +38,7 @@ class AbstractController extends RootAbstractController
         $this->eventDispatcher = $eventDispatcher;
     }
 
-    protected function fetchUserAndCacheCriteria(string $sessionKey, array $findCriteria, array $extraData = []): User
+    protected function fetchUserAndCacheCriteria(string $sessionKey, array $findCriteria, array $extraData = [], bool $userMustBeValidForLogin = true): User
     {
         $cachedCriteria = $this->getCriteriaFromSession($sessionKey);
         if (!$cachedCriteria || $cachedCriteria !== $findCriteria) {
@@ -59,7 +59,9 @@ class AbstractController extends RootAbstractController
 
         $user = $this->userRepository->findOneBy($cachedCriteria);
 
-        if (!$user || !$this->isGranted(UserValidForLoginVoter::USER_VALID_FOR_LOGIN, $user)) {
+        if (!$user ||
+            (!$this->isGranted(UserValidForLoginVoter::USER_VALID_FOR_LOGIN, $user) && $userMustBeValidForLogin)
+        ) {
             $this->redirectToLoginWithInvalidLinkMessage();
         }
 

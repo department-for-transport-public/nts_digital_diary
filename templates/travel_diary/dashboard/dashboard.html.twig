@@ -20,7 +20,7 @@
 
     {%- include 'travel_diary/dashboard/includes/diary_keeper_proxies.html.twig' -%}
 
-    {% if not diaryKeeper.primaryDriverVehicles.empty %}
+    {% if is_feature_enabled(constant('\\App\\Features::MILOMETER')) and not diaryKeeper.primaryDriverVehicles.empty %}
         <h2 class="govuk-heading-m" id="vehicles">{{ 'days.primary-driver-vehicles' | trans }}</h2>
         <ul class="govuk-list">
             {% for vehicle in diaryKeeper.primaryDriverVehicles %}

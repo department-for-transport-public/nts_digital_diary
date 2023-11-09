@@ -172,10 +172,10 @@ null indicates there was a cost but that the diary keeper didn't know how much.
 - `adultCount` int
 - `travelTime` int | null (travel time in minutes)
 - `boardingCount` int | null
-- `ticketCost` string | null (decimal, £, 2 places)
+- `ticketCost` string | null (cost, £, 2 places)
 - `ticketType` string | null
 - `isDriver` boolean | null
-- `parkingCost` string | null (decimal, £, 2 places)
+- `parkingCost` string | null (cost, £, 2 places)
 - `vehicle` string | null
 - `vehicleCapiNumber` int | null (CAPI number)
 - `_history` object ([Property change history](#property-change-history))

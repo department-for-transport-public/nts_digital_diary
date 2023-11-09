@@ -2,6 +2,11 @@
 
 # API Change Log
 
+## Changes in v2023.10.25
+
+- **Fix**: Output method description as part of `methodOther` property (when `methodOther` field is used)
+- **Update**: encoding for cost fields (when user indicated there was a cost, but didn't enter anything)
+
 ## Changes in v2023.07.21
 
 - **Fix**: better parameter error messages on export api

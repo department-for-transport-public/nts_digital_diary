@@ -1,0 +1,4 @@
+The message state changed from {{ fromState | upper }} to {{ toState | upper }}
+{% if toState == constant('App\\Entity\\Feedback\\Message::STATE_ASSIGNED') -%}
+    It was assigned to {{ context[constant('App\\Entity\\Feedback\\Message::TRANSITION_CONTEXT_ASSIGN_TO')] }}
+{%- endif -%}

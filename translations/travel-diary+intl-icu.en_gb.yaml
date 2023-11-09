@@ -108,21 +108,28 @@ day:
     time: "{time}"
 
   day-1-walk-details: As this is day 1, include **all** walks and runs.
-  introduction-markdown: >-
-    {dayNumber, select,
-      0     {Enter some practice journeys and stages in the practice day. Anything you enter here will not be used as part of your travel diary.}
-      1     {As this is day 1, include **all** walks and runs{vehicleCount, plural, 
-                =0 {}
-                one {, and remember to record the start of week odometer readings for your [vehicle]({vehicleUrl}) at the beginning of the day}
-                other {, and remember to record the start of week odometer readings for your [vehicles]({vehicleUrl}) at the beginning of the day}
-            }.}
-      7     {{vehicleCount, plural, 
-                =0 {}
-                one {Remember to record the end of week odometer readings for your [vehicle]({vehicleUrl}) at the end of the day}
-                other {Remember to record the end of week odometer readings for your [vehicles]({vehicleUrl}) at the end of the day}
-            }.}
-      other {}
-    }
+  introduction-markdown:
+    text: >-
+      {dayNumber, select,
+        0     {Enter some practice journeys and stages in the practice day. Anything you enter here will not be used as part of your travel diary.}
+        1     {As this is day 1, include **all** walks and runs.}
+        other {}
+      }
+    text-milometer: >-
+      {dayNumber, select,
+        0     {Enter some practice journeys and stages in the practice day. Anything you enter here will not be used as part of your travel diary.}
+        1     {As this is day 1, include **all** walks and runs{vehicleCount, plural, 
+                  =0 {}
+                  one {, and remember to record the start of week milometer readings for your [vehicle]({vehicleUrl}) at the beginning of the day}
+                  other {, and remember to record the start of week milometer readings for your [vehicles]({vehicleUrl}) at the beginning of the day}
+              }.}
+        7     {{vehicleCount, plural, 
+                  =0 {}
+                  one {Remember to record the end of week milometer readings for your [vehicle]({vehicleUrl}) at the end of the day}
+                  other {Remember to record the end of week milometer readings for your [vehicles]({vehicleUrl}) at the end of the day}
+              }.}
+        other {}
+      }
   notes:
     heading: Notes
     guidance: If there’s anything you’d like to tell us about the journeys you made on this day, please add a note below.

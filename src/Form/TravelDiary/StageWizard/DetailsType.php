@@ -2,7 +2,7 @@
 
 namespace App\Form\TravelDiary\StageWizard;
 
-use App\Entity\Distance;
+use App\Entity\Embeddable\Distance;
 use App\Entity\Journey\Stage;
 use Ghost\GovUkFrontendBundle\Form\Type\FieldsetType;
 use Ghost\GovUkFrontendBundle\Form\Type\NumberType;

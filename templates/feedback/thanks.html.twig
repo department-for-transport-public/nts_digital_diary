@@ -1,12 +1,16 @@
 {% extends 'base.html.twig' %}
 
-{% set title_translation_key = 'feedback-thanks.page-title' %}
+{% set title_translation_key = 'feedback.thanks.page-title' %}
+{% set translation_parameters = {
+    'category': category,
+} %}
 {% set heading_class = "govuk-heading-xl" %}
 
 {% block content %}
     <div class="govuk-grid-row">
         <div class="govuk-grid-column-two-thirds">
-            <p class="govuk-body">{{ 'feedback-thanks.copy' | trans }}</p>
+            <p class="govuk-body">{{ 'feedback.thanks.copy' | trans(translation_parameters) }}</p>
+            <p class="govuk-body"><a href="{{ sourcePage ?? path('app_home') }}">Click here</a> to continue from where you left off.</p>
         </div>
         <div class="govuk-grid-column-one-third">
         </div>

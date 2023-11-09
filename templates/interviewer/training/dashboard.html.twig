@@ -6,8 +6,9 @@
 } %}
 
 {% block content %}
-    <div class="prose-scope govuk-!-margin-bottom-7">{{ 'training.dashboard.introduction' | trans | markdown_to_html }}</div>
-
+    <div class="prose-scope govuk-!-margin-bottom-7">
+        {{- 'training.dashboard.introduction' | trans({hotspotInstructionsUrl: path('interviewer_docs_hotspot')}) | markdown_to_html -}}
+    </div>
 
     {%- from 'interviewer/training/macros.html.twig' import statusTag -%}
 

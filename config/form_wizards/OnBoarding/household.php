@@ -23,7 +23,7 @@ return static function (ContainerConfigurator $container) {
 
                 'places' => [
                     ob_place(State::STATE_INTRODUCTION, null, 'household.introduction', 'on_boarding/household/introduction.html.twig'),
-                    ob_place(State::STATE_DETAILS, HouseholdType::class, 'household.details', 'on_boarding/base_form_with_help.html.twig', [
+                    ob_place(State::STATE_DETAILS, HouseholdType::class, 'household.details', 'on_boarding/household/details.html.twig', [
                         'is_valid_alternative_start_place' => '!isEmpty(state.getSubject().getId())'
                     ]),
                     ['name' => State::STATE_FINISH],

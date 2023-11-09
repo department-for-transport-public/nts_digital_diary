@@ -25,7 +25,7 @@ class MethodDataMapper extends DataMapper
             return;
         }
 
-        if ($data->getMethod() && !$data->getMethod()->getCode()) {
+        if ($data->getMethod() && $data->getMethod()->isOtherRequired()) {
             $otherFormName = "other-{$data->getMethod()->getDescriptionTranslationKey()}";
             $forms[$otherFormName]->setData($data->getMethodOther());
         }
@@ -47,7 +47,7 @@ class MethodDataMapper extends DataMapper
         }
 
         $data->setMethodOther(
-            ($data->getMethod() && !$data->getMethod()->getCode())
+            ($data->getMethod() && $data->getMethod()->isOtherRequired())
                 ? $forms["other-{$data->getMethod()->getDescriptionTranslationKey()}"]->getData()
                 : null
         );

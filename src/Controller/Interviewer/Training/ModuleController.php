@@ -103,7 +103,8 @@ class ModuleController extends AbstractController
                     ),
                     300
                 ),
-                'passcode' => $this->passcodeGenerator->getPasswordForUserIdentifier(TrainingUserProvider::USER_IDENTIFIER),
+                'passcode1' => TrainingUserProvider::USER_IDENTIFIER,
+                'passcode2' => $this->passcodeGenerator->getPasswordForUserIdentifier(TrainingUserProvider::USER_IDENTIFIER),
             ],
             InterviewerTrainingRecord::MODULE_DIARY_CORRECTION => [
                 'practicalUrl' => $this->generateUrl('interviewer_dashboard_household', [

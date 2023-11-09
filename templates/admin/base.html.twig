@@ -1,11 +1,32 @@
 {%- extends 'base.html.twig' -%}
 
-{%- set navigation = [
-    {
-        href: path('admin_interviewers_list'),
-        text: 'admin.menu.interviewers' | trans
-    },
-] -%}
+{%- set bodyClasses = 'nts-admin' %}
+
+{%- set navigation = [] -%}
+{%- if is_granted('ROLE_FEEDBACK_VIEWER') -%}
+    {%- set navigation = navigation | merge([
+        {
+            href: path('admin_feedback_view_dashboard'),
+            text: 'admin.menu.feedback.viewer' | trans
+        }
+    ]) -%}
+{%- endif -%}
+{%- if is_granted('ROLE_FEEDBACK_ASSIGNER') -%}
+    {%- set navigation = navigation | merge([
+        {
+            href: path('admin_feedback_assignment_dashboard'),
+            text: 'admin.menu.feedback.assigner' | trans
+        }
+    ]) -%}
+{%- endif -%}
+{%- if is_granted('ROLE_INTERVIEWER_ADMIN') -%}
+    {%- set navigation = navigation | merge([
+        {
+            href: path('admin_interviewers_list'),
+            text: 'admin.menu.interviewers' | trans
+        }
+    ]) -%}
+{%- endif -%}
 
 {%- block head -%}
     {{ parent() }}

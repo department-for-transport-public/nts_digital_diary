@@ -64,9 +64,6 @@ class DeleteJourneyConfirmAction extends AbstractConfirmAction
 
     public function doConfirmedAction($formData)
     {
-        foreach ($this->subject->getSharedTo() as $sharedTo) {
-            $sharedTo->setSharedFrom(null);
-        }
         $this->entityManager->remove($this->subject);
         $this->entityManager->flush();
     }

@@ -17,7 +17,9 @@
     {%- set household = diaryKeeper.household -%}
     {%- set areaPeriod = household.areaPeriod -%}
 
-    <div class="prose-scope">{{ 'day.introduction-markdown' | trans({
+    {%- set milometerEnabled = is_feature_enabled(constant('\\App\\Features::MILOMETER')) -%}
+    {%- set proseKey = milometerEnabled ? 'day.introduction-markdown.text-milometer' : 'day.introduction-markdown.text' %}
+    <div class="prose-scope">{{ proseKey | trans({
             dayNumber: day.number,
             vehicleCount: diaryKeeper.primaryDriverVehicles.count,
             vehicleUrl: path('traveldiary_dashboard') ~ '#vehicles',

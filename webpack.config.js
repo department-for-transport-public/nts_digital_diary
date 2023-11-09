@@ -80,6 +80,10 @@ Encore
         // optional target path, relative to the output dir
         to: 'images/[name].[hash:8].[ext]',
     })
+    .copyFiles({
+        from: './assets/images/onboarding',
+        to: 'images/onboarding/[name].[hash:8].[ext]',
+    })
 ;
 
 var config = Encore.getWebpackConfig();

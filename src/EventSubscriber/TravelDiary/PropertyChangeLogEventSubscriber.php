@@ -3,7 +3,7 @@
 namespace App\EventSubscriber\TravelDiary;
 
 use App\Entity\PropertyChangeLog;
-use App\Entity\PropertyChangeLoggable;
+use App\Entity\PropertyChangeLoggableInterface;
 use App\Entity\User;
 use App\Messenger\PropertyChange\EntityChangeMessage;
 use App\Messenger\PropertyChange\EntityDeletionMessage;
@@ -42,6 +42,13 @@ class PropertyChangeLogEventSubscriber implements EventSubscriber
             return;
         }
 
+        $user = $token->getUser();
+
+        if ($user instanceof User && $user->getTrainingInterviewer()) {
+            // Don't make logs for training diaries
+            return;
+        }
+
         $entityManager = $eventArgs->getObjectManager();
         $unitOfWork = $entityManager->getUnitOfWork();
         $interviewerSerialId = $this->getInterviewerSerialId();
@@ -49,7 +56,7 @@ class PropertyChangeLogEventSubscriber implements EventSubscriber
         $changeLogMetadata = $entityManager->getClassMetadata(PropertyChangeLog::class);
 
         foreach($unitOfWork->getScheduledEntityInsertions() as $entity) {
-            if (!$entity instanceof PropertyChangeLoggable) {
+            if (!$entity instanceof PropertyChangeLoggableInterface) {
                 continue;
             }
 
@@ -61,7 +68,7 @@ class PropertyChangeLogEventSubscriber implements EventSubscriber
         }
 
         foreach($unitOfWork->getScheduledEntityUpdates() as $entity) {
-            if (!$entity instanceof PropertyChangeLoggable) {
+            if (!$entity instanceof PropertyChangeLoggableInterface) {
                 continue;
             }
 
@@ -77,7 +84,7 @@ class PropertyChangeLogEventSubscriber implements EventSubscriber
         }
 
         foreach($unitOfWork->getScheduledEntityDeletions() as $entity) {
-            if ($entity instanceof PropertyChangeLoggable) {
+            if ($entity instanceof PropertyChangeLoggableInterface) {
                 $this->messageBus->dispatch(new EntityDeletionMessage($entity->getId(), get_class($entity)));
             }
         }

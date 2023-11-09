@@ -56,9 +56,6 @@ class ShareJourneyTest extends AbstractProceduralWizardTest
             $options
         );
 
-//        dump(array_map(fn ($e) => $e->getAttribute('name'), $this->context->getClient()->findElements(WebDriverBy::xpath('//div[@id="purpose_collection"]/div/div/div/input'))));
-//        exit(1);
-
         if ($isGoingHome) {
             $purposeTests = [new FormTestCase([])]; // Purpose is pre-filled if the source journey is "going home"
         } else {
@@ -109,6 +106,23 @@ class ShareJourneyTest extends AbstractProceduralWizardTest
                                 ]),
                             ],
                             4 => [
+                                // test empty form
+                                new FormTestCase([
+                                ], [
+                                    '#stage_details_collection_0_isDriver',
+                                    '#stage_details_collection_1_isDriver',
+                                    '#stage_details_collection_0_parkingCost_hasCost',
+                                    '#stage_details_collection_1_parkingCost_hasCost',
+                                ]),
+                                // testing partially filled form (with a driver) - addressing bug...
+                                // https://trello.com/c/q7kzQqYY/580-500-error-on-production-isdriver-accessed-before-initialisation
+                                new FormTestCase([
+                                    'stage_details_collection[0][isDriver]' => 'true',
+                                    'stage_details_collection[1][parkingCost][hasCost]' => 'false',
+                                ], [
+                                    '#stage_details_collection_0_parkingCost_hasCost',
+                                    '#stage_details_collection_1_isDriver',
+                                ]),
                                 // maximum 1 driver
                                 new FormTestCase([
                                     'stage_details_collection[0][isDriver]' => 'true',
@@ -168,6 +182,10 @@ class ShareJourneyTest extends AbstractProceduralWizardTest
         $tag = $this->context->getClient()->findElement(WebDriverBy::xpath('//main[@id="main-content"]/strong[contains(concat(" ",normalize-space(@class)," ")," govuk-tag ")]'));
         $this->context->getTestCase()->assertEqualsIgnoringCase("journey shared with {$dkNameList}", $tag->getText());
 
+        $this->databaseTestAction([
+            new SharedJourneyDatabaseTestCase($journeyFixture->getId(), $shareToDKs->map(fn($dk) => $dk->getId())->toArray())
+        ]);
+
         $this->context->getTestCase()->clickLinkContaining('Delete this journey');
 
         $this->formTestAction(
@@ -191,12 +209,16 @@ class ShareJourneyTest extends AbstractProceduralWizardTest
             ];
     }
 
+    protected function setUp(): void
+    {
+        $this->initialiseClientAndLoadFixtures([ShareJourneyTestFixtures::class]);
+    }
+
     /**
      * @dataProvider wizardData
      */
     public function testShareJourneyWizard(string $journeyFixtureRef, int $journeyIndex, bool $isGoingHome)
     {
-        $this->initialiseClientAndLoadFixtures([ShareJourneyTestFixtures::class]);
         $this->loginUser(self::TEST_USERNAME);
         $this->client->request('GET', '/travel-diary/day-6');
         $this->clickLinkContaining('View', $journeyIndex);

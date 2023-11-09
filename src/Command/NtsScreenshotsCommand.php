@@ -3,6 +3,7 @@
 namespace App\Command;
 
 use App\Entity\User;
+use App\Features;
 use App\Utility\Screenshots\AbstractScreenshotter;
 use App\Utility\Screenshots\FixtureManager;
 use App\Utility\Screenshots\InterviewerScreenshotter;
@@ -23,23 +24,16 @@ class NtsScreenshotsCommand extends Command
     protected static $defaultName = 'nts:screenshots';
     protected static $defaultDescription = 'Generate screenshots for the NTS service';
 
-    protected EntityManagerInterface $entityManager;
-    protected FixtureManager $fixtureCreator;
-    protected UserPasswordHasherInterface $passwordHasher;
-    protected string $screenshotsPath;
-    protected string $frontendHostname;
-    private string $appEnvironment;
-
-    public function __construct(EntityManagerInterface $entityManager, FixtureManager $fixtureCreator, UserPasswordHasherInterface $passwordHasher, string $frontendHostname, string $screenshotsPath, string $appEnvironment)
-    {
+    public function __construct(
+        protected EntityManagerInterface $entityManager,
+        protected Features $features,
+        protected FixtureManager $fixtureCreator,
+        protected UserPasswordHasherInterface $passwordHasher,
+        protected string $frontendHostname,
+        protected string $screenshotsPath,
+        protected string $appEnvironment
+    ) {
         parent::__construct();
-        $this->entityManager = $entityManager;
-        $this->fixtureCreator = $fixtureCreator;
-        $this->passwordHasher = $passwordHasher;
-
-        $this->frontendHostname = $frontendHostname;
-        $this->screenshotsPath = $screenshotsPath;
-        $this->appEnvironment = $appEnvironment;
     }
 
     protected function configure(): void
@@ -78,9 +72,9 @@ class NtsScreenshotsCommand extends Command
         ]);
 
         try {
-            $interviewerScreenshotter = new InterviewerScreenshotter($browser, "{$outputDir}/interviewer/", $hostname);
-            $onboardingScreenshotter = new OnboardingScreenshotter($browser, "{$outputDir}/onboarding/", $hostname);
-            $diaryKeeperScreenshotter = new DiaryKeeperScreenshotter($browser, "{$outputDir}/diary-keeper/", $hostname, $input->getOption('extra-diary-stages'));
+            $interviewerScreenshotter = new InterviewerScreenshotter($this->features, $browser, "{$outputDir}/interviewer/", $hostname);
+            $onboardingScreenshotter = new OnboardingScreenshotter($this->features, $browser, "{$outputDir}/onboarding/", $hostname);
+            $diaryKeeperScreenshotter = new DiaryKeeperScreenshotter($this->features, $browser, "{$outputDir}/diary-keeper/", $hostname, $input->getOption('extra-diary-stages'));
 
             [$passcode1, $passcode2] = $interviewerScreenshotter->retrieveOnboardingCodes();
 
@@ -95,6 +89,7 @@ class NtsScreenshotsCommand extends Command
 
             $page = $e->getPage();
             if ($page) {
+                $io->error($page->url());
                 try {
                     AbstractScreenshotter::takeScreenshot($page, "{$outputDir}/error.png");
                 }

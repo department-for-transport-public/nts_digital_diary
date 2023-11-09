@@ -1,6 +1,9 @@
 {% extends 'base.html.twig' %}
 
-{% set title_translation_key = 'feedback.page-title' %}
+{% set title_translation_key = 'feedback.form.page-title' %}
+{% set title_translation_parameters = {
+    category: form.vars.data.category.value
+} %}
 {% set heading_class = "govuk-heading-xl" %}
 
 {% block content %}

@@ -15,7 +15,11 @@ actions:
 
 admin:
   menu:
+    feedback:
+      assigner: Assign messages
+      viewer: View messages
     interviewers: Interviewers
+    sample-import: Sample import
 
 boolean:
   'true': Yes
@@ -79,16 +83,38 @@ errors:
       The service is undergoing scheduled maintenance, and is not available. Check back in 15 minutes.
 
 feedback:
-  comments.label: Comments
-  email:
-    help: We will be able to reply if you provide an email address
-    label: Email
-  send.label: Send feedback
-  page-title: Feedback
-
-feedback-thanks:
-  page-title: Thanks!
-  copy: Your feedback has been successfully submitted
+  form:
+    comments:
+      label: >-
+        {category, select,
+          support     {Issue details}
+          other       {Comments}
+        }
+      help: ''
+    email:
+      help: >-
+        {category, select,
+          support     {}
+          other       {We will be able to reply if you provide an email address}
+        }
+      label: Email address
+    send.label: >-
+      {category, select,
+        support     {Request support}
+        other       {Send feedback}
+      }
+    page-title: >-
+      {category, select,
+        support     {Request support}
+        other       {Feedback}
+      }
+  thanks:
+    page-title: Thanks!
+    copy: >-
+      {category, select,
+        support     {Your support request has been successfully submitted. Someone will get back to you as soon as possible.}
+        other       {Your feedback has been successfully submitted}
+      }
 
 format: # Unused??
   date:

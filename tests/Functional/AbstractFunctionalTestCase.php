@@ -18,13 +18,13 @@ class AbstractFunctionalTestCase extends PantherTestCase
 
     protected ReferenceRepository $fixtureReferenceRepository;
 
-    public function initialiseClientAndLoadFixtures(array $fixtures): void
+    public function initialiseClientAndLoadFixtures(array $fixtures, $pantherOptions = [], $kernelOptions = []): void
     {
         $databaseTool = static::getContainer()->get(DatabaseToolCollection::class)->get();
         $fixtures = $databaseTool->loadFixtures($fixtures);
         $this->fixtureReferenceRepository = $fixtures->getReferenceRepository();
 
-        $this->client = static::createPantherClient();
+        $this->client = static::createPantherClient($pantherOptions, $kernelOptions);
     }
 
     protected function getFixtureByReference($reference): object

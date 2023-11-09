@@ -141,7 +141,7 @@ class OnBoardingTest extends AbstractOtpTest
                 "household[householdNumber]" => '1',
                 "household[checkLetter]" => SerialHelper::getCheckLetter(111984, 10, 1),
                 "household[diaryWeekStartDate][day]" => "1",
-                "household[diaryWeekStartDate][month]" => "1",
+                "household[diaryWeekStartDate][month]" => "2",
                 "household[diaryWeekStartDate][year]" => "2022",
             ]), [
                 "#household_diaryWeekStartDate",

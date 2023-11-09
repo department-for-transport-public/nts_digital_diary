@@ -3,9 +3,10 @@
 namespace App\Repository;
 
 use App\Entity\DiaryKeeper;
+use App\Entity\Household;
 use App\Entity\Interviewer;
 use App\Entity\Journey\Journey;
-use App\Entity\OtpUserInterface;
+use App\Security\OneTimePassword\OtpUserInterface;
 use App\Entity\User;
 use App\Utility\ItemByFrequencyHelper;
 use Doctrine\Bundle\DoctrineBundle\Repository\ServiceEntityRepository;
@@ -95,6 +96,11 @@ class DiaryKeeperRepository extends ServiceEntityRepository
         return $qb->getQuery()->execute();
     }
 
+    public function getChangeProxyChoices(DiaryKeeper $diaryKeeper): array
+    {
+        return $this->getProxyChoices($diaryKeeper->getHousehold(), $diaryKeeper);
+    }
+
     /**
      * @return array | DiaryKeeper[]
      */
@@ -106,11 +112,16 @@ class DiaryKeeperRepository extends ServiceEntityRepository
             throw new RuntimeException("wrong user instance");
         }
 
+        return $this->getProxyChoices($user->getHousehold(), $diaryKeeperForExclusion);
+    }
+
+    private function getProxyChoices(Household $household, DiaryKeeper $diaryKeeperForExclusion): array
+    {
         $qb = $this->createQueryBuilder('dk')
             ->leftJoin('dk.user', 'u')
             ->where('dk.household = :household')
             ->setParameters([
-                'household' => $user->getHousehold(),
+                'household' => $household,
             ])
             ->orderBy('dk.number', 'ASC');
 

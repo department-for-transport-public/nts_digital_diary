@@ -23,7 +23,7 @@ class RecaptchaValidator extends ConstraintValidator
             throw new UnexpectedTypeException($constraint, Recaptcha::class);
         }
 
-        $request = $this->requestStack->getMainRequest();
+        $request = $this->requestStack->getCurrentRequest();
         $userResponse = trim($request->request->get('g-recaptcha-response', ''));
 
         if ($userResponse === '') {

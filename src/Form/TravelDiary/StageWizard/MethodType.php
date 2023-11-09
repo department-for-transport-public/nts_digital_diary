@@ -4,6 +4,7 @@ namespace App\Form\TravelDiary\StageWizard;
 
 use App\Entity\Journey\Method;
 use App\Entity\Journey\Stage;
+use Doctrine\Common\Collections\ArrayCollection;
 use Doctrine\ORM\EntityManagerInterface;
 use Ghost\GovUkFrontendBundle\Form\Type\BooleanChoiceType;
 use Ghost\GovUkFrontendBundle\Form\Type\EntityType;
@@ -30,6 +31,7 @@ class MethodType extends AbstractType
     {
         $builder->setDataMapper(new MethodDataMapper());
 
+        /** @var Method[]|ArrayCollection<Method> $choices */
         $choices = $this->entityManager->getRepository(Method::class)->findBy([], ['sort' => 'ASC']);
         $choices = array_combine(array_map(fn(Method $m) => $m->getDescriptionTranslationKey(), $choices), $choices);
 
@@ -39,7 +41,7 @@ class MethodType extends AbstractType
 
         $otherFormConfig = [];
         foreach ($choices as $key=>$choice) {
-            if (!$choice->getCode()) {
+            if ($choice->isOtherRequired()) {
                 $transKey = $choice->getDescriptionTranslationKey();
                 $formName = "other-$transKey";
                 $choiceOptions[$key] = ['conditional_form_name' => $formName];

@@ -1,3 +1,59 @@
+feedback:
+  assignment:
+    page-title: Assign messages
+    message.page-title: Assign {category} message
+    success-notification:
+      heading: Message assigned
+      content: The message was assigned to {assignedTo}
+    submit-button.label: Assign message
+    choice.placeholder: -- select --
+
+  view:
+    list.page-title: Feedback dashboard
+    message.page-title: View {category} message
+    details:
+      message: Message
+      timestamp: Received
+      state: State
+      email: Email address
+      user: User
+      impersonator: Impersonator
+      category: Category
+      assigned-to: Assigned to
+      page: Page URL
+      user-serial:
+        int: Interviewer - {serial}
+        dk: Diary keeper - {serial}
+    state:
+      colours:
+        new: orange
+        assigned: blue
+        in-progress: green
+        closed: grey
+      labels:
+        new: New
+        assigned: Assigned
+        in-progress: Active
+        closed: Closed
+    add-note:
+      submit.label: Add note
+  state-transition:
+    acknowledge:
+      label: Acknowledge receipt
+      page-title: Acknowledge receipt of feedback
+      content: This will acknowledge that you have received the feedback, and that a response is in progress.
+      confirmed-notification:
+        heading: Feedback message acknowledge
+        content: The message has been acknowledge and is now marked as in-progress.
+    close:
+      label: Close feedback
+      page-title: Close feedback
+      content: This will close the feedback.
+      confirmed-notification:
+        heading: Feedback message closed
+        content: The message has been closed.
+
+
 interviewer.list:
   page-title: Interviewers
   add-button: Add

@@ -2,10 +2,11 @@
 
 namespace App\Tests\Functional\Interviewer;
 
+use App\Entity\DiaryKeeper;
 use App\Messenger\AlphagovNotify\Email;
 use App\Tests\DataFixtures\UserFixtures;
-use App\Utility\Test\CrawlerTableHelper;
 use App\Utility\Test\MessageUrlRetriever;
+use Doctrine\Common\DataFixtures\ReferenceRepository;
 use Doctrine\ORM\EntityManagerInterface;
 use Liip\TestFixturesBundle\Services\DatabaseToolCollection;
 use Symfony\Bundle\FrameworkBundle\KernelBrowser;
@@ -13,30 +14,34 @@ use Symfony\Bundle\FrameworkBundle\KernelBrowser;
 class EmailChangeTest extends AbstractInterviewerDiaryKeeperTest
 {
     protected KernelBrowser $client;
+    private ReferenceRepository $repository;
 
     public function setUp(): void
     {
         parent::setUp();
         $databaseTool = static::getContainer()->get(DatabaseToolCollection::class)->get();
-        $databaseTool->loadFixtures([
+        $fixtures = $databaseTool->loadFixtures([
             UserFixtures::class
         ]);
+        $this->repository = $fixtures->getReferenceRepository();
     }
 
     public function testPasswordReset(): void
     {
-        $this->logInAsInterviewerAndDrillDownToUsersHouseholdPage('diary-keeper-no-password@example.com');
+        $newEmailAddress = "new-email-address@example.com";
 
-        // Click the "change email" link and add a new email address
-        $tableHelper = new CrawlerTableHelper($this->client->getCrawler());
-        $changeEmailUrl = $tableHelper->getLinkUrlForRowMatching('Change email', [
-            'Name' => 'Test Diary Keeper (No password set)',
-        ]);
-        $this->client->request('GET', $changeEmailUrl);
+        /** @var DiaryKeeper $dk */
+        $dk = $this->repository->getReference('diary-keeper:no-password');
+        $this->logInAsInterviewerAndDrillDownToUsersHouseholdPage($dk->getUser()->getUserIdentifier());
+        $this->client->clickLink("Details / actions: for {$dk->getName()}");
+        $this->client->clickLink('Change email');
 
         $this->client->submitForm('Change email address', [
-            'change_email[emailAddress]' => 'new-email-address@example.com',
+            'change_email[emailAddress]' => $newEmailAddress,
         ]);
+
+        // ensure "pending change" flag is present
+        $this->assertStringContainsString('change pending', $this->client->getCrawler()->text());
 
         // Logout, and then visit the reset URL that can be retrieved from messenger
         $this->client->clickLink('Logout');
@@ -60,8 +65,14 @@ class EmailChangeTest extends AbstractInterviewerDiaryKeeperTest
         $this->assertEquals('/login', $this->client->getRequest()->getRequestUri());
 
         // Verify that new email + new password works...
-        $this->submitLoginForm('new-email-address@example.com', 'Banana1234');
+        $this->submitLoginForm($newEmailAddress, 'Banana1234');
         $this->assertEquals('/travel-diary', $this->client->getRequest()->getRequestUri());
+
+        // Log back in as interviewer to confirm "pending change" flag has gone
+        $this->client->clickLink('Logout');
+        $this->logInAsInterviewerAndDrillDownToUsersHouseholdPage($newEmailAddress);
+        $this->client->clickLink("Details / actions: for {$dk->getName()}");
+        $this->assertStringNotContainsString('change pending', $this->client->getCrawler()->text());
     }
 
     protected function getPasswordResetUrlFromMessage(): string

@@ -2,7 +2,7 @@
 
 namespace App\Utility\Comparator\Comparators;
 
-use App\Entity\Distance;
+use App\Entity\Embeddable\Distance;
 use App\Utility\Comparator\ComparatorInterface;
 use Brick\Math\BigDecimal;
 

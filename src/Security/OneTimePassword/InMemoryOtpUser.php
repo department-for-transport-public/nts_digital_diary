@@ -5,7 +5,6 @@ namespace App\Security\OneTimePassword;
 use App\Entity\AreaPeriod;
 use App\Entity\Household;
 use App\Entity\Interviewer;
-use App\Entity\OtpUserInterface;
 use Symfony\Component\Security\Core\User\UserInterface;
 
 class InMemoryOtpUser implements UserInterface, OtpUserInterface
@@ -31,20 +30,23 @@ class InMemoryOtpUser implements UserInterface, OtpUserInterface
         ];
     }
 
-    public function getPassword()
+    public function getPassword(): ?string
     {
+        return null;
     }
 
-    public function getSalt()
+    public function getSalt(): ?string
     {
+        return null;
     }
 
     public function eraseCredentials()
     {
     }
 
-    public function getUsername()
+    public function getUsername(): string
     {
+        return $this->getUserIdentifier();
     }
 
     public function getUserIdentifier(): ?string

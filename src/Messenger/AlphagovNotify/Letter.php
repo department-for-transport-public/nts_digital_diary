@@ -4,10 +4,7 @@
 namespace App\Messenger\AlphagovNotify;
 
 
-use App\Entity\Address;
-use Symfony\Component\Serializer\Encoder\JsonEncoder;
-use Symfony\Component\Serializer\Normalizer\ObjectNormalizer;
-use Symfony\Component\Serializer\Serializer;
+use App\Entity\Embeddable\Address;
 
 class Letter extends AbstractMessage
 {

@@ -1,3 +1,6 @@
+actions:
+  change-email: Change email
+
 link-invalid:
   flash-notification:
     title: 'Invalid/expired link'
@@ -10,11 +13,11 @@ change-email:
   change-email: Change email address
   email:
     label: New email address
-    help: ''
+    help: Submitting this form will send a new account setup email to the email address entered. Once the user has followed the link and setup a password, the new address will be stored as their login username.
 
   success-banner:
-    heading: "Email address changed"
-    content: "The user's email address has been successfully changed."
+    heading: "Email address change initiated"
+    content: "An email containing a secure link has been sent to {newAddress}. Once the user has followed the link and set a password, the new address will be confirmed and updated."
 
 change-password:
   page-title: Reset password

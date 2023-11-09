@@ -1,0 +1,18 @@
+{% extends 'admin/base.html.twig' %}
+
+{% trans_default_domain 'admin' %}
+{% set title_translation_prefix = "feedback.state-transition.#{transition}" %}
+{% set title_translation_domain = 'admin' %}
+{% block content %}
+    <div class="govuk-grid-row">
+        <div class="govuk-grid-column-two-thirds">
+            {% include 'admin/feedback/include/message.html.twig' with {message: subject} %}
+            <div class="prose-scope">{{ "feedback.state-transition.#{transition}.content" | trans | markdown_to_html }}</div>
+            {{ form(form) }}
+        </div>
+        <div class="govuk-grid-column-one-third">
+            {% include 'admin/feedback/include/message_context.html.twig' with {message: subject, showCategory: true} %}
+        </div>
+    </div>
+{% endblock %}
+

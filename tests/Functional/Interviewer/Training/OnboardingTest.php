@@ -74,16 +74,16 @@ class OnboardingTest extends AbstractOtpTest
             'household[addressNumber]' => '1',
             'household[householdNumber]' => '1',
             'household[checkLetter]' => SerialHelper::getCheckLetter(AreaPeriod::TRAINING_ONBOARDING_AREA_SERIAL, 1, 1),
-            'household[diaryWeekStartDate][day]' => '1',
-            'household[diaryWeekStartDate][month]' => '1',
-            'household[diaryWeekStartDate][year]' => '2023',
+            'household[diaryWeekStartDate][day]' => $now->format('d'),
+            'household[diaryWeekStartDate][month]' => $now->format('m'),
+            'household[diaryWeekStartDate][year]' => $now->format('Y'),
         ]);
         $this->takeScreenshotIfTestFailed();
 //        ServerExtension::takeScreenshots('info', 'onboarding');
         $this->assertEquals('/onboarding', $this->getUrlPath());
 
         // add a DK
-        $this->client->clickLink('Add a diary keeper');
+        $this->client->clickLink('Add a household member');
         $this->assertEquals('/onboarding/diary-keeper/add/details', $this->getUrlPath());
 
         $this->client->submitForm('details[button_group][continue]', [

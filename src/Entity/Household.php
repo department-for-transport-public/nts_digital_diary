@@ -12,6 +12,7 @@ use Symfony\Bridge\Doctrine\Validator\Constraints\UniqueEntity;
 use Symfony\Component\Validator\Constraints as Assert;
 use Symfony\Component\Validator\Context\ExecutionContextInterface;
 use Doctrine\ORM\Mapping\UniqueConstraint;
+use function PHPUnit\Framework\isEmpty;
 
 /**
  * @ORM\Entity(repositoryClass="App\Repository\HouseholdRepository", repositoryClass=HouseholdRepository::class)
@@ -370,7 +371,7 @@ class Household
 
     public function setCheckLetter(?string $checkLetter): self
     {
-        $this->checkLetter = $checkLetter;
+        $this->checkLetter = null !== $checkLetter ? strtoupper($checkLetter): null;
         return $this;
     }
 }

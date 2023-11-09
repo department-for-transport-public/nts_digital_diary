@@ -2,10 +2,15 @@
 
 namespace App\ExpressionLanguage;
 
+use App\Attribute\AutoconfigureTag\ExpressionLanguageProvider;
 use App\Security\ImpersonatorAuthorizationChecker;
 use Symfony\Component\ExpressionLanguage\ExpressionFunction;
 use Symfony\Component\ExpressionLanguage\ExpressionFunctionProviderInterface;
 
+#[ExpressionLanguageProvider(ExpressionLanguageProvider::SECURITY)]
+#[ExpressionLanguageProvider(ExpressionLanguageProvider::ROUTER)]
+#[ExpressionLanguageProvider(ExpressionLanguageProvider::VALIDATOR)]
+#[ExpressionLanguageProvider(ExpressionLanguageProvider::WORKFLOW)]
 class ImpersonatorFunctionProvider implements ExpressionFunctionProviderInterface
 {
     public function __construct(protected ImpersonatorAuthorizationChecker $impersonatorAuthorizationChecker)

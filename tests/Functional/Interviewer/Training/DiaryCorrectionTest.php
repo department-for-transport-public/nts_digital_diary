@@ -4,6 +4,7 @@ namespace App\Tests\Functional\Interviewer\Training;
 
 use App\Entity\InterviewerTrainingRecord;
 use App\Entity\User;
+use App\Features;
 use App\Tests\DataFixtures\UserFixtures;
 use App\Tests\Functional\AbstractFunctionalTestCase;
 use Doctrine\ORM\EntityManagerInterface;
@@ -56,12 +57,14 @@ class DiaryCorrectionTest extends AbstractFunctionalTestCase
 
         $this->client->clickLink('Return to module');
 
-        $this->client->clickLink("Summary / actions: diary for {$name}");
+        $this->client->clickLink("Details / actions: for {$name}");
         $this->client->clickLink("Mark diary as approved");
 
+        $otherCheckboxes = ['confirm-return-journeys', 'split-round-trips', 'corrected-no-stages'];
+        if (Features::isEnabled(Features::MILOMETER)) $otherCheckboxes[] = 'checked-vehicles';
         $this->client->submitForm('approve_diary_confirm_action[button_group][confirm]', [
             "approve_diary_confirm_action[verifyEmptyDays]" => "1",
-            "approve_diary_confirm_action[alsoVerified][]" => ['confirm-return-journeys', 'split-round-trips', 'corrected-no-stages', 'checked-vehicles'],
+            "approve_diary_confirm_action[alsoVerified][]" => $otherCheckboxes,
         ]);
     }
 

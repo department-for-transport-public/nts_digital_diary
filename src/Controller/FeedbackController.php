@@ -2,31 +2,29 @@
 
 namespace App\Controller;
 
+use App\Entity\Feedback\CategoryEnum;
 use App\Form\FeedbackType;
-use App\Messenger\AlphagovNotify\Email;
-use App\Utility\AlphagovNotify\Reference;
-use App\Utility\FeedbackEncoder;
-use Symfony\Component\Form\SubmitButton;
+use App\Utility\Feedback\MessageEncoder;
+use Doctrine\ORM\EntityManagerInterface;
 use Symfony\Component\HttpFoundation\Request;
 use Symfony\Component\HttpFoundation\Response;
-use Symfony\Component\Messenger\MessageBusInterface;
 use Symfony\Component\Routing\Annotation\Route;
 
+#[Route("/{category}", name: "app_feedback_", requirements: ['category' => "feedback|support"])]
 class FeedbackController extends AbstractController
 {
-    public function __construct(protected FeedbackEncoder $feedbackEncoder)
-    {}
+    protected const THANKS_PAGE_REDIRECT_SESSION_KEY = "feedback-thanks-redirect";
 
-    /**
-     * @Route("/feedback", name="app_feedback")
-     */
-    public function feedback(MessageBusInterface $messageBus, Request $request, array $feedbackRecipients): Response
+    public function __construct(protected MessageEncoder $feedbackEncoder) {}
+
+    #[Route(name: 'form')]
+    public function feedback(Request $request, EntityManagerInterface $entityManager, string $category): Response
     {
-        $info = $this->feedbackEncoder->decodeFeedbackFromRequest($request);
-        $isLoggedIn = $info['is_logged_in'] ?? false;
-        unset($info['is_logged_in']);
+        $message = $this->feedbackEncoder->decodeFeedbackFromRequest($request)
+            ->setCategory(CategoryEnum::from($category));
+        $isLoggedIn = $message->getCurrentUserSerial();
 
-        $form = $this->createForm(FeedbackType::class, null, [
+        $form = $this->createForm(FeedbackType::class, $message, [
             'is_logged_in' => $isLoggedIn,
             'action' => $request->server->get('REQUEST_URI'), // Persist query string
         ]);
@@ -34,41 +32,11 @@ class FeedbackController extends AbstractController
         $form->handleRequest($request);
 
         if ($form->isSubmitted() && $form->isValid()) {
-            $submit = $form->get('submit');
+            $entityManager->persist($message);
+            $entityManager->flush();
 
-            if ($submit instanceof SubmitButton && $submit->isClicked()) {
-                $email = $form->has('email') ? $form->get('email')->getData() : null;
-
-                if ($email) {
-                    $info['email'] = "Email: $email";
-                }
-
-                sort($info);
-                $details = join("\n", array_map(fn($line) => "* $line", $info));
-
-                if ($details === '') {
-                    $details = 'No details captured';
-                }
-
-                $personalisation = [
-                    'comments' => $form->get('comments')->getData() ?? '-',
-                    'details' => $details,
-                ];
-
-                foreach($feedbackRecipients as $feedbackRecipient) {
-                    $messageBus->dispatch(new Email(
-                        Reference::FEEDBACK_EVENT,
-                        null,
-                        null,
-                        $feedbackRecipient,
-                        Reference::FEEDBACK_EMAIL_TEMPLATE_ID,
-                        $personalisation,
-                        "feedback@" . ((new \DateTime())->format('c')),
-                    ));
-                }
-
-                return $this->redirectToRoute('app_feedback_thanks');
-            }
+            $request->getSession()->set(self::THANKS_PAGE_REDIRECT_SESSION_KEY, $message->getPage());
+            return $this->redirectToRoute('app_feedback_thanks', ['category' => $category]);
         }
 
         return $this->render(
@@ -78,11 +46,12 @@ class FeedbackController extends AbstractController
             ]);
     }
 
-    /**
-     * @Route("/feedback/thanks", name="app_feedback_thanks")
-     */
-    public function thanks(): Response
+    #[Route("/thanks", name: "thanks")]
+    public function thanks(Request $request, string $category): Response
     {
-        return $this->render('feedback/thanks.html.twig');
+        return $this->render('feedback/thanks.html.twig', [
+            'category' => $category,
+            'sourcePage' => $request->getSession()->remove(self::THANKS_PAGE_REDIRECT_SESSION_KEY),
+        ]);
     }
 }

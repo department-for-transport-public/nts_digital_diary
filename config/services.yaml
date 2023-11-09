@@ -51,8 +51,6 @@ services:
         App\Controller\FormWizard\AbstractFormWizardController:
             calls:
                 - setEventDispatcher: ['@event_dispatcher']
-        App\ExpressionLanguage\WorkflowFunctionProviderInterface:
-            tags: [ 'workflow.expression_language_provider' ]
         App\FormWizard\FormWizardStateInterface:
             tags: [ 'app.form_wizard.state' ]
         App\Utility\Comparator\ComparatorInterface:
@@ -60,15 +58,12 @@ services:
             lazy: true
         Doctrine\Common\EventSubscriber:
             tags: [ 'doctrine.event_subscriber' ]
-        Symfony\Component\ExpressionLanguage\ExpressionFunctionProviderInterface:
-            tags:
-                - { name: 'security.expression_language_provider' }
-                - { name: 'router.expression_language_provider' }
-                - { name: 'workflow.expression_language_provider' }
-                - { name: 'validator.expression_language_provider' }
         App\Command\GcpDatabaseTools\AbstractGcpDatabaseCommand:
             bind:
                 $config: '%gcp_database_command_config%'
+
+    App\Security\GoogleIap\AdminRoleResolver:
+        public: true
 
     App\Command\NtsScreenshotsCommand:
         lazy: true
@@ -94,6 +89,9 @@ services:
         # Lazy to avoid early database calls which were upsetting cloud build deployment
         lazy: true
 
+    App\Utility\Feedback\NotifyHelper:
+        public: true
+
     App\Utility\UrlSigner:
         arguments:
             $secret: "%env(APP_SECRET)%"
@@ -106,3 +104,6 @@ services:
     App\Utility\TranslatableParameterTranslator:
         decorates: 'translator'
 
+    App\EventSubscriber\Security\AccessDeniedImpersonatorSubscriber:
+        arguments:
+            $switchUserListener: '@security.authentication.switchuser_listener.main'

@@ -2,7 +2,7 @@
 
 namespace App\Form;
 
-use App\Entity\CostOrNil;
+use App\Entity\Embeddable\CostOrNil;
 use Brick\Math\BigDecimal;
 use Symfony\Component\Form\Extension\Core\DataMapper\DataMapper;
 use Symfony\Component\Form\FormInterface;

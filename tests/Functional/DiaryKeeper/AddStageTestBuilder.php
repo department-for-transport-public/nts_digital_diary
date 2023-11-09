@@ -2,7 +2,7 @@
 
 namespace App\Tests\Functional\DiaryKeeper;
 
-use App\Entity\Distance;
+use App\Entity\Embeddable\Distance;
 use App\Entity\Journey\Method;
 use App\Entity\Journey\Stage;
 use App\Entity\User;
@@ -10,9 +10,9 @@ use App\Entity\Vehicle;
 use App\Form\TravelDiary\StageWizard\VehicleDataMapper;
 use App\Tests\Functional\Wizard\Action\CallbackAction;
 use App\Tests\Functional\Wizard\Action\Context;
-use App\Tests\Functional\Wizard\Form\FormTestCase;
-use App\Tests\Functional\Wizard\Action\PathTestAction;
 use App\Tests\Functional\Wizard\Action\FormTestAction;
+use App\Tests\Functional\Wizard\Action\PathTestAction;
+use App\Tests\Functional\Wizard\Form\FormTestCase;
 use Doctrine\ORM\EntityManagerInterface;
 
 class AddStageTestBuilder
@@ -61,12 +61,32 @@ class AddStageTestBuilder
                 new FormTestCase([], [
                     "#details_companions_adultCount",
                 ]),
+                // Check travel time limits
+                new FormTestCase(array_merge($baseDetailsData, [
+                    'details[travelTime]' => '10001',
+                ]), ['#details_travelTime']),
+                new FormTestCase(array_merge($baseDetailsData, [
+                    'details[travelTime]' => '10000',
+                    'details[distanceTravelled][value]' => '0',
+                ]), ['#details_distanceTravelled_value']),
+
                 new FormTestCase(array_merge($baseDetailsData, [
                     'details[distanceTravelled][value]' => '0',
                 ]), ['#details_distanceTravelled_value']),
                 new FormTestCase(array_merge($baseDetailsData, [
                     'details[travelTime]' => '0',
                 ]), ['#details_travelTime']),
+
+                // Check adult/child count limits
+                new FormTestCase(array_merge($baseDetailsData, [
+                    'details[companions][adultCount]' => '1001',
+                    'details[companions][childCount]' => '1000',
+                ]), ['#details_companions_adultCount']),
+                new FormTestCase(array_merge($baseDetailsData, [
+                    'details[companions][childCount]' => '1001',
+                    'details[companions][adultCount]' => '1000',
+                ]), ['#details_companions_childCount']),
+
                 new FormTestCase(array_merge($baseDetailsData, [
                     'details[companions][adultCount]' => '-1',
                 ]), ['#details_companions_adultCount']),

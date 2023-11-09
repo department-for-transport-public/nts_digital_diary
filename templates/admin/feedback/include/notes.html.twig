@@ -1,0 +1,9 @@
+<h2 class="govuk-heading-m" id="notes">Notes</h2>
+{%- for note in message.notes -%}
+    {# @var note \App\Entity\Feedback\Note #}
+    <div class="govuk-body govuk-!-margin-bottom-2">
+        {{ note.note | nl2br }}
+    </div>
+    <div class="govuk-body-s">{{ note.userIdentifier }}, {{ note.createdAt | date(format_date_time) }}</div>
+    <hr class="govuk-section-break govuk-section-break--visible govuk-section-break--m">
+{%- endfor -%}

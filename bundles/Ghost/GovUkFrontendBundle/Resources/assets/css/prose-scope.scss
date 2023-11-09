@@ -33,4 +33,8 @@
   ol {
     @extend .govuk-list--number;
   }
+
+  img {
+    max-width: 100%;
+  }
 }

@@ -44,32 +44,4 @@ abstract class AbstractController extends \App\Controller\AbstractController
 
         return $interviewer;
     }
-
-    protected function checkInterviewerIsSubscribedToAreaPeriod(AreaPeriod $areaPeriod, Interviewer $interviewer): void {
-        $areaPeriodId = $areaPeriod->getId();
-        if ($areaPeriod->getTrainingInterviewer() === $interviewer) {
-            return;
-        }
-        foreach($interviewer->getAreaPeriods() as $intAreaPeriod) {
-            if ($intAreaPeriod->getId() === $areaPeriodId) {
-                return;
-            }
-        }
-
-        throw new NotFoundHttpException();
-    }
-
-    protected function checkInterviewerIsNotSubscribedToAreaPeriod(AreaPeriod $areaPeriod, Interviewer $interviewer): void {
-        $areaPeriodId = $areaPeriod->getId();
-        foreach($interviewer->getAreaPeriods() as $intAreaPeriod) {
-            if ($intAreaPeriod->getId() === $areaPeriodId) {
-                throw new NotFoundHttpException();
-            }
-        }
-    }
-
-    protected function redirectToAreaPeriodPage(AreaPeriod $areaPeriod): RedirectResponse
-    {
-        return new RedirectResponse($this->generateUrl('interviewer_dashboard_area', ['areaPeriod' => $areaPeriod->getId()]));
-    }
 }

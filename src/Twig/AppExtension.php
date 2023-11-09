@@ -74,6 +74,11 @@ class AppExtension extends AbstractExtension implements GlobalsInterface
     {
         return [
             'translation_domain' => $this->getAutoTranslationDomain(),
+            'is_admin' => str_starts_with($this->requestStack?->getCurrentRequest()?->attributes?->get('_route') ?? '', 'admin_'),
+            'is_feedback_route' => in_array(
+                    $this->requestStack?->getCurrentRequest()?->attributes?->get('_route', []),
+                    ['app_feedback_form', 'app_feedback_thanks']
+                ),
         ];
     }
 

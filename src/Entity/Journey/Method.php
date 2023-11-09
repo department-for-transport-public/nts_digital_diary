@@ -142,4 +142,9 @@ class Method implements \JsonSerializable
 
         return "{$prefix}{$key}";
     }
+
+    public function isOtherRequired(): bool
+    {
+        return null === $this->getCode();
+    }
 }

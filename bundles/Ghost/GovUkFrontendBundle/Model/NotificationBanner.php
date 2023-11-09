@@ -10,15 +10,15 @@ class NotificationBanner
 {
     const FLASH_BAG_TYPE = 'notification-banner';
 
+    const OPTION_STYLE = 'style';
+    const OPTION_HTML_CONTENT = 'html_content';
+
     const STYLE_SUCCESS = 'success';
     const STYLE_WARNING = 'warning';
 
-    /** @var string | TranslatableMessage */
-    protected $title;
-    /** @var string | TranslatableMessage */
-    protected $heading;
-    /** @var string | TranslatableMessage */
-    protected $content;
+    protected string | TranslatableMessage $title;
+    protected string | TranslatableMessage $heading;
+    protected string | TranslatableMessage $content;
 
     /**
      * Valid options are:
@@ -28,7 +28,7 @@ class NotificationBanner
     protected ?string $translationDomain;
     protected array $translationParameters;
 
-    public function __construct($title, $heading, $content, $options = [], array $translationParameters = [], ?string $translationDomain = null)
+    public function __construct(string | TranslatableMessage $title, string | TranslatableMessage $heading, string | TranslatableMessage $content, array $options = [], array $translationParameters = [], ?string $translationDomain = null)
     {
         $this->title = $title;
         $this->heading = $heading;

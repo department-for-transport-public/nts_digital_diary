@@ -251,13 +251,15 @@ class AreaPeriod implements ApiIdInterface
 
     public function getFirstValidDiaryStartDate(): DateTime
     {
-        return new DateTime("{$this->year}/{$this->month}/01 midnight");
+        return $this->getTrainingInterviewer()
+            ? (new DateTime())->modify("midnight, first day of last month")
+            : new DateTime("{$this->year}/{$this->month}/01 midnight");
     }
 
     public function getLastValidDiaryStartDate(): DateTime
     {
         return $this->getFirstValidDiaryStartDate()
-            ->add(DateInterval::createFromDateString('2 months'))
+            ->add(DateInterval::createFromDateString('3 months'))
             ->sub(DateInterval::createFromDateString('1 second'));
     }
 
@@ -307,14 +309,9 @@ class AreaPeriod implements ApiIdInterface
         return $stateCounts;
     }
 
-    public static function getArchiveThreshold(): \DateTime
-    {
-        return (new \DateTime())->sub(new \DateInterval('P9W'));
-    }
-
     public function isArchived(): bool
     {
         // N.B. Logic matches that in (Interviewer) DashboardController
-        return $this->getLastValidDiaryStartDate() < self::getArchiveThreshold();
+        return $this->getLastValidDiaryStartDate() < (new \DateTime())->sub(new \DateInterval('P9W'));
     }
 }

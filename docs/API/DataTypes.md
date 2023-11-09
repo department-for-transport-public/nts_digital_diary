@@ -12,6 +12,10 @@
 - **decimal** - string
   Decimal precision number represented as a string to avoid rounding or floating point errors
   e.g. `46.934`
+- **cost** - string
+  essentially a decimal field, but with some extra encoding.
+  - when a value of `"0.00"` is returned, the user indicated that there was no cost
+  - when a value of `""` is returned, the user indicated that there was a cost, but did not enter a value for it
 - **formatted date** - string  
   e.g. `2022-11-23`
 - **formatted date / time** - string  

@@ -60,18 +60,17 @@ class EmailChangeVoterTest extends WebTestCase
         $nonProxiedDiaryKeeperWithoutPw->addActingAsProxyFor($proxiedDiaryKeeperWithPassword);
 
         $loginStr = $withIdentifierForLogin ? 'login identifier' : 'no login identifier';
-        $expectedResult = fn(bool $expectation) => $withIdentifierForLogin ? $expectation : false;
 
         return [
-            "User DK / subject DK, no proxy, {$loginStr}, no password" => [$diaryKeeperUser, $nonProxiedDiaryKeeperUserWithoutPw, $expectedResult(false)],
-            "User DK / subject DK, proxy, {$loginStr}, no password" => [$diaryKeeperUser, $proxiedDiaryKeeperUserWithoutPw, $expectedResult(false)],
-            "User DK / subject DK, no proxy, {$loginStr}, password" => [$diaryKeeperUser, $nonProxiedDiaryKeeperWithPasswordUser, $expectedResult(false)],
-            "User DK / subject DK, proxy, {$loginStr}, password" => [$diaryKeeperUser, $proxiedDiaryKeeperWithPasswordUser, $expectedResult(false)],
+            "User DK / subject DK, no proxy, {$loginStr}, no password" => [$diaryKeeperUser, $nonProxiedDiaryKeeperUserWithoutPw, false],
+            "User DK / subject DK, proxy, {$loginStr}, no password" => [$diaryKeeperUser, $proxiedDiaryKeeperUserWithoutPw, false],
+            "User DK / subject DK, no proxy, {$loginStr}, password" => [$diaryKeeperUser, $nonProxiedDiaryKeeperWithPasswordUser, false],
+            "User DK / subject DK, proxy, {$loginStr}, password" => [$diaryKeeperUser, $proxiedDiaryKeeperWithPasswordUser, false],
 
-            "User Int / subject DK, no proxy, {$loginStr}, no password" => [$interviewerUser, $nonProxiedDiaryKeeperUserWithoutPw, $expectedResult(true)],
-            "User Int / subject DK, proxy, {$loginStr}, no password" => [$interviewerUser, $proxiedDiaryKeeperUserWithoutPw, $expectedResult(true)],
-            "User Int / subject DK, no proxy, {$loginStr}, password" => [$interviewerUser, $nonProxiedDiaryKeeperWithPasswordUser, $expectedResult(false)],
-            "User Int / subject DK, proxy, {$loginStr}, password" => [$interviewerUser, $proxiedDiaryKeeperWithPasswordUser, $expectedResult(false)],
+            "User Int / subject DK, no proxy, {$loginStr}, no password" => [$interviewerUser, $nonProxiedDiaryKeeperUserWithoutPw, true],
+            "User Int / subject DK, proxy, {$loginStr}, no password" => [$interviewerUser, $proxiedDiaryKeeperUserWithoutPw, true],
+            "User Int / subject DK, no proxy, {$loginStr}, password" => [$interviewerUser, $nonProxiedDiaryKeeperWithPasswordUser, false],
+            "User Int / subject DK, proxy, {$loginStr}, password" => [$interviewerUser, $proxiedDiaryKeeperWithPasswordUser, false],
         ];
     }
 

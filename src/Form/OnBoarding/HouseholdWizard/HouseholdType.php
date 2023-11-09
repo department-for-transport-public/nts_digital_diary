@@ -11,6 +11,7 @@ use Symfony\Component\Form\AbstractType;
 use Symfony\Component\Form\FormBuilderInterface;
 use Symfony\Component\Form\FormEvent;
 use Symfony\Component\Form\FormEvents;
+use Symfony\Component\Form\FormInterface;
 use Symfony\Component\OptionsResolver\OptionsResolver;
 
 class HouseholdType extends AbstractType
@@ -21,14 +22,14 @@ class HouseholdType extends AbstractType
             ->add('addressNumber', NumberType::class, [
                 'label' => "household.details.address-number.label",
                 'help' => "household.details.address-number.help",
-                'attr' => ['class' => 'govuk-input--width-5'],
+                'attr' => ['class' => 'govuk-input--width-3'],
                 'label_attr' => ['class' => 'govuk-label--s'],
             ])
             ->add('householdNumber', NumberType::class, [
                 'label' => "household.details.household-number.label",
                 'label_attr' => ['class' => 'govuk-label--s'],
                 'help' => "household.details.household-number.help",
-                'attr' => ['class' => 'govuk-input--width-5'],
+                'attr' => ['class' => 'govuk-input--width-2'],
             ]);
 
         if (Features::isEnabled(Features::CHECK_LETTER)) {
@@ -37,7 +38,7 @@ class HouseholdType extends AbstractType
                     'label' => "household.details.check-letter.label",
                     'label_attr' => ['class' => 'govuk-label--s'],
                     'help' => "household.details.check-letter.help",
-                    'attr' => ['class' => 'govuk-input--width-3'],
+                    'attr' => ['class' => 'govuk-input--width-2'],
                 ]);
         }
 
@@ -62,11 +63,18 @@ class HouseholdType extends AbstractType
 
     public function configureOptions(OptionsResolver $resolver): void
     {
-        $validationGroups = ['wizard.on-boarding.household'];
-
-        if (Features::isEnabled(Features::CHECK_LETTER)) {
-            $validationGroups[] = 'wizard.on-boarding.check-letter';
-        }
+        $validationGroups = function (FormInterface $form) {
+            /** @var Household $formData */
+            $formData = $form->getData();
+            $groups = ['wizard.on-boarding.household'];
+            if (
+                Features::isEnabled(Features::CHECK_LETTER)
+                && !$formData->getAreaPeriod()->getTrainingInterviewer()
+            ) {
+                $groups[] = 'wizard.on-boarding.check-letter';
+            }
+            return $groups;
+        };
 
         $resolver->setDefaults([
             'data_class' => Household::class,

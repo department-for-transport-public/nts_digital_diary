@@ -29,3 +29,13 @@
     margin-left: 0;
   }
 }
+
+$gutter: 15px;
+
+body.full-width-page {
+  .govuk-width-container {
+    max-width: none;
+    margin-left: $gutter;
+    margin-right: $gutter;
+  }
+}

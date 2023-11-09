@@ -74,12 +74,24 @@ class Vehicle implements \JsonSerializable
 
     /**
      * @ORM\Column(type="integer", nullable=true)
+     * @Assert\Positive(groups="vehicle.odometer-readings")
+     * @Assert\Range(
+     *     groups="vehicle.odometer-readings",
+     *     maxMessage="common.number.max",
+     *     max=10000000
+     * )
      */
     private ?int $weekStartOdometerReading;
 
     /**
      * @ORM\Column(type="integer", nullable=true)
-     * @Assert\Expression("isNull(value) || value >= this.getWeekStartOdometerReading()", groups={"vehicle.odometer-readings"}, message="vehicle.odometer-readings.end-not-less-than-start")
+     * @Assert\Positive(groups="vehicle.odometer-readings")
+     * @Assert\Expression("isNull(value) || value < 0 || value >= this.getWeekStartOdometerReading()", groups={"vehicle.odometer-readings"}, message="vehicle.odometer-readings.end-not-less-than-start")
+     * @Assert\Range(
+     *     groups="vehicle.odometer-readings",
+     *     maxMessage="common.number.max",
+     *     max=10000000
+     * )
      */
     private ?int $weekEndOdometerReading;
 

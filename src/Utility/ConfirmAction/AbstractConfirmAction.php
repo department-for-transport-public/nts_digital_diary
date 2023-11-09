@@ -98,13 +98,7 @@ abstract class AbstractConfirmAction implements ConfirmActionInterface
         return $this->formFactory->create($this->getFormClass(), null, $this->getFormOptions());
     }
 
-    /**
-     * @param Request $request
-     * @param string $confirmedActionUrl
-     * @param null|string $cancelledActionUrl if omitted, will use the same url as for confirmed
-     * @return RedirectResponse | array
-     */
-    public function controller(Request $request, string $confirmedActionUrl, string $cancelledActionUrl = null)
+    public function controller(Request $request, string $confirmedActionUrl, ?string $cancelledActionUrl = null): RedirectResponse | array
     {
         $this->confirmedActionUrl = $confirmedActionUrl;
         $this->cancelledActionUrl = $cancelledActionUrl ?? $confirmedActionUrl;

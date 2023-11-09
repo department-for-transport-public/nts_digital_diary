@@ -4,7 +4,7 @@ namespace App\Controller\OnBoarding;
 
 use App\Controller\FormWizard\AbstractSessionStateFormWizardController;
 use App\Entity\Household;
-use App\Entity\OtpUserInterface;
+use App\Security\OneTimePassword\OtpUserInterface;
 use App\FormWizard\FormWizardStateInterface;
 use App\FormWizard\OnBoarding\HouseholdState;
 use App\FormWizard\Place;

@@ -131,22 +131,29 @@ abstract class AbstractListPage
         }
 
         if ($this->order && $this->orderDirection) {
-            $field = $this->getFieldById($this->order);
+            $field = $this->getFieldById($this->order, true);
             $qb->addOrderBy($field->getPropertyPath(), $this->orderDirection);
         } else {
             $defaultOrder = $this->getDefaultOrder();
             foreach ($defaultOrder as $id=>$direction) {
-                $qb->addOrderBy($this->getFieldById($id)->getPropertyPath(), $direction);
+                $qb->addOrderBy($this->getFieldById($id, true)->getPropertyPath(), $direction);
             }
         }
 
         return $qb;
     }
 
-    protected function getFieldById(string $id): ?Simple
+    protected function getFieldById(string $id, bool $throwExceptionIfNotFound=false): ?Simple
     {
         $matchingFields = array_filter($this->getFields(), fn(Simple $field) => $field->getId() === $id);
-        return count($matchingFields) > 0 ? current($matchingFields) : null;
+        $field = count($matchingFields) > 0 ? current($matchingFields) : null;
+
+        if ($throwExceptionIfNotFound && !$field) {
+            $fieldIds = join(', ', array_map(fn(Simple $field) => $field->getId(), $this->getFields()));
+            throw new \Exception("Field with ID of '{$id}' not found (valid: {$fieldIds})");
+        }
+
+        return $field;
     }
 
     public function getFiltersForm(): FormInterface

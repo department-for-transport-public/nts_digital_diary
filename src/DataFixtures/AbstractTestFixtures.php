@@ -3,10 +3,9 @@
 namespace App\DataFixtures;
 
 use App\Entity\AreaPeriod;
-use App\Entity\CostOrNil;
-use App\Entity\DiaryDay;
 use App\Entity\DiaryKeeper;
-use App\Entity\Distance;
+use App\Entity\Embeddable\CostOrNil;
+use App\Entity\Embeddable\Distance;
 use App\Entity\Household;
 use App\Entity\Interviewer;
 use App\Entity\Journey\Journey;
@@ -14,16 +13,11 @@ use App\Entity\Journey\Method;
 use App\Entity\Journey\Stage;
 use App\Entity\User;
 use App\Entity\Vehicle;
-use App\Features;
 use Brick\Math\BigDecimal;
-use DateInterval;
-use DateTime;
 use Doctrine\Bundle\FixturesBundle\Fixture;
 use Doctrine\Bundle\FixturesBundle\FixtureGroupInterface;
 use Doctrine\Common\DataFixtures\DependentFixtureInterface;
 use Doctrine\Persistence\ObjectManager;
-use Faker;
-use RuntimeException;
 use function PHPUnit\Framework\assertSame;
 
 abstract class AbstractTestFixtures extends Fixture implements FixtureGroupInterface, DependentFixtureInterface
@@ -170,7 +164,7 @@ abstract class AbstractTestFixtures extends Fixture implements FixtureGroupInter
 
         return (new Stage())
             ->setMethod($method)
-            ->setMethodOther(is_null($method->getCode()) ? $methodOther : null)
+            ->setMethodOther($method->isOtherRequired() ? $methodOther : null)
             ->setAdultCount($adultCount)
             ->setChildCount(0)
             ->setDistanceTravelled($distanceTravelled)

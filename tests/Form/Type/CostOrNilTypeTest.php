@@ -2,7 +2,7 @@
 
 namespace App\Tests\Form\Type;
 
-use App\Entity\CostOrNil;
+use App\Entity\Embeddable\CostOrNil;
 use App\Form\CostOrNilType;
 use Brick\Math\BigDecimal;
 use Ghost\GovUkFrontendBundle\Form\Extension\ChoiceTypeExtension;

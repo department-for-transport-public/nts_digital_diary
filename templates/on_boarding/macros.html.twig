@@ -8,9 +8,7 @@
             ? {(path('onboarding_household_index', {place: constant('App\\FormWizard\\OnBoarding\\HouseholdState::STATE_DETAILS')})): {label: 'actions.change', srHiddenSuffix: 'household.details.change-action-suffix', srHiddenSuffixDomain: 'on-boarding'}}
             : {}
         -%}
-        {{- summaryListRow('household.details.area-number.label' | trans, app.user.household.areaPeriod.area) -}}
-        {{- summaryListRow('household.details.address-number.label' | trans, app.user.household.addressNumber, actions) -}}
-        {{- summaryListRow('household.details.household-number.label' | trans, app.user.household.householdNumber, actions) -}}
+        {{- summaryListRow('household.details.household-serial.label' | trans, app.user.household.serialNumber, actions) -}}
         {{- summaryListRow('household.details.diary-start.label' | trans, app.user.household.diaryWeekStartDate | date(format_date_default), actions) -}}
     </div>
 {% endmacro %}

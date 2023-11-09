@@ -2,19 +2,20 @@
 
 namespace App\Utility\Screenshots;
 
+use App\Features;
 use Nesk\Puphpeteer\Resources\Browser;
 
 class DiaryKeeperScreenshotter extends AbstractScreenshotter
 {
     public function __construct(
+        Features $features,
         Browser $browser,
         string $screenshotsBaseDir,
         string $hostname,
         protected bool $addExtraStages=false
     ) {
-        parent::__construct($browser, $screenshotsBaseDir, $hostname);
+        parent::__construct($features, $browser, $screenshotsBaseDir, $hostname);
     }
-
 
     /**
      * @throws ScreenshotsException
@@ -121,7 +122,7 @@ class DiaryKeeperScreenshotter extends AbstractScreenshotter
         $this->clickLinkWithTextThatStartsWith('Back to diary');
         $this->screenshot('3b-dashboard-in-progress.png');
 
-        // Mileometer readings
+        // Milometer readings
         $this->milometerReadingsFlow();
 
         $this->addJourneyForSplitterDemonstration(5, 'Home', 'Walk the dog');
@@ -533,6 +534,10 @@ class DiaryKeeperScreenshotter extends AbstractScreenshotter
      */
     protected function milometerReadingsFlow(): void
     {
+        if (!$this->features->isEnabled(Features::MILOMETER)) {
+            return;
+        }
+
         $this->clickLinkWithText('Enter/edit milometer readings for "Blue golf"');
         $this->screenshot('milometer/1-enter-readings.png');
 

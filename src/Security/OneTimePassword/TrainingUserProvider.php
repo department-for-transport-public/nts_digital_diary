@@ -46,7 +46,7 @@ class TrainingUserProvider implements UserProviderInterface
 
         $storedUser = $this->getUser($user->getUserIdentifier());
 
-        $interviewer = $this->entityManager->find(Interviewer::class, $user->getInterviewer()->getId());
+        $interviewer = $this->entityManager->find(Interviewer::class, $user->getInterviewer()?->getId());
 
         /**
          * During the onboarding/household wizard, the household hasn't yet been persisted.

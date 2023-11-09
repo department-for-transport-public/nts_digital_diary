@@ -6,13 +6,12 @@ use App\DataFixtures\Definition\JourneyDefinition;
 use App\DataFixtures\Definition\PrivateStageDefinition;
 use App\DataFixtures\Definition\PublicStageDefinition;
 use App\DataFixtures\Definition\StageDefinition;
-use App\Entity\CostOrNil;
+use App\Entity\Embeddable\CostOrNil;
 use App\Entity\DiaryDay;
 use App\Entity\Journey\Journey;
 use App\Entity\Journey\Method;
 use App\Entity\Journey\Stage;
 use App\Repository\Journey\MethodRepository;
-use Brick\Math\BigDecimal;
 use Symfony\Component\PropertyAccess\PropertyAccess;
 
 class FixtureHelper
@@ -56,7 +55,7 @@ class FixtureHelper
             ->setAdultCount($definition->getAdultCount())
             ->setChildCount($definition->getChildCount());
 
-        if ($method->getCode() === null && $methodOther === null) {
+        if ($method->isOtherRequired() && $methodOther === null) {
             throw new \RuntimeException("Either method must have a non-null code, or methodOther must be set [method: {$definition->getMethod()}]");
         }
 

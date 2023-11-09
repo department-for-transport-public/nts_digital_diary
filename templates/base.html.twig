@@ -8,6 +8,8 @@
     {% if env_google_site_verification ?? false %}<meta name="google-site-verification" content="{{ env_google_site_verification }}" />{% endif %}
 {%- endblock %}
 
+{% set supportNavigation = (is_feedback_route or is_admin) ? [] : [{href: path('app_feedback_form', {category: constant('App\\Entity\\Feedback\\CategoryEnum::Support').value, info: encodeFeedback()}), text: 'Support'}] %}
+
 {% block headerBar %}
     <style nonce="{{ csp_inline_script_helper.nonce('env-label') }}">
         #envLabel {
@@ -21,13 +23,13 @@
             {{ env_label_frontend | raw }}
         </div>
     {% endif %}
-    {%- set defaultNavigation = (is_granted('ROLE_USER') ? [{href: logout_path(), text: 'logout' | trans}] : false) -%}
+    {%- set defaultNavigation = supportNavigation | merge(is_granted('ROLE_USER') ? [{href: logout_path(), text: 'logout' | trans}] : {}) -%}
     {#- N.B. {suppressMenuButtonLabel: true} relates to DAC_Label_In_Name_01 -#}
     {{ govukHeader({
         homepageUrl: 'https://www.gov.uk/',
         serviceName: ('service.name' | trans),
         serviceUrl: '/',
-        navigation: navigation ?? defaultNavigation,
+        navigation: (navigation ?? []) | merge(defaultNavigation),
         suppressMenuButtonLabel: true
     }) }}
 {% endblock %}
@@ -112,6 +114,6 @@
         meta: {items: [
             {href: path('app_frontend_accessibilitystatement'), text: 'Accessibility'},
             {href: path('app_frontend_privacystatement'), text: 'Privacy'},
-        ]}
+        ] | merge(supportNavigation)}
     }) }}
 {% endblock %}

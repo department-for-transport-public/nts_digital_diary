@@ -12,8 +12,6 @@ use Symfony\Component\HttpFoundation\Request;
 use Symfony\Component\HttpFoundation\Response;
 use Symfony\Component\Security\Core\Authentication\Token\TokenInterface;
 use Symfony\Component\Security\Core\Exception\AuthenticationException;
-use Symfony\Component\Security\Core\User\InMemoryUser;
-use Symfony\Component\Security\Core\User\User;
 use Symfony\Component\Security\Core\User\UserInterface;
 use Symfony\Component\Security\Http\Authenticator\AbstractAuthenticator;
 use Symfony\Component\Security\Http\Authenticator\Passport\Badge\UserBadge;
@@ -25,7 +23,7 @@ class IapAuthenticator extends AbstractAuthenticator
     const EXTRA_FIELD_USER_ID = 'IAPid';
     private bool $isGaeEnvironment;
 
-    public function __construct()
+    public function __construct(protected AdminRoleResolver $roleResolver)
     {
         $this->isGaeEnvironment = Features::isEnabled(Features::GAE_ENVIRONMENT);
     }
@@ -52,16 +50,19 @@ class IapAuthenticator extends AbstractAuthenticator
 
     public function authenticate(Request $request): Passport
     {
+        $emailAddress = $this->getUserEmail($request);
+
         $credentials = [
-            'emailAddress' => $this->getUserEmail($request),
+            'emailAddress' => $emailAddress,
             'userId' => $this->getUserId($request),
             'assertion' => $this->getJwtAssertion($request),
         ];
+
         return new Passport(
-            new UserBadge('', fn() => new InMemoryUser(
-                $credentials['emailAddress'],
+            new UserBadge('', fn() => new IapUser(
+                $emailAddress,
                 $credentials['assertion'],
-                ['ROLE_ADMIN'],
+                $this->roleResolver->getRolesForEmailAddress($emailAddress),
             )),
             new CustomCredentials(
                 [$this, 'customAuthenticator'],
@@ -80,7 +81,7 @@ class IapAuthenticator extends AbstractAuthenticator
             return true;
         }
 
-        /** @var User $user */
+        /** @var IapUser $user */
         try {
             $metadata = new Metadata();
             $audience = "/projects/{$metadata->getNumericProjectId()}/apps/{$metadata->getProjectId()}";
@@ -116,7 +117,6 @@ class IapAuthenticator extends AbstractAuthenticator
         // The email address returned is the plain email address (without namespace)
         return $info['sub'];
     }
-
 
     public function onAuthenticationSuccess(Request $request, TokenInterface $token, string $firewallName): ?Response
     {

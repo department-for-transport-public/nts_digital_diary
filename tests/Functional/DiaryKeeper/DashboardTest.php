@@ -4,7 +4,7 @@ namespace App\Tests\Functional\DiaryKeeper;
 
 use App\DataFixtures\Definition\PrivateStageDefinition;
 use App\DataFixtures\Definition\PublicStageDefinition;
-use App\Entity\CostOrNil;
+use App\Entity\Embeddable\CostOrNil;
 use App\Tests\DataFixtures\JourneyFixtures;
 use App\Tests\DataFixtures\StageFixtures;
 use App\Tests\Functional\AbstractFunctionalTestCase;

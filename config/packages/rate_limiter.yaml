@@ -9,6 +9,12 @@ services:
             $globalFactory: '@limiter.ip'
             $localFactory: '@limiter.ip_and_username'
 
+    limiter.onboarding_login:
+        class: App\Security\OneTimePassword\RateLimiter
+        arguments:
+            $globalFactory: '@limiter.ip'
+            $localFactory: '@limiter.ip_and_username'
+
 # Cache overridden in cache.yaml
 framework:
     rate_limiter:

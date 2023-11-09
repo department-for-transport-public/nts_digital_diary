@@ -13,7 +13,7 @@ class PropertyChangeRetentionTest extends TestCase
         $toCl = function(array $intSerialIdValues): array  {
             $count = 0;
 
-            return array_map(function(?int $interviewerSerialId) use (&$count) {
+            return array_map(function(?string $interviewerSerialId) use (&$count) {
                 return (new PropertyChangeLog())
                     ->setEntityId($count++)
                     ->setInterviewerSerialId($interviewerSerialId);
@@ -47,6 +47,10 @@ class PropertyChangeRetentionTest extends TestCase
             ],
             [
                 $toCl([1, null, 1, 1]),
+                [0, 1],
+            ],
+            [
+                $toCl([1, null, 1, null, 1]),
                 [0, 1],
             ],
             // DK + other: Keep most recent DK, INT, DK

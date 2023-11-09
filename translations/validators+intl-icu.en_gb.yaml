@@ -10,7 +10,7 @@ common:
   number:
     invalid: Enter a number
     not-null: Enter a number
-    max: "Cannot be more than {limit}"
+    max: "Cannot be more than {limit, number}"
     positive: Enter a positive number
     positive-or-zero: Enter a positive number or zero
   cost:
@@ -26,9 +26,13 @@ common:
 change-email:
   email.not-blank: Enter an email address
 
-feedback:
-  comments.not-blank: Enter your comments
+change-proxies:
+  at-least-one: Select at least one proxy as this Diary Keeper does not have their own login
+
+feedback.form:
+  comments.not-blank: Enter the details
   email.not-valid: Enter a valid email address
+  email.not-blank: Enter an email address
 
 forgotten-password:
   email.not-blank: Enter an email address
@@ -78,6 +82,9 @@ admin:
   area:
     valid: Area code {value} is not valid
     unique: An area with code "{value}" already exists for this year
+  feedback:
+    note:
+      not-blank: Enter a note
 
 wizard.diary-keeper:
   is-adult.not-null: You must indicate if this person is an adult
@@ -238,5 +245,5 @@ wizard.return-journey:
   diary-day.not-null: Select a day
 
 vehicle.odometer-readings:
-    end-not-less-than-start: This cannot be less than the first odometer reading
+    end-not-less-than-start: This cannot be less than the first milometer reading
     units-required: Select a unit

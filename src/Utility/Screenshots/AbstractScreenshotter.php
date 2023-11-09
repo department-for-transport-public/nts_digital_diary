@@ -2,6 +2,7 @@
 
 namespace App\Utility\Screenshots;
 
+use App\Features;
 use App\Utility\XPath;
 use Nesk\Puphpeteer\Resources\Browser;
 use Nesk\Puphpeteer\Resources\ElementHandle;
@@ -10,16 +11,14 @@ use Nesk\Rialto\Data\JsFunction;
 
 abstract class AbstractScreenshotter
 {
-    protected Browser $browser;
-    protected string $screenshotsBaseDir;
-    protected string $hostname;
     protected Page $page;
 
-    public function __construct(Browser $browser, string $screenshotsBaseDir, string $hostname)
-    {
-        $this->browser = $browser;
-        $this->screenshotsBaseDir = $screenshotsBaseDir;
-        $this->hostname = $hostname;
+    public function __construct(
+        protected Features $features,
+        protected Browser $browser,
+        protected string $screenshotsBaseDir,
+        protected string $hostname
+    ) {
         $this->page = $this->getNewPage();
     }
 

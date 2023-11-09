@@ -29,9 +29,16 @@ class TextFilter extends Simple implements FilterableInterface
 
     public function addFilterCondition(QueryBuilder $queryBuilder, $formData): QueryBuilder
     {
-        $trimmed = trim($formData);
+        $searchValue = trim($formData);
+
+        $cellOptions = $this->getCellOptions();
+        if ($cellOptions['replace_slashes_with_dashes'] ?? false) {
+            // This allows a search for dates to be more permissive in its format (i.e. 2023/09 works as well as 2023-09)
+            $searchValue = str_replace(['\\', '/'], ['-', '-'], $searchValue);
+        }
+
         return $queryBuilder
             ->andWhere("{$this->getPropertyPath()} LIKE :{$this->getId()}")
-            ->setParameter($this->getId(), "%{$trimmed}%");
+            ->setParameter($this->getId(), "%{$searchValue}%");
     }
 }

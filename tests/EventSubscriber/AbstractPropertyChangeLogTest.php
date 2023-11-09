@@ -3,7 +3,7 @@
 namespace App\Tests\EventSubscriber;
 
 use App\Entity\PropertyChangeLog;
-use App\Entity\PropertyChangeLoggable;
+use App\Entity\PropertyChangeLoggableInterface;
 use App\Entity\User;
 use App\Repository\PropertyChangeLogRepository;
 use App\Tests\DataFixtures\StageFixtures;
@@ -59,7 +59,7 @@ abstract class AbstractPropertyChangeLogTest extends AbstractWebTestCase
         $entity = $this->referenceRepository->getReference($refName);
 
         $this->assertInstanceOf($refClass, $entity);
-        $this->assertInstanceOf(PropertyChangeLoggable::class, $entity);
+        $this->assertInstanceOf(PropertyChangeLoggableInterface::class, $entity);
 
         if ($value instanceof \Closure) {
             // If we directly called, we'd be running the closure with the scope it had in dataPropertyLog

@@ -57,6 +57,14 @@
                 }
             ]) %}
         {%- endif -%}
+        {%- if action is defined and action == 'change-proxies' -%}
+            {% set breadcrumbItems = breadcrumbItems | merge([
+                {
+                    href: path("interviewer_change_proxies", {diaryKeeper: diaryKeeper.id}),
+                    text: 'diary-keeper.change-proxies.breadcrumb' | trans({name: diaryKeeper.name}),
+                }
+            ]) %}
+        {%- endif -%}
         {%- if action is defined and action == 'diary-state.approve' -%}
             {% set breadcrumbItems = breadcrumbItems | merge([
                 {

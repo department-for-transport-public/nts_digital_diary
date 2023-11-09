@@ -1,1 +1,7 @@
 @import "govuk-frontend/list-page-table";
+
+body.nts-admin {
+  * {
+    overflow-wrap: normal;
+  }
+}

@@ -5,9 +5,14 @@ this process, you will need a set of passcodes from the NatCen CAPI system.
 
 This module is to be completed during your NatCen Briefing. Please do not attempt to complete this exercise at home.
 
-You need to copy the below passcode and paste it into the second, empty field on the next screen.
+You need to enter the passcodes below into the fields on the next screen.
 
-**Second passcode**: {{ passcode }}
 {%- endapply -%}
 </div>
+{% from '@GhostGovUkFrontend/components/macros.html.twig' import actionlessSummaryListRow %}
+<dl class="govuk-summary-list">
+    {{ actionlessSummaryListRow('First passcode', passcode1 | format_otp, {html: true}) }}
+    {{ actionlessSummaryListRow('Second passcode', passcode2 | format_otp, {html: true}) }}
+</dl>
+
 <div class="govuk-button-group"><a class="govuk-button" href="{{ practicalUrl }}">Access onboarding training</a></div>

@@ -56,12 +56,12 @@ class User implements UserInterface, PasswordAuthenticatedUserInterface
 
         if (!$hasIdentifier) {
             if (!$hasProxier) {
-                // Must have at least one login or proxy
-                $errorKey = $householdAlreadyHasDiaryKeepers ? 'at-least-one' : 'enter-email';
-
-                $context->buildViolation("wizard.on-boarding.diary-keeper.identity.{$errorKey}")
-                    ->atPath($householdAlreadyHasDiaryKeepers ? "" : "username")
-                    ->addViolation();
+                // more validation on DiaryKeeper/proxies
+                if (!$householdAlreadyHasDiaryKeepers) {
+                    $context->buildViolation("wizard.on-boarding.diary-keeper.identity.enter-email")
+                        ->atPath("username")
+                        ->addViolation();
+                }
             } else if ($this->getDiaryKeeper()->isActingAsAProxyForOthers()) {
                 $context->buildViolation("wizard.on-boarding.diary-keeper.identity.not-empty-when-acting-as-a-proxy")
                     ->atPath("username")
@@ -80,6 +80,7 @@ class User implements UserInterface, PasswordAuthenticatedUserInterface
 
     /**
      * @ORM\OneToOne(targetEntity=DiaryKeeper::class, inversedBy="user", fetch="EAGER")
+     * @Assert\Valid(groups={"wizard.on-boarding.diary-keeper.user-identifier"})
      */
     private ?DiaryKeeper $diaryKeeper = null;
 
@@ -120,6 +121,11 @@ class User implements UserInterface, PasswordAuthenticatedUserInterface
      * @ORM\Column(type="string", length=26, insertable=false, updatable=false, generated="ALWAYS", columnDefinition="VARCHAR(26) GENERATED ALWAYS AS (ifNull(training_interviewer_id, 'no-interviewer')) VIRTUAL")
      */
     private ?string $virtualColumnTrainingInterviewerId;
+
+    /**
+     * @ORM\Column(type="boolean")
+     */
+    private bool $hasPendingUsernameChange = false;
 
     public function getUserIdentifier(): ?string
     {
@@ -300,7 +306,7 @@ class User implements UserInterface, PasswordAuthenticatedUserInterface
 
     public function getTrainingInterviewer(): ?Interviewer
     {
-        return $this->trainingInterviewer;
+        return $this->trainingInterviewer ?? null;
     }
 
     public function setTrainingInterviewer(?Interviewer $trainingInterviewer): self
@@ -313,10 +319,27 @@ class User implements UserInterface, PasswordAuthenticatedUserInterface
     /**
      * @ORM\PreFlush()
      */
-    public function trainingInterviewerPreFlush(PreFlushEventArgs $eventArgs)
+    public function trainingInterviewerPreFlush(PreFlushEventArgs $eventArgs): void
     {
-        if ($eventArgs->getEntityManager()->getUnitOfWork()->isScheduledForInsert($this)) {
+        if (
+            $eventArgs->getObjectManager()->getUnitOfWork()->isScheduledForInsert($this) &&
+            // Typically trainingInterviewer will always be null, but this exclusion allows
+            // unit test fixtures to be used and not overwritten.
+            !isset($this->trainingInterviewer)
+        ) {
             $this->trainingInterviewer = $this->diaryKeeper?->getHousehold()?->getAreaPeriod()?->getTrainingInterviewer();
         }
+    }
+
+    public function getHasPendingUsernameChange(): bool
+    {
+        return $this->hasPendingUsernameChange;
+    }
+
+    public function setHasPendingUsernameChange(bool $hasPendingUsernameChange): self
+    {
+        $this->hasPendingUsernameChange = $hasPendingUsernameChange;
+
+        return $this;
     }
 }

@@ -10,6 +10,7 @@ class DateTimeFormats
     const DATE_REVERSE = 'Y-m-d';
     const DATE_SHORT_WITH_DOW = 'D jS M';
     const DATE_WITH_DOW = 'l jS M';
+    const DATE_TIME = 'd/m/Y H:i';
 
     const TIME_SHORT = 'g:ia';
 }

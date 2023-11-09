@@ -7,7 +7,7 @@ use App\Entity\BasicMetadataTrait;
 use App\Entity\DiaryDay;
 use App\Entity\DiaryKeeper;
 use App\Entity\IdTrait;
-use App\Entity\PropertyChangeLoggable;
+use App\Entity\PropertyChangeLoggableInterface;
 use App\Repository\Journey\JourneyRepository;
 use App\Validator\JourneySharingValidator;
 use DateTime;
@@ -22,7 +22,7 @@ use Symfony\Component\Validator\Context\ExecutionContextInterface;
  * @ORM\Entity(repositoryClass=JourneyRepository::class)
  * @Assert\Callback({JourneySharingValidator::class, "validateJourney"}, groups={"wizard.share-journey.purpose"})
  */
-class Journey implements PropertyChangeLoggable, BasicMetadataInterface
+class Journey implements PropertyChangeLoggableInterface, BasicMetadataInterface
 {
     use IdTrait;
     use BasicMetadataTrait;
@@ -37,7 +37,6 @@ class Journey implements PropertyChangeLoggable, BasicMetadataInterface
     ];
 
     const SHARE_JOURNEY_CLONE_PROPERTIES = [
-        'diaryDay',
         /* times form */        'startTime', 'endTime',
         /* locations form */    'startLocation', 'isStartHome', 'endLocation', 'isEndHome',
     ];
@@ -118,13 +117,14 @@ class Journey implements PropertyChangeLoggable, BasicMetadataInterface
 
     /**
      * @ORM\ManyToOne(targetEntity=Journey::class, inversedBy="sharedTo")
+     * @ORM\JoinColumn(onDelete="SET NULL")
      */
     private ?Journey $sharedFrom;
 
     /**
      * @ORM\OneToMany(targetEntity=Journey::class, mappedBy="sharedFrom", cascade={"persist"})
      * @Assert\Count(min=1, minMessage="wizard.share-journey.who-with.not-blank", groups="wizard.share-journey.share-to")
-     * @var Collection | Journey[]
+     * @var Collection<Journey>
      */
     private Collection $sharedTo;
 

@@ -2,7 +2,7 @@
 
 namespace App\Form;
 
-use App\Entity\CostOrNil;
+use App\Entity\Embeddable\CostOrNil;
 use Ghost\GovUkFrontendBundle\Form\Type\BooleanChoiceType;
 use Ghost\GovUkFrontendBundle\Form\Type\MoneyType;
 use Symfony\Component\Form\AbstractType;

@@ -23,6 +23,8 @@ framework:
                     max_delay: 7200000
             async_property_change:
                 dsn: 'doctrine://default?queue_name=property-change'
+            async_feedback:
+                dsn: 'doctrine://default?queue_name=feedback'
             failed: 'doctrine://default?queue_name=failed'
             sync: 'sync://'
 
@@ -32,3 +34,4 @@ framework:
 
             'App\Messenger\AlphagovNotify\AbstractMessage': async_notify
             'App\Messenger\PropertyChange\AbstractMessage': async_property_change
+            'App\Messenger\Feedback\AbstractMessage': async_feedback

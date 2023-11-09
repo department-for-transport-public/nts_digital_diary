@@ -68,36 +68,17 @@ class FixtureManager
         $interviewer = $user->getInterviewer();
         $areas = $interviewer->getAreaPeriods();
 
-        // Clear shared journey flags to prevent constraint problems when deleting journeys
-        foreach($areas as $area) {
-            foreach($area->getHouseholds() as $household) {
-                foreach($household->getDiaryKeepers() as $diaryKeeper) {
-                    foreach($diaryKeeper->getDiaryDays() as $day) {
-                        foreach($day->getJourneys() as $journey) {
-                            $journey->setSharedFrom(null);
-                        }
-                    }
-                }
-            }
-        }
-        $this->entityManager->flush();
-
         // Now delete everything...
         foreach ($interviewer->getTrainingAreaPeriods()->toArray() as $area) {
-            $this->removeArea($x);
+            $this->removeArea($area);
         }
-        $this->entityManager->remove($interviewer);
-        $this->entityManager->remove($user);
-
-        $this->entityManager->flush();
 
         foreach($areas as $area) {
             $this->removeArea($area);
         }
 
-        if ($area->getInterviewers()->isEmpty()) {
-            $this->entityManager->remove($area);
-        }
+        $this->entityManager->remove($interviewer);
+        $this->entityManager->remove($user);
 
         $this->entityManager->flush();
     }
@@ -116,7 +97,7 @@ class FixtureManager
 
             foreach($household->getDiaryKeepers() as $diaryKeeper) {
                 $this->entityManager->remove($diaryKeeper);
-                $this->entityManager->remove($diaryKeeper->getUser());
+                if ($diaryKeeper->getUser()) $this->entityManager->remove($diaryKeeper->getUser());
 
                 foreach($diaryKeeper->getDiaryDays() as $day) {
                     $this->entityManager->remove($day);
@@ -130,6 +111,9 @@ class FixtureManager
                     }
                 }
             }
+        }
+        if ($area->getInterviewers()->isEmpty()) {
+            $this->entityManager->remove($area);
         }
     }
 

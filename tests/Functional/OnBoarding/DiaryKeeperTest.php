@@ -81,7 +81,7 @@ class DiaryKeeperTest extends AbstractDiaryKeeperTest
         $identifier = self::USER_IDENTIFIER; // OTP user where address #, household #, and diary week start date already entered
         $this->loginOtpUser($identifier, $this->passcodeGenerator->getPasswordForUserIdentifier($identifier));
 
-        $this->clickLinkContaining('Add a diary keeper');
+        $this->clickLinkContaining('Add a household member');
         $this->doWizardTest($wizardData);
     }
 }

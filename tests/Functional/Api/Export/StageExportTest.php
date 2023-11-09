@@ -105,6 +105,7 @@ class StageExportTest extends AbstractApiWebTestCase
                 $stage['ticketCost'],
                 $this->logicalOr(
                     $this->isNull(),
+                    $this->identicalTo(''),
                     $this->matchesRegularExpression('/^\d{1,8}.\d{2}$/')
                 )
             );
@@ -128,6 +129,7 @@ class StageExportTest extends AbstractApiWebTestCase
                 $stage['parkingCost'],
                 $this->logicalOr(
                     $this->isNull(),
+                    $this->identicalTo(''),
                     $this->matchesRegularExpression('/^\d{1,8}.\d{2}$/')
                 )
             );

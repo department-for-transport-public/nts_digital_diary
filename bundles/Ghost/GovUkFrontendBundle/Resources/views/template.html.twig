@@ -36,9 +36,11 @@
     {{ govuk.header({}) }}
     {% endblock %}
     {% set phaseBannerHtml %}
-        This is a new service – your
-        <a class="govuk-link" href="{{ path('app_feedback', {info: encodeFeedback()}) }}">feedback</a>
-        will help us to improve it.
+        {%- if not is_feedback_route -%}
+            This is a new service – your
+            <a class="govuk-link" href="{{ path('app_feedback_form', {category: constant('App\\Entity\\Feedback\\CategoryEnum::Feedback').value, info: encodeFeedback()}) }}">feedback</a>
+            will help us to improve it.
+        {%- endif -%}
     {% endset %}
     {{ govuk.phaseBanner({
         classes: 'govuk-width-container',

@@ -1,0 +1,20 @@
+{% extends 'on_boarding/base_form_with_help.html.twig' %}
+
+{% trans_default_domain 'on-boarding' %}
+
+{% block content %}
+    <div class="prose-scope">
+        {{- 'household.details.help' | trans({
+            area: app.user.areaPeriod.area,
+            householdSerialImageUrl: asset('build/images/onboarding/household-serial.png')
+        }) | markdown_to_html -}}
+    </div>
+    {{ form_start(form) }}
+    <div class="govuk-form-group govuk-form-group--inline govuk-form-group--inline-narrow">
+        <div class="govuk-form-group"><label class="govuk-label govuk-label--s" for="areaNumber">Area</label><input id="areaNumber" type="text" disabled="disabled" value="{{ app.user.areaPeriod.area }}" class="govuk-input govuk-input--width-5"></div>
+        {{ form_row(form.addressNumber) }}
+        {{ form_row(form.householdNumber) }}
+        {% if form.checkLetter is defined %}{{ form_row(form.checkLetter) }}{% endif %}
+    </div>
+    {{ form_rest(form) }}
+{% endblock %}

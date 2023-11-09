@@ -8,7 +8,6 @@ use Doctrine\Bundle\DoctrineBundle\Repository\ServiceEntityRepository;
 use Doctrine\ORM\NonUniqueResultException;
 use Doctrine\ORM\Query\Expr;
 use Doctrine\Persistence\ManagerRegistry;
-use DoctrineExtensions\Query\Mysql\Exp;
 use Symfony\Bridge\Doctrine\Security\User\UserLoaderInterface;
 
 /**
@@ -23,7 +22,7 @@ class UserRepository extends ServiceEntityRepository implements UserLoaderInterf
         parent::__construct($registry, User::class);
     }
 
-    public function findOneBy(array $criteria, ?array $orderBy = null)
+    public function findOneBy(array $criteria, ?array $orderBy = null): ?object
     {
         if (array_key_exists('username', $criteria)) {
             throw new \RuntimeException('It is unsafe to use findOneBy(username), use loadUserByIdentifier instead');
@@ -52,12 +51,15 @@ class UserRepository extends ServiceEntityRepository implements UserLoaderInterf
         return $user ? $user->getDiaryKeeper() : null;
     }
 
-    public function isExistingUserWithEmailAddress($emailOverride, string $excludingUserId = null): bool
+    public function canChangeEmailTo(string $email, string $excludingUserId = null): bool
     {
         $qb = $this->createQueryBuilder('u')
             ->select('u')
             ->where('u.username = :email')
-            ->setParameter('email', $emailOverride);
+            // trainingInterviewer IS NULL means that this method is only usable for *real* (i.e. non-training)
+            // users. In training scenarios, changing email addresses is not allowed, so this shouldn't be a problem.
+            ->andWhere('u.trainingInterviewer IS NULL')
+            ->setParameter('email', $email);
 
         if ($excludingUserId) {
             $qb = $qb

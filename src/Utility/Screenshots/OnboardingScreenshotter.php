@@ -2,6 +2,9 @@
 
 namespace App\Utility\Screenshots;
 
+use App\Features;
+use App\Utility\TravelDiary\SerialHelper;
+
 class OnboardingScreenshotter extends AbstractScreenshotter
 {
     /**
@@ -27,18 +30,28 @@ class OnboardingScreenshotter extends AbstractScreenshotter
 
         // Fill out and view dashboard
         $now = new \DateTime();
-        $this->submit([
-            'Address number' => '1',
-            'Household number' => '2',
+
+        $addressNumber = 1;
+        $householdNumber = 2;
+
+        $data = [
+            'Add' => strval($addressNumber),
+            'H' => strval($householdNumber),
             'Day' => '2',
             'Month' => $now->format('m'),
             'Year' => $now->format('Y'),
-        ], 'Save and continue');
+        ];
+
+        if ($this->features->isEnabled(Features::CHECK_LETTER)) {
+            $data['CL'] = SerialHelper::getCheckLetter(FixtureManager::AREA_CODE, $addressNumber, $householdNumber);
+        }
+
+        $this->submit($data, 'Save and continue');
         $this->screenshot('4a-dashboard-empty.png');
 
         // ----- First diary keeper -----
         // Click "Add a diary keeper"
-        $this->clickLinkWithText('Add a diary keeper');
+        $this->clickLinkWithText('Add a household member');
         $this->screenshot('add-first-diary-keeper/1-add-diary-keeper.png');
 
         // Fill out details
@@ -60,6 +73,7 @@ class OnboardingScreenshotter extends AbstractScreenshotter
             'Enter their email address' => $userIdentifier,
         ], 'Save and continue');
 
+        $this->screenshot('add-first-diary-keeper/3-add-another.png');
         // ----- Second diary keeper -----
         // Choose to add another diary keeper
         $this->submit([

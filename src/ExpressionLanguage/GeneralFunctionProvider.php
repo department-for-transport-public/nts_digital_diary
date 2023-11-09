@@ -2,9 +2,14 @@
 
 namespace App\ExpressionLanguage;
 
+use App\Attribute\AutoconfigureTag\ExpressionLanguageProvider;
 use Symfony\Component\ExpressionLanguage\ExpressionFunction;
 use Symfony\Component\ExpressionLanguage\ExpressionFunctionProviderInterface;
 
+#[ExpressionLanguageProvider(ExpressionLanguageProvider::SECURITY)]
+#[ExpressionLanguageProvider(ExpressionLanguageProvider::ROUTER)]
+#[ExpressionLanguageProvider(ExpressionLanguageProvider::VALIDATOR)]
+#[ExpressionLanguageProvider(ExpressionLanguageProvider::WORKFLOW)]
 class GeneralFunctionProvider implements ExpressionFunctionProviderInterface
 {
     public function getFunctions(): array

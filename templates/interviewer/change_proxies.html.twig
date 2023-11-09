@@ -1,0 +1,11 @@
+{% extends "interviewer/dashboard/base.html.twig" %}
+
+{% trans_default_domain "interviewer" %}
+{% set translation_domain = "interviewer" %}
+{% set translation_prefix = "diary-keeper.change-proxies" %}
+{% set translation_parameters = {name: diaryKeeper.name} %}
+{% set action = "change-proxies" %}
+
+{% block content %}
+    {{ form(form) }}
+{% endblock %}

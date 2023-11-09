@@ -5,6 +5,7 @@ namespace App\Controller\Interviewer;
 use App\Entity\DiaryKeeper;
 use App\Form\Auth\ChangeEmailType;
 use App\Utility\AccountCreationHelper;
+use Doctrine\ORM\EntityManagerInterface;
 use Sensio\Bundle\FrameworkExtraBundle\Configuration\Security;
 use Symfony\Component\Form\SubmitButton;
 use Symfony\Component\HttpFoundation\RedirectResponse;
@@ -18,12 +19,12 @@ class EmailResetController extends AbstractController
      * @Route("/change-email/{diaryKeeper}", name="change_email")
      * @Security("is_granted('EMAIL_CHANGE', diaryKeeper.getUser())")
      */
-    public function changeEmail(AccountCreationHelper $accountCreationHelper, Request $request, DiaryKeeper $diaryKeeper): Response
+    public function changeEmail(AccountCreationHelper $accountCreationHelper, Request $request, DiaryKeeper $diaryKeeper, EntityManagerInterface $entityManager): Response
     {
         $user = $diaryKeeper->getUser();
         $household = $diaryKeeper->getHousehold();
-        $successUrl = $this->generateUrl('interviewer_dashboard_household', [
-            'household' => $household->getId()
+        $successUrl = $this->generateUrl('interviewer_dashboard_diary_keeper', [
+            'diaryKeeper' => $diaryKeeper->getId()
         ]);
 
         $form = $this->createForm(ChangeEmailType::class, null, [
@@ -35,15 +36,12 @@ class EmailResetController extends AbstractController
         $form->handleRequest($request);
 
         if ($form->isSubmitted()) {
-            $cancel = $form->get('button_group')->get('cancel');
-            if ($cancel instanceof SubmitButton && $cancel->isClicked()) {
-                return new RedirectResponse($successUrl);
-            }
-
             if ($form->isValid()) {
-                $accountCreationHelper->sendAccountCreationEmail($diaryKeeper, $form->get('emailAddress')->getData());
+                $accountCreationHelper->sendAccountCreationEmail($diaryKeeper, $newAddress = $form->get('emailAddress')->getData());
+                $user->setHasPendingUsernameChange(true);
+                $entityManager->flush();
 
-                $this->addSuccessBanner('change-email', 'auth');
+                $this->addSuccessBanner('change-email', 'auth', ['newAddress' => $newAddress]);
                 return new RedirectResponse($successUrl);
             }
         }

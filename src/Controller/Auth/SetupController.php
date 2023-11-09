@@ -20,7 +20,9 @@ class SetupController extends AbstractController
         $sessionKey = 'account_setup_user';
         $user = $this->fetchUserAndCacheCriteria($sessionKey,
             ['id' => $userId],
-            [$request->query->get('email')]);
+            [$request->query->get('email')],
+            false
+        );
 
         if ($user->getPassword() !== null) {
             // account already setup, redirect to login
@@ -30,8 +32,9 @@ class SetupController extends AbstractController
         [$emailOverride] = $this->getExtraDataFromSession($sessionKey);
         if ($emailOverride) {
             $user->setUsername($emailOverride);
+            $user->setHasPendingUsernameChange(false);
 
-            if ($this->userRepository->isExistingUserWithEmailAddress($emailOverride, $userId)) {
+            if ($this->userRepository->canChangeEmailTo($emailOverride, $userId)) {
                 throw new AccessDeniedHttpException();
             }
         }

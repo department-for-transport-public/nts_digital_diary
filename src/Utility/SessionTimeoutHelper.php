@@ -7,7 +7,7 @@ use DateTime;
 class SessionTimeoutHelper
 {
     // format needed by JS when interpreting the session expiry and warning timestamps
-    const DATE_FORMAT = 'Y-m-d H:i:s';
+    const DATE_FORMAT = 'c';
 
     protected int $warningThreshold;
 

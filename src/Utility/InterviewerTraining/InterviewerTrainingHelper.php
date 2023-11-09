@@ -6,7 +6,6 @@ use App\DataFixtures\Definition\JourneyDefinition;
 use App\DataFixtures\FixtureHelper;
 use App\Entity\AreaPeriod;
 use App\Entity\DiaryKeeper;
-use App\Entity\Distance;
 use App\Entity\Household;
 use App\Entity\Interviewer;
 use App\Entity\InterviewerTrainingRecord;
@@ -92,7 +91,7 @@ class InterviewerTrainingHelper
         if (!$interviewer->getTrainingAreaPeriodBySerial($serial)) {
             $ap = (new AreaPeriod())
                 ->setArea($serial)
-                ->setYear(2023)
+                ->setYear(2024)
                 ->setMonth(1)
             ;
             $interviewer->addTrainingAreaPeriod($ap);

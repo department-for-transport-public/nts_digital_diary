@@ -17,7 +17,7 @@ class BigDecimalToStringTransformer implements DataTransformerInterface
         protected bool $trimTrailingDecimalZeroes = true
     ) {}
 
-    public function transform($value)
+    public function transform($value): mixed
     {
         if ($value === null) {
             return null;
@@ -37,7 +37,7 @@ class BigDecimalToStringTransformer implements DataTransformerInterface
         return $value;
     }
 
-    public function reverseTransform($value)
+    public function reverseTransform($value): mixed
     {
         if ($value === null || $value === '') {
             return null;

@@ -22,6 +22,7 @@
         "doctrine/doctrine-migrations-bundle": "^3.2",
         "doctrine/orm": "^2.10",
         "google/cloud-error-reporting": "^0.18.4",
+        "google/cloud-storage": "^1.33",
         "guzzlehttp/guzzle": "^6.0",
         "kelvinmo/simplejwt": "^0.5.3",
         "lcobucci/jwt": "~4.0.0",

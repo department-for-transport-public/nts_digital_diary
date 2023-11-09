@@ -9,6 +9,7 @@ use App\Form\Admin\AllocateAreaType;
 use App\Utility\AreaPeriodHelper;
 use App\Utility\ConfirmAction\Admin\InterviewerDeallocateAreaConfirmAction;
 use Doctrine\ORM\EntityManagerInterface;
+use Sensio\Bundle\FrameworkExtraBundle\Configuration\Security;
 use Symfony\Component\HttpFoundation\RedirectResponse;
 use Symfony\Component\HttpFoundation\Request;
 use Symfony\Component\HttpFoundation\Response;
@@ -16,6 +17,7 @@ use Symfony\Component\Routing\Annotation\Route;
 
 /**
  * @Route("/interviewers/{id}", name="interviewers_")
+ * @Security("is_granted('ROLE_INTERVIEWER_ADMIN')")
  */
 class InterviewerAllocationController extends AbstractController
 {

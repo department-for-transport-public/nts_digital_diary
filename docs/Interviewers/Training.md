@@ -1,6 +1,6 @@
 # Interviewer Training
 
-Training takes the form of several repeatable modules, each identified by a `moudle name`.
+Training takes the form of several repeatable modules, each identified by a `module name`.
 
 When an interviewer accesses the training area, they will be presented with a full set of the available modules (if no
 modules exist for the interviewer, they will be created at this point - including any `AreaPeriod` instances that may

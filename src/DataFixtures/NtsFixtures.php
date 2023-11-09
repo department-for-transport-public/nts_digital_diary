@@ -36,7 +36,7 @@ class NtsFixtures extends Fixture
             Method::method(16, 14, 'light-rail', 'public', 'public', 12),
             Method::method(8, 12, 'london-underground', 'public', 'public', 13),
             Method::method(9, 16, 'taxi', 'other', 'public', 14),
-            Method::method(17, 23, 'ferry', 'public', 'public', 15),
+            Method::method(17, 24, 'ferry', 'public', 'public', 15),
             Method::method(10, null, 'other-public', 'public', 'public', 16),
         ];
     }

@@ -12,6 +12,7 @@ twig:
         format_date_reverse: !php/const App\Utility\DateTimeFormats::DATE_REVERSE
         format_date_short_with_dow: !php/const App\Utility\DateTimeFormats::DATE_SHORT_WITH_DOW
         format_date_with_dow: !php/const App\Utility\DateTimeFormats::DATE_WITH_DOW
+        format_date_time: !php/const App\Utility\DateTimeFormats::DATE_TIME
 
         format_time_short: !php/const App\Utility\DateTimeFormats::TIME_SHORT
 

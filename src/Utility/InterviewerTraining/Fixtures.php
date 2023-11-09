@@ -6,7 +6,7 @@ use App\DataFixtures\Definition\JourneyDefinition;
 use App\DataFixtures\Definition\OtherStageDefinition;
 use App\DataFixtures\Definition\PrivateStageDefinition;
 use App\DataFixtures\Definition\PublicStageDefinition;
-use App\Entity\Distance;
+use App\Entity\Embeddable\Distance;
 
 class Fixtures
 {
@@ -121,11 +121,11 @@ class Fixtures
             ]),
 
             // day 3
-            new JourneyDefinition(3, 'Home', '10:00am', 'Bonnymead Park, Townton', '10:30am', 'To walk the dog', [
-                new OtherStageDefinition(1, 'walk', Distance::miles("1"), 30, 2, 0),
+            new JourneyDefinition(3, 'Home', '10:00am', 'Bonnymead Park, Townton', '10:45am', 'To walk the dog', [
+                new OtherStageDefinition(1, 'walk', Distance::miles("1"), 45, 2, 0),
             ]),
-            new JourneyDefinition(3, 'Bonnymead Park, Townton', '11:00am', 'Home', '11:30am', 'Go home', [
-                new OtherStageDefinition(1, 'walk', Distance::miles("1"), 30, 2, 0),
+            new JourneyDefinition(3, 'Bonnymead Park, Townton', '10:45am', 'Home', '11:30am', 'Go home', [
+                new OtherStageDefinition(1, 'walk', Distance::miles("1"), 45, 2, 0),
             ]),
 
             // day 4

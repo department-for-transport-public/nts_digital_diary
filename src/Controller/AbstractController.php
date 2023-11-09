@@ -10,19 +10,19 @@ use Symfony\Component\Translation\TranslatableMessage;
 
 class AbstractController extends SymfonyAbstractController
 {
-    protected function addSuccessBanner(string $translationPrefix, string $translationDomain): void
+    protected function addSuccessBanner(string $translationPrefix, string $translationDomain, array $translationParameters = []): void
     {
-        $this->addBanner(NotificationBanner::STYLE_SUCCESS, $translationPrefix, $translationDomain);
+        $this->addBanner(NotificationBanner::STYLE_SUCCESS, $translationPrefix, $translationDomain, $translationParameters);
     }
 
-    protected function addBanner(string $style, string $translationPrefix, string $translationDomain): void
+    protected function addBanner(string $style, string $translationPrefix, string $translationDomain, array $translationParameters = []): void
     {
         $banner = new NotificationBanner(
             new TranslatableMessage('notification.success'),
             "{$translationPrefix}.success-banner.heading",
             "{$translationPrefix}.success-banner.content",
             ['style' => $style],
-            [],
+            $translationParameters,
             $translationDomain
         );
 

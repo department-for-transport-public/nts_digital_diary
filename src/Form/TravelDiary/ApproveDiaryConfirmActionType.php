@@ -3,6 +3,7 @@
 namespace App\Form\TravelDiary;
 
 use App\Entity\DiaryKeeper;
+use App\Features;
 use App\Form\ConfirmActionType;
 use Ghost\GovUkFrontendBundle\Form\Type as Gds;
 use Symfony\Component\Form\AbstractType;
@@ -13,12 +14,15 @@ use Symfony\Component\Validator\Constraints\NotBlank;
 
 class ApproveDiaryConfirmActionType extends AbstractType
 {
+    public function __construct(protected Features $features)
+    {}
+
     public function getParent(): string
     {
         return ConfirmActionType::class;
     }
 
-    public function buildForm(FormBuilderInterface $builder, array $options)
+    public function buildForm(FormBuilderInterface $builder, array $options): void
     {
         /** @var DiaryKeeper $diaryKeeper */
         $diaryKeeper = $options['diary_keeper'];
@@ -33,12 +37,17 @@ class ApproveDiaryConfirmActionType extends AbstractType
                 ])
             ;
         }
+
         $choices = [
             'diary-state.approve.confirm-return-journeys' => 'confirm-return-journeys',
             'diary-state.approve.split-round-trips' => 'split-round-trips',
             'diary-state.approve.corrected-no-stages' => 'corrected-no-stages',
-            'diary-state.approve.checked-vehicles' => 'checked-vehicles',
         ];
+
+        if ($this->features->isEnabled(Features::MILOMETER)) {
+            $choices['diary-state.approve.checked-vehicles'] = 'checked-vehicles';
+        }
+
         $builder
             ->add('alsoVerified', Gds\ChoiceType::class, [
                 'label' => 'diary-state.approve.also-verify.label',
@@ -51,7 +60,7 @@ class ApproveDiaryConfirmActionType extends AbstractType
             ;
     }
 
-    public function configureOptions(OptionsResolver $resolver)
+    public function configureOptions(OptionsResolver $resolver): void
     {
         $resolver->setRequired([
             'diary_keeper'

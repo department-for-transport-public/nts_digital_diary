@@ -1,8 +1,6 @@
 <?php
 
-
 namespace App\Controller\Admin;
-
 
 use App\Controller\AbstractController;
 use App\Form\Admin\SampleImportForm;
@@ -17,7 +15,7 @@ use Symfony\Component\Routing\Annotation\Route;
 
 /**
  * @Route("/sample-import", name="sampleimport_")
- * @Security("user.getUserIdentifier() matches '/@ghostlimited\\.com$/'")
+ * @Security("is_granted('ROLE_SAMPLE_IMPORTER')")
  */
 class SampleImportController extends AbstractController
 {

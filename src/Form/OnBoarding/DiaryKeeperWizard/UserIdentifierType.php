@@ -125,12 +125,13 @@ class UserIdentifierType extends AbstractType
             'translation_domain' => 'on-boarding',
             'validation_groups' => function(FormInterface $form) {
                 $groups = ['wizard.on-boarding.diary-keeper.media-type'];
-                if ($form->getData()->getMediaType() === 'digital') {
+                if ($form->getData()->getMediaType() === DiaryKeeper::MEDIA_TYPE_DIGITAL) {
                     $groups[] = 'wizard.on-boarding.diary-keeper.user-identifier';
                 }
 
                 return $groups;
             },
+            'error_mapping' => ['proxies' => 'user'],
         ]);
     }
 }

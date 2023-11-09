@@ -4,8 +4,9 @@ namespace App\Form\OnBoarding;
 
 use App\Entity\DiaryKeeper;
 use App\Entity\Journey\Method;
-use App\Entity\OtpUserInterface;
+use App\Security\OneTimePassword\OtpUserInterface;
 use App\Entity\Vehicle;
+use App\Features;
 use Doctrine\ORM\EntityRepository;
 use Ghost\GovUkFrontendBundle\Form\Type\ButtonGroupType;
 use Ghost\GovUkFrontendBundle\Form\Type\ButtonType;
@@ -19,12 +20,10 @@ use Symfony\Component\Security\Core\Security;
 
 class VehicleType extends AbstractType
 {
-    private Security $security;
-
-    public function __construct(Security $security)
-    {
-        $this->security = $security;
-    }
+    public function __construct(
+        protected Features $features,
+        protected Security $security,
+    ) {}
 
     public function buildForm(FormBuilderInterface $builder, array $options): void
     {
@@ -40,7 +39,9 @@ class VehicleType extends AbstractType
             ])
             ->add('primaryDriver', EntityType::class, [
                 'label' => "vehicle.form.primary-driver.label",
-                'help' => "vehicle.form.primary-driver.help",
+                'help' => $this->features->isEnabled(Features::MILOMETER) ?
+                    "vehicle.form.primary-driver.milometer-help" :
+                    "vehicle.form.primary-driver.help",
                 'label_attr' => ['class' => 'govuk-label--s'],
                 'expanded' => true,
                 'class' => DiaryKeeper::class,

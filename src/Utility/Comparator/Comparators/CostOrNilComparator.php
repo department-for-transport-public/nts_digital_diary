@@ -2,7 +2,7 @@
 
 namespace App\Utility\Comparator\Comparators;
 
-use App\Entity\CostOrNil;
+use App\Entity\Embeddable\CostOrNil;
 use App\Utility\Comparator\ComparatorInterface;
 use Brick\Math\BigDecimal;
 

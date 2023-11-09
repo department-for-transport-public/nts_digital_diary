@@ -42,9 +42,8 @@ security:
             logout:
                 path: onboarding_logout
                 target: onboarding_login
-                csrf_token_generator: security.csrf.token_manager
             login_throttling:
-                limiter: 'limiter.login'
+                limiter: 'limiter.onboarding_login'
         api:
             pattern: ^/api/
             host: '%regex.frontend_host%'
@@ -88,12 +87,17 @@ security:
                 always_use_default_target_path: true
             logout:
                 path: app_logout
-                csrf_token_generator: security.csrf.token_manager
 
     role_hierarchy:
         ROLE_INTERVIEWER: ROLE_USER
         ROLE_DIARY_KEEPER: ROLE_USER
         ROLE_ON_BOARDING: ROLE_USER
+
+        ROLE_FEEDBACK: ROLE_ADMIN
+        ROLE_FEEDBACK_ASSIGNER: ROLE_FEEDBACK
+        ROLE_FEEDBACK_VIEWER: ROLE_FEEDBACK
+        ROLE_INTERVIEWER_ADMIN: ROLE_ADMIN
+        ROLE_SAMPLE_IMPORTER: ROLE_ADMIN
 
     # Easy way to control access for large sections of your site
     # Note: Only the *first* access control that matches will be used

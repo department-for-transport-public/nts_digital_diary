@@ -51,9 +51,7 @@ class CoreController extends AbstractController
         $trainingInterviewer = $interviewerRepository->find($request->get('_interviewer', ''));
 
         $form = $this->createForm(OtpLoginType::class, [
-            'identifier' => $trainingInterviewer
-                ? TrainingUserProvider::USER_IDENTIFIER
-                : $translatedAuthenticationUtils->getLastUsername('_onboarding'),
+            'identifier' => $translatedAuthenticationUtils->getLastUsername('_onboarding'),
         ]);
 
         $errorMessage = $translatedAuthenticationUtils->getLastAuthenticationErrorMessage('security.otp');

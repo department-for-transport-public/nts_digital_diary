@@ -4,7 +4,7 @@ namespace App\Controller\OnBoarding;
 
 use App\Controller\AbstractController as RootAbstractController;
 use App\Entity\Household;
-use App\Entity\OtpUserInterface;
+use App\Security\OneTimePassword\OtpUserInterface;
 use Symfony\Component\HttpKernel\Exception\AccessDeniedHttpException;
 
 class AbstractController extends RootAbstractController

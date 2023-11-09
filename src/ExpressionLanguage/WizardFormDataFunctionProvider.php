@@ -4,10 +4,13 @@
 namespace App\ExpressionLanguage;
 
 
+use App\Attribute\AutoconfigureTag\ExpressionLanguageProvider;
 use Symfony\Component\ExpressionLanguage\ExpressionFunction;
+use Symfony\Component\ExpressionLanguage\ExpressionFunctionProviderInterface;
 use Symfony\Component\PropertyAccess\PropertyAccess;
 
-class WizardFormDataFunctionProvider implements WorkflowFunctionProviderInterface
+#[ExpressionLanguageProvider(ExpressionLanguageProvider::WORKFLOW)]
+class WizardFormDataFunctionProvider implements ExpressionFunctionProviderInterface
 {
     /**
      * @var mixed

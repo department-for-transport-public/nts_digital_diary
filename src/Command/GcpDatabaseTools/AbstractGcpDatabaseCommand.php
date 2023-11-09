@@ -64,7 +64,7 @@ abstract class AbstractGcpDatabaseCommand extends Command
         return $result;
     }
 
-    protected function setProject()
+    protected function setProject(): void
     {
         $process = new Process(['gcloud', "config", "set", "project", $this->getDbProject()]);
         $process->run();
@@ -76,7 +76,7 @@ abstract class AbstractGcpDatabaseCommand extends Command
         $this->io->writeln("Project set to <info>{$this->getDbProject()}</info>");
     }
 
-    protected function startProxy(bool $wait = true)
+    protected function startProxy(bool $wait = true): void
     {
         $this->io->write("Starting proxy in <info>{$this->getDbSocketDir()}</info>... ");
 
@@ -99,7 +99,7 @@ abstract class AbstractGcpDatabaseCommand extends Command
         }
     }
 
-    private function stopProxy()
+    private function stopProxy(): void
     {
         if (isset($this->proxy)) {
             $this->io->writeln('Terminating proxy');
@@ -112,18 +112,22 @@ abstract class AbstractGcpDatabaseCommand extends Command
     {
         return $this->getDbParams()['user'];
     }
+
     protected function getDbName(): string
     {
         return $this->getDbParams()['dbname'];
     }
+
     protected function getDbHost(): string
     {
         return $this->getDbParams()['host'];
     }
+
     protected function getDbUnixSocket(): string
     {
         return $this->getDbParams()['unix_socket'];
     }
+
     protected function getDbProject(): string
     {
         $parts = explode('/', $this->getDbParams()['unix_socket']);
@@ -133,6 +137,7 @@ abstract class AbstractGcpDatabaseCommand extends Command
         preg_match($regex, $dbId, $matches);
         return $matches['project'];
     }
+
     protected function getDbSocketDir(): string
     {
         $parts = explode('/', $this->getDbParams()['unix_socket']);

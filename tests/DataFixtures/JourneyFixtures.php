@@ -8,7 +8,7 @@ use App\DataFixtures\Definition\PrivateStageDefinition;
 use App\DataFixtures\Definition\PublicStageDefinition;
 use App\DataFixtures\FixtureHelper;
 use App\Entity\DiaryKeeper;
-use App\Entity\Distance;
+use App\Entity\Embeddable\Distance;
 use Doctrine\Common\DataFixtures\AbstractFixture;
 use Doctrine\Common\DataFixtures\DependentFixtureInterface;
 use Doctrine\Persistence\ObjectManager;

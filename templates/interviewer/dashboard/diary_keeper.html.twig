@@ -13,16 +13,45 @@
 {% set heading_class = "govuk-heading-xl" %}
 
 {% block content %}
-    {%- from "@GhostGovUkFrontend/components/macros.html.twig" import actionlessSummaryListRow -%}
+    {%- from "@GhostGovUkFrontend/components/macros.html.twig" import actionlessSummaryListRow, summaryListRow -%}
     <div class="govuk-!-margin-bottom-5">
         {% include 'travel_diary/dashboard/includes/diary_keeper_details.html.twig' with {showName: false} %}
     </div>
 
 {% if is_granted('EDIT_DIARY', diaryKeeper) %}<a class="govuk-button" href="{{ (path('app_home', {_switch_user: diaryKeeper.user.userIdentifier})) }}">{{ 'household.impersonate' | trans }}</a>{% endif %}
 
-    {% if not diaryKeeper.primaryDriverVehicles.empty %}
-        <table class="govuk-table diary-keeper-view">
-            <caption class="govuk-table__caption govuk-table__caption--l">{{ "days.primary-driver-vehicles" | trans({}, 'travel-diary') }}</caption>
+    <h2 class="govuk-heading-m govuk-!-margin-top-5">Access and proxying</h2>
+    <dl class="govuk-summary-list">
+        {% set userStatePs = diaryKeeper.user.identifierForLogin ? [(diaryKeeper.user.password ? 'diary-keeper.login-confirmed' : 'diary-keeper.login-not-confirmed') | trans] : [] %}
+        {% set userStatePs = userStatePs | merge(diaryKeeper.user.hasPendingUsernameChange ? ['diary-keeper.pending-change' | trans] : []) %}
+        {% set userStatePs = userStatePs is not empty ? '&emsp;<em>(' ~ (userStatePs | join(', ')) ~ ')</em>' : '' %}
+        {{- summaryListRow(
+            "diary-keeper.has-login" | trans,
+            (diaryKeeper.user.identifierForLogin
+                ? ('boolean.true' | trans({}, 'messages'))
+                : 'boolean.false' | trans({}, 'messages'))  ~ userStatePs,
+            is_granted('EMAIL_CHANGE', diaryKeeper.user)
+                ? {(path('interviewer_change_email', {diaryKeeper: diaryKeeper.id})): {label: 'actions.change-email', labelDomain: 'auth'}}
+                : {},
+            {html: true}
+        ) -}}
+        {{- summaryListRow(
+            "diary-keeper.proxied-by" | trans,
+            (diaryKeeper.proxies | length > 0) ? (diaryKeeper.proxyNames | join(', ')) : '-',
+            is_granted('CHANGE_PROXIES', diaryKeeper)
+                ? {(path('interviewer_change_proxies', {diaryKeeper: diaryKeeper.id})): 'actions.change'}
+                : {}
+        ) -}}
+        {{- summaryListRow(
+            "diary-keeper.proxy-for" | trans,
+            diaryKeeper.actingAsAProxyForOthers ? (diaryKeeper.actingAsAProxyForNames | join(', ')) : '-'
+        ) -}}
+    </dl>
+
+    {%- set milometerEnabled = is_feature_enabled(constant('\\App\\Features::MILOMETER')) -%}
+    {%- if milometerEnabled and not diaryKeeper.primaryDriverVehicles.empty -%}
+        <table class="govuk-table diary-keeper-view govuk-!-margin-top-8">
+            <caption class="govuk-table__caption govuk-table__caption--m">{{ "days.primary-driver-vehicles" | trans({}, 'travel-diary') }}</caption>
             <thead class="govuk-table__head">
                 <tr class="govuk-table__row">
                     <th scope="col" class="govuk-table__header">{{ 'vehicle.form.capi-number.label' | trans({}, 'on-boarding') }}</th>
@@ -39,15 +68,21 @@
                     <tr class="govuk-table__row">
                         <th class="govuk-table__cell">{{ vehicle.capiNumber }}</th>
                         <th class="govuk-table__cell">{{ vehicle.friendlyName }}</th>
-                        <td class="govuk-table__cell">{{ vehicle.method.descriptionTranslationKey }}</td>
-                        <td class="govuk-table__cell">{{ vehicle.weekStartOdometerReading }}</td>
-                        <td class="govuk-table__cell">{{ vehicle.weekEndOdometerReading }}</td>
-                        <td class="govuk-table__cell">{{ vehicle.odometerUnit }}</td>
+                        <td class="govuk-table__cell">{{ "stage.method.choices.#{vehicle.method.descriptionTranslationKey}" | trans({}, 'travel-diary') }}</td>
+                        <td class="govuk-table__cell">{{ vehicle.weekStartOdometerReading ?? '-' }}</td>
+                        <td class="govuk-table__cell">{{ vehicle.weekEndOdometerReading ?? '-' }}</td>
+                        <td class="govuk-table__cell">
+                            {%- if vehicle.odometerUnit -%}
+                                {{ "unit.distance.#{vehicle.odometerUnit}" | trans({}, 'messages') }}
+                            {%- else -%}
+                                {{ '-' }}
+                            {%- endif -%}
+                        </td>
                     </tr>
                 {%- endfor -%}
             </tbody>
         </table>
-    {% endif %}
+    {%- endif -%}
 
     <div class="govuk-button-group">
         {%- if workflow_can(diaryKeeper, constant('App\\Entity\\DiaryKeeper::TRANSITION_UNDO_COMPLETE')) -%}

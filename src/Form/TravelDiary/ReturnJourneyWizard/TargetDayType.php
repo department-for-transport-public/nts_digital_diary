@@ -26,7 +26,7 @@ class TargetDayType extends AbstractType
 
     public function buildForm(FormBuilderInterface $builder, array $options)
     {
-        $sourceJourneyId = $this->requestStack->getMainRequest()->get('_route_params')['journeyId'];
+        $sourceJourneyId = $this->requestStack->getCurrentRequest()->get('_route_params')['journeyId'];
 
         $builder
             ->add('diaryDay', EntityType::class, [

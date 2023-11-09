@@ -6,6 +6,11 @@ use App\Tests\Functional\Wizard\Form\AbstractFormTestCase;
 use Facebook\WebDriver\WebDriverBy;
 use Symfony\Component\Panther\Client;
 use Symfony\Component\Panther\ServerExtension;
+use function PHPUnit\Framework\assertCount;
+use function PHPUnit\Framework\assertEmpty;
+use function PHPUnit\Framework\assertEquals;
+use function PHPUnit\Framework\assertNotContains;
+use function PHPUnit\Framework\assertStringNotContainsStringIgnoringCase;
 
 abstract class AbstractFormTestAction extends PathTestAction
 {
@@ -143,8 +148,12 @@ abstract class AbstractFormTestAction extends PathTestAction
                 throw new \InvalidArgumentException("Unable to fetch button with ID #$submitButtonId");
             }
 
-            $this->checkErrors($context, $testCaseIdx, array_flip($expectedErrorIds));
+            // we can't test response code, so we search for an exception heading
+            $nodeCount = $client->getCrawler()->filter('h1.exception-message')->count();
+            $message = $nodeCount > 0 ? "Symfony exception: {$client->getCrawler()->filter('h1.exception-message')->getText()}" : "";
+            assertEmpty($message, $message);
 
+            $this->checkErrors($context, $testCaseIdx, array_flip($expectedErrorIds));
 
             if (!$formTestCase->getSkipPageUrlChangeCheck()) {
                 if (empty($expectedErrorIds)) {

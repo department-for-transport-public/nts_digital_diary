@@ -7,7 +7,7 @@ use App\DataFixtures\Definition\OtherStageDefinition;
 use App\DataFixtures\Definition\PublicStageDefinition;
 use App\DataFixtures\FixtureHelper;
 use App\Entity\DiaryKeeper;
-use App\Entity\Distance;
+use App\Entity\Embeddable\Distance;
 use App\Entity\Journey\Journey;
 use App\Entity\Journey\Method;
 use App\Entity\Vehicle;
