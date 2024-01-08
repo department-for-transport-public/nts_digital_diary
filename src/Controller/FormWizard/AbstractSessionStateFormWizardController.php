@@ -10,8 +10,6 @@ use Symfony\Component\HttpFoundation\Session\SessionInterface;
 
 abstract class AbstractSessionStateFormWizardController extends AbstractFormWizardController
 {
-    protected PropertyMerger $propertyMerger;
-
     public function getSessionKey(): string
     {
         return "wizard." . get_class($this);
@@ -19,11 +17,14 @@ abstract class AbstractSessionStateFormWizardController extends AbstractFormWiza
 
     protected SessionInterface $session;
 
-    public function __construct(FormWizardManager $formWizardManager, RequestStack $requestStack, PropertyMerger $propertyMerger)
+    public function __construct(
+        FormWizardManager $formWizardManager,
+        RequestStack $requestStack,
+        protected PropertyMerger $propertyMerger,
+    )
     {
         parent::__construct($formWizardManager);
         $this->session = $requestStack->getSession();
-        $this->propertyMerger = $propertyMerger;
     }
 
     protected function setState(FormWizardStateInterface $state): void
@@ -33,6 +34,6 @@ abstract class AbstractSessionStateFormWizardController extends AbstractFormWiza
 
     protected function cleanUp(): void
     {
-        $this->session->remove($this->getSessionKey());
+        $this->formWizardManager->cleanUp();
     }
 }

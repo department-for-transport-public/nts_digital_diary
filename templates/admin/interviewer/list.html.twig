@@ -22,5 +22,7 @@
     {% endfor %}
     {{ listTableEnd(data, form) }}
 
-    <a class="govuk-button" href="{{ url('admin_interviewers_add') }}">{{ "interviewer.list.add-button" | trans }}</a>
+    {% if is_granted('ADMIN_INTERVIEWER_ADD') %}
+        <a class="govuk-button" href="{{ url('admin_interviewers_add') }}">{{ "interviewer.list.add-button" | trans }}</a>
+    {% endif %}
 {% endblock %}

@@ -122,7 +122,16 @@
             } %}{{ block('attributes') }}{% endwith %}>
             {% if isWrappedInFieldset -%}
                 {% set fieldsetDescribedBy = ((help is not empty ? id ~"-hint " : '') ~ (errors is not empty ? id ~"-error " : ''))|trim -%}
-                <fieldset class="govuk-fieldset" role="group"{% if fieldsetDescribedBy is not empty %} aria-describedby="{{ fieldsetDescribedBy }}"{% endif %}>
+                {% set fieldsetAttr = (fieldset_attr ?? {}) | merge({
+                    class: ('govuk-fieldset ' ~ fieldset_attr.class | default('')) | trim,
+                    role: 'group',
+                }) %}
+                {% if fieldsetDescribedBy is not empty %}
+                    {% set fieldsetAttr = fieldsetAttr | merge({
+                        'aria-describedby': fieldsetDescribedBy
+                    }) %}
+                {% endif %}
+                <fieldset{% with {attr: fieldsetAttr} %}{{ block('attributes') }}{% endwith %}>
                 {%- if not (label_rendered ?? false) %}{{- form_label(form, null, {element: 'legend'}) -}}{% endif -%}
             {% else %}
                 {%- if not (label_rendered ?? false) %}{{- form_label(form) -}}{%- endif -%}

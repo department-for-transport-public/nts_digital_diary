@@ -2,7 +2,7 @@
 
 {% set filteredProxies = diaryKeeper.actingAsProxyFor | filter(d => is_granted('CAN_IMPERSONATE_USER', d.user)) %}
 {% if not is_granted('IS_IMPERSONATOR') and filteredProxies is not empty %}
-    <h2 class="govuk-heading-m">{{ 'days.other-members-of-my-household' | trans }}</h2>
+    <h2 class="govuk-heading-m govuk-!-padding-top-4">{{ 'days.other-members-of-my-household' | trans }}</h2>
     <ul class="govuk-list">
         {% for proxy in filteredProxies %}
             {# @var proxy \App\Entity\DiaryKeeper #}

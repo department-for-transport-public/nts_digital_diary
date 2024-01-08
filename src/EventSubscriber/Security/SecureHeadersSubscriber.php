@@ -5,8 +5,8 @@ namespace App\EventSubscriber\Security;
 
 
 use App\Features;
-use App\Utility\CspInlineScriptHelper;
-use App\Utility\RecaptchaHelper;
+use App\Utility\Security\CspInlineScriptHelper;
+use App\Utility\Security\RecaptchaHelper;
 use App\Utility\VimeoHelper;
 use Symfony\Component\EventDispatcher\EventSubscriberInterface;
 use Symfony\Component\HttpKernel\Event\ResponseEvent;

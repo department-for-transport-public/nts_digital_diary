@@ -73,7 +73,7 @@ class InMemoryOtpUser implements UserInterface, OtpUserInterface
 
     public function getAreaPeriod(): ?AreaPeriod
     {
-        return $this->interviewer->getTrainingAreaPeriodBySerial(AreaPeriod::TRAINING_ONBOARDING_AREA_SERIAL);
+        return $this->interviewer?->getTrainingAreaPeriodBySerial(AreaPeriod::TRAINING_ONBOARDING_AREA_SERIAL);
     }
 
     public function getInterviewer(): ?Interviewer

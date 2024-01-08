@@ -7,7 +7,7 @@ use App\Entity\Journey\Method;
 use App\Entity\Journey\Stage;
 use App\Entity\User;
 use App\Security\ImpersonatorAuthorizationChecker;
-use App\Utility\SplitJourneyHelper;
+use App\Utility\TravelDiary\SplitJourneyHelper;
 use Symfony\Component\Security\Core\Authentication\Token\TokenInterface;
 use Symfony\Component\Security\Core\Authorization\Voter\Voter;
 

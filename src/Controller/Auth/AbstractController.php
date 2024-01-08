@@ -7,7 +7,7 @@ use App\Entity\User;
 use App\Exception\RedirectResponseException;
 use App\Repository\UserRepository;
 use App\Security\Voter\UserValidForLoginVoter;
-use App\Utility\UrlSigner;
+use App\Utility\Security\UrlSigner;
 use Doctrine\ORM\EntityManagerInterface;
 use Ghost\GovUkFrontendBundle\Model\NotificationBanner;
 use Symfony\Component\EventDispatcher\EventDispatcherInterface;

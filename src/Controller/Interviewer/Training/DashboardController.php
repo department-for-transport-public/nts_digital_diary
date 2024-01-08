@@ -3,7 +3,7 @@
 namespace App\Controller\Interviewer\Training;
 
 use App\Repository\InterviewerTrainingRecordRepository;
-use App\Utility\UrlSigner;
+use App\Utility\Security\UrlSigner;
 use Sensio\Bundle\FrameworkExtraBundle\Configuration\Template;
 use Symfony\Component\Routing\Annotation\Route;
 use Symfony\Component\Security\Core\User\UserInterface;

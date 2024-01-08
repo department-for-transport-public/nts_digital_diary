@@ -14,4 +14,8 @@
         <div class="govuk-grid-column-one-third">
         </div>
     </div>
+    {% set notes = 'feedback.form.notes' | trans(title_translation_parameters) %}
+    {% if notes ?? false %}
+        <p class="govuk-body">{{ notes }}</p>
+    {% endif %}
 {% endblock %}

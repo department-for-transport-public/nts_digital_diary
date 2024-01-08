@@ -17,7 +17,7 @@ use Symfony\Component\Translation\TranslatableMessage;
 use Symfony\Component\Workflow\WorkflowInterface;
 
 #[Route("/feedback/assignment", name: "feedback_assignment_")]
-#[Security("is_granted('ROLE_FEEDBACK_ASSIGNER')")]
+#[Security("is_granted('ADMIN_FEEDBACK_ASSIGN')")]
 class AssignmentController extends AbstractController
 {
     #[Route("/message/{message}", name: "message")]

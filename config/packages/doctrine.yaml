@@ -9,18 +9,29 @@ doctrine:
 
     orm:
         auto_generate_proxy_classes: true
-        dql:
-            datetime_functions:
-                Year: DoctrineExtensions\Query\Mysql\Year
-        naming_strategy: doctrine.orm.naming_strategy.underscore_number_aware
-        mappings:
-            App:
-                type: annotation
-                dir: '%kernel.project_dir%/src/Entity'
-                prefix: 'App\Entity'
-                alias: App
-        filters:
-            -
-                name: !php/const App\Doctrine\ORM\Filter\TrainingAreaPeriodFilter::FILTER_NAME
-                class: App\Doctrine\ORM\Filter\TrainingAreaPeriodFilter
-                enabled: false
+        default_entity_manager: default
+        entity_managers:
+            default:
+                dql:
+                    datetime_functions:
+                        Year: DoctrineExtensions\Query\Mysql\Year
+                naming_strategy: doctrine.orm.naming_strategy.underscore_number_aware
+                mappings:
+                    App:
+                        type: annotation
+                        dir: '%kernel.project_dir%/src/Entity'
+                        prefix: 'App\Entity'
+                        alias: App
+                filters:
+                    -
+                        name: !php/const App\Doctrine\ORM\Filter\TrainingAreaPeriodFilter::FILTER_NAME
+                        class: App\Doctrine\ORM\Filter\TrainingAreaPeriodFilter
+                        enabled: false
+            metrics:
+                naming_strategy: doctrine.orm.naming_strategy.underscore_number_aware
+                mappings:
+                    Metrics:
+                        type: annotation
+                        dir: '%kernel.project_dir%/src/Entity/Utility'
+                        prefix: 'App\Entity\Utility\MetricsLog'
+                        alias: App

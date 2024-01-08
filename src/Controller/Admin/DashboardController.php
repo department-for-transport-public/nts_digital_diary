@@ -17,9 +17,9 @@ class DashboardController extends AbstractController
     public function index(Security $security): Response
     {
         $redirectMap = [
-            'ROLE_INTERVIEWER' => 'admin_interviewers_list',
-            'ROLE_FEEDBACK_ASSIGNER' => 'admin_feedback_assignment_dashboard',
-            'ROLE_FEEDBACK_VIEWER' => 'admin_feedback_view_dashboard',
+            'ADMIN_INTERVIEWER_VIEW' => 'admin_interviewers_list',
+            'ADMIN_FEEDBACK_ASSIGN' => 'admin_feedback_assignment_dashboard',
+            'ADMIN_FEEDBACK_VIEW' => 'admin_feedback_view_dashboard',
             'ROLE_SAMPLE_IMPORTER' => 'admin_sampleimport_index',
         ];
 

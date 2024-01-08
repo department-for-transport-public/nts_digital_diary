@@ -31,7 +31,7 @@ class FixtureManager
         $interviewer = (new Interviewer())
             ->setUser($user)
             ->setName('Screenshots Test User')
-            ->setSerialId('SCREENSHOT');
+            ->setSerialId('8008');
 
         $areaRepository = $this->entityManager->getRepository(AreaPeriod::class);
         $areaPeriod = $areaRepository->findOneBy(['area' => self::AREA_CODE]);

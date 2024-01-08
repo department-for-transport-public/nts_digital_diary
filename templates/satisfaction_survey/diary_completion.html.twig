@@ -1,0 +1,13 @@
+{%- extends 'travel_diary/base_form.html.twig' -%}
+
+{%- trans_default_domain 'travel-diary' -%}
+
+{%- set title_translation_prefix = 'satisfaction.how-often-entries-added' -%}
+
+{% block preHeading %}
+    <span class="govuk-caption-l">Page 4 of 5</span>
+{% endblock %}
+
+{% block postHeading %}
+    <div class="govuk-body govuk-!-padding-bottom-4">{{- 'satisfaction.how-often-entries-added.preamble' | trans -}}</div>
+{% endblock %}

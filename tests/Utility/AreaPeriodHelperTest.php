@@ -2,7 +2,7 @@
 
 namespace App\Tests\Utility;
 
-use App\Utility\AreaPeriodHelper;
+use App\Utility\TravelDiary\AreaPeriodHelper;
 use PHPUnit\Framework\TestCase;
 
 class AreaPeriodHelperTest extends TestCase

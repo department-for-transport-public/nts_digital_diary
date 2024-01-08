@@ -8,7 +8,7 @@ use App\Features;
 use App\Repository\OtpUserRepository;
 use App\Security\OneTimePassword\PasscodeGenerator;
 use App\Security\Voter\Interviewer\AreaPeriodVoter;
-use App\Utility\AreaPeriodHelper;
+use App\Utility\TravelDiary\AreaPeriodHelper;
 use Doctrine\ORM\EntityManagerInterface;
 use Sensio\Bundle\FrameworkExtraBundle\Configuration\IsGranted;
 use Sensio\Bundle\FrameworkExtraBundle\Configuration\Template;

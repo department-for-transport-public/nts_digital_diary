@@ -86,6 +86,13 @@ admin:
     note:
       not-blank: Enter a note
 
+household-maintenance:
+  choose-household:
+    address-number.not-null: Enter the address number
+    area.not-null: Enter the area code
+    household-number.not-null: Enter the household number
+    no-such-household: No household found matching that serial
+
 wizard.diary-keeper:
   is-adult.not-null: You must indicate if this person is an adult
   is-adult.has-vehicles: This person is the primary driver for one or more vehicles so must be an adult
@@ -243,6 +250,18 @@ wizard.repeat-journey:
 
 wizard.return-journey:
   diary-day.not-null: Select a day
+
+wizard.satisfaction-survey:
+  ease-of-use.not-blank: Choose how easy it was to use the survey
+  burden-rating.not-blank: Choose how burdensome it was to complete the survey
+  burden-reason.not-empty: Choose a reason for your burden
+  burden-reason-other.not-blank: Enter the reason for your burden
+  how-often.not-blank: Choose how often you added entries to your diary
+  preferred-method.not-blank: Choose your preferred method
+  preferred-method-other.not-blank: Enter the method you would prefer
+  type-of-devices.not-empty: Choose the type of devices you used
+  type-of-devices-other.not-blank: Enter the type of device you used
+  written-note.not-blank: Choose where you kept a written note of your travel
 
 vehicle.odometer-readings:
     end-not-less-than-start: This cannot be less than the first milometer reading

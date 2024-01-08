@@ -1,7 +1,7 @@
-@import "node_modules/govuk-frontend/govuk/helpers/colour";
-@import "node_modules/govuk-frontend/govuk/helpers/grid";
-@import "node_modules/govuk-frontend/govuk/helpers/spacing";
-@import "node_modules/govuk-frontend/govuk/helpers/typography";
+@import "/node_modules/govuk-frontend/govuk/helpers/colour";
+@import "/node_modules/govuk-frontend/govuk/helpers/grid";
+@import "/node_modules/govuk-frontend/govuk/helpers/spacing";
+@import "/node_modules/govuk-frontend/govuk/helpers/typography";
 
 .govuk-pagination__container {
   padding-bottom: govuk-spacing(6);

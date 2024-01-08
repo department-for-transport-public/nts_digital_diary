@@ -41,7 +41,12 @@
         {%- for diaryKeeper in household.diaryKeepers -%}
             {# @var diaryKeeper \App\Entity\DiaryKeeper #}
             <div class="govuk-tabs__panel{% if not loop.first %} govuk-tabs__panel--hidden{% endif %}" id="tab-diary-keeper-{{ diaryKeeper.number }}">
-                <a class="govuk-link" href="{{ path('traveldiary_dashboard_day', {_switch_user: diaryKeeper.user.userIdentifier, dayNumber: currentDay}) }}">{{ 'household.impersonate' | trans }}</a>
+                <div>
+                    {% if is_granted('EDIT_DIARY', diaryKeeper) %}
+                        <a class="govuk-link" href="{{ path('traveldiary_dashboard_day', {_switch_user: diaryKeeper.user.userIdentifier, dayNumber: currentDay}) }}">{{ 'household.impersonate' | trans }}</a>
+                    {% endif %}
+                    &nbsp;
+                </div>
                 {{ dayView(diaryKeeper.diaryDayByNumber(currentDay), {showCaptions: false, tableClass: ''}) }}
             </div>
         {%- endfor -%}

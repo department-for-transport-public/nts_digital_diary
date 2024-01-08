@@ -17,7 +17,16 @@
             {{ 'completed.panel.content' | trans | nl2br }}
         </div>
     </div>
-    <div class="prose-scope">{{ 'completed.copy' | trans | markdown_to_html }}</div>
+    <div class="prose-scope">
+        {{ 'completed.copy' | trans | markdown_to_html }}
+    </div>
 
     {%- include 'travel_diary/dashboard/includes/diary_keeper_proxies.html.twig' -%}
+
+    {%- if is_granted('ELIGIBLE_FOR_SATISFACTION_SURVEY') -%}
+        <h2 class="govuk-heading-m govuk-!-padding-top-4">{{ 'completed.satisfaction-survey.heading' | trans }}</h2>
+        <div class="prose-scope">
+            {{ 'completed.satisfaction-survey.copy' | trans({link: path('traveldiary_satisfaction_survey_start', {diaryKeeperId: diaryKeeper.id})}) | markdown_to_html }}
+        </div>
+    {%- endif -%}
 {% endblock %}

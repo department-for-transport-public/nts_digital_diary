@@ -7,7 +7,6 @@ use App\Entity\Household;
 use App\Entity\Journey\Method;
 use DateTime;
 use Doctrine\Bundle\DoctrineBundle\Repository\ServiceEntityRepository;
-use Doctrine\ORM\Query\Expr;
 use Doctrine\ORM\QueryBuilder;
 use Doctrine\Persistence\ManagerRegistry;
 
@@ -123,5 +122,30 @@ class HouseholdRepository extends ServiceEntityRepository
             ->getQuery()
             ->setParameter('before', $before)
             ->getResult();
+    }
+
+    public function findOneBySerial(int $area, int $addressNumber, int $householdNumber, bool $disallowAlreadySubmitted): ?Household
+    {
+        $qb = $this->createQueryBuilder('household')
+            ->innerJoin('household.areaPeriod', 'areaPeriod')
+            ->select('household, areaPeriod')
+            ->where('areaPeriod.area = :area')
+            ->andWhere('household.addressNumber = :address_number')
+            ->andWhere('household.householdNumber = :household_number')
+            ->andWhere('areaPeriod.trainingInterviewer IS NULL')
+        ;
+
+        if ($disallowAlreadySubmitted) {
+            $qb->andWhere('household.submittedAt IS NULL');
+        }
+
+        return $qb
+            ->setParameters([
+                'area' => $area,
+                'address_number' => $addressNumber,
+                'household_number' => $householdNumber,
+            ])
+            ->getQuery()
+            ->getOneOrNullResult();
     }
 }

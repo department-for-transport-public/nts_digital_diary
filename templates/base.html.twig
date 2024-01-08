@@ -42,7 +42,7 @@
             -#}
             <div role="alert" data-warning="{{ sessionWarningTime() }}" data-expiry="{{ sessionExpiryTime() }}" class="govuk-width-container {{ containerClasses | default('') }}" id="session-reminder">
                 {% set rememberMeEnabled = not (app.request.cookies.get('REMEMBERME') is empty) %}
-                <span class="extend">Your session will time out soon. <a href="{{ path('app_refresh_session') }}" class="govuk-link">Click here to extend your session.</a></span>
+                <span class="extend">Your session will time out soon. <a href="{{ path('app_remote_refresh_session') }}" class="govuk-link">Click here to extend your session.</a></span>
                 <span class="expired">{% block sessionExpired %}Your session has expired. Any unsaved data has been lost. <a href="{{ app.request.requestUri }}" class="govuk-link">{{ rememberMeEnabled ? "Click here to start a new session." : "Click here to login." }}</a>{% endblock %}</span>
             </div>
         {%- endif -%}
@@ -89,6 +89,7 @@
 {% endblock %}
 
 {% block bodyEnd %}
+    {{ include('includes/viewport-size-monitor.html.twig') }}
     {%- if isVimeoUsed() -%}
         <script type="text/javascript" src="https://player.vimeo.com/api/player.js" defer></script>
     {%- endif -%}

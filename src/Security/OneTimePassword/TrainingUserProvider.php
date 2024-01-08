@@ -15,6 +15,8 @@ use Symfony\Component\Security\Core\User\UserProviderInterface;
 class TrainingUserProvider implements UserProviderInterface
 {
     public const USER_IDENTIFIER = "12345678";
+    public const INTERVIEWER_ID_QUERY_PARAM = "_interviewer";
+
     /**
      * @var array<string, UserInterface>
      */
@@ -23,8 +25,11 @@ class TrainingUserProvider implements UserProviderInterface
 
     public function __construct(RequestStack $requestStack, EntityManagerInterface $entityManager)
     {
-        if ($requestStack->getCurrentRequest()->query->has('_interviewer')) {
-            $interviewer = $entityManager->find(Interviewer::class, $requestStack->getCurrentRequest()->query->get('_interviewer'));
+        $interviewerId = $requestStack->getCurrentRequest()->query
+            ->get(TrainingUserProvider::INTERVIEWER_ID_QUERY_PARAM);
+
+        if ($interviewerId) {
+            $interviewer = $entityManager->find(Interviewer::class, $interviewerId);
         }
 
         $this->users = [
@@ -46,7 +51,15 @@ class TrainingUserProvider implements UserProviderInterface
 
         $storedUser = $this->getUser($user->getUserIdentifier());
 
-        $interviewer = $this->entityManager->find(Interviewer::class, $user->getInterviewer()?->getId());
+        $interviewerId = $user->getInterviewer()?->getId();
+        $interviewer = $this->entityManager->find(Interviewer::class, $interviewerId);
+
+        if (null === $interviewer) {
+            $e = new UserNotFoundException('User with id '.json_encode($interviewerId).' not found.');
+            $e->setUserIdentifier(json_encode($interviewerId));
+
+            throw $e;
+        }
 
         /**
          * During the onboarding/household wizard, the household hasn't yet been persisted.

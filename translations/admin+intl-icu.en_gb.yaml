@@ -33,24 +33,24 @@ feedback:
       labels:
         new: New
         assigned: Assigned
-        in-progress: Active
+        in-progress: In progress
         closed: Closed
     add-note:
       submit.label: Add note
   state-transition:
     acknowledge:
-      label: Acknowledge receipt
-      page-title: Acknowledge receipt of feedback
+      label: Mark as in progress
+      page-title: Mark message as in progress
       content: This will acknowledge that you have received the feedback, and that a response is in progress.
       confirmed-notification:
-        heading: Feedback message acknowledge
-        content: The message has been acknowledge and is now marked as in-progress.
+        heading: Message in-progress
+        content: The message has been marked as in-progress.
     close:
-      label: Close feedback
-      page-title: Close feedback
-      content: This will close the feedback.
+      label: Close message
+      page-title: Close message
+      content: This will close the message.
       confirmed-notification:
-        heading: Feedback message closed
+        heading: Message closed
         content: The message has been closed.
 
 
@@ -98,8 +98,27 @@ interviewer.allocate:
       label: Area
     allocate: Allocate to area
 
+household-maintenance:
+  breadcrumbs:
+    add-diary-keeper: Add diary keeper
+    choose-household: Household maintenance
+    household-details: "Household: {serial}"
+
+  add-diary-keeper:
+    page-title: Add diary keeper
+
+  choose-household:
+    page-title: Choose household
+    area.label: Area
+    address-number.label: Address
+    household-number.label: Household
+    search.label: Search
+
+  household-details:
+    page-title: Household details
+    add-diary-keeper.label: Add diary keeper
+
 sample-import.form:
   page-title: Sample Import
   areas.label: Area sample import file
   import.label: Import sample
-

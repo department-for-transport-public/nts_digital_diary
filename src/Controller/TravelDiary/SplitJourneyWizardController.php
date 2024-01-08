@@ -13,7 +13,7 @@ use App\FormWizard\PropertyMerger;
 use App\FormWizard\TravelDiary\SplitJourneyState;
 use App\FormWizard\TravelDiary\SplitJourneySubject;
 use App\Repository\DiaryDayRepository;
-use App\Utility\SplitJourneyHelper;
+use App\Utility\TravelDiary\SplitJourneyHelper;
 use Brick\Math\RoundingMode;
 use Sensio\Bundle\FrameworkExtraBundle\Configuration\Entity;
 use Symfony\Component\HttpFoundation\RedirectResponse;

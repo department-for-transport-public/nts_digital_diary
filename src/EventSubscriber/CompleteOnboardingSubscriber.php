@@ -3,7 +3,7 @@
 namespace App\EventSubscriber;
 
 use App\Event\CompleteOnboardingEvent;
-use App\Utility\AccountCreationHelper;
+use App\Utility\Security\AccountCreationHelper;
 use Doctrine\ORM\EntityManagerInterface;
 use Symfony\Component\EventDispatcher\EventSubscriberInterface;
 

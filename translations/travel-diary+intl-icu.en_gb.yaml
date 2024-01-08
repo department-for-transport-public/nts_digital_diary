@@ -35,6 +35,11 @@ completed:
       Thank you for participating!
   copy: >-
     Your interviewer should be in contact within 6 days to arrange a pick-up interview.
+  satisfaction-survey:
+    heading: Satisfaction survey
+    copy: >-
+      The online travel diary is a new digital service and we would like to hear about your experience.
+      We would be grateful if you could complete [this short survey]({link}) which should take less than 5 minutes.
 
 diary-keeper.states:
   new: Not yet started
@@ -294,6 +299,81 @@ mark-as-complete:
   form:
     mark-as-complete: Mark travel diary as complete
 
+satisfaction:
+  ease-of-use:
+    page-title: Ease of use
+    label: How easy or difficult was it to use the digital/paper diary?
+    help: ''
+    choices:
+      1-very-easy: Very easy
+      2-somewhat-easy: Somewhat easy
+      3-neither-easy-nor-difficult: Neither easy nor difficult
+      4-somewhat-difficult: Somewhat difficult
+      5-very-difficult: Very difficult
+  burden-of-use:
+    page-title: Diary burden
+    label: How burdensome was it to complete this diary?
+    help: ''
+    choices:
+      1-not-at-all-burdensome: Not at all burdensome
+      2-a-little-burdensome: A little burdensome
+      3-moderately-burdensome: Moderately burdensome
+      4-very-burdensome: Very burdensome
+      5-extremely-burdensome: Extremely burdensome
+  burden-reason:
+    label: Which of the following reasons made it burdensome for you to complete this survey?
+    help: Check all that apply
+    choices:
+      technical-problems: Technical problems
+      task-length: Task length
+      completing-multiple-diaries: I was completing multiple diaries
+      vocabulary-was-difficult:  The vocabulary was difficult to understand
+      did-not-understand-intent: I didn't understand the intent of what was being asked
+      distracted: I was distracted
+      other-activities-at-same-time: I was doing other activities at the same time, such as watching TV or talking to someone else or other content (e.g. social media or videos)
+      other:  Other
+  burden-reason-other:
+    label: What was the reason for your burden?
+    help: ''
+  how-often-entries-added:
+    page-title: Diary completion patterns
+    preamble: We are interested in learning more about how people complete their diaries.
+    label: How often did you add entries to your diary?
+    help: ''
+    choices:
+      multiple-times-per-day: Multiple times a day
+      once-a-day: Once a day
+      every-other-day: Every other day
+      less-often: Less often
+  preferred-method:
+    page-title: Diary methodologies
+    preamble: The Department for Transport are exploring different approaches for collecting travel information from the population and are keen to get your views on this.
+    label: How would you prefer to complete the seven-day travel diary for the National Travel Survey?
+    help: ''
+    choices:
+      paper: Paper
+      online: Online questionnaire
+      phone-app-automatic: Phone app which automatically records journeys (using GPS)
+      phone-app-manual: Phone app where you can enter journeys (not using GPS)
+      other: Other approach
+  preferred-method-other:
+    label: Which method would you prefer?
+    help: ''
+  type-of-devices:
+    page-title: Devices used
+    label: Which type of devices were used to complete this diary?
+    help: Check all that apply
+    choices:
+      desktop-or-laptop: Desktop or laptop
+      tablet: Tablet
+      smartphone: Smartphone
+      other:  Other
+  type-of-devices-other:
+    label: What device did you use?
+    help: ''
+  written-note-kept:
+    label: Did you keep a written note of your travel prior to entering the details into the diary?
+    help: ''
 
 stage.delete:
   page-title: >-

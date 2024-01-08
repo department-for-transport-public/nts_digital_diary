@@ -13,7 +13,7 @@
         {{ contextDetail(
             'feedback.view.details.assigned-to' | trans,
             message.assignedTo,
-            workflow_can(message, constant('App\\Entity\\Feedback\\Message::TRANSITION_ASSIGN')) and is_granted('ROLE_FEEDBACK_ASSIGNER') and showActions
+            workflow_can(message, constant('App\\Entity\\Feedback\\Message::TRANSITION_ASSIGN')) and is_granted('ADMIN_FEEDBACK_ASSIGN') and showActions
                 ? {(path('admin_feedback_assignment_message', {message: message.id})): 're-assign'}
                 : {}
         ) }}

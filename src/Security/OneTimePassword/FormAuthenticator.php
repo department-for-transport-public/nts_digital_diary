@@ -3,8 +3,8 @@
 namespace App\Security\OneTimePassword;
 
 use App\Form\OnBoarding\OtpLoginType;
-use App\Utility\TranslatedAuthenticationUtils;
-use App\Utility\UrlSigner;
+use App\Utility\Security\TranslatedAuthenticationUtils;
+use App\Utility\Security\UrlSigner;
 use Symfony\Component\Form\FormFactoryInterface;
 use Symfony\Component\HttpFoundation\RedirectResponse;
 use Symfony\Component\HttpFoundation\Request;
@@ -13,6 +13,9 @@ use Symfony\Component\HttpFoundation\Response;
 use Symfony\Component\Routing\RouterInterface;
 use Symfony\Component\Security\Core\Authentication\Token\TokenInterface;
 use Symfony\Component\Security\Core\Exception\AuthenticationException;
+use Symfony\Component\Security\Core\Exception\BadCredentialsException;
+use Symfony\Component\Security\Core\Exception\CustomUserMessageAccountStatusException;
+use Symfony\Component\Security\Core\Exception\InvalidCsrfTokenException;
 use Symfony\Component\Security\Core\Security;
 use Symfony\Component\Security\Csrf\CsrfToken;
 use Symfony\Component\Security\Http\Authenticator\AbstractAuthenticator;
@@ -25,6 +28,7 @@ use Symfony\Component\Security\Http\EntryPoint\AuthenticationEntryPointInterface
 class FormAuthenticator extends AbstractAuthenticator implements AuthenticationEntryPointInterface, InteractiveAuthenticatorInterface
 {
     public const TRAINING_INTERVIEWER_SIG_VERIFIED_REQUEST_KEY = 'interviewer_training.login_verified';
+    public const TRAINING_INTERVIEWER_INVALID_USER_CREDENTIALS = 'interviewer_training.invalid_user';
 
     private FormFactoryInterface $formFactory;
     private PasscodeGenerator $passcodeGenerator;
@@ -63,27 +67,40 @@ class FormAuthenticator extends AbstractAuthenticator implements AuthenticationE
             $errors = $form->getErrors(true, true);
             foreach($errors as $error) {
                 if ($error->getCause() instanceof CsrfToken) {
-                    throw new AuthenticationException("Invalid CSRF token.");
+                    throw new InvalidCsrfTokenException("Invalid CSRF token.");
                 }
             }
 
-            throw new AuthenticationException("Bad credentials.");
+            throw new BadCredentialsException("Bad credentials.");
         }
 
         $credentials = $form->getData();
+        $this->translatedAuthenticationUtils->setLastUsername($credentials['identifier'], '_onboarding');
+
         // remove spaces - in order to make them easier to read, we show the passcodes with a space after 4 digits
         $credentials['identifier'] = str_replace(' ', '', $credentials['identifier']);
         $credentials['passcode'] = str_replace(' ', '', $credentials['passcode']);
 
-        $this->translatedAuthenticationUtils->setLastUsername($credentials['identifier'], '_onboarding');
+        $isInterviewerTraining = $request->query->has(TrainingUserProvider::INTERVIEWER_ID_QUERY_PARAM);
+
+        // Prevent logging in with genuine passcodes when accessing onboarding via interviewer training
+        // Nothing strictly bad will happen, but if they're training, we don't want them using real codes
+        if ($isInterviewerTraining) {
+            if ($credentials['identifier'] !== TrainingUserProvider::USER_IDENTIFIER) {
+                $this->requestStack->getCurrentRequest()->attributes->set(
+                    self::TRAINING_INTERVIEWER_INVALID_USER_CREDENTIALS,
+                    $credentials
+                );
+                throw new CustomUserMessageAccountStatusException("Only training passcodes can be used to access onboarding training");
+            }
+        }
 
         // We need to verify the Url signature early, in order to prevent the login rate limiter for onboarding (when training)
-        if ($credentials['identifier'] === TrainingUserProvider::USER_IDENTIFIER)
+        if ($isInterviewerTraining || $credentials['identifier'] === TrainingUserProvider::USER_IDENTIFIER)
         {
             $this->requestStack->getCurrentRequest()->attributes->set(
                 self::TRAINING_INTERVIEWER_SIG_VERIFIED_REQUEST_KEY,
-                $request->query->has('_interviewer')
-                    && $this->urlSigner->isValid($this->requestStack->getCurrentRequest()->getRequestUri())
+                $this->urlSigner->isValid($this->requestStack->getCurrentRequest()->getRequestUri())
             );
         }
 

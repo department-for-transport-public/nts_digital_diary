@@ -2,14 +2,21 @@
 
 # Change log
 
-## Upcoming changes
+## Upcoming release
+- 
+
+## 2024-01-05
+- **Update**: Admin: Add training status to interviewer view pages
+- **Update**: Admin: Limit access to dangerous interviewer actions
+
+## 2024-01-02
 - **Update**: gcp-database:dump - log stderr to console, use the --set-gtid-purged=off flag when dumping, check dump dir exists, and other minor fixes
 - **Fix**: FK bug relating to deleting a shared journey
 - **Update**: Alter voter to ensure "change email" functionality is not enabled for interviewer training diaries.
 - **Update**: Allow interviewers to edit proxy configuration after on-boarding
 - **Update**: Move change email link, and add some guidance about how changing a user's email works
 - **Feature**: Move milometer functionality to be a toggleable feature
-- **Change**: Disable CSRF on logout links
+- **Updatee**: Disable CSRF on logout links
 - **Fix**: Update dbrekelmans/bdi to fix broken Selenium driver updates for Chrome
 - **Update**: Make onboarding household serial form clearer, with image showing paper diary serial boxes
 - **Update**: Extend AreaPeriod valid dates
@@ -19,12 +26,16 @@
 - **Update**: re-phrase `diary keeper` as `household member` for onboarding
 - **Update**: Screenshot tool can now handle check-letter and milometer features
 - **Update**: Prevent rate-limiting from applying to training logins
-- **Change**: Prevent training records from recording property change logs
-- **Change**: Interviewer - Hide "proxied by" change link when there is only one diary keeper in the household 
+- **Update**: Prevent training records from recording property change logs
+- **Update**: Interviewer - Hide "proxied by" change link when there is only one diary keeper in the household 
 - **Feature**: Add log processors for session_id and user_id
 - **Fix**: Make onboarding check letter case-insensitive
 - **Update**: Move interviewer guide pdf to storage bucket
 - **Update**: encoding for cost fields on API
+- **Feature**: Allow admins to add diary-keepers to a household, post-onboarding
+- **Feature**: Satisfaction survey
+- **Feature**: Passive metrics log
+- **Fix**: Fix behaviour upon back button from Onboarding's "add another" screen
 
 ## 2023-08-10
 - **Update**: Change copy - participants must be aged 11 years or over

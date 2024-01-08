@@ -16,3 +16,56 @@
         {{ videoContainer(id, title) }}
     {% endif %}
 {% endmacro %}
+
+{% macro trainingRecordsTable(trainingRecords, options) %}
+    {% set options = options ?? {} %}
+    {% set trainingSections = {
+        1: 'pre-briefing',
+        3: 'in-briefing',
+    } %}
+
+<table class="govuk-table">
+    <caption class="govuk-table__caption govuk-table__caption--m">{{ 'training.dashboard.table.caption' | trans }}</caption>
+    <thead class="govuk-table__head">
+    <tr class="govuk-table__tr">
+        <th scope="col" class="govuk-table__header"></th>
+        <th scope="col" class="govuk-table__header">{{ 'training.module.started' | trans }}</th>
+        <th scope="col" class="govuk-table__header">{{ 'training.module.completed' | trans }}</th>
+        <th scope="col" class="govuk-table__header">{{ 'training.module.status' | trans }}</th>
+    </tr>
+    </thead>
+    <tbody class="govuk-table__body">
+    {% for trainingRecord in trainingRecords %}
+        {# @var trainingRecord \App\Entity\InterviewerTrainingRecord #}
+        {% if attribute(trainingSections, trainingRecord.moduleNumber) ?? false %}
+            <tr class="govuk-table__tr">
+                <th scope="col" class="govuk-table__header govuk-!-padding-top-5" colspan="5">
+                    {{ "training.dashboard.table.section.#{attribute(trainingSections, trainingRecord.moduleNumber)}" | trans }}
+                </th>
+            </tr>
+        {% endif %}
+        <tr class="govuk-table__tr">
+            <th scope="row" class="govuk-table__header govuk-!-padding-left-2">
+                {%- set name = ("training.module.number" | trans({number: trainingRecord.moduleNumber}) | capitalize) ~ ": " ~ ("training.module.title.#{trainingRecord.moduleName}" | trans | capitalize) -%}
+                {%- if not (options.disableLinks ?? false) -%}
+                    <a class="govuk-link" href="{{ path('interviewer_training_module_index', {moduleName: trainingRecord.moduleName}) }}">{{ name }}</a>
+                {%- else -%}
+                    {{ name }}
+                {%- endif -%}
+            </th>
+            <td class="govuk-table__cell">{{ _self.dateOrHyphen(trainingRecord.startedAt) }}</td>
+            <td class="govuk-table__cell">{{ _self.dateOrHyphen(trainingRecord.completedAt) }}</td>
+            <td class="govuk-table__cell">{{ _self.statusTag(trainingRecord) }}</td>
+        </tr>
+    {% else %}
+        <tr>
+            <td class="govuk-table__cell" colspan="4">{{ 'training.no-training-record' | trans }}</td>
+        </tr>
+    {% endfor %}
+    </tbody>
+</table>
+{% endmacro %}
+
+{%- macro dateOrHyphen(dateVar) -%}
+    {{ dateVar ? (dateVar | date(format_date_default)) : '-' }}
+{%- endmacro -%}

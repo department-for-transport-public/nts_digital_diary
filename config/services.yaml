@@ -92,7 +92,7 @@ services:
     App\Utility\Feedback\NotifyHelper:
         public: true
 
-    App\Utility\UrlSigner:
+    App\Utility\Security\UrlSigner:
         arguments:
             $secret: "%env(APP_SECRET)%"
 

@@ -12,22 +12,21 @@ use App\Entity\InterviewerTrainingRecord;
 use App\Entity\Journey\Journey;
 use App\Entity\Journey\Method;
 use App\Entity\User;
+use App\Entity\Utility\MetricsLog;
 use App\Entity\Vehicle;
+use App\Utility\Metrics\Events\Entity\JourneyPersistEvent;
+use App\Utility\Metrics\Events\Entity\StagePersistEvent;
+use App\Utility\Metrics\MetricsHelper;
 use DateTime;
 use DateTimeImmutable;
 use Doctrine\ORM\EntityManagerInterface;
 
 class InterviewerTrainingHelper
 {
-    private EntityManagerInterface $entityManager;
-
     /** @var array<Method>  */
     private array $methods;
 
-    public function __construct(EntityManagerInterface $entityManager)
-    {
-        $this->entityManager = $entityManager;
-    }
+    public function __construct(protected EntityManagerInterface $entityManager) {}
 
     public function checkOrCreateTrainingData(Interviewer $interviewer): void
     {

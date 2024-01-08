@@ -5,14 +5,13 @@ namespace App\EventSubscriber\FormWizard;
 
 
 use App\Controller\FormWizard\AbstractSessionStateFormWizardController;
-use App\FormWizard\FormWizardStateInterface;
+use App\FormWizard\FormWizardManager;
 use Psr\Log\LoggerInterface;
 use Symfony\Bundle\WebProfilerBundle\Controller\ProfilerController;
 use Symfony\Component\EventDispatcher\EventSubscriberInterface;
 use Symfony\Component\HttpFoundation\RequestStack;
 use Symfony\Component\HttpKernel\Event\ControllerEvent;
 use Symfony\Component\HttpKernel\KernelEvents;
-use function \str_starts_with;
 
 /**
  * Clear all session-based wizard data from the session, except for the current wizard (if it is a wizard)
@@ -22,16 +21,13 @@ use function \str_starts_with;
  */
 class CleanupSubscriber implements EventSubscriberInterface
 {
-    private RequestStack $requestStack;
-    private LoggerInterface $log;
+    public function __construct(
+        protected LoggerInterface $log,
+        protected FormWizardManager $formWizardManager,
+        protected RequestStack $requestStack,
+    ) {}
 
-    public function __construct(RequestStack $requestStack, LoggerInterface $log)
-    {
-        $this->requestStack = $requestStack;
-        $this->log = $log;
-    }
-
-    public function kernelControllerEvent(ControllerEvent $event)
+    public function kernelControllerEvent(ControllerEvent $event): void
     {
         $controllerBlacklist = [
             ProfilerController::class,
@@ -44,34 +40,18 @@ class CleanupSubscriber implements EventSubscriberInterface
             in_array($controllerClass, $controllerBlacklist)
             || !str_starts_with($controllerClass, "App\\Controller\\")
         ) {
-            $this->log->notice("[FormWizard] Cleanup: Ignoring controller $controllerClass");
+            $this->log->debug("[FormWizard] Cleanup: Ignoring controller $controllerClass");
             return;
         }
 
-        $this->log->notice("[FormWizard] Cleanup: Running on controller $controllerClass");
+        $this->log->debug("[FormWizard] Cleanup: Running on controller $controllerClass");
 
         if ($controller instanceof AbstractSessionStateFormWizardController) {
-            // in wizard
-            $this->cleanUp($controller->getSessionKey());
+            // In wizard: remove other wizard's state
+            $this->formWizardManager->cleanUp($controller->getSessionKey());
         } else {
-            // not in wizard
-            $this->cleanUp();
-        }
-    }
-
-    private function cleanUp($exclude = null)
-    {
-        if ($exclude) {
-            $this->log->notice("[FormWizard] Cleanup: Exclude '$exclude' from search");
-        }
-
-        $session = $this->requestStack->getSession();
-        $sessionVars = $session->all();
-        foreach ($sessionVars as $key => $var) {
-            if ($var instanceof FormWizardStateInterface && $key !== $exclude) {
-                $this->log->notice("[FormWizard] Cleanup: Removing wizard session var '$key'");
-                $session->remove($key);
-            }
+            // Not in wizard: remove all wizard's state
+            $this->formWizardManager->cleanUp();
         }
     }
 

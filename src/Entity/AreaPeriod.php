@@ -3,24 +3,24 @@
 namespace App\Entity;
 
 use ApiPlatform\Metadata\ApiProperty;
-use ApiPlatform\Metadata\GetCollection;
-use ApiPlatform\Metadata\Post;
+use ApiPlatform\Metadata\ApiResource;
 use ApiPlatform\Metadata\Delete;
 use ApiPlatform\Metadata\Get;
-use ApiPlatform\Metadata\ApiResource;
+use ApiPlatform\Metadata\GetCollection;
+use ApiPlatform\Metadata\Post;
 use App\ApiPlatform\ApiIdInterface;
 use App\ApiPlatform\Provider\AreaPeriodProvider;
 use App\Repository\AreaPeriodRepository;
-use App\Utility\AreaPeriodHelper;
+use App\Utility\TravelDiary\AreaPeriodHelper;
+use DateInterval;
 use DateTime;
 use Doctrine\Common\Collections\ArrayCollection;
 use Doctrine\Common\Collections\Collection;
 use Doctrine\ORM\Mapping as ORM;
+use Doctrine\ORM\Mapping\UniqueConstraint;
 use Symfony\Bridge\Doctrine\Validator\Constraints\UniqueEntity;
 use Symfony\Component\Serializer\Annotation\Ignore;
 use Symfony\Component\Validator\Constraints as Assert;
-use DateInterval;
-use Doctrine\ORM\Mapping\UniqueConstraint;
 use UnexpectedValueException;
 
 /**

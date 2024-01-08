@@ -14,7 +14,10 @@ class IapUser implements UserInterface, UserDomainInterface
         protected string  $username,
         protected ?string $password,
         protected array   $roles = []
-    ) {}
+    ) {
+        // Any user that can log in gets this...
+        $this->roles[] = 'ROLE_ADMIN';
+    }
 
     public function __toString(): string
     {

@@ -23,6 +23,17 @@ return static function (ContainerConfigurator $container) {
         ],
     ];
 
+    $maintenanceFinishMetadata =  [
+        'persist' => true,
+        'redirect_route' => [
+            'name' => 'admin_household_maintenance_details',
+            'parameters' => [
+                'id' => 'subject.household.id',
+            ],
+        ],
+        'notification_banner' => $dkAddedBanner,
+    ];
+
     $container->extension('framework', [
         'workflows' => [
             'form_wizard.on_boarding.diary_keeper' => [
@@ -40,6 +51,8 @@ return static function (ContainerConfigurator $container) {
                         'is_valid_alternative_start_place' => '!isEmpty(state.getSubject().getId())',
                     ]),
                     ob_place(State::STATE_ADD_ANOTHER, AddAnotherType::class, 'diary-keeper.add-another', null, [
+                        'clear_state' => true,
+                        'is_valid_alternative_start_place' => true,
                         'form_data_property' => false,
                         'view_data' => ['show_formwizard_backlink' => false]
                     ]),
@@ -65,14 +78,22 @@ return static function (ContainerConfigurator $container) {
                         State::TRANSITION_IDENTITY_TO_FINISH,
                         State::STATE_IDENTITY,
                         State::STATE_FINISH,
-                        '!isEmpty(subject.getSubject().getId())',
+                        '!subject.isAddAnotherDisabled() && !isEmpty(subject.getSubject().getId())',
                         $editFinishMetadata
+                    ),
+                    // See comment in DiaryKeeperState.php
+                    ob_transition(
+                        State::TRANSITION_IDENTITY_TO_FINISH_HOUSEHOLD_MAINTENANCE,
+                        State::STATE_IDENTITY,
+                        State::STATE_FINISH,
+                        'subject.isAddAnotherDisabled()',
+                        $maintenanceFinishMetadata
                     ),
                     ob_transition(
                         State::TRANSITION_IDENTITY_TO_ADD_ANOTHER,
                         State::STATE_IDENTITY,
                         State::STATE_ADD_ANOTHER,
-                        'isEmpty(subject.getSubject().getId())',
+                        'isEmpty(subject.getSubject().getId()) && !subject.isAddAnotherDisabled()',
                         [
                             'notification_banner' => $dkAddedBanner,
                             'persist' => true,

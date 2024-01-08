@@ -165,6 +165,9 @@
     "google/grpc-gcp": {
         "version": "v0.2.0"
     },
+    "google/longrunning": {
+        "version": "v0.2.6"
+    },
     "google/protobuf": {
         "version": "v3.19.1"
     },

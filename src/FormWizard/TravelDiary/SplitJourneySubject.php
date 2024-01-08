@@ -50,6 +50,7 @@ class SplitJourneySubject implements MultipleEntityInterface
     {
         return [
             $this->destinationJourney,
+            // Only single stage journeys can be split, so only one new one gets created.
             $this->destinationJourney->getStages()->first(),
         ];
     }

@@ -2,7 +2,7 @@
 
 namespace App\Controller\FormWizard;
 
-use App\Event\FormWizardFormDataEvent;
+use App\Event\FormWizard\FormDataEvent;
 use App\FormWizard\FormWizardManager;
 use App\FormWizard\FormWizardStateInterface;
 use App\FormWizard\Place;
@@ -78,7 +78,7 @@ abstract class AbstractFormWizardController extends AbstractController
         $form = $this->formWizardManager->createForm($formWizardState, $cancelRedirectResponse?->getTargetUrl());
         $form->handleRequest($request);
         if ($this->eventDispatcher ?? false) {
-            $this->eventDispatcher->dispatch(new FormWizardFormDataEvent($form->getData()), FormWizardFormDataEvent::NAME);
+            $this->eventDispatcher->dispatch(new FormDataEvent($form->getData()), FormDataEvent::NAME);
         }
 
         // validate/state-transition
@@ -96,6 +96,10 @@ abstract class AbstractFormWizardController extends AbstractController
         }
 
         $stateMetadata = $this->formWizardManager->getStateMetadata($formWizardState);
+
+        if ($stateMetadata['clear_state'] ?? false) {
+            $this->formWizardManager->cleanUp();
+        }
 
         if ($additionalViewData instanceof \Closure) {
             $additionalViewData = $additionalViewData($formWizardState);

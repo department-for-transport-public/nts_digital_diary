@@ -1,0 +1,70 @@
+{%- extends 'admin/household-maintenance/base.html.twig' -%}
+
+{%- trans_default_domain 'admin' -%}
+{%- set title_translation_prefix = 'household-maintenance.household-details' -%}
+{%- set title_translation_domain = 'admin' -%}
+
+{%- set breadcrumb_level = 2 -%}
+
+{%- block content -%}
+    {%- from "@GhostGovUkFrontend/components/macros.html.twig" import actionlessSummaryListRow -%}
+    {{- parent() -}}
+
+    {# This summary list, and the following table is very similar to the table used in
+       interviewer/dashboard/household.html.twig, and as such, they use the same translations.
+    #}
+    <dl class="govuk-summary-list">
+        {{ actionlessSummaryListRow(
+            "household.diary-week-start-date" | trans({}, 'interviewer'),
+            household.diaryWeekStartDate|date(format_date_default),
+        ) }}
+        {{ actionlessSummaryListRow(
+            "household.journey-sharing" | trans({}, 'interviewer'),
+            ("boolean." ~ (household.journeySharingEnabled ? 'true' : 'false')) | trans([], 'messages'),
+        ) }}
+        {% if household.isSubmitted %}
+            {{ actionlessSummaryListRow(
+                "household.submitted-for-processing" | trans({}, 'interviewer'),
+                household.submittedAt | date(format_date_default ~ " " ~ format_time_short)
+                ~ "\n" ~ household.submittedBy,
+            ) }}
+        {% endif %}
+    </dl>
+
+
+    <table class="govuk-table">
+        <caption class="govuk-table__caption govuk-table__caption--m">{{ "household.diary-keepers" | trans({}, 'interviewer') }}</caption>
+        <thead class="govuk-table__head">
+        <tr class="govuk-table__row">
+            <th scope="col" class="govuk-table__header">{{ "household.table.number" | trans({}, 'interviewer') }}</th>
+            <th scope="col" class="govuk-table__header">{{ "household.table.name" | trans({}, 'interviewer') }}</th>
+            <th scope="col" class="govuk-table__header">{{ "household.table.has-login" | trans({}, 'interviewer') }}</th>
+            <th scope="col" class="govuk-table__header">{{ "household.table.type" | trans({}, 'interviewer') }}</th>
+            <th scope="col" class="govuk-table__header">{{ "household.table.state" | trans({}, 'interviewer') }}</th>
+        </tr>
+        </thead>
+        <tbody class="govuk-table__body">
+        {%- for diaryKeeper in household.diaryKeepers -%}
+            {# @var diaryKeeper DiaryKeeper #}
+            <tr class="govuk-table__row">
+                <th scope="row" class="govuk-table__cell">{{ diaryKeeper.number }}</th>
+                <td class="govuk-table__cell">{{ diaryKeeper.name }}{%- if diaryKeeper.proxies | length > 0 %}<br>({{ "household.proxied-by" | trans({proxyNames: diaryKeeper.proxyNames | join(', ')}, 'interviewer') }}){% endif %}</td>
+                <td class="govuk-table__cell">{{ "boolean.#{diaryKeeper.hasIdentifierForLogin ? 'true' : 'false'}" | trans({}, 'messages') }}</td>
+                <td class="govuk-table__cell">{{ "household.type.#{diaryKeeper.isAdult ? 'adult' : 'child'}" | trans({}, 'interviewer') }}</td>
+                <td class="govuk-table__cell">{{ ("diary-keeper.states." ~ (diaryKeeper.diaryState ?? 'new')) | trans({}, 'interviewer') }}</td>
+            </tr>
+        {%- else -%}
+            <tr>
+                <td colspan="5" class="govuk-table__cell">{{ "household.no-diary-keepers" | trans({}, 'interviewer') }}</td>
+            </tr>
+        {%- endfor -%}
+        </tbody>
+    </table>
+
+    <div>
+        {%- if is_granted('HOUSEHOLD_MAINTENANCE_ADD_DIARY_KEEPER', household) -%}
+            <a href="{{ path('admin_household_maintenance_add_diary_keeper_place', {id: household.id}) }}" class="govuk-button govuk-button">{{ 'household-maintenance.household-details.add-diary-keeper.label' | trans }}</a>
+        {%- endif -%}
+        <a href="{{ path('admin_household_maintenance_choose_household') }}" class="govuk-button govuk-button--secondary">{{ 'actions.back' | trans({}, 'messages') }}</a>
+    </div>
+{%- endblock -%}

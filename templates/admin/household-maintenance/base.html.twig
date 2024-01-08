@@ -1,0 +1,37 @@
+{%- extends 'admin/base.html.twig' -%}
+
+{% block beforeContent -%}
+    {%- set breadcrumbItems = [] -%}
+
+    {%- if breadcrumb_level >= 1 -%}
+        {%- set breadcrumbItems = breadcrumbItems | merge([
+            {
+                href: path('admin_household_maintenance_choose_household'),
+                text: 'household-maintenance.breadcrumbs.choose-household' | trans({}, 'admin'),
+            }
+        ]) -%}
+    {%- endif -%}
+
+    {%- if breadcrumb_level >= 2 -%}
+        {%- set breadcrumbItems = breadcrumbItems | merge([
+            {
+                href: path('admin_household_maintenance_details', {id: household.id}),
+                text: 'household-maintenance.breadcrumbs.household-details' | trans({serial: household.serialNumber}, 'admin'),
+            }
+        ]) -%}
+    {%- endif -%}
+
+    {%- if breadcrumb_level >= 3 -%}
+        {%- set breadcrumbItems = breadcrumbItems | merge([
+            {
+                href: path('admin_household_maintenance_add_diary_keeper', {id: household.id}),
+                text: 'household-maintenance.breadcrumbs.add-diary-keeper' | trans({serial: household.serialNumber}, 'admin'),
+            }
+        ]) -%}
+    {%- endif -%}
+
+    {%- if breadcrumbItems | length > 1 -%}
+        {%- from '@GhostGovUkFrontend/components/macros.html.twig' import breadcrumbs -%}
+        {{- breadcrumbs({items: breadcrumbItems}) -}}
+    {%- endif -%}
+{%- endblock -%}

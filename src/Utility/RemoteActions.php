@@ -11,7 +11,7 @@ class RemoteActions
 {
     const HMAC_TIMEOUT = 30;
 
-    public static function run(string $path)
+    public static function run(?string $path): void
     {
         switch($path) {
             case '/_ah/warmup':

@@ -2,12 +2,17 @@
 
 namespace App\FormWizard;
 
+use App\Controller\FormWizard\AbstractFormWizardController;
+use App\Event\FormWizard\PostPersistEvent;
 use App\Utility\PropertyAccessHelper;
 use Doctrine\ORM\EntityManagerInterface;
 use Ghost\GovUkFrontendBundle\Form\Type\ButtonGroupType;
 use Ghost\GovUkFrontendBundle\Form\Type\ButtonType;
 use Ghost\GovUkFrontendBundle\Form\Type\LinkType;
 use Ghost\GovUkFrontendBundle\Model\NotificationBanner;
+use Psr\Log\LoggerInterface;
+use ReflectionException;
+use ReflectionMethod;
 use RuntimeException;
 use Symfony\Component\Form\FormFactoryInterface;
 use Symfony\Component\Form\FormInterface;
@@ -19,27 +24,21 @@ use Symfony\Component\Workflow\EventListener\ExpressionLanguage;
 use Symfony\Component\Workflow\Registry;
 use Symfony\Component\Workflow\Transition;
 use Symfony\Component\Workflow\WorkflowInterface;
+use Symfony\Contracts\EventDispatcher\EventDispatcherInterface;
 
 class FormWizardManager
 {
-    private FormFactoryInterface $formFactory;
-    private RouterInterface $router;
-    private EntityManagerInterface $entityManager;
-    private RequestStack $requestStack;
-    private Registry $registry;
-    private ExpressionLanguage $expressionLanguage;
-    private AuthorizationCheckerInterface $authChecker;
-
-    public function __construct(Registry $registry, ExpressionLanguage $expressionLanguage, FormFactoryInterface $formFactory, RouterInterface $router, EntityManagerInterface $entityManager, RequestStack $requestStack, AuthorizationCheckerInterface $authChecker)
-    {
-        $this->formFactory = $formFactory;
-        $this->router = $router;
-        $this->entityManager = $entityManager;
-        $this->requestStack = $requestStack;
-        $this->registry = $registry;
-        $this->expressionLanguage = $expressionLanguage;
-        $this->authChecker = $authChecker;
-    }
+    public function __construct(
+        private readonly AuthorizationCheckerInterface $authChecker,
+        private readonly EntityManagerInterface $entityManager,
+        private readonly EventDispatcherInterface $eventDispatcher,
+        private readonly ExpressionLanguage $expressionLanguage,
+        private readonly FormFactoryInterface $formFactory,
+        private readonly LoggerInterface $logger,
+        private readonly Registry $registry,
+        private readonly RequestStack $requestStack,
+        private readonly RouterInterface $router,
+    ) {}
 
     public function getWorkflow(FormWizardStateInterface $state): ?WorkflowInterface
     {
@@ -169,6 +168,8 @@ class FormWizardManager
             } else {
                 $this->persistSubject($subject);
             }
+            $this->entityManager->flush();
+            $this->eventDispatcher->dispatch(new PostPersistEvent($subject, $this->getSourceWizardControllerClass()));
         }
 
         if ($notificationBanner = $transitionMetadata['notification_banner'] ?? false) {
@@ -181,6 +182,24 @@ class FormWizardManager
         }
 
         return $redirectUrl;
+    }
+
+    protected function getSourceWizardControllerClass(): ?string
+    {
+        $controllerMethod = $this->requestStack->getCurrentRequest()?->attributes->get('_controller');
+        if (!$controllerMethod) {
+            return null;
+        }
+        try {
+            $reflectionClass = (new ReflectionMethod($controllerMethod))->getDeclaringClass();
+            $controller = $reflectionClass->newInstanceWithoutConstructor();
+        } catch (ReflectionException $exception) {
+            return null;
+        }
+        if ($controller instanceof AbstractFormWizardController) {
+            return $reflectionClass->getName();
+        }
+        return null;
     }
 
     public function isValidStartPlace(FormWizardStateInterface $state, ?string $place): bool
@@ -215,7 +234,6 @@ class FormWizardManager
         if (!$this->entityManager->contains($subject)) {
             $this->entityManager->persist($subject);
         }
-        $this->entityManager->flush();
     }
 
     protected function handleNotificationBanners(array $notificationBanner, FormWizardStateInterface $state): void
@@ -246,5 +264,21 @@ class FormWizardManager
             $routeName = $redirectRoute;
         }
         return $this->router->generate($routeName, $routeParameters) . ($hash ? "#$hash" : '');
+    }
+
+    public function cleanUp(?string $exclude = null) : void
+    {
+        if ($exclude) {
+            $this->logger->debug("[FormWizard] Cleanup: Exclude '$exclude' from search");
+        }
+
+        $session = $this->requestStack->getSession();
+        $sessionVars = $session->all();
+        foreach ($sessionVars as $key => $var) {
+            if ($var instanceof FormWizardStateInterface && $key !== $exclude) {
+                $this->logger->debug("[FormWizard] Cleanup: Removing wizard session var '$key'");
+                $session->remove($key);
+            }
+        }
     }
 }

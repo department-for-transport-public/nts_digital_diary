@@ -2,8 +2,8 @@
 
 namespace App\Tests\Utility;
 
-use App\Utility\Url;
-use App\Utility\UrlSigner;
+use App\Utility\Security\Url;
+use App\Utility\Security\UrlSigner;
 use PHPUnit\Framework\TestCase;
 
 class UrlSignerTest extends TestCase

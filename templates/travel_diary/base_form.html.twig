@@ -6,7 +6,9 @@
     {% set title_translation_key = (form.children | first).vars.label %}
 {% endif %}
 {%- block pageHeading -%}
+    {{- block('preHeading') ?? null -}}
     {{- hasLabelHeading ? '' : parent() -}}
+    {{- block('postHeading') ?? null -}}
 {%- endblock -%}
 
 {% block content %}
@@ -14,6 +16,7 @@
         {% if hasLabelHeading %}
             {% set firstChild = form.children | first %}
             {{ form_start(form) }}
+            {{ block('preHeading') ?? null }}
             {{ form_label(firstChild) }}
             <div class="govuk-grid-row">
                 <div class="govuk-grid-column-two-thirds">

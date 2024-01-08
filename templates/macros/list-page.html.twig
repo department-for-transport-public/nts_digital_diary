@@ -1,6 +1,7 @@
-{%- macro listTableStart(data, form) -%}
+{%- macro listTableStart(data, form, options) -%}
+    {%- set options = options ?? {} -%}
     {{ form_start(form) }}
-    <table class="govuk-table list-table">
+    <table class="govuk-table list-table{% if options.tableClass ?? null %} {{ options.tableClass }}{% endif %}">
         {{ _self.tableHeader(data, form) }}
         <tbody class="govuk-table__body">
 {%- endmacro -%}
@@ -53,6 +54,7 @@
 {%- endmacro -%}
 
 {%- macro pagination(data) -%}
+    {% if data.numPages > 1 %}
     <nav class="govuk-pagination__container" aria-label="Pagination">
         <div class="previous">
             {% if data.previousUrl %}<a class="govuk-link" href="{{ data.previousUrl }}">Previous page</a>{% endif %}
@@ -81,4 +83,5 @@
             {% if data.nextUrl %}<a class="govuk-link" href="{{ data.nextUrl }}">Next page</a>{% endif %}
         </div>
     </nav>
+    {% endif %}
 {%- endmacro -%}

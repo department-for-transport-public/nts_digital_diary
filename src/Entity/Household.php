@@ -91,8 +91,8 @@ class Household
 
     /**
      * @ORM\Column(type="string", length=1, nullable=true)
-     * @Assert\Length(groups={"wizard.on-boarding.check-letter"}, maxMessage="wizard.on-boarding.household.check-letter.too-long", max=1)
-     * @Assert\NotNull(groups={"wizard.on-boarding.check-letter"}, message="wizard.on-boarding.household.check-letter.not-null")
+     * @Assert\Length(groups={"wizard.on-boarding.check-letter-field"}, maxMessage="wizard.on-boarding.household.check-letter.too-long", max=1)
+     * @Assert\NotNull(groups={"wizard.on-boarding.check-letter-field"}, message="wizard.on-boarding.household.check-letter.not-null")
      */
     private ?string $checkLetter;
 

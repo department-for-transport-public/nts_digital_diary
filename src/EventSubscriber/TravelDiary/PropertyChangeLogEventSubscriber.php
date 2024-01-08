@@ -21,18 +21,11 @@ use Symfony\Component\Serializer\Normalizer\NormalizerInterface;
 
 class PropertyChangeLogEventSubscriber implements EventSubscriber
 {
-    protected EntityManagerInterface $entityManager;
-    protected MessageBusInterface $messageBus;
-    protected NormalizerInterface $normalizer;
-    protected Security $security;
-
-    public function __construct(MessageBusInterface $messageBus, Security $security, EntityManagerInterface $entityManager, NormalizerInterface $normalizer)
-    {
-        $this->entityManager = $entityManager;
-        $this->messageBus = $messageBus;
-        $this->normalizer = $normalizer;
-        $this->security = $security;
-    }
+    public function __construct(
+        protected MessageBusInterface    $messageBus,
+        protected Security               $security,
+        protected EntityManagerInterface $defaultEntityManager,
+        protected NormalizerInterface    $normalizer) {}
 
     public function onFlush(OnFlushEventArgs $eventArgs): void
     {
@@ -49,11 +42,11 @@ class PropertyChangeLogEventSubscriber implements EventSubscriber
             return;
         }
 
-        $entityManager = $eventArgs->getObjectManager();
-        $unitOfWork = $entityManager->getUnitOfWork();
+        $eventEntityManager = $eventArgs->getObjectManager();
+        $unitOfWork = $eventEntityManager->getUnitOfWork();
         $interviewerSerialId = $this->getInterviewerSerialId();
 
-        $changeLogMetadata = $entityManager->getClassMetadata(PropertyChangeLog::class);
+        $changeLogMetadata = $this->defaultEntityManager->getClassMetadata(PropertyChangeLog::class);
 
         foreach($unitOfWork->getScheduledEntityInsertions() as $entity) {
             if (!$entity instanceof PropertyChangeLoggableInterface) {
@@ -62,7 +55,7 @@ class PropertyChangeLogEventSubscriber implements EventSubscriber
 
             [$changeLogs, $fieldsChanged] = $this->logChanges($unitOfWork, $interviewerSerialId, $entity);
             foreach($changeLogs as $changeLog) {
-                $entityManager->persist($changeLog);
+                $this->defaultEntityManager->persist($changeLog);
                 $unitOfWork->computeChangeSet($changeLogMetadata, $changeLog);
             }
         }
@@ -74,7 +67,7 @@ class PropertyChangeLogEventSubscriber implements EventSubscriber
 
             [$changeLogs, $fieldsChanged] = $this->logChanges($unitOfWork, $interviewerSerialId, $entity);
             foreach($changeLogs as $changeLog) {
-                $entityManager->persist($changeLog);
+                $this->defaultEntityManager->persist($changeLog);
                 $unitOfWork->computeChangeSet($changeLogMetadata, $changeLog);
             }
 
@@ -128,7 +121,7 @@ class PropertyChangeLogEventSubscriber implements EventSubscriber
         }
 
         // we need to reload the user in order to access the interviewer
-        $actualUser = $this->entityManager->find(get_class($actualUser), $actualUser->getId());
+        $actualUser = $this->defaultEntityManager->find(get_class($actualUser), $actualUser->getId());
         return $actualUser->getInterviewer()->getSerialId();
     }
 

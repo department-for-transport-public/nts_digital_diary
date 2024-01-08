@@ -1,0 +1,10 @@
+{% if not app.session.get(constant('App\\Utility\\Metrics\\MetricsHelper::VIEWPORT_DETAILS_SESSION_KEY')) %}
+<div id="viewport-size-monitor">
+    <span data-size="mobile"></span>
+    <span data-size="tablet"></span>
+    <span data-size="desktop"></span>
+    <span data-aspect="portrait"></span>
+    <span data-aspect="landscape"></span>
+    <span data-aspect="square"></span>
+</div>
+{% endif %}

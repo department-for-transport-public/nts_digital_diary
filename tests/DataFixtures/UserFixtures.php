@@ -22,6 +22,17 @@ class UserFixtures extends AbstractFixture implements DependentFixtureInterface
         assert($areaPeriodOne instanceof AreaPeriod);
         assert($householdOnboarded instanceof Household);
 
+        // AddDiaryKeeperSubscriber assumes that any diary-keeper added to a household where onboarding
+        // is completed was added via the admin control panel. As such, it then triggers an account
+        // creation email.
+
+        // In this case, that assumption is wrong - the diary-keeper was added via fixtures.
+
+        // To work around this, we set the householdOnboarding to false, add the diary-keepers and then
+        // set it back to true.
+        $householdOnboarded->setIsOnboardingComplete(false);
+        $manager->flush();
+
         $diaryKeeperAdult = (new DiaryKeeper())
             ->setName('Test Diary Keeper (Adult)')
             ->setIsAdult(true)
@@ -81,6 +92,10 @@ class UserFixtures extends AbstractFixture implements DependentFixtureInterface
         $this->setReference('user:diary-keeper:no-password', $diaryKeeperNoPassword->getUser());
         $this->setReference('user:interviewer', $interviewer->getUser());
 
+        $manager->flush();
+
+        // See comment above
+        $householdOnboarded->setIsOnboardingComplete(true);
         $manager->flush();
     }
 

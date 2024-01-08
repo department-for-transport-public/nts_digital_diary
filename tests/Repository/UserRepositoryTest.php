@@ -3,9 +3,10 @@
 namespace App\Tests\Repository;
 
 use App\Repository\UserRepository;
+use App\Tests\AbstractFixturesTest;
 use App\Tests\DataFixtures\TestSpecific\UserRepositoryTestFixtures;
 
-class UserRepositoryTest extends AbstractRepositoryTest
+class UserRepositoryTest extends AbstractFixturesTest
 {
     protected UserRepository $userRepository;
 

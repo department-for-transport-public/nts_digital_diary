@@ -8,11 +8,12 @@ use App\Entity\User;
 use App\Form\Admin\InterviewerType;
 use App\ListPage\Admin\InterviewerAreaList;
 use App\ListPage\Admin\InterviewerListPage;
-use App\Utility\AccountCreationHelper;
+use App\Repository\InterviewerTrainingRecordRepository;
+use App\Utility\Security\AccountCreationHelper;
 use App\Utility\ConfirmAction\Admin\DeleteInterviewerConfirmAction;
 use Doctrine\ORM\EntityManagerInterface;
 use Ghost\GovUkFrontendBundle\Model\NotificationBanner;
-use Sensio\Bundle\FrameworkExtraBundle\Configuration\Security;
+use Sensio\Bundle\FrameworkExtraBundle\Configuration\IsGranted;
 use Symfony\Component\Form\SubmitButton;
 use Symfony\Component\HttpFoundation\RedirectResponse;
 use Symfony\Component\HttpFoundation\Request;
@@ -22,12 +23,12 @@ use Symfony\Component\Translation\TranslatableMessage;
 
 /**
  * @Route("/interviewers", name="interviewers_")
- * @Security("is_granted('ROLE_INTERVIEWER_ADMIN')")
  */
 class InterviewerController extends AbstractController
 {
     /**
      * @Route(name="list")
+     * @IsGranted("ADMIN_INTERVIEWER_VIEW")
      */
     public function list(InterviewerListPage $listPage, Request $request): Response
     {
@@ -46,8 +47,14 @@ class InterviewerController extends AbstractController
 
     /**
      * @Route("/{id}/view", name="view")
+     * @IsGranted("ADMIN_INTERVIEWER_VIEW")
      */
-    public function view(InterviewerAreaList $areaList, Request $request, Interviewer $interviewer): Response
+    public function view(
+        Interviewer $interviewer,
+        InterviewerAreaList $areaList,
+        Request $request,
+        InterviewerTrainingRecordRepository $trainingRecordRepository,
+    ): Response
     {
         $areaList->setInterviewer($interviewer);
         $areaList->handleRequest($request);
@@ -60,11 +67,14 @@ class InterviewerController extends AbstractController
             'areas' => $areaList->getData(),
             'areaForm' => $areaList->getFiltersForm()->createView(),
             'interviewer' => $interviewer,
+            'trainingRecords' => $trainingRecordRepository->findLatestForInterviewer($interviewer),
         ]);
     }
 
     /**
      * @Route("/add", name="add")
+     * @IsGranted("ADMIN_INTERVIEWER_ADD")
+     *
      * //@Route("/{id}/edit", name="edit") ## editing introduces complications with verifying the new email address
      */
     public function edit(Request $request, EntityManagerInterface $entityManager, AccountCreationHelper $accountCreationHelper, Interviewer $interviewer = null): Response
@@ -122,6 +132,7 @@ class InterviewerController extends AbstractController
 
     /**
      * @Route("/{id}/delete", name="delete")
+     * @IsGranted("ADMIN_INTERVIEWER_DELETE")
      */
     public function delete(Request $request, DeleteInterviewerConfirmAction $confirmAction, Interviewer $interviewer): Response
     {

@@ -16,8 +16,8 @@ twig:
 
         format_time_short: !php/const App\Utility\DateTimeFormats::TIME_SHORT
 
-        csp_inline_script_helper: '@App\Utility\CspInlineScriptHelper'
-        url_signer: '@App\Utility\UrlSigner'
+        csp_inline_script_helper: '@App\Utility\Security\CspInlineScriptHelper'
+        url_signer: '@App\Utility\Security\UrlSigner'
 
         hostnames:
             frontend: '%hostnames.frontend%'

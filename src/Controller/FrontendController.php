@@ -3,7 +3,7 @@
 namespace App\Controller;
 
 use App\Form\UserLoginType;
-use App\Utility\TranslatedAuthenticationUtils;
+use App\Utility\Security\TranslatedAuthenticationUtils;
 use Exception;
 use Sensio\Bundle\FrameworkExtraBundle\Configuration\Template;
 use Symfony\Component\Form\FormError;

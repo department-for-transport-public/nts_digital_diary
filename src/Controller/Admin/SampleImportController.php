@@ -5,7 +5,7 @@ namespace App\Controller\Admin;
 use App\Controller\AbstractController;
 use App\Form\Admin\SampleImportForm;
 use App\Security\OneTimePassword\PasscodeGenerator;
-use App\Utility\AreaPeriodHelper;
+use App\Utility\TravelDiary\AreaPeriodHelper;
 use Doctrine\ORM\EntityManagerInterface;
 use Sensio\Bundle\FrameworkExtraBundle\Configuration\Security;
 use Sensio\Bundle\FrameworkExtraBundle\Configuration\Template;

@@ -135,6 +135,8 @@ class DiaryKeeperScreenshotter extends AbstractScreenshotter
         $this->submit([], 'Mark travel diary as complete');
         $this->screenshot('3c-dashboard-complete.png');
 
+        $this->satisfactionSurveyFlow();
+
         $this->clickLinkWithText('Logout');
     }
 
@@ -597,5 +599,61 @@ class DiaryKeeperScreenshotter extends AbstractScreenshotter
         ], 'Save and continue');
 
         $this->clickLinkWithText('My travel diary');
+    }
+
+    protected function satisfactionSurveyFlow(): void
+    {
+        $this->clickLinkWithText('this short survey');
+        $this->screenshot('satisfaction-survey/1-ease-of-use.png');
+
+        $this->submit([
+            'Very easy' => true,
+        ], 'Continue');
+
+        $this->screenshot('satisfaction-survey/2a-diary-burden.png');
+        $this->fillForm(['Not at all burdensome' => true]);
+
+        $this->screenshot('satisfaction-survey/2b-diary-burden_not-at-all.png');
+        $this->fillForm([
+            'A little burdensome' => true,
+            'Other' => true,
+        ]);
+
+        $this->screenshot('satisfaction-survey/2c-diary-burden_a-little-or-more.png');
+
+        $this->submit([
+            'Not at all burdensome' => true,
+        ], 'Continue');
+
+        $this->screenshot('satisfaction-survey/3a-devices-used.png');
+
+        $this->fillForm([
+            'Other' => true,
+        ]);
+        $this->screenshot('satisfaction-survey/3b-devices-used_other.png');
+
+        $this->submit([
+            'Desktop or laptop' => true,
+            'Other' => true,
+            'What device did you use?' => 'Tomy toy computer',
+        ], 'Continue');
+
+        $this->screenshot('satisfaction-survey/4-diary-completion-patterns.png');
+
+        $this->submit([
+            'Multiple times a day' => true,
+            'Yes' => true,
+        ], 'Continue');
+
+        $this->screenshot('satisfaction-survey/5a-diary-methodologies.png');
+        $this->fillForm([
+            'Other approach' => true,
+        ]);
+        $this->screenshot('satisfaction-survey/5b-diary-methodologies_other.png');
+
+        $this->submit([
+            'Online questionnaire' => true,
+        ], 'Save and continue');
+        $this->screenshot('satisfaction-survey/6-questionnaire-complete.png');
     }
 }

@@ -3,7 +3,7 @@
 namespace App\EventSubscriber;
 
 use App\Entity\AreaPeriod;
-use App\Utility\AreaPeriodHelper;
+use App\Utility\TravelDiary\AreaPeriodHelper;
 use Doctrine\Common\EventSubscriber;
 use Doctrine\ORM\Event\LifecycleEventArgs;
 use Doctrine\ORM\Events;

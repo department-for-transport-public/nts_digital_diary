@@ -67,11 +67,13 @@ class HouseholdType extends AbstractType
             /** @var Household $formData */
             $formData = $form->getData();
             $groups = ['wizard.on-boarding.household'];
-            if (
-                Features::isEnabled(Features::CHECK_LETTER)
-                && !$formData->getAreaPeriod()->getTrainingInterviewer()
-            ) {
-                $groups[] = 'wizard.on-boarding.check-letter';
+            if (Features::isEnabled(Features::CHECK_LETTER)) {
+                // ensure letter is not null / is only 1 char
+                $groups[] = 'wizard.on-boarding.check-letter-field';
+                if (!$formData->getAreaPeriod()->getTrainingInterviewer()) {
+                    // only validate the letter provided if we're not training
+                    $groups[] = 'wizard.on-boarding.check-letter';
+                }
             }
             return $groups;
         };

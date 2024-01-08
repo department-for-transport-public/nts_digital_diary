@@ -6,7 +6,7 @@ use App\Entity\AreaPeriod;
 use App\Entity\OtpUser;
 use App\Tests\DataFixtures\ApiFixtures;
 use App\Tests\DataFixtures\ApiUserFixtures;
-use App\Utility\AreaPeriodHelper;
+use App\Utility\TravelDiary\AreaPeriodHelper;
 
 class AreasTest extends AbstractApiWebTestCase
 {

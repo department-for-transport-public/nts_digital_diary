@@ -43,9 +43,15 @@ class MysqlDumpCommand extends AbstractGcpDatabaseCommand
             return self::FAILURE;
         }
 
+        $password = $this->io->askHidden('Enter DB password');
+
         $this->io->writeln("Dumping <info>$this->environment</info> DB to <info>{$dumpFilename}</info>...");
 
-        $process = new Process(['mysqldump', "--set-gtid-purged=OFF", "--single-transaction", "--no-tablespaces", "--socket={$this->getDbUnixSocket()}", "-u{$this->getDbUser()}", "-p", $this->getDbName()]);
+        $process = new Process(
+            ['mysqldump', "--set-gtid-purged=OFF", "--single-transaction", "--no-tablespaces", "--socket={$this->getDbUnixSocket()}", "-u{$this->getDbUser()}", $this->getDbName()],
+            null,
+            ['MYSQL_PWD' => $password]
+        );
         $process->setWorkingDirectory('/');
         $process->setTimeout(15*60);
         $process->start();

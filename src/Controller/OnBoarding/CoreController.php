@@ -7,12 +7,13 @@ use App\Form\OnBoarding\OtpLoginType;
 use App\Repository\InterviewerRepository;
 use App\Security\OneTimePassword\TrainingUserProvider;
 use App\Security\Voter\OnboardingVoter;
-use App\Utility\TranslatedAuthenticationUtils;
+use App\Utility\Security\TranslatedAuthenticationUtils;
 use Exception;
 use Sensio\Bundle\FrameworkExtraBundle\Configuration\Template;
 use Symfony\Component\Form\FormError;
 use Symfony\Component\HttpFoundation\Request;
 use Symfony\Component\HttpFoundation\Response;
+use Symfony\Component\HttpKernel\Exception\AccessDeniedHttpException;
 use Symfony\Component\Routing\Annotation\Route;
 use Symfony\Component\Security\Core\Authorization\AuthorizationCheckerInterface;
 use Symfony\Component\Security\Core\User\UserInterface;
@@ -48,7 +49,9 @@ class CoreController extends AbstractController
             return $this->redirectToRoute('onboarding_dashboard');
         }
 
-        $trainingInterviewer = $interviewerRepository->find($request->get('_interviewer', ''));
+        $trainingInterviewer = $interviewerRepository->find(
+            $request->get(TrainingUserProvider::INTERVIEWER_ID_QUERY_PARAM, '')
+        );
 
         $form = $this->createForm(OtpLoginType::class, [
             'identifier' => $translatedAuthenticationUtils->getLastUsername('_onboarding'),

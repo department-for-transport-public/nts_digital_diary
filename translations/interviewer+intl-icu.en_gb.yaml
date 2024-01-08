@@ -220,6 +220,7 @@ survey-areas:
 
 
 training:
+  no-training-record: No training record
   module:
     number: module {number}
     title:
@@ -231,12 +232,12 @@ training:
       editing-diaries: editing diaries
       diary-correction: correcting a travel diary
       diary-correction-answers: diary correction answers
-    created: Created
-    started: Started
     completed: Completed
-    status: Status
+    created: Created
     history:
       caption: Training history
+    started: Started
+    status: Status
   state:
     label: >-
       {state, select,

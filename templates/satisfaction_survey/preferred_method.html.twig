@@ -1,0 +1,13 @@
+{%- extends 'travel_diary/base_form.html.twig' -%}
+
+{%- trans_default_domain 'travel-diary' -%}
+
+{%- set title_translation_prefix = 'satisfaction.preferred-method' -%}
+
+{% block preHeading %}
+    <span class="govuk-caption-l">Page 5 of 5</span>
+{% endblock %}
+
+{% block postHeading %}
+    <div class="govuk-body govuk-!-padding-bottom-4">{{- 'satisfaction.preferred-method.preamble' | trans -}}</div>
+{% endblock %}

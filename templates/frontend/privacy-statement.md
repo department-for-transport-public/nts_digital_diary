@@ -3,7 +3,9 @@ inform the development of policy. It is the primary source of data on personal t
 within Great Britain.
 
 The survey collects information on how, why, when and where people travel as well as factors affecting travel (e.g. car
-availability and driving licence holding).
+availability and driving licence holding). View our
+<a href="https://www.gov.uk/guidance/personal-information-and-data-protection#national-travel-survey" target="_blank">National Travel Survey privacy statement for more information on how</a>
+your personal data is processed in relation to this survey.
 
 ## Who carries out the survey?
 

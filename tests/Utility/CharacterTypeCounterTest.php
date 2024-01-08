@@ -2,7 +2,7 @@
 
 namespace App\Tests\Utility;
 
-use App\Utility\CharacterTypeCounter;
+use App\Utility\Security\CharacterTypeCounter;
 use PHPUnit\Framework\TestCase;
 
 class CharacterTypeCounterTest extends TestCase

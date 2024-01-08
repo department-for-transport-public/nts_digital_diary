@@ -3,7 +3,7 @@
 namespace App\Twig;
 
 use App\Utility\PostcodeHelper;
-use App\Utility\RegistrationMarkHelper;
+use App\Utility\TravelDiary\RegistrationMarkHelper;
 use Symfony\Component\Translation\TranslatableMessage;
 use Symfony\Contracts\Translation\TranslatorInterface;
 use Twig\Extension\AbstractExtension;

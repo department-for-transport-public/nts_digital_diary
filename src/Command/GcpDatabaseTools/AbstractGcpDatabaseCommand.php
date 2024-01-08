@@ -80,11 +80,14 @@ abstract class AbstractGcpDatabaseCommand extends Command
     {
         $this->io->write("Starting proxy in <info>{$this->getDbSocketDir()}</info>... ");
 
-        $process = new Process(['cloud_sql_proxy', "-dir={$this->getDbSocketDir()}"]);
+        $process = new Process(['cloud-sql-proxy', "--unix-socket={$this->getDbSocketDir()}", $this->getDbInstanceId()]);
         $process->setTimeout(15*60);
         $process->start();
 
         foreach ($process as $type => $data) {
+            if ($process::ERR === $type) {
+                $this->io->warning($data);  // STDERR
+            }
             if (stripos($data, 'Ready for new connections') !== false) {
                 $this->proxy = $process;
                 $this->io->writeln('ready for connections');
@@ -128,13 +131,16 @@ abstract class AbstractGcpDatabaseCommand extends Command
         return $this->getDbParams()['unix_socket'];
     }
 
-    protected function getDbProject(): string
+    protected function getDbInstanceId(): string
     {
         $parts = explode('/', $this->getDbParams()['unix_socket']);
-        $dbId = array_pop($parts);
+        return array_pop($parts);
+    }
 
+    protected function getDbProject(): string
+    {
         $regex = '@(?<project>[^:]+)@';
-        preg_match($regex, $dbId, $matches);
+        preg_match($regex, $this->getDbInstanceId(), $matches);
         return $matches['project'];
     }
 

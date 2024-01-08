@@ -15,31 +15,46 @@
         {{ actionlessSummaryListRow('Serial/ID', interviewer.serialId) }}
         {{ actionlessSummaryListRow('Email address', interviewer.user.userIdentifier) }}
     </dl>
+    {%- if is_granted('ADMIN_INTERVIEWER_DELETE') -%}
     <div class="govuk-button-group">
         <a class="govuk-button govuk-button--warning" href="{{ path('admin_interviewers_delete', {id: interviewer.id}) }}">{{ 'interviewer.view.delete-button' | trans }}</a>
     </div>
+    {%- endif -%}
 
     <ul class="govuk-list govuk-!-margin-bottom-8">
         <li><a class="govuk-link" href="{{ path('admin_interviewers_list') }}">{{ 'interviewer.view.back-link' | trans }}</a></li>
-        <li><a class="govuk-link" href="{{ path('admin_interviewers_allocate', {id: interviewer.id}) }}">{{ 'interviewer.view.allocate-link' | trans }}</a></li>
     </ul>
 
     <h2 class="govuk-heading-m">{{ 'interviewer.view.areas-title' | trans }}</h2>
 
     {%- from 'macros/list-page.html.twig' import listTableStart, listTableEnd -%}
-    {{ listTableStart(areas, areaForm) }}
-    {% for area in areas.entities %}
+    {%- set canAllocate = is_granted('ADMIN_INTERVIEWER_ALLOCATE_AREAS') -%}
+
+    {{ listTableStart(areas, areaForm, {tableClass: canAllocate ? '' : 'govuk-!-margin-bottom-9'}) }}
+    {%- for area in areas.entities -%}
         {# @var area \App\Entity\AreaPeriod #}
         <tr class="govuk-table__row">
             {{ tableCell(area.area ?? '-') }}
             {{ tableCell(area.year) }}
             {{ tableCell(area.month) }}
             {{ tableCell(area.households | length, {numeric: true}) }}
-            {{ tableCell(actionLinks({(path('admin_interviewers_deallocate', {id: interviewer.id, area: area.id})): {label: 'Deallocate', srHiddenSuffix: "area #{area.area}"} }), {numeric: true}) }}
+            {%- if canAllocate -%}
+                {{ tableCell(actionLinks({(path('admin_interviewers_deallocate', {id: interviewer.id, area: area.id})): {label: 'Deallocate', srHiddenSuffix: "area #{area.area}"} }), {numeric: true}) }}
+            {%- else -%}
+                {{ tableCell('') }}
+            {%- endif -%}
         </tr>
-    {% else %}
+    {%- else -%}
         {{ tableRowComplex({"No results": {colSpan: areas.fields|length + 1}}) }}
-    {% endfor %}
+    {%- endfor -%}
     {{ listTableEnd(areas, areaForm) }}
+    {%- if canAllocate -%}
+    <ul class="govuk-list govuk-!-margin-bottom-9">
+        <li><a class="govuk-link" href="{{ path('admin_interviewers_allocate', {id: interviewer.id}) }}">{{ 'interviewer.view.allocate-link' | trans }}</a></li>
+    </ul>
+    {%- endif -%}
 
+
+    {%- from 'interviewer/training/macros.html.twig' import trainingRecordsTable -%}
+    {{- trainingRecordsTable(trainingRecords, {disableLinks: true}) -}}
 {% endblock %}

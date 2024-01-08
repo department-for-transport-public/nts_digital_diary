@@ -2,7 +2,7 @@
 
 namespace App\Validator\Constraints;
 
-use App\Utility\RecaptchaHelper;
+use App\Utility\Security\RecaptchaHelper;
 use GuzzleHttp\Client;
 use Symfony\Component\HttpFoundation\RequestStack;
 use Symfony\Component\Validator\Constraint;

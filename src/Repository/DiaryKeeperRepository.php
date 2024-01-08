@@ -6,7 +6,6 @@ use App\Entity\DiaryKeeper;
 use App\Entity\Household;
 use App\Entity\Interviewer;
 use App\Entity\Journey\Journey;
-use App\Security\OneTimePassword\OtpUserInterface;
 use App\Entity\User;
 use App\Utility\ItemByFrequencyHelper;
 use Doctrine\Bundle\DoctrineBundle\Repository\ServiceEntityRepository;
@@ -14,7 +13,6 @@ use Doctrine\ORM\NonUniqueResultException;
 use Doctrine\ORM\Query\Expr\OrderBy;
 use Doctrine\ORM\QueryBuilder;
 use Doctrine\Persistence\ManagerRegistry;
-use RuntimeException;
 use Symfony\Component\Security\Core\Security;
 
 /**
@@ -106,13 +104,7 @@ class DiaryKeeperRepository extends ServiceEntityRepository
      */
     public function getOnBoardingProxyChoices(DiaryKeeper $diaryKeeperForExclusion): array
     {
-        $user = $this->security->getUser();
-
-        if (!$user instanceof OtpUserInterface) {
-            throw new RuntimeException("wrong user instance");
-        }
-
-        return $this->getProxyChoices($user->getHousehold(), $diaryKeeperForExclusion);
+        return $this->getProxyChoices($diaryKeeperForExclusion->getHousehold(), $diaryKeeperForExclusion);
     }
 
     private function getProxyChoices(Household $household, DiaryKeeper $diaryKeeperForExclusion): array

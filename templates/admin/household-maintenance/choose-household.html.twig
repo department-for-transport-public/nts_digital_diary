@@ -1,0 +1,19 @@
+{%- extends 'admin/household-maintenance/base.html.twig' -%}
+
+{%- trans_default_domain 'admin' -%}
+{%- set title_translation_prefix = 'household-maintenance.choose-household' -%}
+{%- set title_translation_domain = 'admin' -%}
+
+{%- set breadcrumb_level = 1 -%}
+
+{%- block content -%}
+    {{- parent() -}}
+
+    {{ form_start(form) }}
+    <div class="govuk-form-group govuk-form-group--inline govuk-form-group--inline-narrow">
+        {{ form_row(form.area) }}
+        {{ form_row(form.addressNumber) }}
+        {{ form_row(form.householdNumber) }}
+    </div>
+    {{ form_rest(form) }}
+{%- endblock -%}

@@ -3,7 +3,7 @@
 namespace App\EventSubscriber;
 
 use App\Entity\Interviewer;
-use App\Utility\AccountCreationHelper;
+use App\Utility\Security\AccountCreationHelper;
 use App\Utility\InterviewerTraining\InterviewerTrainingHelper;
 use Doctrine\Bundle\DoctrineBundle\EventSubscriber\EventSubscriberInterface;
 use Doctrine\ORM\Events;

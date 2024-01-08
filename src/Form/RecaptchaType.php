@@ -2,7 +2,7 @@
 
 namespace App\Form;
 
-use App\Utility\RecaptchaHelper;
+use App\Utility\Security\RecaptchaHelper;
 use App\Validator\Constraints\Recaptcha;
 use Symfony\Component\Form\AbstractType;
 use Symfony\Component\OptionsResolver\OptionsResolver;

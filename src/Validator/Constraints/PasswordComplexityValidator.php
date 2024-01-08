@@ -2,7 +2,7 @@
 
 namespace App\Validator\Constraints;
 
-use App\Utility\CharacterTypeCounter;
+use App\Utility\Security\CharacterTypeCounter;
 use Symfony\Component\Validator\Constraint;
 use Symfony\Component\Validator\ConstraintValidator;
 use Symfony\Component\Validator\Exception\UnexpectedTypeException;

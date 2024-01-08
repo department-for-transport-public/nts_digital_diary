@@ -17,8 +17,8 @@ feedback:
     type: annotation
     host: '%hostnames.frontend%'
 
-session:
-    resource: ../../src/Controller/CommonController.php
+ajax:
+    resource: ../../src/Controller/AjaxController.php
     type: annotation
 
 travel_diary:

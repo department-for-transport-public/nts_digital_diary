@@ -1,6 +1,6 @@
-@import "node_modules/govuk-frontend/govuk/core/lists";
-@import "node_modules/govuk-frontend/govuk/settings/measurements";
-@import "node_modules/govuk-frontend/govuk/tools/compatibility";
+@import "/node_modules/govuk-frontend/govuk/core/lists";
+@import "/node_modules/govuk-frontend/govuk/settings/measurements";
+@import "/node_modules/govuk-frontend/govuk/tools/compatibility";
 
 $govuk-orange-button-colour: govuk-colour("orange", $legacy: #f47738);
 $govuk-orange-button-hover-colour: govuk-shade($govuk-orange-button-colour, 10%);

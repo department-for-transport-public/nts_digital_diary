@@ -1,0 +1,47 @@
+@import "/node_modules/govuk-frontend/govuk/helpers/media-queries";
+
+#viewport-size-monitor > span {
+  display: none;
+}
+
+@include govuk-media-query($until: tablet) {
+  #viewport-size-monitor > span[data-size="mobile"] {
+    display: inline;
+  }
+}
+
+@include govuk-media-query($from: tablet, $until: desktop) {
+  #viewport-size-monitor > span[data-size="tablet"] {
+    display: inline;
+  }
+}
+
+@include govuk-media-query($from: desktop) {
+  #viewport-size-monitor > span[data-size="desktop"] {
+    display: inline;
+  }
+}
+
+@media (min-aspect-ratio: 1/1) {
+  #viewport-size-monitor > span[data-aspect="landscape"] {
+    display: inline;
+  }
+}
+
+@media (max-aspect-ratio: 1/1) {
+  #viewport-size-monitor > span[data-aspect="portrait"] {
+    display: inline;
+  }
+}
+
+@media (aspect-ratio: 1/1) {
+  #viewport-size-monitor > span[data-aspect="square"] {
+    display: inline;
+  }
+  #viewport-size-monitor > span[data-aspect="portrait"] {
+    display: none;
+  }
+  #viewport-size-monitor > span[data-aspect="landscape"] {
+    display: none;
+  }
+}

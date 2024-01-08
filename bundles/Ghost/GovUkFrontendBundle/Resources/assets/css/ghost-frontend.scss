@@ -3,7 +3,7 @@
 // - Also: https://github.com/alphagov/govuk-frontend/issues/2204
 $govuk-new-link-styles: true;
 
-@import "node_modules/govuk-frontend/govuk/all";
+@import "/node_modules/govuk-frontend/govuk/all";
 
 @import "govuk-buttons";
 @import "govuk-confirmation";

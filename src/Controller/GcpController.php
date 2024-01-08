@@ -13,7 +13,7 @@ class GcpController extends AbstractController
      */
     public function warmup(): Response
     {
-        return new Response();
+        return new Response("success");
     }
 
     /**
@@ -21,6 +21,6 @@ class GcpController extends AbstractController
      */
     public function shutdown(): Response
     {
-        return new Response();
+        return new Response("success");
     }
 }

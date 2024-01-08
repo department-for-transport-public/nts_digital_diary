@@ -134,6 +134,11 @@ class DiaryKeeper implements UserPersonInterface
      */
     private ?DateTimeImmutable $approvalChecklistVerifiedAt;
 
+    /**
+     * @ORM\OneToOne(targetEntity=SatisfactionSurvey::class, mappedBy="diaryKeeper", cascade={"persist", "remove"})
+     */
+    private ?SatisfactionSurvey $satisfactionSurvey;
+
     public function __construct()
     {
         $this->diaryDays = new ArrayCollection();
@@ -473,4 +478,28 @@ class DiaryKeeper implements UserPersonInterface
             ->isEmpty();
     }
 
+    public function getSatisfactionSurvey(): ?SatisfactionSurvey
+    {
+        return $this->satisfactionSurvey;
+    }
+
+    public function setSatisfactionSurvey(?SatisfactionSurvey $satisfactionSurvey): self
+    {
+        // unset the owning side of the relation if necessary
+        if ($satisfactionSurvey === null && $this->satisfactionSurvey !== null) {
+            $this->satisfactionSurvey->setDiaryKeeper(null);
+        }
+
+        // set the owning side of the relation if necessary
+        if ($satisfactionSurvey !== null && $satisfactionSurvey->getDiaryKeeper() !== $this) {
+            $satisfactionSurvey->setDiaryKeeper($this);
+        }
+
+        $this->satisfactionSurvey = $satisfactionSurvey;
+        return $this;
+    }
+    public function getSerialNumber(bool $padAddressPart=true, bool $spacesBetweenParts=true): string
+    {
+        return $this->household->getSerialNumber($this->getNumber(), $padAddressPart, $spacesBetweenParts);
+    }
 }

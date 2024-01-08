@@ -4,7 +4,7 @@
 namespace App\EventSubscriber\FormWizard;
 
 
-use App\Event\FormWizardFormDataEvent;
+use App\Event\FormWizard\FormDataEvent;
 use App\ExpressionLanguage\WizardFormDataFunctionProvider;
 use Symfony\Component\EventDispatcher\EventSubscriberInterface;
 
@@ -17,7 +17,7 @@ class ExpressionLanguageFormDataFunctionSubscriber implements EventSubscriberInt
         $this->wizardFormDataFunctionProvider = $wizardFormDataFunctionProvider;
     }
 
-    public function handleFormDataEvent(FormWizardFormDataEvent $event)
+    public function handleFormDataEvent(FormDataEvent $event)
     {
         $this->wizardFormDataFunctionProvider->setFormData($event->getFormData());
     }
@@ -25,7 +25,7 @@ class ExpressionLanguageFormDataFunctionSubscriber implements EventSubscriberInt
     public static function getSubscribedEvents(): array
     {
         return [
-            FormWizardFormDataEvent::NAME => 'handleFormDataEvent',
+            FormDataEvent::NAME => 'handleFormDataEvent',
         ];
     }
 

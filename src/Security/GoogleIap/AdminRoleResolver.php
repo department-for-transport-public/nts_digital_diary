@@ -6,11 +6,13 @@ use App\Entity\Feedback\Group;
 
 class AdminRoleResolver
 {
+    // Specifically this allows users to perform add/allocate/delete actions on interviewers
+    // N.B. All users that can log in will be able to view interviewers
     public function getInterviewerAdminDomains(): array
     {
         return [
             'ghostlimited.com',
-            'dft.gov.uk',
+            // 'dft.gov.uk',
         ];
     }
 
@@ -37,6 +39,25 @@ class AdminRoleResolver
             new Group('DfT', 'dft.gov.uk', []),
             new Group('Ghost', 'ghostlimited.com', ['feedback@ghostlimited.com ']),
             new Group('NatCen', 'natcen.ac.uk', ['nts@natcen.ac.uk']),
+        ];
+    }
+
+    public function getAssigneeNameForDomain(string $domain): ?string
+    {
+        foreach($this->getAssignees() as $assignee) {
+            if ($assignee->getDomain() === $domain) {
+                return $assignee->getName();
+            }
+        }
+
+        return null;
+    }
+
+    /** @return array<string> */
+    public function getSuperAdminDomains(): array
+    {
+        return [
+            'ghostlimited.com',
         ];
     }
 
@@ -85,6 +106,10 @@ class AdminRoleResolver
             if ($sampleImporterDomain === $domain) {
                 $roles[] = 'ROLE_SAMPLE_IMPORTER';
             }
+        }
+
+        if (in_array($domain, $this->getSuperAdminDomains())) {
+            $roles[] = 'ROLE_SUPER_ADMIN';
         }
 
         return $roles;
