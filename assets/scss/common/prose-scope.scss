@@ -1,0 +1,40 @@
+@import "govuk-frontend/dist/govuk/core/typography";
+@import "govuk-frontend/dist/govuk/core/lists";
+@import "govuk-frontend/dist/govuk/core/links";
+
+.prose-scope {
+  h1 {
+    @extend .govuk-heading-l;
+  }
+  h2 {
+    @extend .govuk-heading-m;
+  }
+  h3 {
+    @extend .govuk-heading-s;
+  }
+
+  p {
+    @extend .govuk-body;
+  }
+  a {
+    @extend .govuk-link;
+
+    &.govuk-button {
+      @extend .govuk-button;
+    }
+
+  }
+  ul, ol {
+    @extend .govuk-list;
+  }
+  ul {
+    @extend .govuk-list--bullet;
+  }
+  ol {
+    @extend .govuk-list--number;
+  }
+
+  img {
+    max-width: 100%;
+  }
+}

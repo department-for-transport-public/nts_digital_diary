@@ -3,11 +3,11 @@
 namespace App\Serializer\ChangeSet;
 
 use Brick\Math\BigDecimal;
-use Symfony\Component\Serializer\Normalizer\ContextAwareNormalizerInterface;
+use Symfony\Component\Serializer\Normalizer\NormalizerInterface;
 
-abstract class AbstractChangeSetNormalizer implements ContextAwareNormalizerInterface
+abstract class AbstractChangeSetNormalizer implements NormalizerInterface
 {
-    const CHANGE_SET_ENTITY_KEY = 'property-change-set_entity';
+    public const CHANGE_SET_ENTITY_KEY = 'property-change-set_entity';
 
     protected function renameFields(array &$changeSet, array $fromAndTo): void
     {

@@ -1,5 +1,5 @@
 ## GCP AppEngine config
-runtime: php81
+runtime: php83
 entrypoint: serve public/index.php
 service: default
 instance_class: F2

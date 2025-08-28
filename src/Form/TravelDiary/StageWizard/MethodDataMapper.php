@@ -6,11 +6,10 @@ use App\Entity\Journey\Stage;
 use Symfony\Component\Form\Exception\UnexpectedTypeException;
 use Symfony\Component\Form\Extension\Core\DataMapper\DataMapper;
 use Symfony\Component\Form\FormInterface;
-use Traversable;
 
 class MethodDataMapper extends DataMapper
 {
-    public function mapDataToForms($data, $forms): void
+    public function mapDataToForms(mixed $data, \Traversable $forms): void
     {
         if (!$data instanceof Stage) {
             throw new UnexpectedTypeException($data, Stage::class);
@@ -32,10 +31,9 @@ class MethodDataMapper extends DataMapper
     }
 
     /**
-     * @param Traversable|iterable $forms
      * @param Stage $data
      */
-    public function mapFormsToData(iterable $forms, &$data): void
+    public function mapFormsToData(\Traversable $forms, mixed &$data): void
     {
         parent::mapFormsToData($forms, $data);
 

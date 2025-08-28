@@ -10,24 +10,22 @@ use App\Security\OneTimePassword\PasscodeGenerator;
 use App\Security\Voter\Interviewer\AreaPeriodVoter;
 use App\Utility\TravelDiary\AreaPeriodHelper;
 use Doctrine\ORM\EntityManagerInterface;
-use Sensio\Bundle\FrameworkExtraBundle\Configuration\IsGranted;
-use Sensio\Bundle\FrameworkExtraBundle\Configuration\Template;
+use Symfony\Bridge\Twig\Attribute\Template;
+use Symfony\Bundle\SecurityBundle\Security;
 use Symfony\Component\HttpKernel\Exception\NotFoundHttpException;
-use Symfony\Component\Routing\Annotation\Route;
-use Symfony\Component\Security\Core\Security;
+use Symfony\Component\Routing\Attribute\Route;
+use Symfony\Component\Security\Http\Attribute\IsGranted;
 
 class OnboardingCodesController extends AbstractController
 {
-    protected OtpUserRepository $otpUserRepository;
-    protected PasscodeGenerator $passcodeGenerator;
-    private AreaPeriodHelper $areaPeriodHelper;
-
-    public function __construct(EntityManagerInterface $entityManager, Security $security, OtpUserRepository $otpUserRepository, PasscodeGenerator $passcodeGenerator, AreaPeriodHelper $areaPeriodHelper)
-    {
+    public function __construct(
+        EntityManagerInterface               $entityManager,
+        Security                             $security,
+        protected readonly OtpUserRepository $otpUserRepository,
+        protected readonly PasscodeGenerator $passcodeGenerator,
+        protected readonly AreaPeriodHelper  $areaPeriodHelper,
+    ) {
         parent::__construct($entityManager, $security);
-        $this->otpUserRepository = $otpUserRepository;
-        $this->passcodeGenerator = $passcodeGenerator;
-        $this->areaPeriodHelper = $areaPeriodHelper;
     }
 
     #[Route("/areas/{areaPeriod}/onboarding-codes", name: "area_onboarding_codes")]
@@ -56,13 +54,13 @@ class OnboardingCodesController extends AbstractController
             $codes = $this->areaPeriodHelper->createCodesForArea($areaPeriod);
         }
 
-        $codes = array_map(fn(OtpUser $o) => [
+        $codes = array_map(fn(OtpUser $o): array => [
             'id' => $o->getUserIdentifier(),
             'code' => $this->passcodeGenerator->getPasswordForUserIdentifier($o->getUserIdentifier()),
             'household' => $o->getHousehold(),
         ], $codes);
 
-        usort($codes, fn($a, $b) => $a['id'] <=> $b['id']);
+        usort($codes, fn($a, $b): int => $a['id'] <=> $b['id']);
 
         return $codes;
     }

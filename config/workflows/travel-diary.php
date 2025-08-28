@@ -5,7 +5,7 @@ namespace Symfony\Component\DependencyInjection\Loader\Configurator;
 use App\Entity\DiaryKeeper;
 use App\Entity\Household;
 
-return static function (ContainerConfigurator $container) {
+return static function (ContainerConfigurator $container): void {
     $container->extension('framework', [
         'workflows' => [
             'travel_diary_state' => [
@@ -43,11 +43,13 @@ return static function (ContainerConfigurator $container) {
                         'from' => DiaryKeeper::STATE_COMPLETED,
                         'to' => DiaryKeeper::STATE_IN_PROGRESS,
                         'name' => DiaryKeeper::TRANSITION_UNDO_COMPLETE,
+                        'guard' => sprintf("subject.getHousehold().getState() !== '%s'", Household::STATE_SUBMITTED),
                     ],
                     [
                         'from' => DiaryKeeper::STATE_COMPLETED,
                         'to' => DiaryKeeper::STATE_APPROVED,
                         'name' => DiaryKeeper::TRANSITION_APPROVE,
+                        'guard' => sprintf("subject.getHousehold().getState() !== '%s'", Household::STATE_SUBMITTED),
                     ],
                     [
                         'from' => DiaryKeeper::STATE_APPROVED,
@@ -58,7 +60,8 @@ return static function (ContainerConfigurator $container) {
                     [
                         'from' => [DiaryKeeper::STATE_NEW, DiaryKeeper::STATE_IN_PROGRESS, DiaryKeeper::STATE_COMPLETED],
                         'to' => DiaryKeeper::STATE_DISCARDED,
-                        'name' => DiaryKeeper::TRANSITION_DISCARD
+                        'name' => DiaryKeeper::TRANSITION_DISCARD,
+                        'guard' => sprintf("subject.getHousehold().getState() !== '%s'", Household::STATE_SUBMITTED),
                     ],
                     [
                         'from' => DiaryKeeper::STATE_DISCARDED,

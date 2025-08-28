@@ -7,7 +7,7 @@ use Symfony\Component\HttpFoundation\Request;
 use Symfony\Component\HttpFoundation\RequestStack;
 use Symfony\Component\Security\Core\Exception\AuthenticationException;
 use Symfony\Component\Security\Core\Exception\TooManyLoginAttemptsAuthenticationException;
-use Symfony\Component\Security\Core\Security;
+use Symfony\Component\Security\Http\SecurityRequestAttributes;
 use Symfony\Contracts\Translation\TranslatorInterface;
 
 /**
@@ -20,13 +20,8 @@ use Symfony\Contracts\Translation\TranslatorInterface;
  */
 class TranslatedAuthenticationUtils
 {
-    protected TranslatorInterface $translator;
-    protected RequestStack $requestStack;
-
-    public function __construct(TranslatorInterface $translator, RequestStack $requestStack)
+    public function __construct(protected TranslatorInterface $translator, protected RequestStack $requestStack)
     {
-        $this->translator = $translator;
-        $this->requestStack = $requestStack;
     }
 
     public function getLastAuthenticationErrorMessage(string $translationPrefix, bool $clearSession = true): ?string
@@ -62,13 +57,13 @@ class TranslatedAuthenticationUtils
         $request = $this->getRequest();
         $authenticationException = null;
 
-        if ($request->attributes->has(Security::AUTHENTICATION_ERROR)) {
-            $authenticationException = $request->attributes->get(Security::AUTHENTICATION_ERROR);
-        } elseif ($request->hasSession() && ($session = $request->getSession())->has(Security::AUTHENTICATION_ERROR)) {
-            $authenticationException = $session->get(Security::AUTHENTICATION_ERROR);
+        if ($request->attributes->has(SecurityRequestAttributes::AUTHENTICATION_ERROR)) {
+            $authenticationException = $request->attributes->get(SecurityRequestAttributes::AUTHENTICATION_ERROR);
+        } elseif ($request->hasSession() && ($session = $request->getSession())->has(SecurityRequestAttributes::AUTHENTICATION_ERROR)) {
+            $authenticationException = $session->get(SecurityRequestAttributes::AUTHENTICATION_ERROR);
 
             if ($clearSession) {
-                $session->remove(Security::AUTHENTICATION_ERROR);
+                $session->remove(SecurityRequestAttributes::AUTHENTICATION_ERROR);
             }
         }
 
@@ -112,6 +107,6 @@ class TranslatedAuthenticationUtils
 
     protected function getSessionKey(?string $sessionKeySuffix): string
     {
-        return Security::LAST_USERNAME . ($sessionKeySuffix ?? '');
+        return SecurityRequestAttributes::LAST_USERNAME . ($sessionKeySuffix ?? '');
     }
 }

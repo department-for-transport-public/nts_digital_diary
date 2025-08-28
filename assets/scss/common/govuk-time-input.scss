@@ -1,0 +1,54 @@
+@import "govuk-frontend/dist/govuk/components/index";
+@import "govuk-frontend/dist/govuk/settings/colours-applied";
+@import "govuk-frontend/dist/govuk/settings/media-queries";
+
+.govuk-form-group.govuk-time-input__item {
+    display: inline-block;
+    margin-right: 20px;
+    margin-bottom: 0;
+    vertical-align: bottom;
+}
+
+.govuk-time-input--error .govuk-time-input__input {
+    @extend .govuk-input--error;
+}
+
+.govuk-time-input--error .govuk-time-input__select {
+    @extend .govuk-select--error;
+}
+
+.govuk-time-input__colon {
+    display: inline-block;
+    margin-left: -10px;
+    margin-right: 10px;
+    font-weight: bold;
+    vertical-align: bottom;
+    line-height: 2.5rem;
+}
+
+.govuk-time-input__radios {
+    display: flex;
+
+    .govuk-radios__item {
+        margin-bottom: 0;
+    }
+}
+
+.govuk-time-input .govuk-fieldset__legend {
+    margin-bottom: 10px;
+}
+
+.govuk-time-input--error .govuk-radios__item {
+    .govuk-radios__label:before,
+    .govuk-radios__label:after {
+        border-color: $govuk-error-colour;
+    }
+}
+
+@include govuk-media-query($until: tablet) {
+  .govuk-time-input__radios {
+      label {
+          padding: 8px 8px 5px;
+      }
+  }
+}

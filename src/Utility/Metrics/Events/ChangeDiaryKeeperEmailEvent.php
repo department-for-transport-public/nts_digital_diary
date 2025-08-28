@@ -3,11 +3,10 @@
 namespace App\Utility\Metrics\Events;
 
 use App\Entity\DiaryKeeper;
-use App\Entity\Interviewer;
 
 class ChangeDiaryKeeperEmailEvent extends AbstractEvent
 {
-    public function __construct(DiaryKeeper $diaryKeeper, Interviewer $interviewer)
+    public function __construct(DiaryKeeper $diaryKeeper)
     {
         $this->setDiarySerialFromDiaryKeeper($diaryKeeper);
     }

@@ -3,6 +3,7 @@
 namespace App\Tests\Functional\Api;
 
 use App\Tests\DataFixtures\ApiUserFixtures;
+use Symfony\Component\HttpFoundation\Request;
 
 class ExportSecurityTest extends AbstractApiWebTestCase
 {
@@ -14,14 +15,14 @@ class ExportSecurityTest extends AbstractApiWebTestCase
         parent::setUp();
     }
 
-    public function testUnsignedRequest()
+    public function testUnsignedRequest(): void
     {
         $queryString = $this->queryParamsToQueryString($this->getExportTestQueryParams());
-        $this->client->request('GET', self::ENDPOINT."?{$queryString}");
+        $this->client->request(Request::METHOD_GET, self::ENDPOINT."?{$queryString}");
         $this->assertResponseStatusCodeSame(401);
     }
 
-    public function testInvalidSecret()
+    public function testInvalidSecret(): void
     {
         $apiUser = $this->getApiUserFixture();
         $queryString = $this->queryParamsToQueryString($this->getExportTestQueryParams());
@@ -32,7 +33,7 @@ class ExportSecurityTest extends AbstractApiWebTestCase
         ]);
     }
 
-    public function testReplay()
+    public function testReplay(): void
     {
         $queryParams = $this->getExportTestQueryParams();
         $this->makeSignedRequestAndGetResponse(self::ENDPOINT, $queryParams, ['expectedResponseCode' => 200], addNonce: false);
@@ -42,17 +43,17 @@ class ExportSecurityTest extends AbstractApiWebTestCase
     public function timestampsData(): array
     {
         return [
-            "too old" => [fn() => (time() - 31), 401],
-            "old but ok" => [fn() => (time() - 29), 200],
-            "too far in the future" => [fn() => (time() + 6), 401],
-            "in the future but ok" => [fn() => (time() + 4), 200],
+            "too old" => [fn(): int => (time() - 31), 401],
+            "old but ok" => [fn(): int => (time() - 29), 200],
+            "too far in the future" => [fn(): int => (time() + 6), 401],
+            "in the future but ok" => [fn(): int => (time() + 4), 200],
         ];
     }
 
     /**
      * @dataProvider timestampsData
      */
-    public function testTimestamps(\Closure $timestamp, int $expectedCode)
+    public function testTimestamps(\Closure $timestamp, int $expectedCode): void
     {
         $queryParams = $this->getExportTestQueryParams($timestamp());
         $this->makeSignedRequestAndGetResponse(self::ENDPOINT, $queryParams, ['expectedResponseCode' => $expectedCode]);
@@ -70,9 +71,9 @@ class ExportSecurityTest extends AbstractApiWebTestCase
     /**
      * @dataProvider validAuthRequestsData
      */
-    public function testValidAuth(array $variablesToInclude, int $expectedCode)
+    public function testValidAuth(array $variablesToInclude, int $expectedCode): void
     {
-        $queryParams = array_filter($this->getExportTestQueryParams(), fn($key) => in_array($key, $variablesToInclude), ARRAY_FILTER_USE_KEY);
+        $queryParams = array_filter($this->getExportTestQueryParams(), fn($key): bool => in_array($key, $variablesToInclude), ARRAY_FILTER_USE_KEY);
         $this->makeSignedRequestAndGetResponse(self::ENDPOINT, $queryParams, ['expectedResponseCode' => $expectedCode, 'noDefaultQueryParams' => true]);
     }
 }

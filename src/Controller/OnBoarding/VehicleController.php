@@ -9,35 +9,29 @@ use App\Form\OnBoarding\VehicleType;
 use App\Utility\ConfirmAction\OnBoarding\DeleteVehicleConfirmAction;
 use Doctrine\ORM\EntityManagerInterface;
 use Ghost\GovUkFrontendBundle\Model\NotificationBanner;
-use Sensio\Bundle\FrameworkExtraBundle\Configuration\IsGranted;
+use Symfony\Component\ExpressionLanguage\Expression;
 use Symfony\Component\HttpFoundation\RedirectResponse;
 use Symfony\Component\HttpFoundation\Request;
 use Symfony\Component\HttpFoundation\Response;
-use Symfony\Component\HttpFoundation\Session\Flash\FlashBagInterface;
 use Symfony\Component\HttpKernel\Exception\NotFoundHttpException;
-use Symfony\Component\Routing\Annotation\Route;
+use Symfony\Component\Routing\Attribute\Route;
+use Symfony\Component\Security\Http\Attribute\IsGranted;
 
-/**
- * @Route(name="vehicle_")
- * @IsGranted("ONBOARDING_EDIT")
- */
+#[Route(name: 'vehicle_')]
+#[IsGranted('ONBOARDING_EDIT')]
+#[IsGranted(new Expression('!is_granted("ROLE_DIRECT_ON_BOARDING_TRAINING")'))]
 class VehicleController extends AbstractController
 {
-    protected EntityManagerInterface $entityManager;
-
-    public function __construct(EntityManagerInterface $entityManager)
+    public function __construct(protected EntityManagerInterface $entityManager)
     {
-        $this->entityManager = $entityManager;
     }
 
-    /**
-     * @Route("/vehicle/add", name="add")
-     */
-    public function add(Request $request, FlashBagInterface $flashBag): Response
+    #[Route(path: '/vehicle/add', name: 'add')]
+    public function add(Request $request): Response
     {
         $household = $this->getHousehold();
         if ($household->getDiaryKeepersWhoCanBePrimaryDrivers()->isEmpty()) {
-            $flashBag->add(NotificationBanner::FLASH_BAG_TYPE, new NotificationBanner(
+            $this->addFlash(NotificationBanner::FLASH_BAG_TYPE, new NotificationBanner(
                 'vehicle.add.cant-add-notification.title',
                 'vehicle.add.cant-add-notification.heading',
                 'vehicle.add.cant-add-notification.content',
@@ -53,9 +47,7 @@ class VehicleController extends AbstractController
         return $this->addOrEdit($request, $vehicle, 'on_boarding/vehicle/add.html.twig');
     }
 
-    /**
-     * @Route("/vehicle/{id}/edit", name="edit")
-     */
+    #[Route(path: '/vehicle/{id}/edit', name: 'edit')]
     public function edit(Request $request, Vehicle $vehicle): Response
     {
         $this->checkIsCorrectHousehold($vehicle->getHousehold());
@@ -63,9 +55,7 @@ class VehicleController extends AbstractController
         return $this->addOrEdit($request, $vehicle, 'on_boarding/vehicle/edit.html.twig');
     }
 
-    /**
-     * @Route("/vehicle/{id}/delete", name="delete")
-     */
+    #[Route(path: '/vehicle/{id}/delete', name: 'delete')]
     public function delete(Request $request, DeleteVehicleConfirmAction $confirmAction, Vehicle $vehicle): Response
     {
         $this->checkIsCorrectHousehold($vehicle->getHousehold());
@@ -93,7 +83,7 @@ class VehicleController extends AbstractController
         }
 
         return $this->render($template, [
-            'form' => $form->createView(),
+            'form' => $form,
         ]);
     }
 

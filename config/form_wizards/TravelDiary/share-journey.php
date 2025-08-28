@@ -4,7 +4,6 @@ namespace Symfony\Component\DependencyInjection\Loader\Configurator;
 use App\Form\TravelDiary\ShareJourneyWizard\PurposeCollectionType;
 use App\Form\TravelDiary\ShareJourneyWizard\ShareToType;
 use App\Form\TravelDiary\ShareJourneyWizard\StageDetailsCollectionType;
-use App\Form\TravelDiary\ShareJourneyWizard\StageDetailsType;
 use App\FormWizard\TravelDiary\ShareJourneyState as State;
 
 /**
@@ -23,7 +22,7 @@ for each person
 
  */
 
-return static function (ContainerConfigurator $container) {
+return static function (ContainerConfigurator $container): void {
     $finishMetadata = [
         'redirect_route' => [
             'name' => 'traveldiary_journey_view',
@@ -68,7 +67,7 @@ return static function (ContainerConfigurator $container) {
                         '!is_granted("CAN_SHARE_JOURNEY", subject.getSubject())',
                         array_merge($finishMetadata, [
                             'submit_label' => 'share-journey.cannot-share.submit.label',
-                            'submit_translation_domain' => 'travel-diary',
+                            'submit_label_translation_domain' => 'travel-diary',
                         ])
                     ),
 
@@ -79,13 +78,13 @@ return static function (ContainerConfigurator $container) {
                     ),
                     td_transition(State::TRANSITION_PURPOSE_TO_STAGE_DETAILS, State::STATE_PURPOSES,
                         State::STATE_STAGE_DETAILS, 'subject.hasNextStage()', [
-                            'context' => [
+                            'transition_context' => [
                                 'stageNumber' => 'nextStageNumber'
                             ]
                         ]),
                     td_transition(State::TRANSITION_STAGE_TO_NEXT_STAGE,State::STATE_STAGE_DETAILS,
                         State::STATE_STAGE_DETAILS,'subject.hasNextStage()', [
-                            'context' => [
+                            'transition_context' => [
                                 'stageNumber' => 'nextStageNumber'
                             ]
                         ]),

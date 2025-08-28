@@ -9,16 +9,12 @@ use Doctrine\ORM\EntityManagerInterface;
 
 class AreaPeriodHelper
 {
-    const CODES_PER_AREA = 22;
+    public const CODES_PER_AREA = 22;
 
-    private PasscodeGenerator $passcodeGenerator;
-    private EntityManagerInterface $entityManager;
-
-    public function __construct(PasscodeGenerator $passcodeGenerator, EntityManagerInterface $entityManager)
-    {
-        $this->passcodeGenerator = $passcodeGenerator;
-        $this->entityManager = $entityManager;
-    }
+    public function __construct(
+        protected readonly PasscodeGenerator $passcodeGenerator,
+        protected readonly EntityManagerInterface $entityManager
+    ) {}
 
     /**
      * @return array<OtpUser> $areaPeriod

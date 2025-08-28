@@ -15,7 +15,7 @@ class DoubleConfirmActionType extends AbstractType
         return ConfirmActionType::class;
     }
 
-    public function buildForm(FormBuilderInterface $builder, array $options)
+    public function buildForm(FormBuilderInterface $builder, array $options): void
     {
         $builder
             ->add('confirmation', Gds\CheckboxType::class, array_merge([
@@ -24,7 +24,7 @@ class DoubleConfirmActionType extends AbstractType
             ], $options['confirmation_checkbox_options']));
     }
 
-    public function configureOptions(OptionsResolver $resolver)
+    public function configureOptions(OptionsResolver $resolver): void
     {
         $resolver->setRequired([
             'confirmation_checkbox_options',

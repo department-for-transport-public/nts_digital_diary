@@ -15,14 +15,13 @@ use Symfony\Component\OptionsResolver\OptionsResolver;
 
 class TargetDayType extends AbstractType
 {
-    private DiaryDayRepository $diaryDayRepository;
 
-    public function __construct(DiaryDayRepository $diaryDayRepository)
-    {
-        $this->diaryDayRepository = $diaryDayRepository;
-    }
+    public function __construct(
+        protected DiaryDayRepository $diaryDayRepository,
+        protected DateTimeFormats $dateTimeFormats,
+    ) {}
 
-    public function buildForm(FormBuilderInterface $builder, array $options)
+    public function buildForm(FormBuilderInterface $builder, array $options): void
     {
         $choices = $this->diaryDayRepository
             ->getQueryBuilderForRepeatJourneySourceDay($options['is_practice'] ? 0 : 7)
@@ -34,22 +33,22 @@ class TargetDayType extends AbstractType
                 'class' => DiaryDay::class,
                 'choices' => $choices,
 
-                'choice_label' => fn() => 'repeat-journey.select-target-day.choice-label',
-                'choice_value' => fn(?DiaryDay $d) => $d ? 'day-'.$d->getNumber() : '',
+                'choice_label' => fn(): string => 'repeat-journey.select-target-day.choice-label',
+                'choice_value' => fn(?DiaryDay $d): string => $d ? 'day-'.$d->getNumber() : '',
 
                 'label_is_page_heading' => true,
                 'label' => 'repeat-journey.select-target-day.label',
                 'label_attr' => ['class' => 'govuk-label--l'],
                 'help' => 'repeat-journey.select-target-day.help',
-                'choice_translation_parameters' => fn(DiaryDay $d) => [
+                'choice_translation_parameters' => fn(DiaryDay $d): array => [
                     'dayNumber' => $d->getNumber(),
-                    'date' => $d->getDate()->format(DateTimeFormats::DATE_WITH_DOW),
+                    'date' => $d->getDate()->format($this->dateTimeFormats->getDate('with-dow')),
                     'journeyCount' => count($d->getJourneys()),
                 ],
             ]);
     }
 
-    public function configureOptions(OptionsResolver $resolver)
+    public function configureOptions(OptionsResolver $resolver): void
     {
         $resolver->setDefaults([
             'data_class' => Journey::class,

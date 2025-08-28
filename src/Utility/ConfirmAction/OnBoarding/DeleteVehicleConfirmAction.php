@@ -12,12 +12,10 @@ class DeleteVehicleConfirmAction extends AbstractConfirmAction
 {
     /** @var DiaryKeeper | object */
     protected $subject;
-    protected EntityManagerInterface $entityManager;
 
-    public function __construct(FormFactoryInterface $formFactory, RequestStack $requestStack, EntityManagerInterface $entityManager)
+    public function __construct(FormFactoryInterface $formFactory, RequestStack $requestStack, protected EntityManagerInterface $entityManager)
     {
         parent::__construct($formFactory, $requestStack);
-        $this->entityManager = $entityManager;
     }
 
     public function getFormOptions(): array
@@ -48,7 +46,7 @@ class DeleteVehicleConfirmAction extends AbstractConfirmAction
         ];
     }
 
-    public function doConfirmedAction($formData)
+    public function doConfirmedAction($formData): void
     {
         $this->entityManager->remove($this->subject);
         $this->entityManager->flush();

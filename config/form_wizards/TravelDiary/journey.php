@@ -7,7 +7,7 @@ use App\Form\TravelDiary\JourneyWizard\TimesType;
 use App\FormWizard\TravelDiary\JourneyState;
 use App\FormWizard\TravelDiary\StageState;
 
-return static function (ContainerConfigurator $container) {
+return static function (ContainerConfigurator $container): void {
     $addFinishMetadata =  [
         'persist' => true,
         'redirect_route' => [

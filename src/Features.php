@@ -24,6 +24,7 @@ class Features
     public const SMARTLOOK_SESSION_RECORDING = 'smartlook-session-recording';
     public const REVEAL_INVITE_LINKS = 'reveal-invite-links';
     public const SHOW_ONBOARDING_CODES = 'show-onboarding-codes';
+    public const ALLOW_DIRECT_ONBOARDING_DEBUG = 'allow-direct-onboarding-debug';
 
     private static array $enabledFeatures;
 
@@ -40,7 +41,7 @@ class Features
         $allFeatures = self::getAppFeatureMap() + array_values(self::AUTO_ENV_MAP);
 
         if (!in_array($feature, $allFeatures)) {
-            throw new RuntimeException("Unknown feature '${feature}'");
+            throw new RuntimeException("Unknown feature '{$feature}'");
         }
     }
 
@@ -62,7 +63,7 @@ class Features
     {
         $enableFeatures = explode(',', $_ENV['APP_FEATURES'] ?? '');
 
-        $enableFeatures = array_filter($enableFeatures, fn($v) => !empty($v));
+        $enableFeatures = array_filter($enableFeatures, fn($v): bool => !empty($v));
         $featureMap = self::getAppFeatureMap();
         if (!empty($badFeatures = array_diff($enableFeatures, $featureMap))) {
             throw new RuntimeException('Trying to enable unknown features: ' . join(', ', $badFeatures));
@@ -72,10 +73,10 @@ class Features
 
     protected static function getAppFeatureMap(): array
     {
-        $oClass = new ReflectionClass(__CLASS__);
+        $oClass = new ReflectionClass(self::class);
         $map = $oClass->getConstants();
         unset($map['AUTO_ENV_MAP']);
-        return array_filter($map, fn($v) => !str_starts_with($v, 'AUTOENV-'));
+        return array_filter($map, fn($v): bool => !str_starts_with((string) $v, 'AUTOENV-'));
     }
 
     private static function detectAutoEnvFeatures(): array

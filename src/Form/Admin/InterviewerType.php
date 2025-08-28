@@ -23,7 +23,7 @@ class InterviewerType extends AbstractType
         $this->cancelUrl = $router->generate('admin_interviewers_list');
     }
 
-    public function buildForm(FormBuilderInterface $builder, array $options)
+    public function buildForm(FormBuilderInterface $builder, array $options): void
     {
         $builder
             ->add('name', InputType::class, [
@@ -56,7 +56,7 @@ class InterviewerType extends AbstractType
             ]);
     }
 
-    public function configureOptions(OptionsResolver $resolver)
+    public function configureOptions(OptionsResolver $resolver): void
     {
         $resolver->setDefaults([
             'data_class' => Interviewer::class,

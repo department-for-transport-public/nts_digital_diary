@@ -32,7 +32,7 @@ class FeedbackMessageStateTransitionConfirmAction extends AbstractConfirmAction
         return "feedback.state-transition.{$this->getTransition()}";
     }
 
-    public function doConfirmedAction($formData)
+    public function doConfirmedAction($formData): void
     {
         $this->feedbackMessageStateMachine->apply($this->getMessage(), $this->getTransition());
         $this->entityManager->flush();

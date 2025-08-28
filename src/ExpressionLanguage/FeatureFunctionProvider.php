@@ -19,13 +19,11 @@ class FeatureFunctionProvider implements ExpressionFunctionProviderInterface
     {
         return [
             new ExpressionFunction('is_feature_enabled',
-                function($str) {
-                    return "is_feature_enabled($str)";
-                },
-                function($arguments, $str) {
+                fn($str): string => "is_feature_enabled($str)",
+                function($arguments, $str): bool {
                     try {
                         return Features::isEnabled($str);
-                    } catch (Exception $e) {
+                    } catch (Exception) {
                         throw new SyntaxError("Unknown feature '$str'");
                     }
                 }

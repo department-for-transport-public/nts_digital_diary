@@ -9,47 +9,35 @@ use Doctrine\Common\Collections\Collection;
 use Doctrine\ORM\Mapping as ORM;
 use Symfony\Component\Validator\Constraints as Assert;
 
-/**
- * @ORM\Entity(repositoryClass=DiaryDayRepository::class)
- */
+#[ORM\Entity(repositoryClass: DiaryDayRepository::class)]
 class DiaryDay
 {
     use IdTrait;
 
-    /**
-     * @ORM\Column(type="integer")
-     */
+    #[ORM\Column(type: 'integer')]
     private ?int $number = null;
 
-    /**
-     * @ORM\Column(type="text", nullable=true)
-     * @Assert\Length(groups={"diary-keeper.notes"}, maxMessage="common.string.max-length", max=4000)
-     */
+    #[Assert\Length(max: 4000, maxMessage: 'common.string.max-length', groups: ['diary-keeper.notes'])]
+    #[ORM\Column(type: 'text', nullable: true)]
     private ?string $diaryKeeperNotes = null;
 
-    /**
-     * @ORM\Column(type="text", nullable=true)
-     * @Assert\Length(groups={"interviewer.notes"}, maxMessage="common.string.max-length", max=4000)
-     */
+    #[Assert\Length(max: 4000, maxMessage: 'common.string.max-length', groups: ['interviewer.notes'])]
+    #[ORM\Column(type: 'text', nullable: true)]
     private ?string $interviewerNotes = null;
 
-    /**
-     * @ORM\Column(type="text", nullable=true)
-     * @Assert\Length(groups={"coder.notes"}, maxMessage="common.string.max-length", max=4000)
-     */
+    #[Assert\Length(max: 4000, maxMessage: 'common.string.max-length', groups: ['coder.notes'])]
+    #[ORM\Column(type: 'text', nullable: true)]
     private ?string $coderNotes = null;
 
-    /**
-     * @ORM\ManyToOne(targetEntity=DiaryKeeper::class, inversedBy="diaryDays")
-     * @ORM\JoinColumn(nullable=false)
-     */
+    #[ORM\ManyToOne(targetEntity: DiaryKeeper::class, inversedBy: 'diaryDays')]
+    #[ORM\JoinColumn(nullable: false)]
     private ?DiaryKeeper $diaryKeeper = null;
 
     /**
      * @var Collection|Journey[]
-     * @ORM\OneToMany(targetEntity=Journey::class, mappedBy="diaryDay", orphanRemoval=true)
-     * @ORM\OrderBy({"startTime" = "ASC"})
      */
+    #[ORM\OneToMany(mappedBy: 'diaryDay', targetEntity: Journey::class, orphanRemoval: true)]
+    #[ORM\OrderBy(['startTime' => 'ASC'])]
     private Collection $journeys;
 
     public function __construct()
@@ -91,9 +79,9 @@ class DiaryDay
     }
 
     /**
-     * @return Collection|Journey[]
+     * @return Collection<Journey>
      */
-    public function getJourneys()
+    public function getJourneys(): Collection
     {
         return $this->journeys;
     }

@@ -10,7 +10,7 @@ use Symfony\Component\Validator\Constraints\NotNull;
 
 class AddAnotherType extends AbstractType
 {
-    public function buildForm(FormBuilderInterface $builder, array $options)
+    public function buildForm(FormBuilderInterface $builder, array $options): void
     {
         $builder
             ->add('add_another', BooleanChoiceType::class, [
@@ -18,10 +18,11 @@ class AddAnotherType extends AbstractType
                 'help' => "diary-keeper.add-another.help",
                 'label_attr' => ['class' => 'govuk-label--s'],
                 'constraints' => [new NotNull(['message' => 'wizard.diary-keeper.add-another.not-null'])],
+                'inline' => true,
             ]);
     }
 
-    public function configureOptions(OptionsResolver $resolver)
+    public function configureOptions(OptionsResolver $resolver): void
     {
         $resolver->setDefaults([
             'data_class' => null,

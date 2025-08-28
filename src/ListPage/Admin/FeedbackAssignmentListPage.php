@@ -3,11 +3,11 @@
 namespace App\ListPage\Admin;
 
 use App\Entity\Feedback\Message;
-use App\ListPage\AbstractListPage;
-use App\ListPage\Field\Simple;
-use App\ListPage\Field\TextFilter;
 use App\Repository\Feedback\MessageRepository;
 use Doctrine\ORM\QueryBuilder;
+use Ghost\GovUkCoreBundle\ListPage\AbstractListPage;
+use Ghost\GovUkCoreBundle\ListPage\Field\Simple;
+use Ghost\GovUkCoreBundle\ListPage\Field\TextFilter;
 use Symfony\Component\Form\FormFactoryInterface;
 use Symfony\Component\Routing\RouterInterface;
 

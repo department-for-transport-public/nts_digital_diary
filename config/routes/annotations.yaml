@@ -7,23 +7,19 @@
 #  - avoid code duplication
 ###
 
-core:
-    resource: ../../src/Controller/FrontendController.php
-    type: annotation
+frontend:
+    resource: '../../src/Controller/Frontend/**/*'
+    type: attribute
     host: '%hostnames.frontend%'
-
-feedback:
-    resource: ../../src/Controller/FeedbackController.php
-    type: annotation
-    host: '%hostnames.frontend%'
+    name_prefix: app_
 
 ajax:
     resource: ../../src/Controller/AjaxController.php
-    type: annotation
+    type: attribute
 
 travel_diary:
     resource: '../../src/Controller/TravelDiary/**/*'
-    type: annotation
+    type: attribute
     host: '%hostnames.frontend%'
     name_prefix: traveldiary_
     prefix: /travel-diary
@@ -31,7 +27,7 @@ travel_diary:
 
 interviewer:
     resource: '../../src/Controller/Interviewer/**/*'
-    type: annotation
+    type: attribute
     host: '%hostnames.frontend%'
     name_prefix: interviewer_
     prefix: /interviewer
@@ -39,14 +35,14 @@ interviewer:
 
 auth:
     resource: '../../src/Controller/Auth/**/*'
-    type: annotation
+    type: attribute
     host: '%hostnames.frontend%'
     name_prefix: auth_
     prefix: /auth
 
 onboarding:
     resource: '../../src/Controller/OnBoarding/**/*'
-    type: annotation
+    type: attribute
     host: '%hostnames.frontend%'
     name_prefix: onboarding_
     prefix: /onboarding
@@ -54,13 +50,15 @@ onboarding:
 
 admin:
     resource: '../../src/Controller/Admin/**/*'
-    type: annotation
+    type: attribute
     host: '%hostnames.admin%'
     name_prefix: admin_
+    # https://github.com/symfony/symfony/issues/50715#issuecomment-1691784169
+    stateless: false
 
 api:
     resource: '../../src/Controller/Api/**/*'
-    type: annotation
+    type: attribute
     host: '%hostnames.frontend%'
     name_prefix: api_
     prefix: /api/v{version}
@@ -70,7 +68,7 @@ api:
 
 cron:
     resource: '../../src/Controller/Cron/**/*'
-    type: annotation
+    type: attribute
 #    host: '%hostnames.frontend%'
     name_prefix: 'cron_'
     prefix: /cron
@@ -78,11 +76,17 @@ cron:
 
 gcp:
     resource: ../../src/Controller/GcpController.php
-    type: annotation
+    type: attribute
     name_prefix: 'gcp_'
     prefix: /_ah
     condition: "(not request.headers.has('X-GOOG-IAP-JWT-ASSERTION')) and (request.headers.get('X-GOOGLE-INTERNAL-SKIPADMINCHECK') === 'true')"
 
 kernel:
     resource: ../../src/Kernel.php
-    type: annotation
+    type: attribute
+
+core_controllers:
+    resource:
+        path: '@GhostGovUkCoreBundle/src/Controller'
+        namespace: Ghost\GovUkCoreBundle\Controller
+    type: attribute

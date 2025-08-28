@@ -13,12 +13,10 @@ class RetakeTrainingModuleConfirmAction extends AbstractConfirmAction
 {
     /** @var InterviewerTrainingRecord | object */
     protected $subject;
-    protected InterviewerTrainingHelper $trainingHelper;
 
-    public function __construct(FormFactoryInterface $formFactory, RequestStack $requestStack, InterviewerTrainingHelper $trainingHelper)
+    public function __construct(FormFactoryInterface $formFactory, RequestStack $requestStack, protected InterviewerTrainingHelper $trainingHelper)
     {
         parent::__construct($formFactory, $requestStack);
-        $this->trainingHelper = $trainingHelper;
     }
 
     public function getFormOptions(): array
@@ -50,7 +48,7 @@ class RetakeTrainingModuleConfirmAction extends AbstractConfirmAction
         ];
     }
 
-    public function doConfirmedAction($formData)
+    public function doConfirmedAction($formData): void
     {
         $this->trainingHelper->createTrainingRecordForModule($this->subject->getInterviewer(), $this->subject->getModuleName());
     }

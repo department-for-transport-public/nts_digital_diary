@@ -8,14 +8,14 @@ use Doctrine\Persistence\ObjectManager;
 
 class NtsFixtures extends Fixture
 {
-    public function load(ObjectManager $manager)
+    public function load(ObjectManager $manager): void
     {
         $this->persistEntitiesIfNotExists($manager, $this->getMethodFixtures());
         $manager->flush();
     }
 
     /**
-     * @return array | Method[]
+     * @return array<Method>
      */
     protected function getMethodFixtures(): array
     {
@@ -41,13 +41,14 @@ class NtsFixtures extends Fixture
         ];
     }
 
-    protected function persistEntitiesIfNotExists(ObjectManager $manager, array $entities) {
+    protected function persistEntitiesIfNotExists(ObjectManager $manager, array $entities): void
+    {
         foreach($entities as $entity) {
             if (!method_exists($entity, 'getId')) {
                 throw new \RuntimeException('Entity is missing getId method');
             }
 
-            if ($manager->find(get_class($entity), $entity->getId()) === null) {
+            if ($manager->find($entity::class, $entity->getId()) === null) {
                 $manager->persist($entity);
             }
         }

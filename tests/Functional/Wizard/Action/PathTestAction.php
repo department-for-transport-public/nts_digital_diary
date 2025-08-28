@@ -4,15 +4,10 @@ namespace App\Tests\Functional\Wizard\Action;
 
 class PathTestAction extends AbstractAction
 {
-    const OPTION_EXPECTED_PATH_REGEX = 'path-is-regex';
+    public const OPTION_EXPECTED_PATH_REGEX = 'path-is-regex';
 
-    protected string $expectedPath;
-    protected array $options;
-
-    public function __construct(string $expectedPath, array $options = [])
+    public function __construct(protected string $expectedPath, protected array $options = [])
     {
-        $this->expectedPath = $expectedPath;
-        $this->options = $options;
     }
 
     public function getExpectedPath(): string

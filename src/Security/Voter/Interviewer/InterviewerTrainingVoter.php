@@ -5,19 +5,21 @@ namespace App\Security\Voter\Interviewer;
 use App\Entity\DiaryKeeper;
 use App\Entity\Household;
 use App\Entity\User;
-use App\Security\OneTimePassword\FormAuthenticator;
 use App\Security\OneTimePassword\InMemoryOtpUser;
+use Doctrine\ORM\EntityManagerInterface;
+use Symfony\Bundle\SecurityBundle\Security;
 use Symfony\Component\HttpFoundation\RequestStack;
 use Symfony\Component\Security\Core\Authentication\Token\TokenInterface;
 use Symfony\Component\Security\Core\Authorization\Voter\Voter;
-use Symfony\Component\Security\Core\Security;
 
 class InterviewerTrainingVoter extends Voter
 {
     public const IS_INTERVIEWER_TRAINING = 'IS_INTERVIEWER_TRAINING';
+
     public function __construct(
-        protected RequestStack $requestStack,
-        protected Security $security,
+        protected EntityManagerInterface $entityManager,
+        protected RequestStack           $requestStack,
+        protected Security               $security,
     ) {}
 
     protected function supports(string $attribute, $subject): bool
@@ -33,14 +35,13 @@ class InterviewerTrainingVoter extends Voter
             || $this->isUsingOnboardingLoginInTrainingMode()
             || $this->isUsingOnboardingInTrainingMode()
             || $this->isStartingImpersonationForTraining()
-            || $this->isUsingDiaryCorrectionTraining()
-            ;
+            || $this->isUsingDiaryCorrectionTraining();
     }
 
     protected function isStartingImpersonationForTraining(): bool
     {
         if ($url = $this->requestStack?->getCurrentRequest()?->attributes?->get('switch_user_start')) {
-            $url = parse_url($url);
+            $url = parse_url((string)$url);
             if (str_starts_with($url['path'] ?? '', '/interviewer/training')) {
                 return true;
             }
@@ -57,21 +58,47 @@ class InterviewerTrainingVoter extends Voter
     {
         $request = $this->requestStack->getCurrentRequest();
 
-        /** @var ?DiaryKeeper $diaryKeeper */
-        $diaryKeeper = $request?->attributes?->get('diaryKeeper');
+        $diaryKeeperId = $request?->attributes?->get('diaryKeeper');
+        $householdId = $request?->attributes?->get('household');
 
-        if ($diaryKeeper) {
+        if ($diaryKeeperId) {
+            $diaryKeeper = $this->entityManager
+                ->getRepository(DiaryKeeper::class)
+                ->createQueryBuilder('diaryKeeper')
+                ->select('diaryKeeper, household, areaPeriod, trainingInterviewer')
+                ->leftJoin('diaryKeeper.household', 'household')
+                ->leftJoin('household.areaPeriod', 'areaPeriod')
+                ->leftJoin('areaPeriod.trainingInterviewer', 'trainingInterviewer')
+                ->where('diaryKeeper.id = :diaryKeeperId')
+                ->setParameter('diaryKeeperId', $diaryKeeperId)
+                ->getQuery()
+                ->getOneOrNullResult();
+
+            if (!$diaryKeeper instanceof DiaryKeeper) {
+                throw new \RuntimeException('No such diaryKeeper');
+            }
+
             $household = $diaryKeeper->getHousehold();
+        } else if ($householdId) {
+            $household = $this->entityManager
+                ->getRepository(Household::class)
+                ->createQueryBuilder('household')
+                ->select('household, areaPeriod, trainingInterviewer')
+                ->leftJoin('household.areaPeriod', 'areaPeriod')
+                ->leftJoin('areaPeriod.trainingInterviewer', 'trainingInterviewer')
+                ->where('household.id = :householdId')
+                ->setParameter('householdId', $householdId)
+                ->getQuery()
+                ->getOneOrNullResult();
+
+            if (!$household instanceof Household) {
+                throw new \RuntimeException('No such household');
+            }
         } else {
-            /** @var ?Household $household */
-            $household = $request?->attributes?->get('household');
+            $household = null;
         }
 
-        if ($household && $household->getAreaPeriod()->getTrainingInterviewer()) {
-            return true;
-        }
-
-        return false;
+        return ($household && $household->getAreaPeriod()->getTrainingInterviewer());
     }
 
     protected function isUsingPersonalTravelDiary(): bool

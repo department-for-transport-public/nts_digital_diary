@@ -1,3 +1,6 @@
+data-export:
+  page-title: Data export
+
 feedback:
   assignment:
     page-title: Assign messages
@@ -5,13 +8,30 @@ feedback:
     success-notification:
       heading: Message assigned
       content: The message was assigned to {assignedTo}
+    cancel-link.label: Back to dashboard
+    reject-button.label: Reject message
     submit-button.label: Assign message
     choice.placeholder: -- select --
+
+  breadcrumbs:
+    message: "Message {id}"
+    message-lookup: Message lookup
+    view-messages: Feedback messages
+
+  message-lookup:
+      page-title: Message lookup
+      help: This utility allows a message to be found given its message ID.
+
+  stats:
+    page-title: Feedback stats
+    support.label: Support
+    feedback.label: Feedback
 
   view:
     list.page-title: Feedback dashboard
     message.page-title: View {category} message
     details:
+      id: ID
       message: Message
       timestamp: Received
       state: State
@@ -30,11 +50,13 @@ feedback:
         assigned: blue
         in-progress: green
         closed: grey
+        rejected: red
       labels:
         new: New
         assigned: Assigned
         in-progress: In progress
         closed: Closed
+        rejected: Rejected
     add-note:
       submit.label: Add note
   state-transition:
@@ -52,6 +74,13 @@ feedback:
       confirmed-notification:
         heading: Message closed
         content: The message has been closed.
+    reopen:
+      label: Re-open message
+      page-title: Re-open message
+      content: This will re-open the message.
+      confirmed-notification:
+        heading: Message re-opened
+        content: The message has been re-opened.
 
 
 interviewer.list:
@@ -103,16 +132,13 @@ household-maintenance:
     add-diary-keeper: Add diary keeper
     choose-household: Household maintenance
     household-details: "Household: {serial}"
+    user-lookup: User lookup
 
   add-diary-keeper:
     page-title: Add diary keeper
 
-  choose-household:
-    page-title: Choose household
-    area.label: Area
-    address-number.label: Address
-    household-number.label: Household
-    search.label: Search
+  list:
+    page-title: Household maintenance
 
   household-details:
     page-title: Household details
@@ -122,3 +148,16 @@ sample-import.form:
   page-title: Sample Import
   areas.label: Area sample import file
   import.label: Import sample
+
+user:
+  lookup:
+    page-title: User lookup
+    help: This utility allows a user's email address to be resolved to a serial ID.
+
+tools:
+  index:
+    page-title: Admin tools
+  direct-onboarding-urls:
+    page-title: Direct set-up URLs
+  check-letter-generator:
+    page-title: Check letter generator

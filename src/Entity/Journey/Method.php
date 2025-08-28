@@ -6,10 +6,9 @@ use App\Repository\Journey\MethodRepository;
 use Doctrine\ORM\Mapping as ORM;
 use Symfony\Component\Validator\Constraints as Assert;
 
-/**
- * @ORM\Entity(repositoryClass=MethodRepository::class)
- * @ORM\Table(uniqueConstraints={@ORM\UniqueConstraint(name="description_translation_key_type_unique", columns={"description_translation_key", "type"})})
- */
+#[ORM\Entity(repositoryClass: MethodRepository::class)]
+#[ORM\Table]
+#[ORM\UniqueConstraint(name: 'description_translation_key_type_unique', columns: ['description_translation_key', 'type'])]
 class Method implements \JsonSerializable
 {
     public const TYPE_PRIVATE = 'private';
@@ -27,37 +26,25 @@ class Method implements \JsonSerializable
             ->setSort($sort ?? $id);
     }
 
-    /**
-     * @ORM\Id()
-     * @ORM\Column(type="integer")
-     */
-    private ?int $id;
+    #[ORM\Id]
+    #[ORM\Column(type: 'integer')]
+    private ?int $id = null;
 
-    /**
-     * @ORM\Column(type="integer", nullable=true)
-     */
-    private ?int $code;
+    #[ORM\Column(type: 'integer', nullable: true)]
+    private ?int $code = null;
 
-    /**
-     * @ORM\Column(type="string", length=30)
-     */
-    private ?string $descriptionTranslationKey;
+    #[ORM\Column(type: 'string', length: 30)]
+    private ?string $descriptionTranslationKey = null;
 
-    /**
-     * @ORM\Column(type="string", length=10)
-     * @Assert\Choice(choices={"other","private","public"})
-     */
-    private ?string $type;
+    #[Assert\Choice(choices: ['other', 'private', 'public'])]
+    #[ORM\Column(type: 'string', length: 10)]
+    private ?string $type = null;
 
-    /**
-     * @ORM\Column(type="string", length=10)
-     */
+    #[ORM\Column(type: 'string', length: 10)]
     private ?string $displayGroup = null;
 
-    /**
-     * @ORM\Column(type="integer")
-     */
-    private ?int $sort;
+    #[ORM\Column(type: 'integer')]
+    private ?int $sort = null;
 
     public function getId(): ?int
     {
@@ -136,7 +123,7 @@ class Method implements \JsonSerializable
     {
         $key = $this->getDescriptionTranslationKey();
 
-        if ($resolveOthersToPlainOther && str_starts_with($key, 'other-')) {
+        if ($resolveOthersToPlainOther && str_starts_with((string) $key, 'other-')) {
             $key = 'other';
         }
 

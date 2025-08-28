@@ -8,18 +8,19 @@ use App\Entity\User;
 use App\Messenger\PropertyChange\EntityChangeMessage;
 use App\Messenger\PropertyChange\EntityDeletionMessage;
 use App\Serializer\ChangeSet\AbstractChangeSetNormalizer;
-use Doctrine\Common\EventSubscriber;
+use Doctrine\Bundle\DoctrineBundle\Attribute\AsDoctrineListener;
 use Doctrine\Common\Util\ClassUtils;
 use Doctrine\ORM\EntityManagerInterface;
 use Doctrine\ORM\Event\OnFlushEventArgs;
 use Doctrine\ORM\Events;
 use Doctrine\ORM\UnitOfWork;
+use Symfony\Bundle\SecurityBundle\Security;
 use Symfony\Component\Messenger\MessageBusInterface;
 use Symfony\Component\Security\Core\Authentication\Token\SwitchUserToken;
-use Symfony\Component\Security\Core\Security;
 use Symfony\Component\Serializer\Normalizer\NormalizerInterface;
 
-class PropertyChangeLogEventSubscriber implements EventSubscriber
+#[AsDoctrineListener(event: Events::onFlush)]
+class PropertyChangeLogEventSubscriber
 {
     public function __construct(
         protected MessageBusInterface    $messageBus,
@@ -72,20 +73,20 @@ class PropertyChangeLogEventSubscriber implements EventSubscriber
             }
 
             if (!empty($fieldsChanged)) {
-                $this->messageBus->dispatch((new EntityChangeMessage($entity->getId(), get_class($entity), $fieldsChanged)));
+                $this->messageBus->dispatch((new EntityChangeMessage($entity->getId(), $entity::class, $fieldsChanged)));
             }
         }
 
         foreach($unitOfWork->getScheduledEntityDeletions() as $entity) {
             if ($entity instanceof PropertyChangeLoggableInterface) {
-                $this->messageBus->dispatch(new EntityDeletionMessage($entity->getId(), get_class($entity)));
+                $this->messageBus->dispatch(new EntityDeletionMessage($entity->getId(), $entity::class));
             }
         }
     }
 
     protected function logChanges(UnitOfWork $unitOfWork, ?string $interviewerSerialId, object $entity): array
     {
-        $entityClass = get_class($entity);
+        $entityClass = $entity::class;
         $changeLogTemplate = (new PropertyChangeLog())
             ->setEntityId($entity->getId())
             ->setEntityClass(ClassUtils::getRealClass($entityClass))
@@ -121,14 +122,7 @@ class PropertyChangeLogEventSubscriber implements EventSubscriber
         }
 
         // we need to reload the user in order to access the interviewer
-        $actualUser = $this->defaultEntityManager->find(get_class($actualUser), $actualUser->getId());
+        $actualUser = $this->defaultEntityManager->find($actualUser::class, $actualUser->getId());
         return $actualUser->getInterviewer()->getSerialId();
-    }
-
-    public function getSubscribedEvents(): array
-    {
-        return [
-            Events::onFlush,
-        ];
     }
 }

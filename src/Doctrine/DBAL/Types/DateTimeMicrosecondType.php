@@ -6,11 +6,12 @@ use DateTime;
 use DateTimeInterface;
 use Doctrine\DBAL\Exception;
 use Doctrine\DBAL\Platforms\AbstractPlatform;
+use Doctrine\DBAL\Platforms\Exception\NotSupported;
 use Doctrine\DBAL\Platforms\MySQLPlatform;
 use Doctrine\DBAL\Platforms\SqlitePlatform;
-use Doctrine\DBAL\Types\ConversionException;
+use Doctrine\DBAL\Types\Exception\InvalidFormat;
+use Doctrine\DBAL\Types\Exception\InvalidType;
 use Doctrine\DBAL\Types\Type;
-use function date_create;
 
 /**
  * Type that maps an SQL DATETIME/TIMESTAMP to a PHP DateTime object.
@@ -44,15 +45,14 @@ class DateTimeMicrosecondType extends Type
             return "VARCHAR(24)";
         }
 
-        throw Exception::notSupported(__METHOD__);
+        throw NotSupported::new(__METHOD__);
     }
 
     /**
      * {@inheritdoc}
      * @throws Exception If not supported on this platform.
-     * @return mixed
      */
-    public function convertToDatabaseValue($value, AbstractPlatform $platform)
+    public function convertToDatabaseValue($value, AbstractPlatform $platform): mixed
     {
         if ($value === null) {
             return $value;
@@ -62,14 +62,17 @@ class DateTimeMicrosecondType extends Type
             return $value->format($this->getDateTimeFormatString($platform));
         }
 
-        throw ConversionException::conversionFailedInvalidType($value, $this->getName(), ['null', 'DateTime']);
+        throw InvalidType::new(
+            $value,
+            static::class,
+            ['null', DateTime::class],
+        );
     }
 
     /**
      * {@inheritdoc}
-     * @return mixed
      */
-    public function convertToPHPValue($value, AbstractPlatform $platform)
+    public function convertToPHPValue($value, AbstractPlatform $platform): null|DateTimeInterface|DateTime
     {
         if ($value === null || $value instanceof DateTimeInterface) {
             return $value;
@@ -82,10 +85,10 @@ class DateTimeMicrosecondType extends Type
         }
 
         if ($val === false) {
-            throw ConversionException::conversionFailedFormat(
+            throw InvalidFormat::new(
                 $value,
-                $this->getName(),
-                $platform->getDateTimeFormatString()
+                static::class,
+                $platform->getDateTimeFormatString(),
             );
         }
 

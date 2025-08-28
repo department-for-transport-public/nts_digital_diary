@@ -29,7 +29,7 @@ class ImpersonationSubscriber implements EventSubscriberInterface
         /** @var ?User $originalUser */
         $originalUser = $token instanceof SwitchUserToken ? $token->getOriginalToken()->getUser() : null;
 
-        if ($targetUser->getDiaryKeeper() && $originalUser->getInterviewer()) {
+        if ($targetUser?->getDiaryKeeper() && $originalUser?->getInterviewer()) {
             $this->metrics->log(new ImpersonationEvent($targetUser->getDiaryKeeper()));
         }
     }

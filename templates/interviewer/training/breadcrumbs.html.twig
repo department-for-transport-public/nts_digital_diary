@@ -30,6 +30,12 @@
         text: "#{diaryKeeper.name}",
     }
 ]) %}{% endif -%}
-
+{%- if action is defined and action == 'compare-household' -%}
+    {% set breadcrumbItems = breadcrumbItems | merge([
+        {
+            text: 'compare-household.breadcrumb' | trans,
+        }
+    ]) %}
+{%- endif -%}
 
 {{- breadcrumbs({items: breadcrumbItems}) -}}

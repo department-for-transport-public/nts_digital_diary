@@ -4,13 +4,12 @@ namespace App\Serializer\ApiPlatform;
 
 use App\Entity\Interviewer;
 use App\Entity\InterviewerTrainingRecord;
-use Symfony\Component\Serializer\Normalizer\ContextAwareNormalizerInterface;
-use Symfony\Component\Serializer\Normalizer\DateTimeNormalizer;
 use Symfony\Component\Serializer\Normalizer\NormalizerAwareInterface;
 use Symfony\Component\Serializer\Normalizer\NormalizerAwareTrait;
+use Symfony\Component\Serializer\Normalizer\NormalizerInterface;
 use Symfony\Contracts\Translation\TranslatorInterface;
 
-class TrainingRecordNormalizer implements ContextAwareNormalizerInterface, NormalizerAwareInterface
+class TrainingRecordNormalizer implements NormalizerInterface, NormalizerAwareInterface
 {
     use NormalizerAwareTrait;
 
@@ -22,6 +21,13 @@ class TrainingRecordNormalizer implements ContextAwareNormalizerInterface, Norma
     {
         return ($context['resource_class'] ?? null) === Interviewer::class
             && ($data instanceof InterviewerTrainingRecord);
+    }
+
+    public function getSupportedTypes(?string $format): array
+    {
+        return [
+            InterviewerTrainingRecord::class => false, // false/not-cacheable because it depends upon the $context
+        ];
     }
 
     /**

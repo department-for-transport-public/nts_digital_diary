@@ -6,7 +6,7 @@
     startLocation: journey.startLocationForDisplay,
     endLocation: journey.endLocationForDisplay,
     day: journey.diaryDay.number,
-    time: journey.startTime | date(format_time_short),
+    time: journey.startTime | date(date_time_format.time('user-pref')),
 } %}
 {% set heading_class = "govuk-heading-xl" %}
 
@@ -40,10 +40,11 @@
 
     <h2 class="govuk-heading-l">Stages</h2>
     {% if journey.stages | length == 0 %}
-        {{ m.warningText("journey.view.no-stages-warning" | trans) }}
+        {{ m.warningText({text: "journey.view.no-stages-warning" | trans}) }}
+    {% else %}
+        {{ showStages(journey.stages, {showHeadings: false}) }}
     {% endif %}
 
-    {{ showStages(journey.stages, {showHeadings: false}) }}
     {{ stagesButtons(journey, day) }}
     <hr class="govuk-section-break govuk-section-break--m govuk-section-break--visible">
     {{ journeyButtons(journey, day) }}
@@ -55,15 +56,6 @@
     <h2 class="govuk-heading-m">{{ 'journey.view.next-steps.title' | trans }}</h2>
     <p class="govuk-body">{{ 'journey.view.next-steps.intro' | trans }}</p>
     <ul class="govuk-list">
-{#
-        {% if journey.isPartial and journey.stages | length > 0 %}
-            <li>
-            <form method="POST" action="{{ path('traveldiary_journey_complete', {journeyId: journey.id}) }}">
-                <button type="submit" class="govuk-button">{{ "journey.view.complete-journey" | trans }}</button>
-            </form>
-            </li>
-        {% endif %}
-#}
         {%- if is_granted('CAN_SHARE_JOURNEYS') -%}
         <li>
             <a class="govuk-link" href="{{ path('traveldiary_share_journey_wizard_start', {journeyId: journey.id}) }}">

@@ -1,23 +1,17 @@
 <?php
 
-
 namespace App\EventSubscriber\FormWizard;
 
-
-use App\Event\FormWizard\FormDataEvent;
-use App\ExpressionLanguage\WizardFormDataFunctionProvider;
+use Ghost\GovUkCoreBundle\Event\FormWizard\FormDataEvent;
+use Ghost\GovUkCoreBundle\ExpressionLanguage\WizardFormDataFunctionProvider;
 use Symfony\Component\EventDispatcher\EventSubscriberInterface;
 
 class ExpressionLanguageFormDataFunctionSubscriber implements EventSubscriberInterface
 {
-    private WizardFormDataFunctionProvider $wizardFormDataFunctionProvider;
+    public function __construct(protected WizardFormDataFunctionProvider $wizardFormDataFunctionProvider)
+    {}
 
-    public function __construct(WizardFormDataFunctionProvider $wizardFormDataFunctionProvider)
-    {
-        $this->wizardFormDataFunctionProvider = $wizardFormDataFunctionProvider;
-    }
-
-    public function handleFormDataEvent(FormDataEvent $event)
+    public function handleFormDataEvent(FormDataEvent $event): void
     {
         $this->wizardFormDataFunctionProvider->setFormData($event->getFormData());
     }
@@ -28,5 +22,4 @@ class ExpressionLanguageFormDataFunctionSubscriber implements EventSubscriberInt
             FormDataEvent::NAME => 'handleFormDataEvent',
         ];
     }
-
 }

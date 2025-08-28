@@ -1,4 +1,22 @@
-{% extends "@GhostGovUkFrontend/template.html.twig" %}
+{% extends "@GhostGovUkCore/base.html.twig" %}
+
+{% block phaseBanner %}
+    {%- from '@GhostGovUkFrontend/components/macros.html.twig' import phaseBanner -%}
+    {%- set phaseBannerHtml -%}
+        {%- if not is_feedback_route -%}
+            This is a new service – your
+            <a class="govuk-link" href="{{ path('app_feedback_form', {category: constant('App\\Entity\\Feedback\\CategoryEnum::Feedback').value, info: encodeFeedback()}) }}">feedback</a>
+            will help us to improve it.
+        {%- endif -%}
+    {%- endset -%}
+    {{- phaseBanner({
+        classes: 'govuk-width-container',
+        tag: {
+            text: "Beta"
+        },
+        html: phaseBannerHtml
+    }) -}}
+{% endblock %}
 
 {% block pageTitle -%}
     {%- block pageTitleErrorPrefix -%}
@@ -16,21 +34,21 @@
 
             (Translation parameters for both of these can be specified as "title_translation_parameters")
         #}
-        {%- if title_translatable_message is defined -%}
-            {{- title_translatable_message | trans -}}
+        {% set title_translation_key = title_translation_key ?? 'page-title' %}
+        {# if title_translation_key contains a dot, assume it's been defined as a complete key #}
+        {%- if (title_translation_key | split('.') | first) == title_translation_key -%}
+            {%- set title_translation_key =
+                (title_translation_prefix ?? translation_prefix ?? 'title_translation_prefix')
+                ~ "." ~ title_translation_key
+            -%}
+        {% endif %}
+        {%- if is_translatable_message(title_translation_key) -%}
+            {{- title_translation_key | trans -}}
         {%- else -%}
-            {%- set title_translation_key = title_translation_key ?? 'page-title' -%}
-            {# if title_translation_key contains a dot, assume it's been defined as a complete key #}
-            {%- if (title_translation_key | split('.') | first) == title_translation_key -%}
-                {%- set title_translation_key =
-                    (title_translation_prefix ?? translation_prefix ?? 'title-translation-prefix')
-                    ~ "." ~ title_translation_key
-                -%}
-            {%- endif -%}
             {{- title_translation_key | trans(
                 title_translation_parameters ?? translation_parameters ?? {},
-                title_translation_domain ?? translation_domain ?? null)
-            -}}
+                title_translation_domain ?? translation_domain ?? null
+            ) -}}
         {%- endif -%}
         {{- " - " -}}
     {%- endblock -%}
@@ -38,7 +56,7 @@
     {{- 'service.name' | trans }} - GOV.UK
 {%- endblock %}
 
-{% block beforeContent -%}
+{% block beforeMainWrapper -%}
     {%- block backLink -%}
         {%- if (show_formwizard_backlink ?? true) and (formWizardState ?? false) and formWizardState.previousHistoryPlace -%}
             <a href="{{ url(app.request.get('_route'), app.request.get('_route_params') | default({}) | merge(formWizardState.previousHistoryPlaceRouteParameters)) }}" class="govuk-back-link">Back</a>

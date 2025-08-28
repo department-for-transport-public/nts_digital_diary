@@ -3,16 +3,16 @@
 namespace App\Form;
 
 use App\Entity\Embeddable\CostOrNil;
+use App\Form\OldGhostBundle\MoneyType;
 use Ghost\GovUkFrontendBundle\Form\Type\BooleanChoiceType;
-use Ghost\GovUkFrontendBundle\Form\Type\MoneyType;
 use Symfony\Component\Form\AbstractType;
 use Symfony\Component\Form\FormBuilderInterface;
 use Symfony\Component\OptionsResolver\OptionsResolver;
 
 class CostOrNilType extends AbstractType
 {
-    public const BOOLEAN_FIELD_NAME = 'hasCost';
-    public const COST_FIELD_NAME = 'cost';
+    public const string BOOLEAN_FIELD_NAME = 'hasCost';
+    public const string COST_FIELD_NAME = 'cost';
     public function buildForm(FormBuilderInterface $builder, array $options): void
     {
         $translationPrefix = $options['translation_prefix'];
@@ -26,7 +26,6 @@ class CostOrNilType extends AbstractType
                 'choice_options' => [
                     'boolean.true' => ['conditional_form_name' => self::COST_FIELD_NAME],
                 ],
-                'attr' => ['class' => ''], // needed to revert the default inline style
                 'label_translation_parameters' => $options['translation_parameters'],
                 'help_translation_parameters' => $options['translation_parameters'],
                 'choice_translation_parameters'  => $options['translation_parameters'],
@@ -50,7 +49,7 @@ class CostOrNilType extends AbstractType
             'data_class' => CostOrNil::class,
             'translation_parameters' => [],
             'error_bubbling' => false,
-            'label_class' => 'govuk-label--m',
+            'label_class' => 'govuk-fieldset__legend--m',
         ]);
         $resolver->setRequired([
             'translation_prefix',

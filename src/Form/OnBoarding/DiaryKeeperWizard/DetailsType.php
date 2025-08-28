@@ -3,9 +3,9 @@
 namespace App\Form\OnBoarding\DiaryKeeperWizard;
 
 use App\Entity\DiaryKeeper;
+use App\Form\OldGhostBundle\NumberType;
 use Ghost\GovUkFrontendBundle\Form\Type\BooleanChoiceType;
 use Ghost\GovUkFrontendBundle\Form\Type\InputType;
-use Ghost\GovUkFrontendBundle\Form\Type\NumberType;
 use Symfony\Component\Form\AbstractType;
 use Symfony\Component\Form\FormBuilderInterface;
 use Symfony\Component\Form\FormEvent;
@@ -31,12 +31,11 @@ class DetailsType extends AbstractType
             ])
             ;
 
-        $builder->addEventListener(FormEvents::PRE_SET_DATA, function(FormEvent $event) {
+        $builder->addEventListener(FormEvents::PRE_SET_DATA, function(FormEvent $event): void {
             /** @var DiaryKeeper $diaryKeeper */
             $diaryKeeper = $event->getData();
             $event->getForm()
                 ->add('isAdult', BooleanChoiceType::class, [
-                    'attr' => [],
                     'disabled' => !$diaryKeeper->getPrimaryDriverVehicles()->isEmpty(),
                     'label' => "diary-keeper.details.is-adult.label",
                     'help' => "diary-keeper.details.is-adult.help",

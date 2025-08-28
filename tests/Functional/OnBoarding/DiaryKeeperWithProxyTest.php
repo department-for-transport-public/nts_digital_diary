@@ -22,7 +22,6 @@ class DiaryKeeperWithProxyTest extends AbstractDiaryKeeperTest
 
         $firstName = 'Bonzo';
         $firstCapiNumber = '1';
-        $firstEmail = 'bonzo@example.com';
 
         $secondName = 'Fluffy';
         $secondCapiNumber = '2';
@@ -45,12 +44,8 @@ class DiaryKeeperWithProxyTest extends AbstractDiaryKeeperTest
         $tests[] = new FormTestCallbackAction(
             '/onboarding/diary-keeper/add/identity',
             'user_identifier_button_group_continue',
-            $this->getSecondStepWithProxyTestCases(
-                false,
-                true,
-                null,
-                ['proxy-diary-keeper'],
-            ));
+            $this->getSecondStepWithProxyTestCases(true, null, ['proxy-diary-keeper'])
+        );
 
         $tests[] = new FormTestAction(
             '/onboarding/diary-keeper/add/add-another',
@@ -60,9 +55,6 @@ class DiaryKeeperWithProxyTest extends AbstractDiaryKeeperTest
                 new FormTestCase(['add_another[add_another]' => 'false']),
             ],
         );
-
-        // 4. Store the ID of the newly created DK into $diaryKeeperId
-        $diaryKeeperId = '';
         $tests[] = new CallbackAction($this->fetchDiaryKeeperAndStoreId(['name' => $firstName], 'diary-keeper'));
 
         // 5. Check we were returned to /onboarding
@@ -98,7 +90,7 @@ class DiaryKeeperWithProxyTest extends AbstractDiaryKeeperTest
         $tests[] = new FormTestCallbackAction(
             '#^\/onboarding\/diary-keeper\/[A-Z0-9]+\/edit\/identity#',
             'user_identifier_button_group_continue',
-            $this->getSecondStepWithProxyTestCases(true, $overwriteDetails, $secondEmail, []),
+            $this->getSecondStepWithProxyTestCases($overwriteDetails, $secondEmail, []),
             [PathTestAction::OPTION_EXPECTED_PATH_REGEX => true]);
 
         // 13. Check we were returned to /onboarding
@@ -114,10 +106,9 @@ class DiaryKeeperWithProxyTest extends AbstractDiaryKeeperTest
         return [$tests];
     }
 
-    protected function getSecondStepWithProxyTestCases(bool $isEdit, bool $overwriteDetails, ?string $email, array $proxyKeys=[]): callable
+    protected function getSecondStepWithProxyTestCases(bool $overwriteDetails, ?string $email, array $proxyKeys=[]): callable
     {
-        return function(Context $context)
-        use($isEdit, $overwriteDetails, $email, $proxyKeys)
+        return function(Context $context) use($overwriteDetails, $email, $proxyKeys): array
         {
             if ($overwriteDetails) {
                 $tests = [];
@@ -178,7 +169,7 @@ class DiaryKeeperWithProxyTest extends AbstractDiaryKeeperTest
                 ];
 
                 if ($proxyKeys) {
-                    $proxyChoices = array_map(fn($k) => $context->get($k), $proxyKeys);
+                    $proxyChoices = array_map(fn($k): string => $context->get($k), $proxyKeys);
                     $formData['user_identifier[user][proxies][]'] = $proxyChoices;
                 }
 
@@ -205,7 +196,7 @@ class DiaryKeeperWithProxyTest extends AbstractDiaryKeeperTest
     /**
      * @dataProvider wizardData
      */
-    public function testOnboardingDiaryKeeperWizard(array $wizardData)
+    public function testOnboardingDiaryKeeperWizard(array $wizardData): void
     {
         $this->initialiseClientAndLoadFixtures([OtpUserFixtures::class, UserFixtures::class]);
         $identifier = self::USER_IDENTIFIER; // OTP user where address #, household #, and diary week start date already entered

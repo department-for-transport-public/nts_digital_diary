@@ -2,7 +2,7 @@
 
 namespace App\Controller\TravelDiary;
 
-use App\Annotation\Redirect;
+use App\Attribute\Redirect;
 use App\Entity\DiaryKeeper;
 use App\Form\ConfirmActionType;
 use Doctrine\ORM\EntityManagerInterface;
@@ -10,16 +10,14 @@ use Symfony\Component\HttpFoundation\RedirectResponse;
 use Symfony\Component\HttpFoundation\Request;
 use Symfony\Component\HttpFoundation\Response;
 use Symfony\Component\HttpKernel\Exception\AccessDeniedHttpException;
-use Symfony\Component\Routing\Annotation\Route;
+use Symfony\Component\Routing\Attribute\Route;
 use Symfony\Component\Security\Core\User\UserInterface;
 use Symfony\Component\Workflow\WorkflowInterface;
 
 class MarkAsCompleteController extends AbstractController
 {
-    /**
-     * @Route("/mark-as-complete", name="mark_as_complete")
-     * @Redirect("!is_granted('EDIT_DIARY')", route="traveldiary_dashboard")
-     */
+    #[Redirect("!is_granted('EDIT_DIARY')", route: "traveldiary_dashboard")]
+    #[Route(path: '/mark-as-complete', name: 'mark_as_complete')]
     public function maskAsComplete(EntityManagerInterface $entityManager, Request $request, UserInterface $user, WorkflowInterface $travelDiaryStateStateMachine): Response
     {
         $diaryKeeper = $this->getDiaryKeeper($user);
@@ -49,7 +47,7 @@ class MarkAsCompleteController extends AbstractController
 
         return $this->render('travel_diary/mark_as_complete/mark_as_complete.html.twig', [
             'diaryKeeper' => $diaryKeeper,
-            'form' => $form->createView(),
+            'form' => $form,
             'action' => 'mark-as-complete',
         ]);
     }

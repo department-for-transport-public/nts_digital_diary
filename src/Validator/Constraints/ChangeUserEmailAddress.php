@@ -4,12 +4,16 @@ namespace App\Validator\Constraints;
 
 use Symfony\Component\Validator\Constraint;
 
-/**
- * @Annotation
- * @Target({"PROPERTY"})
- */
+#[\Attribute(\Attribute::TARGET_PROPERTY)]
 class ChangeUserEmailAddress extends Constraint
 {
-    public string $message = 'common.email.already-used';
-    public ?string $userId = null;
+
+    public function __construct(
+        public string  $message = 'common.email.already-used',
+        public ?string $userId = null,
+        ?array         $groups = null,
+        mixed          $payload = null
+    ) {
+        parent::__construct([], $groups, $payload);
+    }
 }

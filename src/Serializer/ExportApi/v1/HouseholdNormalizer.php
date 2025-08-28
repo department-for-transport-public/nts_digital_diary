@@ -5,14 +5,14 @@ namespace App\Serializer\ExportApi\v1;
 use App\Entity\Household;
 use App\Features;
 use Symfony\Component\Serializer\Exception\ExceptionInterface;
-use Symfony\Component\Serializer\Normalizer\ContextAwareNormalizerInterface;
 use Symfony\Component\Serializer\Normalizer\DateTimeNormalizer;
 use Symfony\Component\Serializer\Normalizer\NormalizerAwareInterface;
 use Symfony\Component\Serializer\Normalizer\NormalizerAwareTrait;
+use Symfony\Component\Serializer\Normalizer\NormalizerInterface;
 
-class HouseholdNormalizer implements ContextAwareNormalizerInterface, NormalizerAwareInterface
+class HouseholdNormalizer implements NormalizerInterface, NormalizerAwareInterface
 {
-    const TRAVEL_WEEK_START_DATE_FORMAT_KEY = 'travel-week-start-date-format';
+    public const TRAVEL_WEEK_START_DATE_FORMAT_KEY = 'travel-week-start-date-format';
 
     use NormalizerAwareTrait;
 
@@ -25,6 +25,13 @@ class HouseholdNormalizer implements ContextAwareNormalizerInterface, Normalizer
         return
             ($context['apiVersion'] ?? 0) === 1
             && $data instanceof Household;
+    }
+
+    public function getSupportedTypes(?string $format): array
+    {
+        return [
+            Household::class => false, // false/not-cacheable because it depends upon the $context
+        ];
     }
 
     /**

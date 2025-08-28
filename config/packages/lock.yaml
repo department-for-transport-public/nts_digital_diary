@@ -1,3 +1,15 @@
-framework:
-#    lock: '%env(LOCK_DSN)%'
-    lock: '%env(DATABASE_URL)%'
+#framework:
+#    lock: '%env(DATABASE_URL)%'
+
+services:
+    app.lock_store:
+        class: 'Symfony\Component\Lock\Store\DoctrineDbalStore'
+        lazy: true
+        arguments:
+            $connOrUrl: '@doctrine.dbal.default_connection'
+
+    lock.default.factory:
+        class: 'Symfony\Component\Lock\LockFactory'
+        lazy: true
+        arguments:
+            $store: '@app.lock_store'

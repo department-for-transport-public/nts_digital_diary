@@ -33,10 +33,10 @@ class SplitJourneyTest extends AbstractProceduralWizardTest
         array $expectedReturn,
         bool $expectedReturnOnNextDay
     ): void {
-        $journeyFixture = $this->getFixtureByReference($journeyFixtureRef);
+        $journeyFixture = $this->fixtureReferenceRepository->getReference($journeyFixtureRef, Journey::class);
         $this->assertInstanceOf(Journey::class, $journeyFixture);
 
-        $url = fn(string $suffix) => "#/travel-diary/journey/[0-9A-Z]+{$suffix}#";
+        $url = fn(string $suffix): string => "#/travel-diary/journey/[0-9A-Z]+{$suffix}#";
         $options = [
             PathTestAction::OPTION_EXPECTED_PATH_REGEX => true
         ];
@@ -102,9 +102,9 @@ class SplitJourneyTest extends AbstractProceduralWizardTest
 
         // Test values on day page...
         $returnJourneyDay = $expectedReturnOnNextDay ? 2 : 1;
-        $assertRowExistsAndMatchesTitle = function(string $journeyStartTime, string $expectedTitle, int $dayNumber)
+        $assertRowExistsAndMatchesTitle = function(string $journeyStartTime, string $expectedTitle, int $dayNumber): void
         {
-            $this->callbackTestAction(function (Context $context) use ($journeyStartTime, $expectedTitle, $dayNumber) {
+            $this->callbackTestAction(function (Context $context) use ($journeyStartTime, $expectedTitle, $dayNumber): void {
                 $xpath = '//dt[contains(text(),"' . $journeyStartTime . '")]/following-sibling::dd';
                 $node = $this->getNodeFromDaySummaryPage($context, $dayNumber, $xpath);
                 $this->assertEquals($expectedTitle, $node->getText());
@@ -123,9 +123,9 @@ class SplitJourneyTest extends AbstractProceduralWizardTest
         );
 
         // Test values on individual journey pages...
-        $assertThatJourneyViewMatches = function(array $expectedJourneyData, int $dayNumber)
+        $assertThatJourneyViewMatches = function(array $expectedJourneyData, int $dayNumber): void
         {
-            $this->callbackTestAction(function (Context $context) use ($expectedJourneyData, $dayNumber) {
+            $this->callbackTestAction(function (Context $context) use ($expectedJourneyData, $dayNumber): void {
                 // Get view link for journey
                 $xpath = '//dt[contains(text(),"' . $expectedJourneyData['startTime'] . '")]/following-sibling::dd/following-sibling::dd/a';
                 $node = $this->getNodeFromDaySummaryPage($context, $dayNumber, $xpath);
@@ -160,38 +160,38 @@ class SplitJourneyTest extends AbstractProceduralWizardTest
             [
                 'Day 1 Home to Home' => [
                     'journey:1',
-                    '4:00pm',
+                    '4:00 pm',
                     true,
                     'Banana',
-                    ['startLocation' => 'Home', 'endLocation' => 'Banana', 'startTime' => '4:00pm', 'endTime' => '4:30pm', 'purpose' => 'walk the dog'],
-                    ['startLocation' => 'Banana', 'endLocation' => 'Home', 'startTime' => '4:30pm', 'endTime' => '5:00pm', 'purpose' => Journey::TO_GO_HOME],
+                    ['startLocation' => 'Home', 'endLocation' => 'Banana', 'startTime' => '4:00 pm', 'endTime' => '4:30 pm', 'purpose' => 'walk the dog'],
+                    ['startLocation' => 'Banana', 'endLocation' => 'Home', 'startTime' => '4:30 pm', 'endTime' => '5:00 pm', 'purpose' => Journey::TO_GO_HOME],
                 ],
                 'Day 1 Wobble to Wobble' => [
                     'journey:1',
-                    '5:00pm',
+                    '5:00 pm',
                     false,
                     'Banana',
-                    ['startLocation' => 'Wobble', 'endLocation' => 'Banana', 'startTime' => '5:00pm', 'endTime' => '5:30pm', 'purpose' => 'shopping'],
-                    ['startLocation' => 'Banana', 'endLocation' => 'Wobble', 'startTime' => '5:30pm', 'endTime' => '6:00pm', 'purpose' => 'To test'],
+                    ['startLocation' => 'Wobble', 'endLocation' => 'Banana', 'startTime' => '5:00 pm', 'endTime' => '5:30 pm', 'purpose' => 'shopping'],
+                    ['startLocation' => 'Banana', 'endLocation' => 'Wobble', 'startTime' => '5:30 pm', 'endTime' => '6:00 pm', 'purpose' => 'To test'],
                 ],
                 // Expect to see the newly split return journey on day 2
                 'Day 1 Home to Home with midpoint crossing day boundary' => [
                     'journey:4',
-                    '11:45pm',
+                    '11:45 pm',
                     true,
                     'Banana',
-                    ['startLocation' => 'Home', 'endLocation' => 'Banana', 'startTime' => '11:45pm', 'endTime' => '12:00am', 'purpose' => 'walk the dog'],
-                    ['startLocation' => 'Banana', 'endLocation' => 'Home', 'startTime' => '12:00am', 'endTime' => '12:15am', 'purpose' => Journey::TO_GO_HOME],
+                    ['startLocation' => 'Home', 'endLocation' => 'Banana', 'startTime' => '11:45 pm', 'endTime' => '12:00 am', 'purpose' => 'walk the dog'],
+                    ['startLocation' => 'Banana', 'endLocation' => 'Home', 'startTime' => '12:00 am', 'endTime' => '12:15 am', 'purpose' => Journey::TO_GO_HOME],
                     true,
                 ],
                 // Expect to see the outgoing split journey purpose changed to "Go home"
                 'Day 1 Wobble to Wobble with new midpoint being Home' => [
                     'journey:1',
-                    '5:00pm',
+                    '5:00 pm',
                     false,
                     'Home',
-                    ['startLocation' => 'Wobble', 'endLocation' => 'Home', 'startTime' => '5:00pm', 'endTime' => '5:30pm', 'purpose' => Journey::TO_GO_HOME],
-                    ['startLocation' => 'Home', 'endLocation' => 'Wobble', 'startTime' => '5:30pm', 'endTime' => '6:00pm', 'purpose' => 'shopping'],
+                    ['startLocation' => 'Wobble', 'endLocation' => 'Home', 'startTime' => '5:00 pm', 'endTime' => '5:30 pm', 'purpose' => Journey::TO_GO_HOME],
+                    ['startLocation' => 'Home', 'endLocation' => 'Wobble', 'startTime' => '5:30 pm', 'endTime' => '6:00 pm', 'purpose' => 'shopping'],
                 ],
             ];
     }
@@ -207,7 +207,7 @@ class SplitJourneyTest extends AbstractProceduralWizardTest
         array $expectedOutgoing,
         array $expectedReturn,
         bool $expectedReturnOnNextDay = false,
-    ) {
+    ): void {
         $this->initialiseClientAndLoadFixtures([SplitJourneyTestFixtures::class]);
         $this->loginUser('interviewer@example.com');
 

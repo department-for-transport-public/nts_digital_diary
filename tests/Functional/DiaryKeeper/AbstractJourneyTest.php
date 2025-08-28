@@ -49,12 +49,12 @@ abstract class AbstractJourneyTest extends AbstractWizardTest
         ];
     }
 
+    /**
+     * @param Collection<int, Stage> $sourceStages
+     * @param Collection<int, Stage> $targetStages
+     */
     protected function assertStagesAsExpected(AbstractWizardTest $testCase, Collection $sourceStages, Collection $targetStages, bool $overwriteStageDetails, bool $stageNumbersFlipped): void
     {
-        /**
-         * @var Stage $sourceStage
-         * @var Stage $targetStage
-         */
         $numberOfStages = count($targetStages);
         foreach ($targetStages as $i => $targetStage) {
             $expectStageNumber = $stageNumbersFlipped ? ($numberOfStages - $i) : $i + 1;

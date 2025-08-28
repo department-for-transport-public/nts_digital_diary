@@ -4,7 +4,7 @@
 
 ## End points
 
-### `GET /survey-data` 
+### `GET /survey-data`
 
 This endpoint will return survey data for all households that have been submitted for export at or after startTime
 and before endTime.
@@ -89,7 +89,7 @@ Successful response will be an array of [household](#household) objects
 - `person` int (CAPI number)
 - `name` string
 - `isAdult` boolean
-- `mediaType` string (enum: `digital`, `paper`)
+- `mediaType` string (enum: `digital`, `paper`, `transcribed`)
 - `state` string (enum: `approved`, `discarded`)
 - `hasUsedPracticeDay` boolean
 - `approvalChecklistDaysVerirfiedBy` string (email address)
@@ -130,10 +130,10 @@ Successful response will be an array of [household](#household) objects
 ### Journey
 
 - `id` string (ULID)
-- `startTime` string (formatted time)
+- `startTime` string (24h formatted time. `00:00`-`23:59`)
 - `startLocation` string (null when `startIsHome` is true)
 - `startIsHome` boolean
-- `endTime` string (formatted time)
+- `endTime` string (24h formatted time. `00:00`-`23:59`)
 - `endLocation` string (null when `endIsHome` is true)
 - `endIsHome` boolean
 - `purpose` string

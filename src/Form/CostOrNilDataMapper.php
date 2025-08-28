@@ -6,18 +6,16 @@ use App\Entity\Embeddable\CostOrNil;
 use Brick\Math\BigDecimal;
 use Symfony\Component\Form\Extension\Core\DataMapper\DataMapper;
 use Symfony\Component\Form\FormInterface;
-use Traversable;
 
 class CostOrNilDataMapper extends DataMapper
 {
     /**
      * @param CostOrNil $data
-     * @param iterable | Traversable $forms
+     * @param \Traversable<FormInterface> $forms
      */
-    public function mapDataToForms($data, iterable $forms): void
+    public function mapDataToForms($data, \Traversable $forms): void
     {
         $forms = iterator_to_array($forms);
-        /** @var FormInterface[] $forms */
 
         $cost = $data?->getCost();
         $hasCost = $data?->getHasCost();
@@ -31,10 +29,10 @@ class CostOrNilDataMapper extends DataMapper
     }
 
     /**
-     * @param iterable | Traversable $forms
+     * @param \Traversable<FormInterface> $forms
      * @param CostOrNil $data
      */
-    public function mapFormsToData(iterable $forms, &$data): void
+    public function mapFormsToData(\Traversable $forms, &$data): void
     {
         $forms = iterator_to_array($forms);
         /** @var FormInterface[] $forms */

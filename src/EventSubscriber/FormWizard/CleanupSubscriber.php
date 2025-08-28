@@ -4,8 +4,9 @@
 namespace App\EventSubscriber\FormWizard;
 
 
-use App\Controller\FormWizard\AbstractSessionStateFormWizardController;
-use App\FormWizard\FormWizardManager;
+use Ghost\GovUkCoreBundle\Controller\FormWizard\AbstractSessionStateFormWizardController;
+use App\Controller\AjaxController;
+use Ghost\GovUkCoreBundle\FormWizard\FormWizardManager;
 use Psr\Log\LoggerInterface;
 use Symfony\Bundle\WebProfilerBundle\Controller\ProfilerController;
 use Symfony\Component\EventDispatcher\EventSubscriberInterface;
@@ -31,11 +32,12 @@ class CleanupSubscriber implements EventSubscriberInterface
     {
         $controllerBlacklist = [
             ProfilerController::class,
+            AjaxController::class,
         ];
 
         if (!is_array($event->getController())) return;
         $controller = $event->getController()[0];
-        $controllerClass = get_class($controller);
+        $controllerClass = $controller::class;
         if (
             in_array($controllerClass, $controllerBlacklist)
             || !str_starts_with($controllerClass, "App\\Controller\\")

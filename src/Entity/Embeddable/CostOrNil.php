@@ -6,19 +6,13 @@ use Brick\Math\BigDecimal;
 use Doctrine\ORM\Mapping as ORM;
 use JsonSerializable;
 
-/**
- * @ORM\Embeddable()
- */
+#[ORM\Embeddable]
 class CostOrNil implements JsonSerializable
 {
-    /**
-     * @ORM\Column(type="decimal_brick", precision=10, scale=2, nullable=true)
-     */
+    #[ORM\Column(type: 'decimal_brick', precision: 10, scale: 2, nullable: true)]
     private ?BigDecimal $cost;
 
-    /**
-     * @ORM\Column(type="boolean", nullable=true)
-     */
+    #[ORM\Column(type: 'boolean', nullable: true)]
     private ?bool $hasCost;
 
     public function __construct()

@@ -6,22 +6,19 @@ namespace App\Command\ExportApi;
 
 use App\Security\HmacAuth\ClientKeyService;
 use App\Security\HmacAuth\SecretGenerator;
+use Symfony\Component\Console\Attribute\AsCommand;
 use Symfony\Component\Console\Command\Command;
 use Symfony\Component\Console\Input\InputInterface;
 use Symfony\Component\Console\Output\OutputInterface;
 
+#[AsCommand(name: 'nts:export-api:create-client-key', description: 'Create a client key for use with the export API')]
 class CreateKeyCommand extends Command
 {
-    protected static $defaultName = 'nts:export-api:create-client-key';
-    protected static $defaultDescription = 'Create a client key for use with the export API';
-    private ClientKeyService $clientKeyService;
-    private SecretGenerator $secretGenerator;
-
-    public function __construct(ClientKeyService $clientKeyService, SecretGenerator $secretGenerator)
-    {
+    public function __construct(
+        protected readonly ClientKeyService $clientKeyService,
+        protected readonly SecretGenerator  $secretGenerator,
+    ) {
         parent::__construct();
-        $this->clientKeyService = $clientKeyService;
-        $this->secretGenerator = $secretGenerator;
     }
 
     protected function execute(InputInterface $input, OutputInterface $output): int

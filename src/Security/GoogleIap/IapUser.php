@@ -6,7 +6,7 @@ use App\Security\UserDomainInterface;
 use App\Security\UserDomainTrait;
 use Symfony\Component\Security\Core\User\UserInterface;
 
-class IapUser implements UserInterface, UserDomainInterface
+class IapUser implements UserInterface, UserDomainInterface, \Stringable
 {
     use UserDomainTrait;
 

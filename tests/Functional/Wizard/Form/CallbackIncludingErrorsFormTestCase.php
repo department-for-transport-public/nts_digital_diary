@@ -9,7 +9,7 @@ class CallbackIncludingErrorsFormTestCase extends AbstractFormTestCase
     protected $formDataCallback;
     protected $expectedErrorCallback;
 
-    public function __construct(callable $formDataCallback, callable $expectedErrorCallback, string $submitButtonId = null, $skipPageUrlChangeCheck = false)
+    public function __construct(callable $formDataCallback, callable $expectedErrorCallback, string $submitButtonId = null, bool $skipPageUrlChangeCheck = false)
     {
         $this->formDataCallback = $formDataCallback;
         $this->expectedErrorCallback = $expectedErrorCallback;

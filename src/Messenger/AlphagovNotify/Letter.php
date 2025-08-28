@@ -8,12 +8,9 @@ use App\Entity\Embeddable\Address;
 
 class Letter extends AbstractMessage
 {
-    protected Address $address;
-
-    public function __construct(string $eventName, string $originatingEntityClass, string $originatingEntityId, Address $emailAddress, string $templateId, array $personalisation = [], ?string $reference = null)
+    public function __construct(string $eventName, string $originatingEntityClass, string $originatingEntityId, protected Address $address, string $templateId, array $personalisation = [], ?string $reference = null)
     {
         parent::__construct($eventName, $originatingEntityClass, $originatingEntityId, $templateId, $personalisation, $reference);
-        $this->address = $emailAddress;
     }
 
     public function getSendMethodParameters(): array
@@ -41,7 +38,7 @@ class Letter extends AbstractMessage
         return $this;
     }
 
-    public function getAddressForPersonalisation()
+    public function getAddressForPersonalisation(): array
     {
         $address = array_values(array_filter($this->address->toArray()));
         $notifyAddressFields = ['address_line_1', 'address_line_2', 'address_line_3', 'address_line_4', 'address_line_5', 'address_line_6', 'address_line_7'];

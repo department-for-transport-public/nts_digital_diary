@@ -6,13 +6,30 @@
     'name': app.user.interviewer.name
 } %}
 
+{%- block beforePageHeading -%}
+    {{- parent() -}}
+
+    {%- from '@GhostGovUkFrontend/components/macros.html.twig' import notificationBanner -%}
+
+    {%- if (areasWithOverdueHouseholds ?? []) | length > 0 -%}
+        {{- notificationBanner({
+            title: 'survey-areas.overdue-households.title',
+            content: 'survey-areas.overdue-households.content',
+            options: {style: 'warning', nl2br: true},
+            translation_domain: 'interviewer',
+            translation_parameters: {numberOfHouseholds: overdueHouseholds | length, numberOfAreas: areasWithOverdueHouseholds | length}
+        }) -}}
+    {%- endif -%}
+{%- endblock -%}
+
 {% block content %}
     {%- import "interviewer/dashboard/macros.html.twig" as d -%}
 
     {{- d.areaPeriodList(
         areaPeriods,
         "survey-areas.current.title" | trans,
-        "survey-areas.current.no-areas" | trans
+        "survey-areas.current.no-areas" | trans,
+        areasWithOverdueHouseholds
     ) -}}
 
     <p class="govuk-body">

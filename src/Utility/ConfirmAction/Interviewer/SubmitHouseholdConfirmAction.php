@@ -52,7 +52,7 @@ class SubmitHouseholdConfirmAction extends AbstractConfirmAction
         ];
     }
 
-    public function doConfirmedAction($formData)
+    public function doConfirmedAction($formData): void
     {
         $this->eventDispatcher->dispatch(new SubmitHouseholdEvent($this->subject));
     }

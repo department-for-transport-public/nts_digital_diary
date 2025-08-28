@@ -5,18 +5,16 @@ namespace App\Controller\Interviewer;
 use App\Entity\DiaryKeeper;
 use App\Form\Auth\ChangeProxiesType;
 use Doctrine\ORM\EntityManagerInterface;
-use Sensio\Bundle\FrameworkExtraBundle\Configuration\IsGranted;
 use Symfony\Component\HttpFoundation\RedirectResponse;
 use Symfony\Component\HttpFoundation\Request;
 use Symfony\Component\HttpFoundation\Response;
-use Symfony\Component\Routing\Annotation\Route;
+use Symfony\Component\Routing\Attribute\Route;
+use Symfony\Component\Security\Http\Attribute\IsGranted;
 
 class ChangeProxiesController extends AbstractController
 {
-    /**
-     * @Route("/change-proxies/{diaryKeeper}", name="change_proxies")
-     * @IsGranted("CHANGE_PROXIES", subject="diaryKeeper", statusCode=403)
-     */
+    #[Route(path: '/change-proxies/{diaryKeeper}', name: 'change_proxies')]
+    #[IsGranted('CHANGE_PROXIES', subject: 'diaryKeeper', statusCode: 403)]
     public function changeProxies(Request $request, DiaryKeeper $diaryKeeper, EntityManagerInterface $entityManager): Response
     {
         $user = $diaryKeeper->getUser();
@@ -41,7 +39,7 @@ class ChangeProxiesController extends AbstractController
         }
 
         return $this->render('interviewer/change_proxies.html.twig', [
-            'form' => $form->createView(),
+            'form' => $form,
             'user' => $user,
 
             'areaPeriod' => $household->getAreaPeriod(),

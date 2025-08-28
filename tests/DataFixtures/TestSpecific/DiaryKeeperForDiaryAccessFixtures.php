@@ -15,8 +15,8 @@ class DiaryKeeperForDiaryAccessFixtures extends AbstractFixture implements Depen
 {
     public function load(ObjectManager $manager): void
     {
-        /** @var AreaPeriod $areaPeriod */
-        $areaPeriod = $this->getReference('area-period:2');
+        $areaPeriod = $this->getReference('area-period:2', AreaPeriod::class);
+
         $household = (new Household())
             ->setHouseholdNumber(5)
             ->setAddressNumber(8)
@@ -24,6 +24,7 @@ class DiaryKeeperForDiaryAccessFixtures extends AbstractFixture implements Depen
             ->setDiaryWeekStartDate(new \DateTime('2021-11-22'))
             ->setIsJourneySharingEnabled(true)
             ->setIsOnboardingComplete(true);
+
         $this->addReference('household:access', $household);
         $manager->persist($household);
 

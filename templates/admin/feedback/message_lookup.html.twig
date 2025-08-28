@@ -1,0 +1,25 @@
+{% extends 'admin/base.html.twig' %}
+
+{% set title_translation_prefix = "feedback.message-lookup" %}
+{% set title_translation_domain = 'admin' %}
+
+{% block beforeMainWrapper -%}
+    {%- set breadcrumbItems = [
+        {
+            href: path('admin_feedback_view_dashboard'),
+            text: 'feedback.breadcrumbs.view-messages' | trans({}, 'admin'),
+        },
+        {
+            href: path('admin_feedback_message_lookup', {}),
+            text: 'feedback.breadcrumbs.message-lookup' | trans({}, 'admin'),
+        }
+    ] -%}
+
+    {%- from '@GhostGovUkFrontend/components/macros.html.twig' import breadcrumbs -%}
+    {{- breadcrumbs({items: breadcrumbItems}) -}}
+{%- endblock -%}
+
+{% block content %}
+    <div class="govuk-body prose-scope">{{ 'feedback.message-lookup.help' | trans([], 'admin') }}</div>
+    {{ form(form) }}
+{% endblock %}

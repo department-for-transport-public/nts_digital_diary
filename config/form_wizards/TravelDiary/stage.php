@@ -9,7 +9,7 @@ use App\Form\TravelDiary\StageWizard\TicketType;
 use App\Form\TravelDiary\StageWizard\VehicleType;
 use App\FormWizard\TravelDiary\StageState as State;
 
-return static function (ContainerConfigurator $container) {
+return static function (ContainerConfigurator $container): void {
     $finishMetadata =  [
         'persist' => true,
         'redirect_route' => [

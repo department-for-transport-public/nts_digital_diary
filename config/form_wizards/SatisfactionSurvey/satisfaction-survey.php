@@ -8,7 +8,7 @@ use App\Form\SatisfactionSurvey\PreferredMethodType;
 use App\Form\SatisfactionSurvey\TypeOfDevicesType;
 use App\FormWizard\SatisfactionSurvey\SatisfactionSurveyState as State;
 
-return static function (ContainerConfigurator $container) {
+return static function (ContainerConfigurator $container): void {
     $container->extension('framework', [
         'workflows' => [
             'form_wizard.satisfaction_survey' => [

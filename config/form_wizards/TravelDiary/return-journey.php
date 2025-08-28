@@ -7,7 +7,7 @@ use App\Form\TravelDiary\ReturnJourneyWizard\StageDetailsType;
 use App\Form\TravelDiary\ReturnJourneyWizard\TargetDayType;
 use App\FormWizard\TravelDiary\ReturnJourneyState as State;
 
-return static function (ContainerConfigurator $container) {
+return static function (ContainerConfigurator $container): void {
     $editFinishMetadata =  [
         'persist' => true,
         'redirect_route' => [
@@ -42,8 +42,8 @@ return static function (ContainerConfigurator $container) {
                     td_place(State::STATE_TIMES,TimesType::class, 'return-journey.journey-times', [], $defaultTemplate),
                     td_place(State::STATE_STAGE_DETAILS,StageDetailsType::class, 'return-journey.stage-details', [
                         'form_data_property' => 'contextStage',
-                        'view_data' => [
-                            'title_translatable_message' => 'stageDetailsTitle',
+                        'context' => [
+                            'set_translation_key_from_state' => true,
                         ],
                     ], $defaultTemplate),
 
@@ -86,7 +86,7 @@ return static function (ContainerConfigurator $container) {
                         State::STATE_TIMES,
                         State::STATE_STAGE_DETAILS,
                         'subject.getStageCount() > 0',
-                        ['context' => [
+                        ['transition_context' => [
                             'stageNumber' => 1
                         ]]
                     ),
@@ -95,7 +95,7 @@ return static function (ContainerConfigurator $container) {
                         State::STATE_STAGE_DETAILS,
                         State::STATE_STAGE_DETAILS,
                         'subject.getStageCount() > subject.getStageNumber()',
-                        ['context' => [
+                        ['transition_context' => [
                             'stageNumber' => 'nextStageNumber'
                         ]]
                     ),

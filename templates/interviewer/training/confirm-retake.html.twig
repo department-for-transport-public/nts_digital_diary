@@ -7,7 +7,7 @@
     {%- from "@GhostGovUkFrontend/components/macros.html.twig" import warningText -%}
 
     <p class="govuk-body">{{ 'training.retake.copy' | trans(translation_parameters) }}</p>
-    {{ warningText('training.retake.warning' | trans) }}
+    {{ warningText({text: 'training.retake.warning' | trans}) }}
 
     {{ form(form) }}
 {% endblock %}

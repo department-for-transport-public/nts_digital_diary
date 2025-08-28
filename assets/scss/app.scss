@@ -1,5 +1,8 @@
-@import "common/container";
-@import "common/viewport-size-monitor";
+@import "common";
+
+@import "frontend/onboarding-codes";
+
+@import "govuk-frontend/dist/govuk/helpers/typography";
 
 body {
     background-color: lightgray;
@@ -44,16 +47,25 @@ body {
     }
 }
 
+.journey-view--step-nav {
+    .app-step-nav__panel {
+        padding: govuk-spacing(1) govuk-spacing(3);
+    }
+    .govuk-summary-card__action .govuk-link {
+        white-space: nowrap;
+    }
+}
+
 .nts-interviewer-household-compare {
     main {
         padding-top: govuk-spacing(2);
     }
 
     #day-links li {
-        @include govuk-font(14);
+        @include govuk-font(14); // TODO: 16
 
         span {
-            @include govuk-font(14, bold);
+            @include govuk-font(14, bold); // TODO: 16
         }
     }
 
@@ -67,11 +79,11 @@ body {
     }
 
     .govuk-table__header {
-        @include govuk-font(14, bold);
+        @include govuk-font(14, bold); // TODO: 16
     }
 
     .govuk-table__cell {
-        @include govuk-font(14);
+        @include govuk-font(14); // TODO: 16
     }
     .govuk-tag {
         font-size: 0.9em;
@@ -96,7 +108,23 @@ body {
         }
 
     }
-    .nowrap {
-        white-space: nowrap;
+}
+
+.govuk-table .govuk-table__row
+{
+    &.highlight {
+        background-color: govuk-colour('light-pink');
     }
+
+    &.highlight-light-orange {
+        background-color: govuk-tint(govuk-colour("orange"), 70%)
+    }
+}
+
+.nowrap {
+    white-space: nowrap;
+}
+
+.pre-break-word {
+    white-space: pre-wrap;
 }

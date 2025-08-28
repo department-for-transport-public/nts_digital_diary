@@ -5,6 +5,8 @@ namespace App\Tests\Functional\DiaryKeeper;
 use App\Tests\DataFixtures\StageFixtures;
 use App\Tests\Functional\AbstractWebTestCase;
 use Liip\TestFixturesBundle\Services\DatabaseToolCollection;
+use Symfony\Component\DomCrawler\Crawler;
+use Symfony\Component\HttpFoundation\Request;
 
 class DeleteJourneyTest extends AbstractWebTestCase
 {
@@ -18,7 +20,7 @@ class DeleteJourneyTest extends AbstractWebTestCase
     }
 
     public function dataDeleteJourney(): array {
-        $journeyTimes = ['8:26am', '4:00pm'];
+        $journeyTimes = ['8:26 am', '4:00 pm'];
         return [
             [0, $journeyTimes],
             [1, $journeyTimes],
@@ -32,7 +34,7 @@ class DeleteJourneyTest extends AbstractWebTestCase
     {
         $emailAddress = 'diary-keeper-adult@example.com';
 
-        $this->client->request('GET', '/');
+        $this->client->request(Request::METHOD_GET, '/');
         $this->submitLoginForm($emailAddress, 'password');
         $this->assertEquals('/travel-diary', $this->client->getRequest()->getRequestUri());
 
@@ -47,8 +49,8 @@ class DeleteJourneyTest extends AbstractWebTestCase
         $this->assertUrlEquals('/travel-diary/day-1');
 
         $daySummaryRowXPath = '//h1[contains(text(),"Day 1")]/following-sibling::dl/div';
-        $getRows = fn() => $this->client->getCrawler()->filterXPath($daySummaryRowXPath);
-        $getTimes = fn() => $this->client->getCrawler()->filterXPath($daySummaryRowXPath."/dt")->each(fn($x) => $x->text());
+        $getRows = fn(): Crawler => $this->client->getCrawler()->filterXPath($daySummaryRowXPath);
+        $getTimes = fn(): array => $this->client->getCrawler()->filterXPath($daySummaryRowXPath."/dt")->each(fn($x) => $x->text());
 
         $rows = $getRows();
         $this->assertCount(2, $rows);

@@ -11,12 +11,8 @@ use Symfony\Component\Security\Core\User\UserInterface;
 
 abstract class AbstractController extends BaseAbstractController
 {
-    protected DiaryKeeperRepository $diaryKeeperRepository;
-
-    public function __construct(DiaryKeeperRepository $diaryKeeperRepository)
-    {
-        $this->diaryKeeperRepository = $diaryKeeperRepository;
-    }
+    public function __construct(protected DiaryKeeperRepository $diaryKeeperRepository)
+    {}
 
     protected function getDiaryKeeper(UserInterface $user, bool $includeStages = false): DiaryKeeper
     {

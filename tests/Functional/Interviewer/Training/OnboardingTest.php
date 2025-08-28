@@ -4,27 +4,27 @@ namespace App\Tests\Functional\Interviewer\Training;
 
 use App\Entity\AreaPeriod;
 use App\Entity\DiaryKeeper;
-use App\Entity\Interviewer;
 use App\Entity\InterviewerTrainingRecord;
 use App\Entity\User;
 use App\Security\OneTimePassword\PasscodeGenerator;
 use App\Tests\DataFixtures\UserFixtures;
-use App\Tests\Functional\OnBoarding\AbstractOtpTest;
+use App\Tests\Functional\AbstractWizardTest;
 use App\Utility\TravelDiary\SerialHelper;
 use Doctrine\ORM\EntityManagerInterface;
 use Facebook\WebDriver\WebDriverBy;
-use Symfony\Component\Panther\ServerExtension;
 
-class OnboardingTest extends AbstractOtpTest
+class OnboardingTest extends AbstractWizardTest
 {
-    private const PASSCODE = '12345678';
-    private EntityManagerInterface $entityManager;
+    protected const PASSCODE = '12345678';
+    protected EntityManagerInterface $entityManager;
+    protected PasscodeGenerator $passcodeGenerator;
 
     public function setUp(): void
     {
         $this->initialiseClientAndLoadFixtures([
             UserFixtures::class
         ]);
+
         $this->passcodeGenerator = self::getContainer()->get(PasscodeGenerator::class);
         $this->entityManager = self::getContainer()->get(EntityManagerInterface::class);
     }
@@ -33,7 +33,7 @@ class OnboardingTest extends AbstractOtpTest
     {
         try {
             $this->client->clickLink('Logout');
-        } catch(\Throwable $e) {}
+        } catch(\Throwable) {}
         parent::tearDown();
     }
 
@@ -53,10 +53,10 @@ class OnboardingTest extends AbstractOtpTest
         $this->assertModuleHasState(InterviewerTrainingRecord::STATE_NEW);
 
         // find onboarding link
-        $this->client->clickLink('Module 5: Onboarding practice');
+        $this->client->clickLink('Module 3: Manual diary set-up (exercise)');
 
         // find onboarding link
-        $this->client->clickLink('Access onboarding training');
+        $this->client->clickLink('Access set-up training');
 
         // submit otp login form
         $this->client->submitForm('otp_login[sign_in]', [
@@ -79,7 +79,6 @@ class OnboardingTest extends AbstractOtpTest
             'household[diaryWeekStartDate][year]' => $now->format('Y'),
         ]);
         $this->takeScreenshotIfTestFailed();
-//        ServerExtension::takeScreenshots('info', 'onboarding');
         $this->assertEquals('/onboarding', $this->getUrlPath());
 
         // add a DK
@@ -94,7 +93,7 @@ class OnboardingTest extends AbstractOtpTest
         $this->assertEquals('/onboarding/diary-keeper/add/identity', $this->getUrlPath());
 
         /** @var DiaryKeeper $diaryKeeperAdult */
-        $diaryKeeperAdult = $this->getFixtureByReference('diary-keeper:adult');
+        $diaryKeeperAdult = $this->fixtureReferenceRepository->getReference('diary-keeper:adult', DiaryKeeper::class);
         // User the same user identifier as an existing DiaryKeeper, to ensure uniqueness is relative
         // to the training interviewer
         $this->client->submitForm('user_identifier[button_group][continue]', [
@@ -158,7 +157,7 @@ class OnboardingTest extends AbstractOtpTest
     protected function assertModuleHasState($expectedState)
     {
         $user = $this->entityManager->getRepository(User::class)->loadUserByIdentifier('interviewer@example.com');
-        $trainingRecord = $user->getInterviewer()->getLatestTrainingRecordForModule(InterviewerTrainingRecord::MODULE_ONBOARDING_PRACTICE);
+        $trainingRecord = $user->getInterviewer()->getLatestTrainingRecordForModule(InterviewerTrainingRecord::MODULE_MANUAL_ONBOARDING_PRACTICE);
         $this->entityManager->refresh($trainingRecord);
         $this->assertEquals($expectedState, $trainingRecord->getState());
     }

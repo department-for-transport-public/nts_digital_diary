@@ -18,125 +18,84 @@ use RuntimeException;
 use Symfony\Component\Validator\Constraints as Assert;
 use Symfony\Component\Validator\Context\ExecutionContextInterface;
 
-/**
- * @ORM\Entity(repositoryClass=JourneyRepository::class)
- * @Assert\Callback({JourneySharingValidator::class, "validateJourney"}, groups={"wizard.share-journey.purpose"})
- */
+#[Assert\Callback([JourneySharingValidator::class, 'validateJourney'], groups: ['wizard.share-journey.purpose'])]
+#[ORM\Entity(repositoryClass: JourneyRepository::class)]
 class Journey implements PropertyChangeLoggableInterface, BasicMetadataInterface
 {
     use IdTrait;
     use BasicMetadataTrait;
 
-    const TO_GO_HOME = 'Go home';
+    public const TO_GO_HOME = 'Go home';
 
-    const MERGE_PROPERTIES = [
+    public const MERGE_PROPERTIES = [
                                 'diaryDay',
         /* purpose form */      'purpose',
         /* times form */        'startTime', 'endTime',
         /* locations form */    'startLocation', 'isStartHome', 'endLocation', 'isEndHome',
     ];
 
-    const SHARE_JOURNEY_CLONE_PROPERTIES = [
+    public const SHARE_JOURNEY_CLONE_PROPERTIES = [
         /* times form */        'startTime', 'endTime',
         /* locations form */    'startLocation', 'isStartHome', 'endLocation', 'isEndHome',
     ];
 
-    /**
-     * @ORM\ManyToOne(targetEntity=DiaryDay::class, inversedBy="journeys")
-     * @ORM\JoinColumn(nullable=false)
-     * @Assert\NotNull(message="wizard.return-journey.diary-day.not-null", groups={"wizard.return-journey.target-day"})
-     * @Assert\NotNull(message="wizard.repeat-journey.target-day.not-null", groups={"wizard.repeat-journey.target-day"})
-     */
-    private ?DiaryDay $diaryDay;
+    #[Assert\NotNull(message: 'wizard.return-journey.diary-day.not-null', groups: ['wizard.return-journey.target-day'])]
+    #[Assert\NotNull(message: 'wizard.repeat-journey.target-day.not-null', groups: ['wizard.repeat-journey.target-day'])]
+    #[ORM\ManyToOne(targetEntity: DiaryDay::class, inversedBy: 'journeys')]
+    #[ORM\JoinColumn(nullable: false)]
+    private ?DiaryDay $diaryDay = null;
+
+    #[Assert\NotNull(message: 'wizard.journey.purpose.not-null', groups: ['wizard.journey.purpose', 'wizard.split-journey.purpose'])]
+    #[Assert\NotNull(message: 'wizard.share-journey.purpose.not-null', groups: ['wizard.share-journey.purpose.entry'])]
+    #[Assert\Length(max: 255, maxMessage: 'common.string.max-length', groups: ['wizard.journey.purpose', 'wizard.share-journey.purpose.entry', 'wizard.split-journey.purpose'])]
+    #[ORM\Column(type: 'string', length: 255, nullable: true)]
+    private ?string $purpose = null;
+
+    #[Assert\NotNull(message: 'wizard.journey.start-time.not-null', groups: ['wizard.journey.times', 'wizard.repeat-journey.journey-times', 'wizard.return-journey.journey-times'])]
+    #[ORM\Column(type: 'time')]
+    private ?DateTime $startTime = null;
+
+    #[Assert\NotNull(message: 'wizard.journey.end-time.not-null', groups: ['wizard.journey.times', 'wizard.repeat-journey.journey-times', 'wizard.return-journey.journey-times'])]
+    #[ORM\Column(type: 'time', nullable: true)]
+    private ?DateTime $endTime = null;
 
     /**
-     * @ORM\Column(type="string", length=255, nullable=true)
-     * @Assert\NotNull(groups={"wizard.journey.purpose", "wizard.split-journey.purpose"}, message="wizard.journey.purpose.not-null")
-     * @Assert\NotNull(groups={"wizard.share-journey.purpose.entry"}, message="wizard.share-journey.purpose.not-null")
-     * @Assert\Length(
-     *     groups={"wizard.journey.purpose", "wizard.share-journey.purpose.entry", "wizard.split-journey.purpose"},
-     *     maxMessage="common.string.max-length", max=255
-     * )
+     * @var Collection<Stage>
      */
-    private ?string $purpose;
-
-    /**
-     * @ORM\Column(type="time")
-     * @Assert\NotNull(
-     *     groups={"wizard.journey.times", "wizard.repeat-journey.journey-times", "wizard.return-journey.journey-times"},
-     *     message="wizard.journey.start-time.not-null"
-     * )
-     */
-    private ?DateTime $startTime;
-
-    /**
-     * @ORM\Column(type="time", nullable=true)
-     * @Assert\NotNull(
-     *     groups={"wizard.journey.times", "wizard.repeat-journey.journey-times", "wizard.return-journey.journey-times"},
-     *     message="wizard.journey.end-time.not-null"
-     * )
-     */
-    private ?DateTime $endTime;
-
-    /**
-     * @var Collection|Stage[]
-     * @ORM\OneToMany(targetEntity=Stage::class, mappedBy="journey", orphanRemoval=true, cascade={"persist"})
-     * @ORM\OrderBy({"number"="ASC"})
-     */
+    #[ORM\OneToMany(mappedBy: 'journey', targetEntity: Stage::class, cascade: ['persist'], orphanRemoval: true)]
+    #[ORM\OrderBy(['number' => 'ASC'])]
     private Collection $stages;
 
-    /**
-     * @ORM\Column(type="string", length=255, nullable=true)
-     * @Assert\NotNull(groups={"wizard.journey.locations.start-other"}, message="wizard.journey.start-other.not-null")
-     * @Assert\Length(groups={"wizard.journey.locations.start-general"}, maxMessage="common.string.max-length", max=255)
-     */
-    private ?string $startLocation;
+    #[Assert\NotNull(message: 'wizard.journey.start-other.not-null', groups: ['wizard.journey.locations.start-other'])]
+    #[Assert\Length(max: 255, maxMessage: 'common.string.max-length', groups: ['wizard.journey.locations.start-general'])]
+    #[ORM\Column(type: 'string', length: 255, nullable: true)]
+    private ?string $startLocation = null;
+
+    #[Assert\NotNull(message: 'wizard.journey.end-other.not-null', groups: ['wizard.journey.locations.end-other'])]
+    #[Assert\NotNull(message: 'wizard.split-journey.midpoint-other.not-null', groups: ['wizard.split-journey.midpoint-other'])]
+    #[Assert\Length(max: 255, maxMessage: 'common.string.max-length', groups: ['wizard.journey.locations.end-general', 'wizard.split-journey.midpoint-other'])]
+    #[ORM\Column(type: 'string', length: 255, nullable: true)]
+    private ?string $endLocation = null;
+
+    #[ORM\Column(type: 'boolean')]
+    private ?bool $isStartHome = null;
+
+    #[ORM\Column(type: 'boolean', nullable: true)]
+    private ?bool $isEndHome = null;
+
+    #[ORM\ManyToOne(targetEntity: Journey::class, inversedBy: 'sharedTo')]
+    #[ORM\JoinColumn(onDelete: 'SET NULL')]
+    private ?Journey $sharedFrom = null;
 
     /**
-     * @ORM\Column(type="string", length=255, nullable=true)
-     * @Assert\NotNull(groups={"wizard.journey.locations.end-other"}, message="wizard.journey.end-other.not-null")
-     * @Assert\NotNull(groups={"wizard.split-journey.midpoint-other"}, message="wizard.split-journey.midpoint-other.not-null")
-     * @Assert\Length(groups={"wizard.journey.locations.end-general", "wizard.split-journey.midpoint-other"}, maxMessage="common.string.max-length", max=255)
-     */
-    private ?string $endLocation;
-
-    /**
-     * @ORM\Column(type="boolean")
-     */
-    private ?bool $isStartHome;
-
-    /**
-     * @ORM\Column(type="boolean", nullable=true)
-     */
-    private ?bool $isEndHome;
-
-    /**
-     * @ORM\Column(type="boolean")
-     */
-    private bool $isPartial = true;
-
-    /**
-     * @ORM\ManyToOne(targetEntity=Journey::class, inversedBy="sharedTo")
-     * @ORM\JoinColumn(onDelete="SET NULL")
-     */
-    private ?Journey $sharedFrom;
-
-    /**
-     * @ORM\OneToMany(targetEntity=Journey::class, mappedBy="sharedFrom", cascade={"persist"})
-     * @Assert\Count(min=1, minMessage="wizard.share-journey.who-with.not-blank", groups="wizard.share-journey.share-to")
      * @var Collection<Journey>
      */
+    #[Assert\Count(min: 1, minMessage: 'wizard.share-journey.who-with.not-blank', groups: ['wizard.share-journey.share-to'])]
+    #[ORM\OneToMany(mappedBy: 'sharedFrom', targetEntity: Journey::class, cascade: ['persist'])]
     private Collection $sharedTo;
 
-    /**
-     * @Assert\Callback(groups={"wizard.share-journey.share-to"})
-     *
-     * NOTE (2023-05-03): while re-writing journey sharing tests, realised that this doesn't validate
-     * traveller type counts (adult/child), just a total count. Discussion between Mark/Tom decided
-     * this was for the best - users might not be aware of the distinction between adult and child
-     * when adding stages, and we want the form to be permissive.
-     */
-    public function validateSharedToCount(ExecutionContextInterface $context) {
+    #[Assert\Callback(groups: ['wizard.share-journey.share-to'])] // NOTE (2023-05-03): while re-writing journey sharing tests, realised that this doesn't validate
+    public function validateSharedToCount(ExecutionContextInterface $context): void {
         if ($this->sharedTo->count() >= $this->getMinimumStageTravellerCount()) {
             $context->buildViolation('wizard.share-journey.share-to.count', [
                 'minStageTravellerCount' => $this->getMinimumStageTravellerCount(),
@@ -199,9 +158,9 @@ class Journey implements PropertyChangeLoggableInterface, BasicMetadataInterface
     }
 
     /**
-     * @return Collection|Stage[]
+     * @return Collection<Stage>
      */
-    public function getStages()
+    public function getStages(): Collection
     {
         return $this->stages;
     }
@@ -283,17 +242,6 @@ class Journey implements PropertyChangeLoggableInterface, BasicMetadataInterface
         return $this;
     }
 
-    public function getIsPartial(): ?bool
-    {
-        return $this->isPartial;
-    }
-
-    public function setIsPartial(bool $isPartial): self
-    {
-        $this->isPartial = $isPartial;
-        return $this;
-    }
-
     public function getSharedFrom(): ?self
     {
         return $this->sharedFrom ?? null;
@@ -365,7 +313,7 @@ class Journey implements PropertyChangeLoggableInterface, BasicMetadataInterface
 
     public function getMinimumStageTravellerCount(): ?int
     {
-        $peopleCounts = $this->stages->map(fn(Stage $s) => $s->getTravellingPeopleCount())->toArray();
+        $peopleCounts = $this->stages->map(fn(Stage $s): int => $s->getTravellingPeopleCount())->toArray();
         return empty($peopleCounts) ? null : min($peopleCounts);
     }
 
@@ -375,7 +323,7 @@ class Journey implements PropertyChangeLoggableInterface, BasicMetadataInterface
             return null;
         }
 
-        $names = $this->sharedTo->map(fn(Journey $j) => $j->getDiaryDay()->getDiaryKeeper()->getName());
+        $names = $this->sharedTo->map(fn(Journey $j): ?string => $j->getDiaryDay()->getDiaryKeeper()->getName());
         return join(', ', $names->toArray());
     }
 
@@ -405,6 +353,6 @@ class Journey implements PropertyChangeLoggableInterface, BasicMetadataInterface
      */
     public function getSharedToJourneysBeingAdded(): Collection
     {
-        return $this->getSharedTo()->filter(fn(Journey $j) => $j->getId() === null);
+        return $this->getSharedTo()->filter(fn(Journey $j): bool => $j->getId() === null);
     }
 }

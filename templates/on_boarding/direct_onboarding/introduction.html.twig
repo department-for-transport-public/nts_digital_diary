@@ -1,0 +1,33 @@
+{% extends 'on_boarding/base_form_with_help.html.twig' %}
+{% trans_default_domain 'on-boarding' %}
+
+{% block content %}
+    <p class="govuk-body">{{ "#{translation_prefix}.help" | trans | nl2br }}</p>
+    
+    <div class="govuk-summary-list">
+        {# @var subject \App\Entity\Household #}
+        {% from 'on_boarding/macros.html.twig' import showHouseholdDetails %}
+        {{ showHouseholdDetails({showActions: false}) }}
+    </div>
+
+    {% include 'on_boarding/submit/include/diary_keepers_summary.html.twig' with {fullSummary: false} %}
+    {% include 'on_boarding/submit/include/vehicles_summary.html.twig' %}
+
+    {{ form(form) }}
+{% endblock %}
+
+{%- macro listRow(key, value, name, path) -%}
+    {%- from '@GhostGovUkFrontend/components/macros.html.twig' import summaryListRow -%}
+    {{- summaryListRow({
+        key: "diary-keeper.view.summary.#{key}" | trans,
+        value: value,
+        actions: path
+            ? [
+                {
+                    href: path,
+                    text: 'actions.change' | trans({}, 'messages'),
+                    visuallyHiddenText: "diary-keeper.view.change-action-suffix.#{key}" | trans({name: name}, 'on-boarding')
+                }
+            ] : []
+    }) -}}
+{%- endmacro -%}

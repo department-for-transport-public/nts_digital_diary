@@ -4,11 +4,11 @@ namespace App\Serializer\ExportApi;
 
 use Symfony\Component\HttpFoundation\RequestStack;
 use Symfony\Component\HttpKernel\Exception\HttpExceptionInterface;
-use Symfony\Component\Serializer\Normalizer\ContextAwareNormalizerInterface;
+use Symfony\Component\Serializer\Normalizer\NormalizerInterface;
 
-class ErrorNormalizer implements ContextAwareNormalizerInterface
+class ErrorNormalizer implements NormalizerInterface
 {
-    private $defaultContext = [
+    private array $defaultContext = [
         'type' => 'https://tools.ietf.org/html/rfc2616#section-10',
         'title' => 'An error occurred',
     ];
@@ -21,11 +21,18 @@ class ErrorNormalizer implements ContextAwareNormalizerInterface
 
         return
             $format === 'json'
-            && isset($context['excpetion'])
+            && isset($context['exception'])
             && $context['exception'] instanceof HttpExceptionInterface
             && str_starts_with($request->getPathInfo(), '/api/v1/')
             && !($context['debug'] ?? true)
             ;
+    }
+
+    public function getSupportedTypes(?string $format): array
+    {
+        return [
+            '*' => false, // false/not-cacheable because it depends upon the $context
+        ];
     }
 
     public function normalize($object, string $format = null, array $context = []): array

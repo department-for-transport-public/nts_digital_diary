@@ -5,7 +5,7 @@
 
 {% block content %}
     {% from 'on_boarding/macros.html.twig' import showHouseholdDetails %}
-    {{ showHouseholdDetails({showActions: false}) }}
+    {{ showHouseholdDetails({showActions: false, showSharingState: true}) }}
     {% include 'on_boarding/submit/include/diary_keepers_summary.html.twig' %}
     {% include 'on_boarding/submit/include/vehicles_summary.html.twig' %}
 
@@ -16,13 +16,17 @@
             {% for dk in app.user.household.diaryKeepers | filter(dk => dk.hasIdentifierForLogin) %}
                 {# @var dk \App\Entity\DiaryKeeper #}
                 {% set link = url_signer.sign(url('auth_account_setup', {userId: dk.user.id | lower}), constant('App\\Utility\\AlphagovNotify\\Reference::ACCOUNT_CREATION_LINK_EXPIRY')) %}
-                {{ summaryListRow(
-                    dk.user.userIdentifier,
-                    link,
-                    {(link): 'link'}
-                ) }}
+                {{ summaryListRow({
+                    key: dk.user.userIdentifier,
+                    value: link,
+                    actions: [
+                        {
+                            href: link,
+                            text: 'link'
+                        }
+                    ],
+                }) }}
             {% endfor %}
         </div>
     {% endif %}
 {% endblock %}
-

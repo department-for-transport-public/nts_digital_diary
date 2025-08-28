@@ -15,7 +15,7 @@ class Utils
     public static function formatFloat(?int $property, $places = 2): ?string
     {
         if (is_null($property)) return null;
-        return number_format($property / pow(10, $places), $places, '.', '');
+        return number_format($property / 10 ** $places, $places, '.', '');
     }
 
     public static function getNullOrProperty($object, string $property)

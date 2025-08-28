@@ -2,103 +2,120 @@
 
 namespace App\Entity;
 
+use ApiPlatform\Metadata\ApiResource;
+use ApiPlatform\Metadata\GetCollection;
+use App\ApiPlatform\Provider\HouseholdProvider;
 use App\Repository\HouseholdRepository;
 use App\Utility\TravelDiary\SerialHelper;
 use DateTime;
 use Doctrine\Common\Collections\ArrayCollection;
 use Doctrine\Common\Collections\Collection;
 use Doctrine\ORM\Mapping as ORM;
+use Doctrine\ORM\Mapping\UniqueConstraint;
+use Ghost\GovUkCoreBundle\FormWizard\MultipleEntityInterface;
 use Symfony\Bridge\Doctrine\Validator\Constraints\UniqueEntity;
 use Symfony\Component\Validator\Constraints as Assert;
 use Symfony\Component\Validator\Context\ExecutionContextInterface;
-use Doctrine\ORM\Mapping\UniqueConstraint;
-use function PHPUnit\Framework\isEmpty;
 
-/**
- * @ORM\Entity(repositoryClass="App\Repository\HouseholdRepository", repositoryClass=HouseholdRepository::class)
- * @ORM\Table(uniqueConstraints={@UniqueConstraint(columns={"address_number", "household_number", "area_period_id"})})
- * @UniqueEntity(groups={"wizard.on-boarding.household"}, errorPath="", message="wizard.on-boarding.household.unique-in-area-period", fields={"addressNumber", "householdNumber", "areaPeriod"})
- */
-class Household
+#[ApiResource(
+    operations: [
+        new GetCollection(provider: HouseholdProvider::class),
+    ],
+)]
+#[UniqueEntity(fields: ['addressNumber', 'householdNumber', 'areaPeriod'], message: 'wizard.on-boarding.household.unique-in-area-period', errorPath: '', groups: ['wizard.on-boarding.household', 'cli.add-household'])]
+#[ORM\Entity(repositoryClass: HouseholdRepository::class)]
+#[ORM\Table]
+#[UniqueConstraint(columns: ['address_number', 'household_number', 'area_period_id'])]
+class Household implements MultipleEntityInterface
 {
-    const STATE_APPROVED = 'approved';
-    const STATE_COMPLETED = 'completed';
-    const STATE_IN_PROGRESS = 'in-progress';
-    const STATE_NEW = 'new';
-    const STATE_SUBMITTED = 'submitted';
+    public const STATE_APPROVED = 'approved';
+    public const STATE_COMPLETED = 'completed';
+    public const STATE_IN_PROGRESS = 'in_progress';
+    public const STATE_NEW = 'new';
+    public const STATE_SUBMITTED = 'submitted';
 
     use IdTrait;
 
-    /**
-     * @ORM\Column(type="smallint")
-     * @Assert\Range(min=1, max=99, groups={"wizard.on-boarding.household"}, notInRangeMessage="wizard.on-boarding.household.address-number.not-in-range")
-     * @Assert\NotBlank(groups={"wizard.on-boarding.household"}, message="wizard.on-boarding.household.address-number.not-blank")
-     */
-    private ?int $addressNumber;
+    #[Assert\Range(notInRangeMessage: 'wizard.on-boarding.household.address-number.not-in-range', min: 1, max: 22, groups: ['wizard.on-boarding.household', 'cli.add-household', 'direct-onboarding.ingress'])]
+    #[Assert\NotBlank(message: 'wizard.on-boarding.household.address-number.not-blank', groups: ['wizard.on-boarding.household', 'cli.add-household', 'direct-onboarding.ingress'])]
+    #[ORM\Column(type: 'smallint')]
+    private ?int $addressNumber = null;
 
-    /**
-     * @ORM\Column(type="smallint")
-     * @Assert\Range(min=1, max=99, groups={"wizard.on-boarding.household"}, notInRangeMessage="wizard.on-boarding.household.household-number.not-in-range")
-     * @Assert\NotBlank(groups={"wizard.on-boarding.household"}, message="wizard.on-boarding.household.household-number.not-blank")
-     */
-    private ?int $householdNumber;
+    #[Assert\Range(notInRangeMessage: 'wizard.on-boarding.household.household-number.not-in-range', min: 1, max: 99, groups: ['wizard.on-boarding.household', 'cli.add-household', 'direct-onboarding.ingress'])]
+    #[Assert\NotBlank(message: 'wizard.on-boarding.household.household-number.not-blank', groups: ['wizard.on-boarding.household', 'cli.add-household', 'direct-onboarding.ingress'])]
+    #[ORM\Column(type: 'smallint')]
+    private ?int $householdNumber = null;
 
-    /**
-     * @ORM\Column(type="date", nullable=true)
-     * @Assert\NotBlank(groups={"wizard.on-boarding.household"}, message="wizard.on-boarding.household.start-date.not-blank")
-     * @Assert\Expression(groups={"wizard.on-boarding.household"},"!value or value >= this.getAreaPeriod().getFirstValidDiaryStartDate()", message="wizard.on-boarding.household.start-date.too-early")
-     * @Assert\Expression(groups={"wizard.on-boarding.household"},"!value or value <= this.getAreaPeriod().getLastValidDiaryStartDate()", message="wizard.on-boarding.household.start-date.too-late")
-     */
-    private ?DateTime $diaryWeekStartDate;
+    #[Assert\NotBlank(message: 'wizard.on-boarding.household.start-date.not-blank', groups: ['wizard.on-boarding.household', 'admin.maintenance.edit-household', 'cli.add-household', 'direct-onboarding.ingress'])]
+    #[Assert\Expression('!value or !this.getAreaPeriod() or value >= this.getAreaPeriod().getFirstValidDiaryStartDate()', message: 'wizard.on-boarding.household.start-date.too-early', groups: ['wizard.on-boarding.household', 'admin.maintenance.edit-household', 'cli.add-household', 'direct-onboarding.ingress'])]
+    #[Assert\Expression('!value or !this.getAreaPeriod() or value <= this.getAreaPeriod().getLastValidDiaryStartDate()', message: 'wizard.on-boarding.household.start-date.too-late', groups: ['wizard.on-boarding.household', 'admin.maintenance.edit-household', 'cli.add-household', 'direct-onboarding.ingress'])]
+    #[ORM\Column(type: 'date', nullable: true)]
+    private ?DateTime $diaryWeekStartDate = null;
 
     /**
      * @var Collection<int, DiaryKeeper>
-     * @ORM\OneToMany(targetEntity=DiaryKeeper::class, mappedBy="household", orphanRemoval=true)
-     * @ORM\OrderBy({"number": "ASC"})
      */
+    #[Assert\Count(min: 1, groups: ['direct-onboarding.ingress'])]
+    #[Assert\Valid(groups: ['direct-onboarding.ingress', 'direct-onboarding.logins', 'wizard.on-boarding.diary-keeper.media-type'])]
+    #[Assert\Expression('this.getDiaryKeepersWithIdentifierForLogin().count() > 0', message: 'wizard.direct-onboarding.diary-keeper-logins.at-least-one', groups: ['direct-onboarding.logins'])]
+    #[ORM\OneToMany(mappedBy: 'household', targetEntity: DiaryKeeper::class, orphanRemoval: true)]
+    #[ORM\OrderBy(['number' => 'ASC'])]
     private Collection $diaryKeepers;
 
-    /**
-     * @ORM\OneToMany(targetEntity=Vehicle::class, mappedBy="household", orphanRemoval=true)
-     */
+    #[Assert\Valid(groups: ['direct-onboarding.ingress'])]
+    #[ORM\OneToMany(mappedBy: 'household', targetEntity: Vehicle::class, orphanRemoval: true)]
     private Collection $vehicles;
 
-    /**
-     * @ORM\ManyToOne(targetEntity=AreaPeriod::class, inversedBy="households")
-     * @ORM\JoinColumn(nullable=false)
-     */
-    private ?AreaPeriod $areaPeriod;
+    #[Assert\NotNull(groups: ['direct-onboarding.ingress'])]
+    #[ORM\ManyToOne(targetEntity: AreaPeriod::class, inversedBy: 'households')]
+    #[ORM\JoinColumn(nullable: false)]
+    private ?AreaPeriod $areaPeriod = null;
 
-    /**
-     * @ORM\Column(type="boolean")
-     */
+    #[ORM\Column(type: 'boolean')]
     private bool $isOnboardingComplete = false;
 
-    /**
-     * @ORM\Column(type="boolean")
-     */
+    #[ORM\Column(type: 'boolean')]
     private bool $isJourneySharingEnabled = false;
 
-    /**
-     * @ORM\Column(type="string", length=255, nullable=true)
-     */
-    private ?string $submittedBy;
+    #[ORM\Column(type: 'string', length: 255, nullable: true)]
+    private ?string $submittedBy = null;
+
+    #[ORM\Column(type: 'datetime', nullable: true)]
+    private ?DateTime $submittedAt = null;
+
+    #[Assert\Length(max: 1, maxMessage: 'wizard.on-boarding.household.check-letter.too-long', groups: ['wizard.on-boarding.check-letter-field', 'direct-onboarding.ingress'])]
+    #[Assert\NotNull(message: 'wizard.on-boarding.household.check-letter.not-null', groups: ['wizard.on-boarding.check-letter-field', 'direct-onboarding.ingress'])]
+    #[ORM\Column(type: 'string', length: 1, nullable: true)]
+    private ?string $checkLetter = null;
 
     /**
-     * @ORM\Column(type="datetime", nullable=true)
+     * The usual check for username uniqueness doesn't work during direct onboarding, as we are updating more than one
+     * DK at a time, and the username might have been moved from one to another within the household. Combine this
+     * with a special unique constraint excluding the household (see unique constraint on User) to ensure uniqueness
+     * without blocking the special case of moving username from one user to another within the household.
      */
-    private ?DateTime $submittedAt;
+    #[Assert\Callback(groups: ['direct-onboarding.logins'])]
+    public function checkDirectOnboardingUsernameUniqueness(ExecutionContextInterface $context): void
+    {
+        $usernames = [];
+        foreach ($this->diaryKeepers as $idx=>$diaryKeeper) {
+            $username = $diaryKeeper->getUser()->getUserIdentifier();
+            if (!isset($usernames[$username])) $usernames[$username] = [];
+            $usernames[$username][] = $idx;
+        }
+        $usernames = array_filter($usernames, fn(array $dkIdxs, $u): bool => count($dkIdxs) > 1, ARRAY_FILTER_USE_BOTH);
 
-    /**
-     * @ORM\Column(type="string", length=1, nullable=true)
-     * @Assert\Length(groups={"wizard.on-boarding.check-letter-field"}, maxMessage="wizard.on-boarding.household.check-letter.too-long", max=1)
-     * @Assert\NotNull(groups={"wizard.on-boarding.check-letter-field"}, message="wizard.on-boarding.household.check-letter.not-null")
-     */
-    private ?string $checkLetter;
+        foreach ($usernames as $idxs) {
+            foreach ($idxs as $idx) {
+                $context->buildViolation("wizard.direct-onboarding.diary-keeper-logins.email.already-used")
+                    ->atPath("diaryKeepers[{$idx}].user.username")
+                    ->addViolation();
+            }
+        }
 
-    /**
-     * @Assert\Callback(groups={"wizard.on-boarding.check-letter"})
-     */
+    }
+
+    #[Assert\Callback(groups: ['wizard.on-boarding.check-letter', 'direct-onboarding.ingress'])]
     public function checkCheckLetter(ExecutionContextInterface $context): void
     {
         if (!$this->areaPeriod instanceof AreaPeriod ||
@@ -106,7 +123,7 @@ class Household
             $this->addressNumber === null ||
             $this->householdNumber === null ||
             $this->getCheckLetter() === null ||
-            mb_strlen($this->checkLetter) > 1
+            mb_strlen((string) $this->checkLetter) > 1
         ) {
             return;
         }
@@ -161,7 +178,14 @@ class Household
     {
         return $this
             ->diaryKeepers
-            ->filter(fn(DiaryKeeper $dk) => $dk->getIsAdult());
+            ->filter(fn(DiaryKeeper $dk): ?bool => $dk->getIsAdult());
+    }
+
+    public function getDiaryKeepersWithIdentifierForLogin(): Collection
+    {
+        return $this
+            ->diaryKeepers
+            ->filter(fn(DiaryKeeper $dk): bool => $dk->hasIdentifierForLogin());
     }
 
     public function addDiaryKeeper(DiaryKeeper $diaryKeeper): self
@@ -291,8 +315,8 @@ class Household
 
     public function getState(): string
     {
-        if ($this->submittedAt !== null) {
-            return Household::STATE_SUBMITTED;
+        if ($this->getIsSubmitted()) {
+            return self::STATE_SUBMITTED;
         }
 
         [
@@ -304,14 +328,14 @@ class Household
         ] = $this->getDiaryKeeperStateCounts();
         $numDiaryKeepers = count($this->diaryKeepers);
 
-        if ($numDiaryKeepers === $approvedCount + $discardedCount) {
-            return Household::STATE_APPROVED;
-        } else if ($numDiaryKeepers === $newCount) {
-            return Household::STATE_NEW;
+        if ($numDiaryKeepers === $newCount) {
+            return self::STATE_NEW;
+        } else if ($numDiaryKeepers === $approvedCount + $discardedCount) {
+            return self::STATE_APPROVED;
         } else if ($numDiaryKeepers === ($completedCount + $approvedCount + $discardedCount)) {
-            return Household::STATE_COMPLETED;
+            return self::STATE_COMPLETED;
         } else {
-            return Household::STATE_IN_PROGRESS;
+            return self::STATE_IN_PROGRESS;
         }
     }
 
@@ -361,7 +385,7 @@ class Household
 
     public function getIsSubmitted(): bool
     {
-        return !is_null($this->submittedAt);
+        return !is_null($this->submittedAt ?? null);
     }
 
     public function getCheckLetter(): ?string
@@ -373,5 +397,21 @@ class Household
     {
         $this->checkLetter = null !== $checkLetter ? strtoupper($checkLetter): null;
         return $this;
+    }
+
+    public function getEntitiesToPersist(): array
+    {
+        return array_merge([$this], $this->diaryKeepers->toArray(), $this->vehicles->toArray());
+    }
+
+    public function isOverdue(): bool
+    {
+        $overdueDate = (new \DateTime())
+            ->modify('-8 days'); // surveys last a week, we should give them at least a day extra
+
+        return
+            $this->getIsOnboardingComplete() &&
+            !$this->getIsSubmitted() &&
+            $this->getDiaryWeekStartDate() < $overdueDate;
     }
 }

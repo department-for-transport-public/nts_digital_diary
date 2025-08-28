@@ -8,7 +8,7 @@ use App\Utility\Metrics\MetricsHelper;
 abstract class AbstractEvent implements EventInterface
 {
     protected array $metadata = [];
-    protected ?string $diarySerial;
+    protected ?string $diarySerial = null;
 
     public function getMetadata(): ?array
     {

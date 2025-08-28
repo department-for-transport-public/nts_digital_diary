@@ -13,7 +13,7 @@
 {% set heading_class = "govuk-heading-xl" %}
 
 {% block content %}
-    {%- from "@GhostGovUkFrontend/components/macros.html.twig" import actionlessSummaryListRow, summaryListRow -%}
+    {%- from "@GhostGovUkFrontend/components/macros.html.twig" import summaryListRow -%}
     <div class="govuk-!-margin-bottom-5">
         {% include 'travel_diary/dashboard/includes/diary_keeper_details.html.twig' with {showName: false} %}
     </div>
@@ -25,27 +25,42 @@
         {% set userStatePs = diaryKeeper.user.identifierForLogin ? [(diaryKeeper.user.password ? 'diary-keeper.login-confirmed' : 'diary-keeper.login-not-confirmed') | trans] : [] %}
         {% set userStatePs = userStatePs | merge(diaryKeeper.user.hasPendingUsernameChange ? ['diary-keeper.pending-change' | trans] : []) %}
         {% set userStatePs = userStatePs is not empty ? '&emsp;<em>(' ~ (userStatePs | join(', ')) ~ ')</em>' : '' %}
-        {{- summaryListRow(
-            "diary-keeper.has-login" | trans,
-            (diaryKeeper.user.identifierForLogin
-                ? ('boolean.true' | trans({}, 'messages'))
-                : 'boolean.false' | trans({}, 'messages'))  ~ userStatePs,
-            is_granted('EMAIL_CHANGE', diaryKeeper.user)
-                ? {(path('interviewer_change_email', {diaryKeeper: diaryKeeper.id})): {label: 'actions.change-email', labelDomain: 'auth'}}
-                : {},
-            {html: true}
-        ) -}}
-        {{- summaryListRow(
-            "diary-keeper.proxied-by" | trans,
-            (diaryKeeper.proxies | length > 0) ? (diaryKeeper.proxyNames | join(', ')) : '-',
-            is_granted('CHANGE_PROXIES', diaryKeeper)
-                ? {(path('interviewer_change_proxies', {diaryKeeper: diaryKeeper.id})): 'actions.change'}
-                : {}
-        ) -}}
-        {{- summaryListRow(
-            "diary-keeper.proxy-for" | trans,
-            diaryKeeper.actingAsAProxyForOthers ? (diaryKeeper.actingAsAProxyForNames | join(', ')) : '-'
-        ) -}}
+        {{- summaryListRow({
+            key: "diary-keeper.media-type.label" | trans,
+            value: "diary-keeper.media-type.#{diaryKeeper.mediaType}" | trans,
+        }) -}}
+        {{- summaryListRow({
+            key: "diary-keeper.has-login" | trans,
+            value: {
+                html: (
+                    diaryKeeper.user.identifierForLogin ?
+                        'boolean.true' | trans({}, 'messages') :
+                        'boolean.false' | trans({}, 'messages')
+                ) ~ userStatePs
+            },
+            actions: is_granted('EMAIL_CHANGE', diaryKeeper.user)
+                ? [
+                    {
+                        href: path('interviewer_change_email', {diaryKeeper: diaryKeeper.id}),
+                        text: 'actions.change-email' | trans({}, 'auth')
+                    }
+                ] : [],
+        }) -}}
+        {{- summaryListRow({
+            key: "diary-keeper.proxied-by" | trans,
+            value: (diaryKeeper.proxies | length > 0) ? (diaryKeeper.proxyNames | join(', ')) : '-',
+            actions: is_granted('CHANGE_PROXIES', diaryKeeper)
+                ? [
+                    {
+                        href: path('interviewer_change_proxies', {diaryKeeper: diaryKeeper.id}),
+                        text: 'actions.change' | trans({}, 'messages')
+                    }
+                ] : []
+        }) -}}
+        {{- summaryListRow({
+            key: "diary-keeper.proxy-for" | trans,
+            value: diaryKeeper.actingAsAProxyForOthers ? (diaryKeeper.actingAsAProxyForNames | join(', ')) : '-'
+        }) -}}
     </dl>
 
     {%- set milometerEnabled = is_feature_enabled(constant('\\App\\Features::MILOMETER')) -%}

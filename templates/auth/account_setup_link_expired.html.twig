@@ -1,0 +1,10 @@
+{% extends 'base.html.twig' %}
+{% trans_default_domain 'auth' %}
+{% set translation_domain = 'auth' %}
+{% set translation_prefix = 'setup-link-expired' %}
+
+{% block content %}
+    <div class="prose-scope">
+        {{ 'setup-link-expired.intro' | trans({emailSent: emailSent, obfuscatedEmailAddress: emailAddress}) | markdown_to_html }}
+    </div>
+{% endblock %}

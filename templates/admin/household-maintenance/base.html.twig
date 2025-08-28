@@ -1,19 +1,17 @@
 {%- extends 'admin/base.html.twig' -%}
 
-{% block beforeContent -%}
-    {%- set breadcrumbItems = [] -%}
+{% block beforeMainWrapper -%}
+    {%- set breadcrumb_action = breadcrumb_action ?? null -%}
 
-    {%- if breadcrumb_level >= 1 -%}
-        {%- set breadcrumbItems = breadcrumbItems | merge([
-            {
-                href: path('admin_household_maintenance_choose_household'),
-                text: 'household-maintenance.breadcrumbs.choose-household' | trans({}, 'admin'),
-            }
-        ]) -%}
-    {%- endif -%}
+    {%- set breadcrumb_items = [
+        {
+            href: path('admin_household_maintenance_list'),
+            text: 'household-maintenance.breadcrumbs.choose-household' | trans({}, 'admin'),
+        }
+    ] -%}
 
-    {%- if breadcrumb_level >= 2 -%}
-        {%- set breadcrumbItems = breadcrumbItems | merge([
+    {%- if household is defined -%}
+        {%- set breadcrumb_items = breadcrumb_items | merge([
             {
                 href: path('admin_household_maintenance_details', {id: household.id}),
                 text: 'household-maintenance.breadcrumbs.household-details' | trans({serial: household.serialNumber}, 'admin'),
@@ -21,17 +19,18 @@
         ]) -%}
     {%- endif -%}
 
-    {%- if breadcrumb_level >= 3 -%}
-        {%- set breadcrumbItems = breadcrumbItems | merge([
+
+    {%- if breadcrumb_action == 'user-lookup' -%}
+        {%- set breadcrumb_items = breadcrumb_items | merge([
             {
-                href: path('admin_household_maintenance_add_diary_keeper', {id: household.id}),
-                text: 'household-maintenance.breadcrumbs.add-diary-keeper' | trans({serial: household.serialNumber}, 'admin'),
+                href: path('admin_user_lookup'),
+                text: 'household-maintenance.breadcrumbs.user-lookup' | trans({}, 'admin'),
             }
         ]) -%}
     {%- endif -%}
 
-    {%- if breadcrumbItems | length > 1 -%}
+    {%- if breadcrumb_items | length > 1 -%}
         {%- from '@GhostGovUkFrontend/components/macros.html.twig' import breadcrumbs -%}
-        {{- breadcrumbs({items: breadcrumbItems}) -}}
+        {{- breadcrumbs({items: breadcrumb_items}) -}}
     {%- endif -%}
 {%- endblock -%}

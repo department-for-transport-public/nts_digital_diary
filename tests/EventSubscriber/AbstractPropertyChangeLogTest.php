@@ -50,13 +50,13 @@ abstract class AbstractPropertyChangeLogTest extends AbstractWebTestCase
         mixed  $expectedLoggedValue = null,
     ): void
     {
-        $user = $this->referenceRepository->getReference($userRef);
+        $user = $this->referenceRepository->getReference($userRef, User::class);
         $this->assertInstanceOf(User::class, $user);
         $this->client->loginUser($user);
 
         $this->assertEquals(0, $this->propertyChangeLogRepository->count([]), 'There should initially be no property change log entries');
 
-        $entity = $this->referenceRepository->getReference($refName);
+        $entity = $this->referenceRepository->getReference($refName, $refClass);
 
         $this->assertInstanceOf($refClass, $entity);
         $this->assertInstanceOf(PropertyChangeLoggableInterface::class, $entity);

@@ -25,14 +25,14 @@ class MessageEncoderTest extends KernelTestCase
     {
         return [
             'single character mutation' => [
-                function(string $iv) {
+                function(string $iv): string {
                     $lastCharIdx = strlen($iv) - 1;
                     $iv[$lastCharIdx] = $this->mutateCharacter($iv[$lastCharIdx]);
                     return $iv;
                 }
             ],
             'mutate the entire IV' => [
-                fn(string $iv) => join('', array_map([$this, 'mutateCharacter'], str_split($iv)))
+                fn(string $iv): string => join('', array_map([$this, 'mutateCharacter'], str_split($iv)))
             ],
         ];
     }

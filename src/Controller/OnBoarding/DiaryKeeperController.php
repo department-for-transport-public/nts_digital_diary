@@ -5,25 +5,25 @@ namespace App\Controller\OnBoarding;
 use App\Entity\DiaryKeeper;
 use App\Utility\ConfirmAction\OnBoarding\DeleteDiaryKeeperConfirmAction;
 use Ghost\GovUkFrontendBundle\Model\NotificationBanner;
-use Sensio\Bundle\FrameworkExtraBundle\Configuration\IsGranted;
-use Sensio\Bundle\FrameworkExtraBundle\Configuration\ParamConverter;
+use Symfony\Bridge\Doctrine\Attribute\MapEntity;
 use Symfony\Component\HttpFoundation\RedirectResponse;
 use Symfony\Component\HttpFoundation\Request;
 use Symfony\Component\HttpFoundation\Response;
-use Symfony\Component\Routing\Annotation\Route;
+use Symfony\Component\Routing\Attribute\Route;
+use Symfony\Component\Security\Http\Attribute\IsGranted;
 use Symfony\Component\Translation\TranslatableMessage;
 
-/**
- * @Route("/diary-keeper", name="diarykeeper_")
- * @IsGranted("ONBOARDING_EDIT")
- */
+#[Route(path: '/diary-keeper', name: 'diarykeeper_')]
+#[IsGranted('ONBOARDING_EDIT')]
 class DiaryKeeperController extends AbstractController
 {
-    /**
-     * @Route("/{diaryKeeperId}/delete", name="delete", requirements={"diaryKeeperId" = "\w{26}"})
-     * @ParamConverter("diaryKeeper", options={"id" = "diaryKeeperId"})
-     */
-    public function delete(Request $request, DiaryKeeper $diaryKeeper, DeleteDiaryKeeperConfirmAction $confirmAction): Response
+    #[Route(path: '/{diaryKeeperId}/delete', name: 'delete', requirements: ['diaryKeeperId' => '\w{26}'])]
+    public function delete(
+        Request $request,
+        #[MapEntity(expr: "repository.find(diaryKeeperId)")]
+        DiaryKeeper $diaryKeeper,
+        DeleteDiaryKeeperConfirmAction $confirmAction
+    ): Response
     {
         $this->checkIsCorrectHousehold($diaryKeeper->getHousehold());
 

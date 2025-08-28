@@ -2,22 +2,24 @@
 
 namespace App\EventSubscriber\InterviewerTraining;
 
+use App\Entity\DiaryKeeper;
 use App\Entity\InterviewerTrainingRecord;
 use App\Entity\User;
 use App\Event\SubmitHouseholdEvent;
 use Doctrine\ORM\EntityManagerInterface;
+use Symfony\Bundle\SecurityBundle\Security;
 use Symfony\Component\EventDispatcher\EventSubscriberInterface;
-use Symfony\Component\Security\Core\Security;
 use Symfony\Component\Security\Http\Event\SwitchUserEvent;
 use Symfony\Component\Security\Http\SecurityEvents;
+use Symfony\Component\Workflow\Event\EnteredEvent;
 use Symfony\Component\Workflow\Registry;
 
 class DiaryCorrectionWorkflowSubscriber implements EventSubscriberInterface
 {
     public function __construct(
-        private readonly Registry $workflowRegistry,
-        private readonly EntityManagerInterface $entityManager,
-        private readonly Security $security,
+        protected readonly Registry               $workflowRegistry,
+        protected readonly EntityManagerInterface $entityManager,
+        protected readonly Security               $security,
     ) {}
 
     public static function getSubscribedEvents(): array
@@ -25,10 +27,11 @@ class DiaryCorrectionWorkflowSubscriber implements EventSubscriberInterface
         return [
             SecurityEvents::SWITCH_USER => 'switchUser',
             SubmitHouseholdEvent::class => 'submitHousehold',
+            'workflow.travel_diary_state.entered.' . DiaryKeeper::STATE_APPROVED => 'diaryKeeperApproved',
         ];
     }
 
-    public function submitHousehold(SubmitHouseholdEvent $event)
+    public function submitHousehold(SubmitHouseholdEvent $event): void
     {
         $areaPeriod = $event->getHousehold()->getAreaPeriod();
         if ($areaPeriod->getTrainingInterviewer()) {
@@ -36,7 +39,21 @@ class DiaryCorrectionWorkflowSubscriber implements EventSubscriberInterface
         }
     }
 
-    public function switchUser(SwitchUserEvent $event)
+    /**
+     * If the interviewer tries to approve the diaries without having edited them
+     * we still want it to be marked as in progress when they approve a diary
+     */
+    public function diaryKeeperApproved(EnteredEvent $event): void
+    {
+        /** @var DiaryKeeper $diaryKeeper */
+        $diaryKeeper = $event->getSubject();
+        $areaPeriod = $diaryKeeper->getHousehold()->getAreaPeriod();
+        if ($areaPeriod->getTrainingInterviewer()) {
+            $this->attemptTransition($areaPeriod->getLatestTrainingRecord(), InterviewerTrainingRecord::TRANSITION_START);
+        }
+    }
+
+    public function switchUser(SwitchUserEvent $event): void
     {
         /** @var User $user */
         $user = $event->getTargetUser();

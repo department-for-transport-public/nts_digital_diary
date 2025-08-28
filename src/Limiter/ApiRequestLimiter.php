@@ -8,25 +8,21 @@ use Symfony\Component\RateLimiter\RateLimiterFactory;
 
 class ApiRequestLimiter extends AbstractRequestRateLimiter
 {
-    private RateLimiterFactory $apiKeyLimiterFactory;
-    private RateLimiterFactory $apiIpLimiterFactory;
-
-    public function __construct(RateLimiterFactory $apiKeyLimiter, RateLimiterFactory $apiIpLimiter)
-    {
-        $this->apiKeyLimiterFactory = $apiKeyLimiter;
-        $this->apiIpLimiterFactory = $apiIpLimiter;
-    }
+    public function __construct(
+        protected RateLimiterFactory $apiKeyLimiter,
+        protected RateLimiterFactory $apiIpLimiter,
+    ) {}
 
     protected function getLimiters(Request $request): array
     {
         $apiKey = $request->headers->get('X-AUTH-KEY');
 
         $limiters = [
-            $this->apiIpLimiterFactory->create($request->getClientIp()),
+            $this->apiIpLimiter->create($request->getClientIp()),
         ];
 
         if ($apiKey) {
-            $limiters[] = $this->apiKeyLimiterFactory->create($apiKey);
+            $limiters[] = $this->apiKeyLimiter->create($apiKey);
         }
 
         return $limiters;

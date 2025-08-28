@@ -6,22 +6,16 @@ use App\Entity\DiaryKeeper;
 use App\Entity\UserPersonInterface;
 use App\Messenger\AlphagovNotify\Email;
 use App\Utility\AlphagovNotify\Reference;
-use App\Utility\Security\UrlSigner;
 use Symfony\Component\Messenger\MessageBusInterface;
 use Symfony\Component\Routing\Generator\UrlGeneratorInterface;
 use Symfony\Component\Routing\RouterInterface;
 
 class AccountCreationHelper
 {
-    protected MessageBusInterface $messageBus;
-    protected RouterInterface $router;
-    protected UrlSigner $urlSigner;
+    public const EMAIL_OVERRIDE_PARAM = 'email';
 
-    public function __construct(MessageBusInterface $messageBus, RouterInterface $router, UrlSigner $urlSigner)
+    public function __construct(protected MessageBusInterface $messageBus, protected RouterInterface $router, protected UrlSigner $urlSigner)
     {
-        $this->messageBus = $messageBus;
-        $this->router = $router;
-        $this->urlSigner = $urlSigner;
     }
 
     public function sendAccountCreationEmail(UserPersonInterface $userPerson, string $emailOverride = null): void
@@ -31,12 +25,26 @@ class AccountCreationHelper
             return;
         }
 
+        $signedUrl = $this->generateAccountCreationUrl($userPerson, $emailOverride);
+
+        $this->messageBus->dispatch(new Email(
+            Reference::ACCOUNT_CREATION_EVENT,
+            $userPerson::class,
+            $userPerson->getId(),
+            $emailOverride ?? $userPerson->getUser()->getUserIdentifier(),
+            $this->getAccountCreateTemplateIdForUserPerson($userPerson),
+            ['name' => $userPerson->getName(), 'url' => $signedUrl],
+        ));
+    }
+
+    public function generateAccountCreationUrl(UserPersonInterface $userPerson, ?string $emailOverride = null, ?int $currentTime = null): string
+    {
         $routeParameters = [
             'userId' => $userPerson->getUser()->getId(),
         ];
 
         if ($emailOverride) {
-            $routeParameters['email'] = $emailOverride;
+            $routeParameters[self::EMAIL_OVERRIDE_PARAM] = $emailOverride;
         }
 
         $url = $this->router->generate('auth_account_setup',
@@ -44,16 +52,7 @@ class AccountCreationHelper
             UrlGeneratorInterface::ABSOLUTE_URL
         );
 
-        $signedUrl = $this->urlSigner->sign($url, Reference::ACCOUNT_CREATION_LINK_EXPIRY);
-
-        $this->messageBus->dispatch(new Email(
-            Reference::ACCOUNT_CREATION_EVENT,
-            get_class($userPerson),
-            $userPerson->getId(),
-            $emailOverride ?? $userPerson->getUser()->getUserIdentifier(),
-            $this->getAccountCreateTemplateIdForUserPerson($userPerson),
-            ['name' => $userPerson->getName(), 'url' => $signedUrl],
-        ));
+        return $this->urlSigner->sign($url, Reference::ACCOUNT_CREATION_LINK_EXPIRY, $currentTime);
     }
 
     protected function getAccountCreateTemplateIdForUserPerson(UserPersonInterface $userPerson): string

@@ -9,13 +9,8 @@ use RuntimeException;
 
 class PasscodeGenerator
 {
-    protected ?OtpUserRepository $otpUserRepository;
-    protected string $secret;
-
-    public function __construct(?OtpUserRepository $otpUserRepository, string $secret)
+    public function __construct(protected ?OtpUserRepository $otpUserRepository, protected string $secret)
     {
-        $this->otpUserRepository = $otpUserRepository;
-        $this->secret = $secret;
     }
 
     public function createNewPasscodeUser(): OtpUser
@@ -36,7 +31,10 @@ class PasscodeGenerator
 
     public function generateUserIdentifierCode(): string
     {
-        while(($passcode = $this->checkPasscode($this->generateUntestedCode(), true)) === null) {continue;};
+        do {
+            $passcode = $this->checkPasscode($this->generateUntestedCode(), true);
+        } while($passcode === null);
+
         return $passcode;
     }
 
@@ -68,7 +66,7 @@ class PasscodeGenerator
 
     public function isValidPasscode($passcode, $preventRepeating = 4, $preventSequential = 4): bool
     {
-        if (strlen($passcode) !== 8) {
+        if (strlen((string) $passcode) !== 8) {
             return false;
         }
 
@@ -94,18 +92,18 @@ class PasscodeGenerator
 
     protected function hasRepeatingDigits($passcode, $preventRepeating = 4): bool
     {
-        return preg_match('/(\d)\1{' . ($preventRepeating - 1) . '}/', $passcode) === 1;
+        return preg_match('/(\d)\1{' . ($preventRepeating - 1) . '}/', (string) $passcode) === 1;
     }
 
     protected function hasSequentialDigits($passcode, $sequentialCount = 4): bool
     {
-        $positionLimit = strlen($passcode) - $sequentialCount;
+        $positionLimit = strlen((string) $passcode) - $sequentialCount;
         if ($positionLimit < 0) {
             return false;
         }
 
         for($i=0; $i<=$positionLimit; $i++) {
-            $number = substr($passcode, $i, $sequentialCount);
+            $number = substr((string) $passcode, $i, $sequentialCount);
             $up = $down = true;
             $current = intval($number[0]);
 

@@ -40,16 +40,23 @@ class EmptyDashboardTest extends AbstractFunctionalTestCase
         $this->doBackLinksTestStartingAt('/travel-diary/', 2);
     }
 
-    public function testNoJourneys(): void
+    public function testJourneyCounts(): void
     {
         $this->client->request('GET', '/travel-diary/');
 
+        // practice day
+        $this->clickLinkContaining('View', 0);
+        $data = $this->getSummaryListData();
+        $this->assertDataSize($data, 2);
+        $this->clickLinkContaining('Back to diary overview');
+
         // Check that each day's page lists "No journeys"
-        for($idx=0; $idx<7; $idx++) {
+        // (not including practice day)
+        for($idx=1; $idx<=7; $idx++) {
             $this->clickLinkContaining('View', $idx);
 
             $data = $this->getSummaryListData();
-            $this->assertDataHasKeyValuePair($data, 'No journeys', '');
+            $this->assertDataHasKeyValuePair($data, 'No journeys', '', "Day $idx");
 
             $this->clickLinkContaining('Back to diary overview');
         }

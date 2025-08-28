@@ -84,9 +84,15 @@ diary-keeper.user-identifier:
       digital:
         label: Digital diary
         help: ''
+      not-digital:
+        label: Other
+        help: Interviewer use only
+      transcribe:
+        label: Interviewer transcribed
+        help: Diary keeper records journeys on a paper diary, interviewer transcribes data into digital diary.
       paper:
-        label: Interviewer completing on household member's behalf
-        help: Only use this option if the household member requests digital diary entry by the interviewer
+        label: Paper
+        help: Diary keeper records journeys on a paper diary. Interviewer posts diary for processing.
   consent:
     label: This household member is aged 11 years or over and consents to receive notifications in relation to this survey
     help: ''
@@ -124,7 +130,7 @@ diary-keeper.view:
     capi: CAPI number
     email: Email
     is-adult: Is an adult
-    media-type: Media type
+    media-type: Diary mode
     user-identifier: Email address
     proxied-by: Proxied by
   change-action-suffix:
@@ -134,6 +140,10 @@ diary-keeper.view:
     is-proxied: Proxy status for {name}
     user-identifier: Email address for {name}
     proxied-by: Proxy for {name}
+
+diary-keeper.unique-constraint-violation.notification:
+  heading: A duplicate household member already exists
+  content: The household member you were trying to add ({name}) has not been saved, as an existing household member record with the same name was found. Check the details below to ensure they are correct before proceeding.
 
 household.details:
   page-title: Household details
@@ -166,6 +176,10 @@ household.details:
     choices:
       a: Group A
       b: Group B
+  sharing-state:
+    label: Household journey sharing
+    enabled: Enabled
+    disabled: Disabled
 
 household.introduction:
   page-title: Setting up the household
@@ -202,7 +216,7 @@ submit:
   intro: To finish setting up the household, check the following details carefully before submitting them.
 
 submitted:
-  page-title: Onboarding complete
+  page-title: Set-up complete
 
 vehicle.edit:
   page-title: Edit vehicle
@@ -217,9 +231,44 @@ vehicle.form:
     milometer-help: This person will need to enter the vehicle's milometer reading at the start and end of the diary week
     help: ''
   capi-number:
-    label: CAPI number
+    label: Vehicle CAPI number
     help: ''
   method:
     label: Vehicle type
     help: ''
   no-vehicles: No household vehicles
+
+direct-onboarding:
+  pre-auth:
+    page-title: Access direct set-up
+    help: >-
+      Click the button below to continue with direct set-up for this household.
+    button.label: Continue
+  introduction:
+    page-title: NTS digital diary direct set-up
+    help: >-
+      Direct set-up makes set-up much easier and faster. Check the details below before proceeding.
+  diary-keeper-logins:
+    page-title: Household member logins
+    help: |-
+      Enter an email address for each of the household members who will be logging in for themselves. This will be the username they use to log in.
+      
+      - At least one household member must have a login
+      - Leave the field blank for household members who will not have their own login.
+    username:
+      label: "Email address for {name} (CAPI #{number})"
+      help: ''
+  diary-keeper-identity:
+    page-title: Digital diary access details for {name}
+  review:
+    page-title: Review and complete digital diary set-up
+    submit-button: Confirm details and submit household
+  ingress:
+    errors:
+      page-title: Direct set-up error
+      help: There was an error processing the direct set-up data.
+    resume-existing-household:
+      notification-banner:
+        title: Warning
+        heading: Direct set-up already started
+        content: Direct set-up has already been started for this household ({serial}). The original details have been retained, and should be reviewed before continuing.

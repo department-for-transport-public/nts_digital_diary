@@ -29,8 +29,7 @@ class StageExportTestFixtures extends AbstractFixture implements DependentFixtur
         $methodRepo = $manager->getRepository(Method::class);
         $vehicleRepo = $manager->getRepository(Vehicle::class);
 
-        $diaryKeeper = $this->getReference('diary-keeper:adult');
-        assert($diaryKeeper instanceof DiaryKeeper);
+        $diaryKeeper = $this->getReference('diary-keeper:adult', DiaryKeeper::class);
 
         $household = $diaryKeeper->getHousehold();
         $vehicles = $vehicleRepo->createQueryBuilder('v', 'v.friendlyName')

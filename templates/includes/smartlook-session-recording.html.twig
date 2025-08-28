@@ -1,5 +1,5 @@
 {% if is_feature_enabled(constant('\\App\\Features::SMARTLOOK_SESSION_RECORDING')) %}
-<script type='text/javascript' nonce="{{ csp_inline_script_helper.nonce('smartlook') }}">
+<script type='text/javascript' nonce="{{ csp_nonce('script') }}">
     window.smartlook||(function(d) {
         var o=smartlook=function(){ o.api.push(arguments)},h=d.getElementsByTagName('head')[0];
         var c=d.createElement('script');o.api=new Array();c.async=true;c.type='text/javascript';

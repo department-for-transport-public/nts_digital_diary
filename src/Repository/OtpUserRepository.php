@@ -33,12 +33,11 @@ class OtpUserRepository extends ServiceEntityRepository implements UserLoaderInt
         $qb
             ->leftJoin('u.household', 'h')
             ->where('LOWER(u.userIdentifier) = :identifier')
-            ->andWhere($qb->expr()->orX('h.isOnboardingComplete <> :onboardingComplete', 'h.id is null'))
-            ->setParameters([
-                'identifier' => strtolower($identifier),
-                'onboardingComplete' => true,
-            ])
+//            ->andWhere($qb->expr()->orX('h.isOnboardingComplete <> :onboardingComplete', 'h.id is null'))
+            ->setParameter('identifier', strtolower($identifier))
+//            ->setParameter('onboardingComplete', true)
             ;
+
         return $qb
             ->getQuery()
             ->getOneOrNullResult();
@@ -60,11 +59,9 @@ class OtpUserRepository extends ServiceEntityRepository implements UserLoaderInt
             ->leftJoin('u.household', 'h')
             ->where('u.areaPeriod = :areaPeriod')
             ->andWhere($qb->expr()->orX('h.isOnboardingComplete <> :onboardingComplete', 'h.id is null'))
-            ->setParameters([
-                'areaPeriod' => $areaPeriod,
-                'onboardingComplete' => true,
-            ])
-        ;
+            ->setParameter('areaPeriod', $areaPeriod)
+            ->setParameter('onboardingComplete', true);
+
         return $qb
             ->getQuery()
             ->execute();
@@ -79,10 +76,8 @@ class OtpUserRepository extends ServiceEntityRepository implements UserLoaderInt
             ->select('user, areaPeriod')
             ->join('user.areaPeriod', 'areaPeriod')
             ->where('areaPeriod.year < :year OR (areaPeriod.year = :year AND areaPeriod.month < :month)')
-            ->setParameters([
-                'year' => $year,
-                'month' => $month,
-            ])
+            ->setParameter('year', $year)
+            ->setParameter('month', $month)
             ->getQuery()
             ->getResult();
     }

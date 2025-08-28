@@ -36,7 +36,7 @@ class FeedbackVoter extends Voter
         $user = $token->getUser();
 
         $isFeedbackAssigner = $this->accessDecisionManager->decide($token, ['ROLE_FEEDBACK_ASSIGNER']);
-        $isFeedbackViewer = $this->accessDecisionManager->decide($token, ['ROLE_FEEDBACK_VIEWER']);
+        $isFeedbackAssignee = $this->accessDecisionManager->decide($token, ['ROLE_FEEDBACK_ASSIGNEE']);
 
         if (!$user instanceof IapUser) {
             return false;
@@ -51,7 +51,7 @@ class FeedbackVoter extends Voter
         if ($attribute === self::ADMIN_FEEDBACK_VIEW) {
             // Disabled: only feedback assigners will be able to view feedback via the admin panel
             // return $isFeedbackViewer;
-            return $isFeedbackAssigner;
+            return $isFeedbackAssigner || $isFeedbackAssignee;
         }
 
         // View message page
@@ -59,13 +59,13 @@ class FeedbackVoter extends Voter
             if ($isFeedbackAssigner) {
                 // Assigners can view all messages
                 return true;
-            } else if ($isFeedbackViewer) {
-//                // For viewers, their user's domain must match the domain that the message has been assigned to
-//                $userDomain = $user->getDomain();
-//                $messageAssignedToDomain = $this->adminRoleResolver->getAssignee($subject->getAssignedTo() ?? '')->getDomain();
-//
-//                return $messageAssignedToDomain === $userDomain;
-                return false;
+            } else if ($isFeedbackAssignee) {
+                // For viewers, their user's domain must match the domain that the message has been assigned to
+                $userDomain = $user->getDomain();
+                $messageAssignedToDomain = $this->adminRoleResolver->getAssignee($subject->getAssignedTo() ?? '')->getDomain();
+
+                return $messageAssignedToDomain === $userDomain;
+//                return false;
             }
         }
 

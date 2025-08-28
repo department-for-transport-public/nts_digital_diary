@@ -1,0 +1,36 @@
+{% macro stepNavTitle(contentId, number, title, subTitle, options) %}
+    {% set options = {
+        stepDescription: 'Step',
+    } | merge(options | default({})) %}
+    <h2 class="app-step-nav__title">
+        <span class="app-step-nav__circle app-step-nav__circle--number">
+            <span class="app-step-nav__circle-inner">
+                <span class="app-step-nav__circle-background">
+                    <span class="govuk-visually-hidden govuk-!-display-none-print">{{ options.stepDescription }}</span> {{ number }}<span class="govuk-visually-hidden govuk-!-display-none-print" aria-hidden="true">:</span>
+                </span>
+            </span>
+        </span>
+
+        <span class="js-step-title">
+            <button class="app-step-nav__button app-step-nav__button--title js-step-title-button" aria-expanded="false" aria-controls="{{ contentId }}">
+                <span class="app-step-nav____title-text-focus">
+                    <span class="app-step-nav__title-text js-step-title-text">
+                        {{ title }}
+                        {%- if subTitle ?? false -%}
+                            <span class="app-step-nav__subtitle">{{ subTitle }}</span>
+                        {%- endif -%}
+                    </span>
+
+                    <span class="govuk-visually-hidden app-step-nav__section-heading-divider">, </span>
+                    <span class="app-step-nav__toggle-link js-toggle-link govuk-!-display-none govuk-!-display-none-print">
+                        <span class="app-step-nav__toggle-link-focus">
+                            <span class="app-step-nav__chevron js-toggle-link-icon app-step-nav__chevron--down"></span>
+                            <span class="app-step-nav__button-text js-toggle-link-text">Show</span>
+                        </span>
+                        <span class="govuk-visually-hidden"> {{ options.stepDescription }}</span>
+                    </span>
+                </span>
+            </button>
+        </span>
+    </h2>
+{% endmacro %}

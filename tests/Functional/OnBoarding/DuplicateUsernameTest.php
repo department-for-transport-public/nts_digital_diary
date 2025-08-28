@@ -19,8 +19,7 @@ class DuplicateUsernameTest extends AbstractProceduralWizardTest
         $passcodeGenerator = self::getContainer()->get(PasscodeGenerator::class);
         $this->context = $this->createContext('/onboarding/diary-keeper');
 
-        /** @var OtpUser $otpUser */
-        $otpUser = $this->getFixtureByReference('user:otp:partially-onboarded');
+        $otpUser = $this->fixtureReferenceRepository->getReference('user:otp:partially-onboarded', OtpUser::class);
         $this->loginOtpUser($otpUser->getUserIdentifier(), $passcodeGenerator->getPasswordForUserIdentifier($otpUser->getUserIdentifier()));
     }
 
@@ -35,7 +34,7 @@ class DuplicateUsernameTest extends AbstractProceduralWizardTest
     /**
      * @dataProvider dataUserReferences
      */
-    public function testDuplicateUsername(string $existingUserReference)
+    public function testDuplicateUsername(string $existingUserReference): void
     {
         $this->client->request('GET', '/onboarding/diary-keeper/add/details');
 
@@ -51,8 +50,7 @@ class DuplicateUsernameTest extends AbstractProceduralWizardTest
             ]
         );
 
-        /** @var DiaryKeeper $existingDiaryKeeper */
-        $existingDiaryKeeper = $this->getFixtureByReference($existingUserReference);
+        $existingDiaryKeeper = $this->fixtureReferenceRepository->getReference($existingUserReference, DiaryKeeper::class);
 
         $this->formTestAction(
             '/add/identity',

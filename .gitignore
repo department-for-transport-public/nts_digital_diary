@@ -25,4 +25,17 @@ yarn-error.log
 /drivers/
 /local/
 /public/.htaccess
-/screenshots/
+keys.json
+
+###> phpstan/phpstan ###
+phpstan.neon
+###< phpstan/phpstan ###
+
+### Bits that get installed by corepack / yarn
+.yarn
+.pnp.cjs
+.pnp.loader.mjs
+
+screenshots-old
+screenshots/output
+screenshots/node_modules

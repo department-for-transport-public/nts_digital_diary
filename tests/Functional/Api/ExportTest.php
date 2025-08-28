@@ -30,7 +30,7 @@ class ExportTest extends AbstractApiWebTestCase
     /**
      * @dataProvider startEndDatesData
      */
-    public function testStartEndDates($start, $end, array $expectedDiaryKeeperCounts)
+    public function testStartEndDates(int $start, int $end, array $expectedDiaryKeeperCounts): void
     {
         $queryParams = $this->getExportTestQueryParams(null, $start, $end);
         $response = $this->makeSignedRequestAndGetResponse(self::ENDPOINT, $queryParams, ['expectedResponseCode' => 200]);
@@ -58,7 +58,7 @@ class ExportTest extends AbstractApiWebTestCase
     /**
      * @dataProvider dataParameterRanges
      */
-    public function testParameterRanges(array $queryParams, int $expectedCode) {
+    public function testParameterRanges(array $queryParams, int $expectedCode): void {
         $this->makeSignedRequestAndGetResponse(self::ENDPOINT, $queryParams, ['expectedResponseCode' => $expectedCode]);
     }
 

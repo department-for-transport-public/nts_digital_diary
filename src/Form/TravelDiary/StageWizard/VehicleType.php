@@ -18,22 +18,17 @@ use Symfony\Component\Validator\Context\ExecutionContextInterface;
 
 class VehicleType extends AbstractType
 {
-    const INJECT_TRANSLATION_PARAMETERS = [
+    public const INJECT_TRANSLATION_PARAMETERS = [
         'stage_number' => 'number',
     ];
 
-    protected DiaryKeeperRepository $diaryKeeperRepository;
-    protected VehicleRepository $vehicleRepository;
-
-    public function __construct(DiaryKeeperRepository $diaryKeeperRepository, VehicleRepository $vehicleRepository)
+    public function __construct(protected DiaryKeeperRepository $diaryKeeperRepository, protected VehicleRepository $vehicleRepository)
     {
-        $this->diaryKeeperRepository = $diaryKeeperRepository;
-        $this->vehicleRepository = $vehicleRepository;
     }
 
-    public function buildForm(FormBuilderInterface $builder, array $options)
+    public function buildForm(FormBuilderInterface $builder, array $options): void
     {
-        $builder->addEventListener(FormEvents::PRE_SET_DATA, function(PreSetDataEvent $event) use ($options) {
+        $builder->addEventListener(FormEvents::PRE_SET_DATA, function(PreSetDataEvent $event) use ($options): void {
             /** @var Stage $stage */
             $stage = $event->getData();
             $form = $event->getForm();
@@ -43,7 +38,7 @@ class VehicleType extends AbstractType
 
             $relevantHouseholdVehicles = array_filter(
                 $diaryKeeper->getHousehold()->getVehicles()->toArray(),
-                fn(Vehicle $v) => $v->getMethod()->getCode() === ($methodCode ?? null)
+                fn(Vehicle $v): bool => $v->getMethod()->getCode() === ($methodCode ?? null)
             );
 
             $otherNamedVehicles = $this->diaryKeeperRepository
@@ -52,7 +47,7 @@ class VehicleType extends AbstractType
             $householdVehicles = array_merge($relevantHouseholdVehicles, $otherNamedVehicles);
             $getVehicleName = fn($vehicle) => $vehicle instanceof Vehicle ? $vehicle->getFriendlyName() : $vehicle;
 
-            usort($householdVehicles, fn($a, $b) => $getVehicleName($a) <=> $getVehicleName($b));
+            usort($householdVehicles, fn($a, $b): int => $getVehicleName($a) <=> $getVehicleName($b));
 
             $transPrefix = "stage.vehicle";
             $otherLabel = "{$transPrefix}.vehicle.other";
@@ -87,7 +82,7 @@ class VehicleType extends AbstractType
                     'label_attr' => ['class' => 'govuk-label--s'],
                     'help' => "{$transPrefix}.vehicle-other.help",
                     'constraints' => [
-                        new Callback(function(?string $value, ExecutionContextInterface $context) {
+                        new Callback(function(?string $value, ExecutionContextInterface $context): void {
                             if ($value === VehicleDataMapper::OTHER_KEY) {
                                 $context->buildViolation('common.string.invalid')->addViolation();
                             }
@@ -97,7 +92,7 @@ class VehicleType extends AbstractType
         })->setDataMapper(new VehicleDataMapper());
     }
 
-    public function configureOptions(OptionsResolver $resolver)
+    public function configureOptions(OptionsResolver $resolver): void
     {
         $resolver->setDefaults([
             'data_class' => Stage::class,

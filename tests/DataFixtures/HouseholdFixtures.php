@@ -14,9 +14,7 @@ class HouseholdFixtures extends AbstractFixture implements DependentFixtureInter
 {
     public function load(ObjectManager $manager): void
     {
-        $areaPeriod = $this->getReference('area-period:1');
-
-        assert($areaPeriod instanceof AreaPeriod);
+        $areaPeriod = $this->getReference('area-period:1', AreaPeriod::class);
 
         $householdNotOnboarded = (new Household())
             ->setHouseholdNumber(1)
@@ -25,7 +23,7 @@ class HouseholdFixtures extends AbstractFixture implements DependentFixtureInter
             ->setDiaryWeekStartDate(new \DateTime('2021-11-15'))
             ->setIsOnboardingComplete(false);
 
-        $this->setCheckLetter($householdNotOnboarded);
+        static::setCheckLetter($householdNotOnboarded);
 
         $this->addReference('household:not-onboarded', $householdNotOnboarded);
         $manager->persist($householdNotOnboarded);
@@ -37,7 +35,7 @@ class HouseholdFixtures extends AbstractFixture implements DependentFixtureInter
             ->setDiaryWeekStartDate(new \DateTime('2021-11-22'))
             ->setIsOnboardingComplete(true);
 
-        self::setCheckLetter($householdOnboarded);
+        static::setCheckLetter($householdOnboarded);
 
         $this->addReference('household:onboarded', $householdOnboarded);
         $manager->persist($householdOnboarded);
@@ -59,4 +57,3 @@ class HouseholdFixtures extends AbstractFixture implements DependentFixtureInter
         ));
     }
 }
-

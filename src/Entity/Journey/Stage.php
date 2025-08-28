@@ -17,70 +17,59 @@ use Symfony\Component\Translation\TranslatableMessage;
 use Symfony\Component\Validator\Constraints as Assert;
 use Symfony\Component\Validator\Context\ExecutionContextInterface;
 
-/**
- * @ORM\Entity(repositoryClass=StageRepository::class)
- * @ORM\HasLifecycleCallbacks()
- *
- * @Assert\Callback({JourneySharingValidator::class, "validateStage"}, groups={"wizard.share-journey.driver-and-parking", "wizard.share-journey.ticket-type-and-cost"})
- */
+#[Assert\Callback([JourneySharingValidator::class, 'validateStage'], groups: ['wizard.share-journey.driver-and-parking', 'wizard.share-journey.ticket-type-and-cost'])]
+#[ORM\Entity(repositoryClass: StageRepository::class)]
+#[ORM\HasLifecycleCallbacks]
 class Stage implements PropertyChangeLoggableInterface, BasicMetadataInterface
 {
     use IdTrait;
     use BasicMetadataTrait;
 
-    const COMMON_PROPERTIES = [
+    public const COMMON_PROPERTIES = [
         /* method form */   'method', 'methodOther',
         /* details form */  'distanceTravelled', 'travelTime', 'adultCount', 'childCount',
         /* vehicle form */  'vehicle', 'vehicleOther',
         /* ticket form */   'ticketType',
     ];
 
-    const SHARE_JOURNEY_CLONE_PROPERTIES = [
+    public const SHARE_JOURNEY_CLONE_PROPERTIES = [
         'number',
         ...self::COMMON_PROPERTIES,
         /* cost form */     'boardingCount',
     ];
-    const REPEAT_JOURNEY_CLONE_PROPERTIES = [
+    public const REPEAT_JOURNEY_CLONE_PROPERTIES = [
         'number',
         ...self::COMMON_PROPERTIES,
         /* driver form */   'isDriver', 'parkingCost',
         /* cost form */     'ticketCost', 'boardingCount',
     ];
-    const RETURN_JOURNEY_CLONE_PROPERTIES = [
+    public const RETURN_JOURNEY_CLONE_PROPERTIES = [
         ...self::COMMON_PROPERTIES,
         /* driver form (without parkingCost) */   'isDriver',
         /* cost form (without ticketCost) */     'boardingCount',
     ];
 
-    const MERGE_PROPERTIES = [
+    public const MERGE_PROPERTIES = [
         'journey',
         ...self::COMMON_PROPERTIES,
         /* driver form */   'isDriver', 'parkingCost',
         /* cost form */     'ticketCost', 'boardingCount',
     ];
 
-    /**
-     * @ORM\ManyToOne(targetEntity=Journey::class, inversedBy="stages")
-     * @ORM\JoinColumn(nullable=false)
-     */
-    private ?Journey $journey;
+    #[ORM\ManyToOne(targetEntity: Journey::class, inversedBy: 'stages')]
+    #[ORM\JoinColumn(nullable: false)]
+    private ?Journey $journey = null;
 
-    /**
-     * @ORM\ManyToOne(targetEntity=Method::class)
-     * @ORM\JoinColumn(nullable=false)
-     * @Assert\NotNull(groups="wizard.stage.method", message="wizard.stage.method.not-null")
-     */
-    private ?Method $method;
+    #[Assert\NotNull(message: 'wizard.stage.method.not-null', groups: ['wizard.stage.method'])]
+    #[ORM\ManyToOne(targetEntity: Method::class)]
+    #[ORM\JoinColumn(nullable: false)]
+    private ?Method $method = null;
 
-    /**
-     * @ORM\Column(type="string", length=255, nullable=true)
-     */
-    private ?string $methodOther;
+    #[ORM\Column(type: 'string', length: 255, nullable: true)]
+    private ?string $methodOther = null;
 
-    /**
-     * @Assert\Callback(groups="wizard.stage.method")
-     */
-    public function validateMethodOther(ExecutionContextInterface $context)
+    #[Assert\Callback(groups: ['wizard.stage.method'])]
+    public function validateMethodOther(ExecutionContextInterface $context): void
     {
         if ($this->getMethod() && $this->getMethod()->isOtherRequired()) {
             $transKey = $this->getMethod()->getDescriptionTranslationKey();
@@ -88,7 +77,7 @@ class Stage implements PropertyChangeLoggableInterface, BasicMetadataInterface
                 $context->buildViolation("wizard.stage.method-other.$transKey.not-empty")
                     ->atPath("other-$transKey")
                     ->addViolation();
-            } else if (mb_strlen($this->methodOther, 'UTF-8') > 255) {
+            } else if (mb_strlen((string) $this->methodOther, 'UTF-8') > 255) {
                 $context->buildViolation("common.string.max-length")
                     ->setParameter('{{ limit }}', 255)
                     ->atPath("other-$transKey")
@@ -97,81 +86,36 @@ class Stage implements PropertyChangeLoggableInterface, BasicMetadataInterface
         }
     }
 
-    /**
-     * @ORM\Embedded(class=Distance::class)
-     * @AppAssert\ValidValueUnit(
-     *     groups={"wizard.stage.details", "wizard.repeat-journey.stage-details"},
-     *     translationPrefix="wizard.stage.distance-travelled",
-     *     allowBlank=true, isDecimal=true, decimalScale=2
-     * )
-     */
-    private ?Distance $distanceTravelled;
+    #[AppAssert\ValidValueUnit(translationPrefix: "wizard.stage.distance-travelled", allowBlank: true, isDecimal: true, decimalScale: 2, groups: ["wizard.stage.details", "wizard.repeat-journey.stage-details"])]
+    #[ORM\Embedded(class: Distance::class)]
+    private ?Distance $distanceTravelled = null;
 
-    /**
-     * @ORM\Column(type="integer", nullable=true)
-     * @Assert\Positive(
-     *     groups={"wizard.stage.details", "wizard.repeat-journey.stage-details", "wizard.return-journey.stage-details"},
-     *     message="wizard.stage.travel-time.positive"
-     * )
-     * @Assert\Range(
-     *     groups={"wizard.stage.details", "wizard.repeat-journey.stage-details", "wizard.return-journey.stage-details"},
-     *     maxMessage="common.number.max",
-     *     max=10000
-     * )
-     */
-    private ?int $travelTime;
+    #[Assert\Positive(message: 'wizard.stage.travel-time.positive', groups: ['wizard.stage.details', 'wizard.repeat-journey.stage-details', 'wizard.return-journey.stage-details'])]
+    #[Assert\Range(maxMessage: 'common.number.max', max: 10000, groups: ['wizard.stage.details', 'wizard.repeat-journey.stage-details', 'wizard.return-journey.stage-details'])]
+    #[ORM\Column(type: 'integer', nullable: true)]
+    private ?int $travelTime = null;
 
-    /**
-     * @ORM\Column(type="integer", nullable=true)
-     * @Assert\Expression(
-     *     groups={"wizard.stage.details", "wizard.repeat-journey.stage-details", "wizard.return-journey.stage-details"},
-     *     message="wizard.stage.adult-count.at-least-1", "value != 0 or ((isNull(value) or value == 0) and !this.getIsDiaryKeeperAdult())"
-     * )
-     * @Assert\PositiveOrZero(
-     *     groups={"wizard.stage.details", "wizard.repeat-journey.stage-details", "wizard.return-journey.stage-details"},
-     *     message="wizard.stage.adult-count.positive-or-zero"
-     * )
-     * @Assert\Range(
-     *     groups={"wizard.stage.details", "wizard.repeat-journey.stage-details", "wizard.return-journey.stage-details"},
-     *     maxMessage="common.number.max",
-     *     max=1000
-     * )
-     */
-    private ?int $adultCount;
+    #[Assert\Expression('value != 0 or ((isNull(value) or value == 0) and !this.getIsDiaryKeeperAdult())', message: 'wizard.stage.adult-count.at-least-1', groups: ['wizard.stage.details', 'wizard.repeat-journey.stage-details', 'wizard.return-journey.stage-details'])]
+    #[Assert\PositiveOrZero(message: 'wizard.stage.adult-count.positive-or-zero', groups: ['wizard.stage.details', 'wizard.repeat-journey.stage-details', 'wizard.return-journey.stage-details'])]
+    #[Assert\Range(maxMessage: 'common.number.max', max: 1000, groups: ['wizard.stage.details', 'wizard.repeat-journey.stage-details', 'wizard.return-journey.stage-details'])]
+    #[ORM\Column(type: 'integer', nullable: true)]
+    private ?int $adultCount = null;
 
-    /**
-     * @ORM\Column(type="integer", nullable=true)
-     * @Assert\Expression(
-     *     groups={"wizard.stage.details", "wizard.repeat-journey.stage-details", "wizard.return-journey.stage-details"},
-     *     message="wizard.stage.child-count.at-least-1", "value != 0 or ((isNull(value) or value == 0) and this.getIsDiaryKeeperAdult())"
-     * )
-     * @Assert\PositiveOrZero(
-     *     groups={"wizard.stage.details", "wizard.repeat-journey.stage-details", "wizard.return-journey.stage-details"},
-     *     message="wizard.stage.child-count.positive-or-zero"
-     * )
-     * @Assert\Range(
-     *     groups={"wizard.stage.details", "wizard.repeat-journey.stage-details", "wizard.return-journey.stage-details"},
-     *     maxMessage="common.number.max",
-     *     max=1000
-     * )
-     */
-    private ?int $childCount;
+    #[Assert\Expression('value != 0 or ((isNull(value) or value == 0) and this.getIsDiaryKeeperAdult())', message: 'wizard.stage.child-count.at-least-1', groups: ['wizard.stage.details', 'wizard.repeat-journey.stage-details', 'wizard.return-journey.stage-details'])]
+    #[Assert\PositiveOrZero(message: 'wizard.stage.child-count.positive-or-zero', groups: ['wizard.stage.details', 'wizard.repeat-journey.stage-details', 'wizard.return-journey.stage-details'])]
+    #[Assert\Range(maxMessage: 'common.number.max', max: 1000, groups: ['wizard.stage.details', 'wizard.repeat-journey.stage-details', 'wizard.return-journey.stage-details'])]
+    #[ORM\Column(type: 'integer', nullable: true)]
+    private ?int $childCount = null;
 
-    /**
-     * @ORM\ManyToOne(targetEntity=Vehicle::class, inversedBy="stages")
-     * @ORM\JoinColumn(nullable=true)
-     */
-    private ?Vehicle $vehicle;
+    #[ORM\ManyToOne(targetEntity: Vehicle::class, inversedBy: 'stages')]
+    #[ORM\JoinColumn(nullable: true)]
+    private ?Vehicle $vehicle = null;
 
-    /**
-     * @ORM\Column(type="string", length=255, nullable=true)
-     */
-    private ?string $vehicleOther;
+    #[ORM\Column(type: 'string', length: 255, nullable: true)]
+    private ?string $vehicleOther = null;
 
-    /**
-     * @Assert\Callback(groups="wizard.vehicle")
-     */
-    public function validateVehicleAndVehicleOther(ExecutionContextInterface $context)
+    #[Assert\Callback(groups: ['wizard.vehicle'])]
+    public function validateVehicleAndVehicleOther(ExecutionContextInterface $context): void
     {
         if ($this->vehicle === null) {
             $transPrefix = "wizard.stage.vehicle";
@@ -181,7 +125,7 @@ class Stage implements PropertyChangeLoggableInterface, BasicMetadataInterface
                     ->buildViolation("{$transPrefix}.vehicle-other.not-empty")
                     ->atPath('vehicleOther')
                     ->addViolation();
-            } else if (mb_strlen($this->vehicleOther, 'UTF-8') > 255) {
+            } else if (mb_strlen((string) $this->vehicleOther, 'UTF-8') > 255) {
                 $context->buildViolation("common.string.max-length")
                     ->setParameter('{{ limit }}', 255)
                     ->atPath("vehicleOther")
@@ -195,57 +139,41 @@ class Stage implements PropertyChangeLoggableInterface, BasicMetadataInterface
         }
     }
 
-    /**
-     * @ORM\Column(type="boolean", nullable=true)
-     * @Assert\NotNull(groups={"wizard.stage.driver-and-parking"}, message="wizard.stage.driver-or-passenger.not-null")
-     * @Assert\NotNull(groups={"wizard.share-journey.driver-and-parking.entry"}, message="wizard.share-journey.is-driver.not-null")
-     * @Assert\Expression("value != true || this.getDriverCountForSharedStage() <= 1", groups="wizard.share-journey.driver-and-parking.entry", message="wizard.share-journey.is-driver.not-multiple")
-     */
-    private ?bool $isDriver;
+    #[Assert\NotNull(message: 'wizard.stage.driver-or-passenger.not-null', groups: ['wizard.stage.driver-and-parking'])]
+    #[Assert\NotNull(message: 'wizard.share-journey.is-driver.not-null', groups: ['wizard.share-journey.driver-and-parking.entry'])]
+    #[Assert\Expression('value != true || this.getDriverCountForSharedStage() <= 1', message: 'wizard.share-journey.is-driver.not-multiple', groups: ['wizard.share-journey.driver-and-parking.entry'])]
+    #[ORM\Column(type: 'boolean', nullable: true)]
+    private ?bool $isDriver = null;
 
     /**
      * Cost in pence
-     * @ORM\Embedded(class=CostOrNil::class)
-     * @AppAssert\CostOrNil(translationPrefix="wizard.stage.parking-cost", groups={"wizard.stage.driver-and-parking", "wizard.return-journey.stage-details"}, allowBlankCost=true)
-     * @AppAssert\CostOrNil(translationPrefix="wizard.share-journey.parking-cost", groups={"wizard.share-journey.driver-and-parking.entry"}, allowBlankCost=true)
      */
-    private ?CostOrNil $parkingCost;
+    #[AppAssert\CostOrNil(translationPrefix: "wizard.stage.parking-cost", allowBlankCost: true, groups: ["wizard.stage.driver-and-parking", "wizard.return-journey.stage-details"])]
+    #[AppAssert\CostOrNil(translationPrefix: "wizard.share-journey.parking-cost", allowBlankCost: true, groups: ["wizard.share-journey.driver-and-parking.entry"])]
+    #[ORM\Embedded(class: CostOrNil::class)]
+    private ?CostOrNil $parkingCost = null;
 
-    /**
-     * @ORM\Column(type="string", length=255, nullable=true)
-     * @Assert\NotNull(groups={"wizard.ticket-type"}, message="wizard.stage.ticket-type.not-null")
-     * @Assert\NotNull(groups={"wizard.share-journey.ticket-type-and-cost.entry"}, message="wizard.share-journey.ticket-type.not-null")
-     * @Assert\Length(groups={"wizard.ticket-type", "wizard.share-journey.ticket-type-and-cost.entry"}, maxMessage="common.string.max-length", max=255)
-     */
-    private ?string $ticketType;
+    #[Assert\NotNull(message: 'wizard.stage.ticket-type.not-null', groups: ['wizard.ticket-type'])]
+    #[Assert\NotNull(message: 'wizard.share-journey.ticket-type.not-null', groups: ['wizard.share-journey.ticket-type-and-cost.entry'])]
+    #[Assert\Length(max: 255, maxMessage: 'common.string.max-length', groups: ['wizard.ticket-type', 'wizard.share-journey.ticket-type-and-cost.entry'])]
+    #[ORM\Column(type: 'string', length: 255, nullable: true)]
+    private ?string $ticketType = null;
 
-    /**
-     * @ORM\Embedded(class=CostOrNil::class)
-     * @AppAssert\CostOrNil(translationPrefix="wizard.stage.ticket-cost", groups={"wizard.ticket-cost-and-boardings", "wizard.return-journey.stage-details"}, allowBlankCost=true)
-     * @AppAssert\CostOrNil(translationPrefix="wizard.share-journey.ticket-cost", groups={"wizard.share-journey.ticket-type-and-cost.entry"}, allowBlankCost=true)
-     */
-    private ?CostOrNil $ticketCost;
+    #[AppAssert\CostOrNil(translationPrefix: "wizard.stage.ticket-cost", allowBlankCost: true, groups: ["wizard.ticket-cost-and-boardings", "wizard.return-journey.stage-details"])]
+    #[AppAssert\CostOrNil(translationPrefix: "wizard.share-journey.ticket-cost", allowBlankCost: true, groups: ["wizard.share-journey.ticket-type-and-cost.entry"])]
+    #[ORM\Embedded(class: CostOrNil::class)]
+    private ?CostOrNil $ticketCost = null;
 
-    /**
-     * @ORM\Column(type="integer", nullable=true)
-     * @Assert\NotBlank(groups="wizard.ticket-cost-and-boardings", message="wizard.stage.boarding-count.not-blank")
-     * @Assert\Positive(groups="wizard.ticket-cost-and-boardings", message="wizard.stage.boarding-count.positive")
-     * @Assert\Range(
-     *      groups="wizard.ticket-cost-and-boardings",
-     *      maxMessage="common.number.max",
-     *      max=1000
-     *  )
-     */
-    private ?int $boardingCount;
+    #[Assert\NotBlank(message: 'wizard.stage.boarding-count.not-blank', groups: ['wizard.ticket-cost-and-boardings'])]
+    #[Assert\Positive(message: 'wizard.stage.boarding-count.positive', groups: ['wizard.ticket-cost-and-boardings'])]
+    #[Assert\Range(maxMessage: 'common.number.max', max: 1000, groups: ['wizard.ticket-cost-and-boardings'])]
+    #[ORM\Column(type: 'integer', nullable: true)]
+    private ?int $boardingCount = null;
 
-    /**
-     * @ORM\Column(type="integer")
-     */
-    private ?int $number;
+    #[ORM\Column(type: 'integer')]
+    private ?int $number = null;
 
-    /**
-     * @ORM\PrePersist()
-     */
+    #[ORM\PrePersist]
     public function autoAssignNumber(): self
     {
         if (!isset($this->number)) {
@@ -259,10 +187,8 @@ class Stage implements PropertyChangeLoggableInterface, BasicMetadataInterface
         return $this;
     }
 
-    /**
-     * @ORM\PreRemove()
-     */
-    public function setSiblingNumbersPreRemoval()
+    #[ORM\PreRemove]
+    public function setSiblingNumbersPreRemoval(): void
     {
         $journey = $this->journey;
 
@@ -275,7 +201,7 @@ class Stage implements PropertyChangeLoggableInterface, BasicMetadataInterface
         $journey->removeStage($this, false);
         $siblings = $journey->getStages()->toArray();
 
-        usort($siblings, fn(Stage $a, Stage $b) => $a->getNumber() <=> $b->getNumber());
+        usort($siblings, fn(Stage $a, Stage $b): int => $a->getNumber() <=> $b->getNumber());
 
         foreach($siblings as $idx => $sibling) {
             $sibling->setNumber($idx + 1);
@@ -362,8 +288,8 @@ class Stage implements PropertyChangeLoggableInterface, BasicMetadataInterface
     public function getDriverCountForSharedStage(): int
     {
         $sourceJourney = $this->getJourney()->getSharedFrom();
-        $matchingStagesBeingAdded = $sourceJourney->getSharedToJourneysBeingAdded()->map(fn(Journey $j) => $j->getStageByNumber($this->getNumber()));
-        return array_sum($matchingStagesBeingAdded->map(fn(Stage $s) => $s->getIsDriver() ? 1 : 0)->toArray());
+        $matchingStagesBeingAdded = $sourceJourney->getSharedToJourneysBeingAdded()->map(fn(Journey $j): \App\Entity\Journey\Stage => $j->getStageByNumber($this->getNumber()));
+        return array_sum($matchingStagesBeingAdded->map(fn(Stage $s): int => $s->getIsDriver() ? 1 : 0)->toArray());
     }
 
     public function getParkingCost(): ?CostOrNil
@@ -408,6 +334,16 @@ class Stage implements PropertyChangeLoggableInterface, BasicMetadataInterface
     {
         $this->method = $method;
         return $this;
+    }
+
+    public function getMethodForDisplayWithoutTypePrefixWhenOther(): ?TranslatableMessage
+    {
+        return $this->getMethodForDisplay(true);
+    }
+
+    public function getMethodKeyForTranslationParameterInjection(): ?string
+    {
+        return str_replace("-", "_", $this->method?->getDescriptionTranslationKey());
     }
 
     public function getMethodForDisplay(bool $omitTypePrefixWhenOther = false): ?TranslatableMessage

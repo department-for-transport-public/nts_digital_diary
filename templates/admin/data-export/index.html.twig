@@ -1,0 +1,13 @@
+{% extends 'admin/base.html.twig' %}
+
+{% trans_default_domain 'admin' %}
+{% set title_translation_prefix = 'data-export' %}
+{% set title_translation_domain = 'admin' %}
+
+{% block content %}
+    <ul class="govuk-list">
+        <li><a href="{{ path('admin_data_export_feedback_metadata') }}">Export feedback/support metadata (CSV)</a></li>
+        <li><a href="{{ path('admin_data_export_satisfaction_survey') }}">Export satisfaction survey results (CSV)</a></li>
+        <li><a href="{{ path('admin_data_export_paradata') }}">Export survey paradata (CSV)</a></li>
+    </ul>
+{% endblock %}

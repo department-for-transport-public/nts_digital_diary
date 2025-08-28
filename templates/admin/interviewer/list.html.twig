@@ -5,20 +5,34 @@
 {% set title_translation_domain = 'admin' %}
 
 {% block content %}
-    {% from '@GhostGovUkFrontend/components/macros.html.twig' import tableHead, tableCell, tableRowComplex, actionLinks, tag %}
-    {%- from 'macros/list-page.html.twig' import listTableStart, listTableEnd -%}
+    {% from '@GhostGovUkFrontend/components/macros.html.twig' import tableHead, tableCell, tableRow, summaryListActionsList, tag %}
+    {%- from '@GhostGovUkCore/list-page.html.twig' import listTableStart, listTableEnd -%}
 
     {{ listTableStart(data, form) }}
     {% for interviewer in data.entities %}
         {# @var interviewer \App\Entity\Interviewer #}
         <tr class="govuk-table__row">
-            {{ tableCell(interviewer.name ?? '-') }}
-            {{ tableCell(interviewer.serialId ?? '-') }}
-            {{ tableCell(interviewer.user.userIdentifier ?? '-') }}
-            {{ tableCell(actionLinks({(path('admin_interviewers_view', {id: interviewer.id})): {label: 'view', srHiddenSuffix: "interviewer #{interviewer.user.userIdentifier}"} }), {numeric: true}) }}
+            {{ tableCell({text: interviewer.name ?? '-'}) }}
+            {{ tableCell({text: interviewer.serialId ?? '-'}) }}
+            {{ tableCell({text: interviewer.user.userIdentifier ?? '-'}) }}
+            {{ tableCell({
+                html: summaryListActionsList([
+                    {
+                        href: path('admin_interviewers_view', {id: interviewer.id}),
+                        text: 'view',
+                        visuallyHiddenText: "interviewer #{interviewer.user.userIdentifier}"
+                    }
+                ]),
+                format: 'numeric',
+            }) }}
         </tr>
     {% else %}
-        {{ tableRowComplex({"No results": {colSpan: data.fields|length + 1}}) }}
+        {{ tableRow([
+            {
+                text: 'No results',
+                colspan: data.fields | length + 1
+            }
+        ]) }}
     {% endfor %}
     {{ listTableEnd(data, form) }}
 

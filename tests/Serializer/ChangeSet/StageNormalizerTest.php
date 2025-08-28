@@ -2,7 +2,6 @@
 
 namespace App\Tests\Serializer\ChangeSet;
 
-use App\Entity\Journey\Method;
 use App\Serializer\ChangeSet\StageChangeSetNormalizer;
 use PHPUnit\Framework\TestCase;
 
@@ -10,8 +9,6 @@ class StageNormalizerTest extends TestCase
 {
     public function dataFieldChanges(): array
     {
-        $method = new Method();
-
         return [
             // Test unrelated fields
             [

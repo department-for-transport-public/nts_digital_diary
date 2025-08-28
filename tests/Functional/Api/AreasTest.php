@@ -16,7 +16,7 @@ class AreasTest extends AbstractApiWebTestCase
         parent::setUp();
     }
 
-    public function testCollectionGet()
+    public function testCollectionGet(): void
     {
         $response = $this->makeSignedRequestAndGetResponse("/api/v1/area_periods");
 
@@ -27,7 +27,7 @@ class AreasTest extends AbstractApiWebTestCase
             $this->assertContainsMatchingAreaPeriod($areaPeriod, $response);
         }
     }
-    public function testItemGet()
+    public function testItemGet(): void
     {
         $areaPeriod = $this->getAreaPeriodFixture(0);
         $areaPeriodId = $areaPeriod->getApiId();
@@ -36,7 +36,7 @@ class AreasTest extends AbstractApiWebTestCase
         $this->assertMatchesAreaPeriod($areaPeriod, $response);
     }
 
-    public function testItemGetFail()
+    public function testItemGetFail(): void
     {
         $areaPeriod = $this->getAreaPeriodFixture(0);
         $areaPeriodId = $this->garbleId($areaPeriod->getApiId());
@@ -45,7 +45,7 @@ class AreasTest extends AbstractApiWebTestCase
     }
 
 
-    public function testDeleteSuccess()
+    public function testDeleteSuccess(): void
     {
         $areaPeriodId = $this->getAreaPeriodFixture(1)->getApiId();
 
@@ -56,7 +56,7 @@ class AreasTest extends AbstractApiWebTestCase
         $this->assertNull($areaPeriod);
     }
 
-    public function testDeleteFail()
+    public function testDeleteFail(): void
     {
         // This one can't be deleted because it has households
         $areaPeriodId = $this->getAreaPeriodFixture(0)->getApiId();
@@ -78,7 +78,7 @@ class AreasTest extends AbstractApiWebTestCase
     /**
      * @dataProvider dataPostSuccess
      */
-    public function testPostSuccess(array $data)
+    public function testPostSuccess(array $data): void
     {
         $this->makeSignedRequestAndGetResponse("/api/v1/area_periods", [], ['method' => 'POST', 'expectedResponseCode' => 201], $data);
 
@@ -107,7 +107,7 @@ class AreasTest extends AbstractApiWebTestCase
     /**
      * @dataProvider dataPostFail
      */
-    public function testPostFail(int $expectedResponseCode, array $data)
+    public function testPostFail(int $expectedResponseCode, array $data): void
     {
         $this->makeSignedRequestAndGetResponse("/api/v1/area_periods", [], ['method' => 'POST', 'expectedResponseCode' => $expectedResponseCode], $data);
     }
@@ -118,7 +118,7 @@ class AreasTest extends AbstractApiWebTestCase
      * `$ AREA_BULK_TEST_COUNT=100 bin/phpunit --filter=testBulkPost`
      * would be a good representation (the test creates that many areas for each month of the year)
      */
-    public function testBulkPost()
+    public function testBulkPost(): void
     {
         $testCount = getenv('NTS_BULK_AREA_TEST_COUNT') ?: 10;
 

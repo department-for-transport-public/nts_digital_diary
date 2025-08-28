@@ -5,7 +5,7 @@ use App\Form\TravelDiary\SplitJourneyWizard\MidpointType;
 use App\Form\TravelDiary\SplitJourneyWizard\PurposeType;
 use App\FormWizard\TravelDiary\SplitJourneyState as State;
 
-return static function (ContainerConfigurator $container) {
+return static function (ContainerConfigurator $container): void {
     $editFinishMetadata =  [
         'persist' => true,
         'redirect_route' => [

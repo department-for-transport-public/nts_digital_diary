@@ -9,11 +9,20 @@
 } %}
 
 {% block content %}
-    {% from '@GhostGovUkFrontend/components/macros.html.twig' import tableCell, tableRowComplex, actionLinks, actionlessSummaryListRow %}
+    {% from '@GhostGovUkFrontend/components/macros.html.twig' import summaryListActionsList, summaryListRow, tableCell, tableRow %}
     <dl class="govuk-summary-list">
-        {{ actionlessSummaryListRow('Name', interviewer.name) }}
-        {{ actionlessSummaryListRow('Serial/ID', interviewer.serialId) }}
-        {{ actionlessSummaryListRow('Email address', interviewer.user.userIdentifier) }}
+        {{ summaryListRow({
+            key: 'Name',
+            value: interviewer.name,
+        }, false) }}
+        {{ summaryListRow({
+            key: 'Serial/ID',
+            value: interviewer.serialId,
+        }, false) }}
+        {{ summaryListRow({
+            key: 'Email address',
+            value: interviewer.user.userIdentifier,
+        }, false) }}
     </dl>
     {%- if is_granted('ADMIN_INTERVIEWER_DELETE') -%}
     <div class="govuk-button-group">
@@ -27,25 +36,47 @@
 
     <h2 class="govuk-heading-m">{{ 'interviewer.view.areas-title' | trans }}</h2>
 
-    {%- from 'macros/list-page.html.twig' import listTableStart, listTableEnd -%}
+    {%- from '@GhostGovUkCore/list-page.html.twig' import listTableStart, listTableEnd -%}
     {%- set canAllocate = is_granted('ADMIN_INTERVIEWER_ALLOCATE_AREAS') -%}
 
     {{ listTableStart(areas, areaForm, {tableClass: canAllocate ? '' : 'govuk-!-margin-bottom-9'}) }}
     {%- for area in areas.entities -%}
         {# @var area \App\Entity\AreaPeriod #}
         <tr class="govuk-table__row">
-            {{ tableCell(area.area ?? '-') }}
-            {{ tableCell(area.year) }}
-            {{ tableCell(area.month) }}
-            {{ tableCell(area.households | length, {numeric: true}) }}
-            {%- if canAllocate -%}
-                {{ tableCell(actionLinks({(path('admin_interviewers_deallocate', {id: interviewer.id, area: area.id})): {label: 'Deallocate', srHiddenSuffix: "area #{area.area}"} }), {numeric: true}) }}
+            {%- if is_granted('ROLE_MAINTENANCE') and (area.area ?? false) -%}
+                {%- set areaContent -%}
+                    <a href="{{ path('admin_household_maintenance_list', {'serialid[area]': area.area}) }}" class="govuk-link">{{ area.area }}</a>
+                {%- endset -%}
+                {{- tableCell({html: areaContent}) -}}
             {%- else -%}
-                {{ tableCell('') }}
+                {{- tableCell({text: area.area ?? '-'}) -}}
+            {%- endif -%}
+
+            {{- tableCell({text: area.year}) -}}
+            {{- tableCell({text: area.month}) -}}
+            {{- tableCell({text: area.households | length}) -}}
+            {%- if canAllocate -%}
+                {{- tableCell({
+                    html: summaryListActionsList([
+                        {
+                            href: path('admin_interviewers_deallocate', {id: interviewer.id, area: area.id}),
+                            text: 'Deallocate',
+                            visuallyHiddenText: "area #{area.area}"
+                        }
+                    ]),
+                    format: 'numeric',
+                }) -}}
+            {%- else -%}
+                {{- tableCell({text: ''}) -}}
             {%- endif -%}
         </tr>
     {%- else -%}
-        {{ tableRowComplex({"No results": {colSpan: areas.fields|length + 1}}) }}
+        {{ tableRow([
+            {
+                text: "No results",
+                colspan: areas.fields | length + 1
+            }
+        ]) }}
     {%- endfor -%}
     {{ listTableEnd(areas, areaForm) }}
     {%- if canAllocate -%}

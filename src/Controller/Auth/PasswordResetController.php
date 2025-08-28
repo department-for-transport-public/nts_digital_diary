@@ -9,20 +9,17 @@ use App\Form\Auth\ForgottenPasswordType;
 use App\Messenger\AlphagovNotify\Email;
 use App\Security\Voter\UserValidForLoginVoter;
 use App\Utility\AlphagovNotify\Reference;
-use Symfony\Component\Form\SubmitButton;
 use Symfony\Component\HttpFoundation\RedirectResponse;
 use Symfony\Component\HttpFoundation\Request;
 use Symfony\Component\HttpFoundation\Response;
 use Symfony\Component\Messenger\MessageBusInterface;
-use Symfony\Component\Routing\Annotation\Route;
+use Symfony\Component\Routing\Attribute\Route;
 use Symfony\Component\Routing\Generator\UrlGeneratorInterface;
 use Symfony\Component\Security\Core\User\UserInterface;
 
 class PasswordResetController extends AbstractController
 {
-    /**
-     * @Route("/forgotten-password", name="forgotten_password")
-     */
+     #[Route("/forgotten-password", name: "forgotten_password")]
     public function forgottenPassword(Request $request, MessageBusInterface $messageBus, string $secret): Response
     {
         $this->redirectToDashboardIfAppropriate();
@@ -34,12 +31,6 @@ class PasswordResetController extends AbstractController
         $form->handleRequest($request);
 
         if ($form->isSubmitted() && $form->isValid()) {
-            $cancel = $form->get('button_group')->get('cancel');
-
-            if ($cancel instanceof SubmitButton && $cancel->isClicked()) {
-                return new RedirectResponse($this->generateUrl('app_home'));
-            }
-
             $emailAddress = $form->get('emailAddress')->getData();
 
             /** @var ?User $user */
@@ -51,7 +42,7 @@ class PasswordResetController extends AbstractController
             $person = $diaryKeeper ?? $interviewer ?? null;
 
             if ($person && $user && $this->isGranted(UserValidForLoginVoter::USER_VALID_FOR_LOGIN, $user)) {
-                $passwordResetCode = substr(hash_hmac('sha256', $user->getId() . rand(), $secret), 0, 16);
+                $passwordResetCode = substr(hash_hmac('sha256', $user->getId() . random_int(0, mt_getrandmax()), $secret), 0, 16);
                 $user->setPasswordResetCode($passwordResetCode);
                 $this->entityManager->flush();
 
@@ -67,7 +58,7 @@ class PasswordResetController extends AbstractController
 
                 $messageBus->dispatch(new Email(
                     Reference::FORGOTTEN_PASSWORD_EVENT,
-                    get_class($person),
+                    $person::class,
                     $person->getId(),
                     $person->getUser()->getUserIdentifier(),
                     Reference::FORGOTTEN_PASSWORD_TEMPLATE_ID,
@@ -80,13 +71,11 @@ class PasswordResetController extends AbstractController
         }
 
         return $this->render('auth/forgotten_password.html.twig', [
-            'form' => $form->createView(),
+            'form' => $form,
         ]);
     }
 
-    /**
-     * @Route("/password-reset/{userId}/{code}", name="password_reset")
-     */
+     #[Route("/password-reset/{userId}/{code}", name: "password_reset")]
     public function passwordReset(Request $request, ?UserInterface $currentUser, string $userId, string $code): Response
     {
         $sessionKey = 'account_password_reset';
@@ -115,7 +104,7 @@ class PasswordResetController extends AbstractController
         }
 
         return $this->render('auth/change_password.html.twig', [
-            'form' => $form->createView(),
+            'form' => $form,
             'user' => $user,
         ]);
     }

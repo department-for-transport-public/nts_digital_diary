@@ -38,15 +38,13 @@ class LoginTest extends AbstractFunctionalTestCase
         $this->checkLogin('user:diary-keeper:interviewer-training', 'password', false);
     }
 
-    protected function checkLogin(string $userReference, string $password, bool $expectLoginSuccess)
+    protected function checkLogin(string $userReference, string $password, bool $expectLoginSuccess): void
     {
-        /** @var User $user */
-        $user = $this->getFixtureByReference($userReference);
+        $user = $this->fixtureReferenceRepository->getReference($userReference, User::class);
         // we're given a proxy, so we need to get entity manager to give us the real thing in order to use reflection
         $user->getUserIdentifier();
 
         $rp = new ReflectionProperty(User::class, 'username');
-        $rp->setAccessible(true);
         $this->loginUser($rp->getValue($user), $password);
         if ($expectLoginSuccess) {
             $this->assertEquals('/travel-diary', $this->getUrlPath());

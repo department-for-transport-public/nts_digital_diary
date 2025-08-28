@@ -9,7 +9,7 @@ use App\Tests\Functional\Wizard\Form\FormTestCase;
 
 abstract class AbstractDiaryKeeperTest extends AbstractOtpTest
 {
-    const USER_IDENTIFIER = '2345678901';
+    public const USER_IDENTIFIER = '2345678901';
 
     protected function getAddDiaryKeeperTests(string $name, string $capiNumber, bool $isAdult, string $email, bool $addAnother): array
     {
@@ -44,7 +44,7 @@ abstract class AbstractDiaryKeeperTest extends AbstractOtpTest
     {
         if ($overwriteDetails) {
             // See similar code in VehicleTest for an explanation
-            $errors = fn(array $errors) => array_merge($errors, $isEdit ? [] : ['#details_isAdult']);
+            $errors = fn(array $errors): array => array_merge($errors, $isEdit ? [] : ['#details_isAdult']);
 
             return [
                 new FormTestCase([
@@ -129,8 +129,7 @@ abstract class AbstractDiaryKeeperTest extends AbstractOtpTest
 
     protected function fetchDiaryKeeperAndStoreId(array $criteria, string $contextKey): callable
     {
-        return function (Context $context)
-        use ($criteria, $contextKey) {
+        return function (Context $context) use ($criteria, $contextKey): void {
             $diaryKeeper = $context->getEntityManager()->getRepository(DiaryKeeper::class)->findOneBy($criteria);
             $context->set($contextKey, $diaryKeeper->getId());
         };
@@ -144,11 +143,10 @@ abstract class AbstractDiaryKeeperTest extends AbstractOtpTest
         array $proxyKeys = []
     ): callable
     {
-        return function (Context $context)
-        use ($name, $capiNumber, $isAdult, $email, $proxyKeys) {
+        return function (Context $context) use ($name, $capiNumber, $isAdult, $email, $proxyKeys): void {
             $diaryKeeperId = $context->get('diary-keeper');
             $diaryKeeperRepository = $context->getEntityManager()->getRepository(DiaryKeeper::class);
-            $proxies = array_map(fn($key) => $diaryKeeperRepository->findOneBy(['id' => $context->get($key)]), $proxyKeys);
+            $proxies = array_map(fn($key): ?object => $diaryKeeperRepository->findOneBy(['id' => $context->get($key)]), $proxyKeys);
 
             $diaryKeeper = $context->getEntityManager()->getRepository(DiaryKeeper::class)->findOneBy(['id' => $diaryKeeperId]);
 
@@ -177,8 +175,7 @@ abstract class AbstractDiaryKeeperTest extends AbstractOtpTest
 
     protected function clickDiaryKeeperEditLink(string $name, ?string $rowValue = null): callable
     {
-        return function (Context $context)
-        use ($name, $rowValue) {
+        return function (Context $context) use ($name, $rowValue): void {
             $testCase = $context->getTestCase();
             // Click the tab header...
             $testCase->clickLinkContaining($name, 0, "//*[@id='diary-keepers']/ul/li/");

@@ -136,7 +136,7 @@ class AddStageTestBuilder
 
     private static function baseDatabaseTestCase(string $diaryKeeperUsername, int $methodId): CallbackAction
     {
-        return new CallbackAction(function (Context $context) use ($diaryKeeperUsername, $methodId) {
+        return new CallbackAction(function (Context $context) use ($diaryKeeperUsername, $methodId): void {
             $stage = self::getStage($context->getEntityManager(), $diaryKeeperUsername);
 
             $testCase = $context->getTestCase();
@@ -151,7 +151,7 @@ class AddStageTestBuilder
 
     private static function privateDatabaseTestCase(string $diaryKeeperUsername, int $methodId, string $vehicleName, bool $isVehicleOther): CallbackAction
     {
-        return new CallbackAction(function (Context $context) use ($diaryKeeperUsername, $methodId, $vehicleName, $isVehicleOther) {
+        return new CallbackAction(function (Context $context) use ($diaryKeeperUsername, $methodId, $vehicleName, $isVehicleOther): void {
             $stage = self::getStage($context->getEntityManager(), $diaryKeeperUsername);
 
             $testCase = $context->getTestCase();

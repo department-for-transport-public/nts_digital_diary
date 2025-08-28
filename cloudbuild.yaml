@@ -5,7 +5,7 @@ options:
 
 steps:
     # Start by running some pre-install actions
-    - name: node:14
+    - name: node:22
       id: 'pre-install-script'
       entrypoint: sh
       args: ['-c', 'config/gcloud-build/call-remote-action.sh -a pre-install']
@@ -18,11 +18,18 @@ steps:
       args: ['-c', 'gsutil rsync config/gcloud-build/all/ . && gsutil rsync config/gcloud-build/$PROJECT_ID/ .']
       waitFor: ['pre-install-script']
 
+    # We need vendor/ghost/govuk-frontend-bundle since the CSS/JS references resources from it
+    - name: composer:2.3
+      id: 'install-ghost-bundle'
+      entrypoint: sh
+      args: [ '-c', 'composer install --ignore-platform-reqs --no-scripts' ]
+      waitFor: [ 'copy-deploy-files' ]
+
     # build assets, and .env.local file
-    - name: node:14
+    - name: node:22
       id: 'yarn-build'
       entrypoint: sh
-      args: ['-c', 'yarn install --frozen-lockfile --network-timeout 60000 && yarn run deploy-build && yarn run build-env-subs']
+      args: ['-c', 'corepack enable && yarn install --immutable --network-timeout 60000 && yarn run deploy-build && yarn run build-env-subs']
       env:
           - 'APP_ENV=prod'
           - 'DATABASE_URL=${_DATABASE_URL}'
@@ -36,7 +43,7 @@ steps:
           - 'APP_FEEDBACK_RECIPIENTS=${_APP_FEEDBACK_RECIPIENTS}'
           - 'APP_RECAPTCHA_SECRET_KEY=${_APP_RECAPTCHA_SECRET_KEY}'
           - 'APP_RECAPTCHA_SITE_KEY=${_APP_RECAPTCHA_SITE_KEY}'
-      waitFor: ['copy-deploy-files']
+      waitFor: ['install-ghost-bundle']
 
     ## The app deployment will not run `composer install` if the composer.lock file has not changed
     ## meaning that post install scripts, or even update scripts to not get run
@@ -60,7 +67,7 @@ steps:
       waitFor: ['deploy-default-service', 'deploy-admin-service']
 
     # Finish up by calling the post-install-script
-    - name: node:14
+    - name: node:22
       id: 'post-install-script'
       entrypoint: sh
       args: ['-c', 'config/gcloud-build/call-remote-action.sh -a post-install']

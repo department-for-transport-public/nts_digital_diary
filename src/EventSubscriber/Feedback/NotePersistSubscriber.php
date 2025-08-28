@@ -4,12 +4,13 @@ namespace App\EventSubscriber\Feedback;
 
 use App\Entity\Feedback\Note;
 use DateTime;
-use Doctrine\Bundle\DoctrineBundle\EventSubscriber\EventSubscriberInterface;
+use Doctrine\Bundle\DoctrineBundle\Attribute\AsDoctrineListener;
 use Doctrine\ORM\Event\PrePersistEventArgs;
 use Doctrine\ORM\Events;
-use Symfony\Component\Security\Core\Security;
+use Symfony\Bundle\SecurityBundle\Security;
 
-class NotePersistSubscriber implements EventSubscriberInterface
+#[AsDoctrineListener(event: Events::prePersist)]
+class NotePersistSubscriber
 {
     public function __construct(
         protected Security $security,
@@ -27,12 +28,5 @@ class NotePersistSubscriber implements EventSubscriberInterface
             ->setCreatedAt(new DateTime())
             ->setUserIdentifier($this->security->getToken()?->getUserIdentifier() ?? 'system')
         ;
-    }
-
-    public function getSubscribedEvents(): array
-    {
-        return [
-            Events::prePersist,
-        ];
     }
 }

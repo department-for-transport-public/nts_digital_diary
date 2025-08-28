@@ -1,0 +1,40 @@
+{% extends 'admin/base.html.twig' %}
+
+{% trans_default_domain 'admin' %}
+{% set title_translation_prefix = 'feedback.stats' %}
+{% set title_translation_domain = 'admin' %}
+
+{% block content %}
+    {% from '@GhostGovUkFrontend/components/macros.html.twig' import summaryListRow, tabsHead %}
+
+    {% set categories = ['support', 'feedback'] %}
+    {% set tabs = [] %}
+    {% for category in categories %}
+        {% set tabs = tabs | merge({("feedback.stats.#{category}.label" | trans): "tab-category-#{category}"}) %}
+    {% endfor %}
+    <div class="govuk-tabs" data-module="govuk-tabs" id="household-vehicles">
+
+        {{ tabsHead(tabs) }}
+        {% for category in categories %}
+            <div class="govuk-tabs__panel{% if not loop.first %} govuk-tabs__panel--hidden{% endif %}" id="tab-category-{{ category }}">
+                {% set data = attribute(_context, category) %}
+
+                <div class="govuk-grid-row">
+                    <div class="govuk-grid-column-one-half-from-desktop">
+                        <dl class="govuk-summary-list">
+                            {% for state in ['new', 'assigned', 'in-progress'] %}
+                                {{ summaryListRow({
+                                    key: "feedback.view.state.labels.#{state}" | trans,
+                                    value: data.messagesByState[state]
+                                }) }}
+                            {% endfor %}
+                        </dl>
+                    </div>
+                </div>
+
+                {{ render_chart(data.chart) }}
+            </div>
+        {% endfor %}
+    </div>
+
+{% endblock %}

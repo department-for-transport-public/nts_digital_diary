@@ -4,7 +4,7 @@ namespace App\Utility\Security;
 
 class CharacterTypeCounter
 {
-    public static function getCharacterTypeCounts($value): array
+    public static function getCharacterTypeCounts(string $value): array
     {
         return [
             'upper' => self::countCharactersOfType($value, ':: [:Upper:] Remove;'),

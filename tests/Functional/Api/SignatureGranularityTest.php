@@ -1,10 +1,10 @@
 <?php
 
-namespace Api;
+namespace App\Tests\Functional\Api;
 
+use App\Entity\AreaPeriod;
 use App\Tests\DataFixtures\ApiFixtures;
 use App\Tests\DataFixtures\ApiUserFixtures;
-use App\Tests\Functional\Api\AbstractApiWebTestCase;
 
 /**
  * A problem was found with the API's HMAC signature: The signature only takes into account the request query string.
@@ -27,10 +27,10 @@ class SignatureGranularityTest extends AbstractApiWebTestCase
         parent::setUp();
     }
 
-    public function testGetFail()
+    public function testGetFail(): void
     {
-        $areaPeriod1 = $this->getFixtureByReference('area-period:1');
-        $areaPeriod2 = $this->getFixtureByReference('area-period:2');
+        $areaPeriod1 = $this->fixtureReferenceRepository->getReference('area-period:1', AreaPeriod::class);
+        $areaPeriod2 = $this->fixtureReferenceRepository->getReference('area-period:2', AreaPeriod::class);
 
         $this->pauseUntilSecondBoundary();
 
@@ -38,10 +38,10 @@ class SignatureGranularityTest extends AbstractApiWebTestCase
         $this->makeSignedRequestAndGetResponse("/api/v1/area_periods/{$areaPeriod2->getApiId()}", [], ['expectedResponseCode' => 401], addNonce: false);
     }
 
-    public function testGetSuccess()
+    public function testGetSuccess(): void
     {
-        $areaPeriod1 = $this->getFixtureByReference('area-period:1');
-        $areaPeriod2 = $this->getFixtureByReference('area-period:2');
+        $areaPeriod1 = $this->fixtureReferenceRepository->getReference('area-period:1', AreaPeriod::class);
+        $areaPeriod2 = $this->fixtureReferenceRepository->getReference('area-period:2', AreaPeriod::class);
 
         $this->pauseUntilSecondBoundary();
 

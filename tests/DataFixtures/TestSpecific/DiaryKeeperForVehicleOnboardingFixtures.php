@@ -11,10 +11,9 @@ use Doctrine\Persistence\ObjectManager;
 
 class DiaryKeeperForVehicleOnboardingFixtures extends AbstractFixture implements DependentFixtureInterface
 {
-    public function load(ObjectManager $manager)
+    public function load(ObjectManager $manager): void
     {
-        /** @var Household $household */
-        $household = $this->getReference('household:not-onboarded');
+        $household = $this->getReference('household:not-onboarded', Household::class);
 
         $dk1 = (new DiaryKeeper())
             ->setName('Alice')

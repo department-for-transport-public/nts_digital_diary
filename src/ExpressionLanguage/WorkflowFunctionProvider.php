@@ -19,13 +19,13 @@ class WorkflowFunctionProvider implements ExpressionFunctionProviderInterface
         return [
             new ExpressionFunction(
                 'workflow_can',
-                fn($transitionName, $workflowObject) => "workflow_can($transitionName, $workflowObject)",
-                [$this, 'workflowCan']
+                fn($workflowObject, $transitionName): string => "workflow_can($workflowObject, $transitionName)",
+                $this->workflowCan(...)
             ),
         ];
     }
 
-    public function workflowCan($context, $transitionName, $workflowObject): bool
+    public function workflowCan($context, $workflowObject, $transitionName): bool
     {
         return $this->workflowRegistry->get($workflowObject)->can($workflowObject, $transitionName);
     }

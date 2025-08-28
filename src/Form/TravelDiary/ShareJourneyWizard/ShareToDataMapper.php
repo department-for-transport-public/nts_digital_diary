@@ -6,32 +6,28 @@ use App\Entity\DiaryKeeper;
 use App\Entity\Journey\Journey;
 use App\Entity\Journey\Method;
 use App\Entity\Journey\Stage;
-use App\FormWizard\PropertyMerger;
 use Doctrine\Common\Collections\ArrayCollection;
-use Symfony\Component\Form\ChoiceList\Loader\ChoiceLoaderInterface;
+use Ghost\GovUkCoreBundle\FormWizard\PropertyMerger;
+use Symfony\Component\Form\ChoiceList\ChoiceListInterface;
 use Symfony\Component\Form\DataMapperInterface;
 use Symfony\Component\Form\FormInterface;
 
 class ShareToDataMapper implements DataMapperInterface
 {
-    private PropertyMerger $propertyMerger;
-
-    public function __construct(PropertyMerger $propertyMerger)
-    {
-        $this->propertyMerger = $propertyMerger;
-    }
+    public function __construct(protected readonly PropertyMerger $propertyMerger)
+    {}
 
     /**
      * @param Journey $viewData
      */
-    public function mapDataToForms($viewData, \Traversable $forms)
+    public function mapDataToForms($viewData, \Traversable $forms): void
     {
         $forms = iterator_to_array($forms);
         /** @var $forms FormInterface[] */
         if ($shareForm = ($forms['shareTo'] ?? false)) {
-            /** @var ChoiceLoaderInterface $choiceLoader */
-            $choiceLoader = $shareForm->getConfig()->getOption('choice_loader');
-            $choices = $choiceLoader->loadChoiceList()->getChoices();
+            /** @var ChoiceListInterface $choiceList */
+            $choiceList = $shareForm->getConfig()->getAttribute('choice_list');
+            $choices = $choiceList->getChoices();
             $selected = new ArrayCollection();
             /** @var Journey $sharedTo */
             foreach ($viewData->getSharedTo() as $sharedTo) {
@@ -44,27 +40,26 @@ class ShareToDataMapper implements DataMapperInterface
     /**
      * @param Journey $viewData
      */
-    public function mapFormsToData(\Traversable $forms, &$viewData)
+    public function mapFormsToData(\Traversable $forms, &$viewData): void
     {
         $forms = iterator_to_array($forms);
         /** @var $forms FormInterface[] */
 
         if ($shareForm = ($forms['shareTo'] ?? false)) {
-            /** @var ChoiceLoaderInterface $choiceLoader */
-            $choiceLoader = $shareForm->getConfig()->getOption('choice_loader');
-            $removeChoices = $choiceLoader->loadChoiceList()->getChoices();
+            /** @var ChoiceListInterface $choiceList */
+            $choiceList = $shareForm->getConfig()->getAttribute('choice_list');
+            $choices = $choiceList->getChoices();
 
             // add new ones
             foreach ($shareForm->getData() as $dk) {
                 $viewData->addSharedTo($this->shareJourneyWith($dk, $viewData));
-                unset($removeChoices[$dk->getId()]);
+                unset($choices[$dk->getId()]);
             }
 
             // remove any not selected
-            foreach ($removeChoices as $dk) {
+            foreach ($choices as $dk) {
                 $viewData->removeSharedWithDiaryKeeper($dk);
             }
-
         }
     }
 

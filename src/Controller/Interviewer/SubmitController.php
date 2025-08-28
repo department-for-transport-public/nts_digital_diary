@@ -5,11 +5,11 @@ namespace App\Controller\Interviewer;
 use App\Entity\Household;
 use App\Security\Voter\Interviewer\HouseholdVoter;
 use App\Utility\ConfirmAction\Interviewer\SubmitHouseholdConfirmAction;
-use Sensio\Bundle\FrameworkExtraBundle\Configuration\IsGranted;
-use Sensio\Bundle\FrameworkExtraBundle\Configuration\Template;
+use Symfony\Bridge\Twig\Attribute\Template;
 use Symfony\Component\HttpFoundation\Request;
 use Symfony\Component\HttpFoundation\Response;
-use Symfony\Component\Routing\Annotation\Route;
+use Symfony\Component\Routing\Attribute\Route;
+use Symfony\Component\Security\Http\Attribute\IsGranted;
 
 #[Route("/household/{household}", name: "household_")]
 class SubmitController extends AbstractController

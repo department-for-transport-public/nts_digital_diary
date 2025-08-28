@@ -6,23 +6,10 @@ use App\Entity\Embeddable\Distance;
 
 abstract class StageDefinition
 {
-    protected int $number;
-    protected string $method;
-    protected ?string $methodOther;
+    protected ?string $methodOther = null;
 
-    protected Distance $distance;
-    protected int $travelTime;
-    protected int $adultCount;
-    protected int $childCount;
-
-    public function __construct(int $number, string $method, Distance $distance, int $travelTime, int $adultCount, int $childCount)
+    public function __construct(protected int $number, protected string $method, protected Distance $distance, protected int $travelTime, protected int $adultCount, protected int $childCount)
     {
-        $this->number = $number;
-        $this->method = $method;
-        $this->distance = $distance;
-        $this->travelTime = $travelTime;
-        $this->adultCount = $adultCount;
-        $this->childCount = $childCount;
     }
 
     public function getNumber(): int {

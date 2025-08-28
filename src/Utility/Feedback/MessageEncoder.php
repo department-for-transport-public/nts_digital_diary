@@ -6,12 +6,12 @@ use App\Entity\Feedback\Message;
 use App\Entity\User;
 use App\Repository\UserRepository;
 use Psr\Log\LoggerInterface;
+use Symfony\Bundle\SecurityBundle\Security;
 use Symfony\Component\HttpFoundation\Request;
 use Symfony\Component\HttpFoundation\RequestStack;
 use Symfony\Component\PropertyAccess\Exception\NoSuchPropertyException;
 use Symfony\Component\PropertyAccess\PropertyAccessor;
 use Symfony\Component\Security\Core\Authentication\Token\SwitchUserToken;
-use Symfony\Component\Security\Core\Security;
 use Symfony\Component\Security\Core\User\UserInterface;
 use Twig\Extension\AbstractExtension;
 use Twig\TwigFunction;
@@ -20,19 +20,19 @@ class MessageEncoder extends AbstractExtension
 {
     public function __construct(
         protected LoggerInterface $logger,
-        protected RequestStack $requestStack,
-        protected string $secret,
-        protected Security $security,
-        protected UserRepository $userRepository,
+        protected RequestStack    $requestStack,
+        protected string          $secret,
+        protected Security        $security,
+        protected UserRepository  $userRepository,
     ) {}
 
-    protected const ALGORITHM = 'aes-256-cbc';
-    protected const ENCODED_PROPERTIES = ['page', 'emailAddress', 'currentUserSerial', 'originalUserSerial'];
+    protected const string ALGORITHM = 'aes-256-cbc';
+    protected const array ENCODED_PROPERTIES = ['page', 'emailAddress', 'currentUserSerial', 'originalUserSerial'];
 
     public function getFunctions(): array
     {
         return [
-            new TwigFunction('encodeFeedback', [$this, 'encodeFeedback']),
+            new TwigFunction('encodeFeedback', $this->encodeFeedback(...)),
         ];
     }
 
@@ -58,7 +58,7 @@ class MessageEncoder extends AbstractExtension
             }
         }
 
-        $getUserSerial = function(?UserInterface $user) use (&$fe): ?string {
+        $getUserSerial = function (?UserInterface $user): ?string {
             if ($user instanceof User) {
                 $diaryKeeper = $user->getDiaryKeeper();
                 $interviewer = $user->getInterviewer();
@@ -76,8 +76,7 @@ class MessageEncoder extends AbstractExtension
         $feedback
             ->setCurrentUserSerial($getUserSerial($user))
             ->setOriginalUserSerial($getUserSerial($impersonator))
-            ->setEmailAddress(($impersonator ?? $user)?->getUserIdentifier());
-        ;
+            ->setEmailAddress(($impersonator ?? $user)?->getUserIdentifier());;
 
         return $feedback;
     }
@@ -89,7 +88,7 @@ class MessageEncoder extends AbstractExtension
         $propertyAccessor = new PropertyAccessor();
         $data = array_combine(
             self::ENCODED_PROPERTIES,
-            array_map(fn($property) => $propertyAccessor->getValue($feedback, $property), self::ENCODED_PROPERTIES)
+            array_map(fn($property): mixed => $propertyAccessor->getValue($feedback, $property), self::ENCODED_PROPERTIES)
         );
 
         $encoded = json_encode($data);
@@ -143,15 +142,13 @@ class MessageEncoder extends AbstractExtension
 
             try {
                 array_walk($data, fn($value, $property) => $propertyAccessor->setValue($message, $property, $value));
-            }
-            catch(NoSuchPropertyException) {
+            } catch (NoSuchPropertyException) {
                 $this->logger->warning('decodeFeedback(): JSON decode failed (corrupt)');
                 return null;
             }
 
             return $message;
-        }
-        catch(\ValueError) {
+        } catch (\ValueError) {
             $this->logger->warning('decodeFeedback(): JSON decode failed (depth)');
             return null;
         }

@@ -6,13 +6,8 @@ use App\Entity\PropertyChangeLog;
 
 class EntityDeletionMessage extends AbstractMessage
 {
-    protected string $entityId;
-    protected string $entityClass;
-
-    public function __construct(string $entityId, string $entityClass)
+    public function __construct(protected string $entityId, protected string $entityClass)
     {
-        $this->entityId = $entityId;
-        $this->entityClass = $entityClass;
     }
 
     public static function fromChangeLog(PropertyChangeLog $changeLog): EntityDeletionMessage

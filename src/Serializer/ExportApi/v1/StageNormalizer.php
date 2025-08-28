@@ -8,11 +8,11 @@ use Brick\Math\BigDecimal;
 use Brick\Math\Exception\RoundingNecessaryException;
 use Symfony\Component\Serializer\Exception\ExceptionInterface;
 use Symfony\Component\Serializer\Normalizer\AbstractObjectNormalizer;
-use Symfony\Component\Serializer\Normalizer\ContextAwareNormalizerInterface;
 use Symfony\Component\Serializer\Normalizer\NormalizerAwareInterface;
 use Symfony\Component\Serializer\Normalizer\NormalizerAwareTrait;
+use Symfony\Component\Serializer\Normalizer\NormalizerInterface;
 
-class StageNormalizer implements ContextAwareNormalizerInterface, NormalizerAwareInterface
+class StageNormalizer implements NormalizerInterface, NormalizerAwareInterface
 {
     use NormalizerAwareTrait;
 
@@ -21,6 +21,13 @@ class StageNormalizer implements ContextAwareNormalizerInterface, NormalizerAwar
         return
             ($context['apiVersion'] ?? 0) === 1
             && $data instanceof Stage;
+    }
+
+    public function getSupportedTypes(?string $format): array
+    {
+        return [
+            Stage::class => false, // false/not-cacheable because it depends upon the $context
+        ];
     }
 
     /**
@@ -32,7 +39,7 @@ class StageNormalizer implements ContextAwareNormalizerInterface, NormalizerAwar
     {
         // N.B. SQLite does not store decimals with fixed places, so we need to additionally scale here to make
         //      output consistent across both site usage and tests.
-        $decimalToString = fn(?BigDecimal $decimal) => $decimal === null ?
+        $decimalToString = fn(?BigDecimal $decimal): ?string => $decimal === null ?
             null :
             strval($decimal->toScale(2));
 

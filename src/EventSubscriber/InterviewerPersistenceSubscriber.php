@@ -4,34 +4,23 @@ namespace App\EventSubscriber;
 
 use App\Entity\Interviewer;
 use App\Utility\Security\AccountCreationHelper;
-use App\Utility\InterviewerTraining\InterviewerTrainingHelper;
-use Doctrine\Bundle\DoctrineBundle\EventSubscriber\EventSubscriberInterface;
+use Doctrine\Bundle\DoctrineBundle\Attribute\AsDoctrineListener;
 use Doctrine\ORM\Events;
 use Doctrine\Persistence\Event\LifecycleEventArgs;
 
-class InterviewerPersistenceSubscriber implements EventSubscriberInterface
+#[AsDoctrineListener(event: Events::postPersist)]
+class InterviewerPersistenceSubscriber
 {
-    private AccountCreationHelper $accountCreationHelper;
-    private string $appEnvironment;
+    public function __construct(
+        protected readonly AccountCreationHelper $accountCreationHelper,
+        protected readonly string                $appEnvironment,
+    ) {}
 
-    public function __construct(AccountCreationHelper $accountCreationHelper, string $appEnvironment)
-    {
-        $this->accountCreationHelper = $accountCreationHelper;
-        $this->appEnvironment = $appEnvironment;
-    }
-
-    public function postPersist(LifecycleEventArgs $args)
+    public function postPersist(LifecycleEventArgs $args): void
     {
         $object = $args->getObject();
-        if ($object instanceof Interviewer && !in_array($this->appEnvironment, ['test'])) {
+        if ($object instanceof Interviewer && $this->appEnvironment !== 'test') {
             $this->accountCreationHelper->sendAccountCreationEmail($object);
         }
-    }
-
-    public function getSubscribedEvents(): array
-    {
-        return [
-            Events::postPersist,
-        ];
     }
 }

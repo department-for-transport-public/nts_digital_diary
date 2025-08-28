@@ -16,7 +16,7 @@ class ConfirmActionType extends AbstractType
      * additionally be set, and it still works (whereas the alternative scheme would require having separate
      * cancel.translation_domain and confirm.translation_domain options)
      */
-    public function buildForm(FormBuilderInterface $builder, array $options)
+    public function buildForm(FormBuilderInterface $builder, array $options): void
     {
         $builder
             ->add('button_group', Gds\ButtonGroupType::class);
@@ -32,7 +32,7 @@ class ConfirmActionType extends AbstractType
         ;
     }
 
-    public function configureOptions(OptionsResolver $resolver)
+    public function configureOptions(OptionsResolver $resolver): void
     {
         $resolver->setDefaults([
             'confirm_button_options' => [],

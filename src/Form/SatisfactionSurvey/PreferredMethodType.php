@@ -28,7 +28,7 @@ class PreferredMethodType extends AbstractType
                 'label' => 'satisfaction.preferred-method.label',
                 'help' => 'satisfaction.preferred-method.help',
                 'choices' => array_combine(
-                    array_map(fn(string $choice) => "satisfaction.preferred-method.choices.{$choice}", $preferredMethodChoices),
+                    array_map(fn(string $choice): string => "satisfaction.preferred-method.choices.{$choice}", $preferredMethodChoices),
                     $preferredMethodChoices,
                 ),
                 'choice_options' => [
@@ -36,14 +36,14 @@ class PreferredMethodType extends AbstractType
                         'conditional_form_name' => "preferredMethodOther",
                     ],
                 ],
-                'label_attr' => ['class' => 'govuk-label--m'],
+                'label_attr' => ['class' => 'govuk-fieldset__legend--m'],
             ])
             ->add("preferredMethodOther", InputType::class, [
                 'label' => 'satisfaction.preferred-method-other.label',
                 'help' => 'satisfaction.preferred-method-other.help',
                 'label_attr' => ['class' => 'govuk-label--s'],
             ])
-            ->addEventListener(FormEvents::POST_SUBMIT, function(PostSubmitEvent $event) {
+            ->addEventListener(FormEvents::POST_SUBMIT, function(PostSubmitEvent $event): void {
                 /** @var SatisfactionSurvey $data */
                 $data = $event->getData();
 

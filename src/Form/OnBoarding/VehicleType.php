@@ -4,19 +4,21 @@ namespace App\Form\OnBoarding;
 
 use App\Entity\DiaryKeeper;
 use App\Entity\Journey\Method;
+use App\Form\OldGhostBundle\NumberType;
 use App\Security\OneTimePassword\OtpUserInterface;
 use App\Entity\Vehicle;
 use App\Features;
 use Doctrine\ORM\EntityRepository;
+use Doctrine\ORM\QueryBuilder;
 use Ghost\GovUkFrontendBundle\Form\Type\ButtonGroupType;
 use Ghost\GovUkFrontendBundle\Form\Type\ButtonType;
 use Ghost\GovUkFrontendBundle\Form\Type\EntityType;
 use Ghost\GovUkFrontendBundle\Form\Type\InputType;
 use Ghost\GovUkFrontendBundle\Form\Type\LinkType;
+use Symfony\Bundle\SecurityBundle\Security;
 use Symfony\Component\Form\AbstractType;
 use Symfony\Component\Form\FormBuilderInterface;
 use Symfony\Component\OptionsResolver\OptionsResolver;
-use Symfony\Component\Security\Core\Security;
 
 class VehicleType extends AbstractType
 {
@@ -48,7 +50,7 @@ class VehicleType extends AbstractType
                 'choice_label' => 'name',
                 'choices' => $user->getHousehold()->getDiaryKeepersWhoCanBePrimaryDrivers(),
             ])
-            ->add('capiNumber', InputType::class, [
+            ->add('capiNumber', NumberType::class, [
                 'label' => "vehicle.form.capi-number.label",
                 'help' => "vehicle.form.capi-number.help",
                 'label_attr' => ['class' => 'govuk-label--s'],
@@ -56,15 +58,13 @@ class VehicleType extends AbstractType
             ])
             ->add('method', EntityType::class, [
                 'class' => Method::class,
-                'choice_label' => fn(Method $x) => $x->getPrefixedDescriptionTranslationKey('stage.method.choices.', true),
-                'query_builder' => fn(EntityRepository $er) => $er
+                'choice_label' => fn(Method $x): string => $x->getPrefixedDescriptionTranslationKey('stage.method.choices.', true),
+                'query_builder' => fn(EntityRepository $er): QueryBuilder => $er
                     ->createQueryBuilder('m')
                     ->where('m.descriptionTranslationKey IN (:keys)')
                     ->andWhere('m.type = :type')
-                    ->setParameters([
-                        'keys' => Vehicle::VALID_METHOD_KEYS,
-                        'type' => 'private',
-                    ])
+                    ->setParameter('keys', Vehicle::VALID_METHOD_KEYS)
+                    ->setParameter('type', 'private')
                     ->orderBy('m.id'),
                 'choice_translation_domain' => 'travel-diary',
                 'label' => "vehicle.form.method.label",

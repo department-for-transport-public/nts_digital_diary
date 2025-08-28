@@ -3,23 +3,21 @@
 namespace App\EventSubscriber\Security;
 
 use App\Entity\User;
-use Doctrine\Common\EventSubscriber;
+use Doctrine\Bundle\DoctrineBundle\Attribute\AsDoctrineListener;
 use Doctrine\ORM\Event\OnFlushEventArgs;
 use Doctrine\ORM\Events;
 use Symfony\Component\PasswordHasher\Hasher\UserPasswordHasherInterface;
 
-class UserPasswordHashSubscriber implements EventSubscriber
+#[AsDoctrineListener(event: Events::onFlush)]
+class UserPasswordHashSubscriber
 {
-    protected UserPasswordHasherInterface $passwordHasher;
-
-    public function __construct(UserPasswordHasherInterface $passwordHasher)
+    public function __construct(protected UserPasswordHasherInterface $passwordHasher)
     {
-        $this->passwordHasher = $passwordHasher;
     }
 
-    public function onFlush(OnFlushEventArgs $eventArgs)
+    public function onFlush(OnFlushEventArgs $eventArgs): void
     {
-        $entityManager = $eventArgs->getEntityManager();
+        $entityManager = $eventArgs->getObjectManager();
         $unitOfWork = $entityManager->getUnitOfWork();
 
         // Using a closure so that we have easy access to the already-fetched unitOfWork and entityManager
@@ -49,12 +47,5 @@ class UserPasswordHashSubscriber implements EventSubscriber
                 $updatePasswordIfRequired($entity);
             }
         }
-    }
-
-    public function getSubscribedEvents(): array
-    {
-        return [
-            Events::onFlush
-        ];
     }
 }

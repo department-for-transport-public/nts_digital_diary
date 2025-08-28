@@ -30,7 +30,10 @@ class ChangeProxiesVoter extends Voter
             return false;
         }
 
-        if (!in_array($subject->getDiaryState(), [DiaryKeeper::STATE_NEW, DiaryKeeper::STATE_IN_PROGRESS])) {
+        if (
+            !in_array($subject->getDiaryState(), [DiaryKeeper::STATE_NEW, DiaryKeeper::STATE_IN_PROGRESS])
+            || $subject->getHousehold()->getIsSubmitted()
+        ) {
             return false;
         }
 

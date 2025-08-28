@@ -27,11 +27,6 @@ class AbstractFunctionalTestCase extends PantherTestCase
         $this->client = static::createPantherClient($pantherOptions, $kernelOptions);
     }
 
-    protected function getFixtureByReference($reference): object
-    {
-        return $this->fixtureReferenceRepository->getReference($reference);
-    }
-
     public function loginUser(?string $userIdentifier, ?string $password = 'password'): void
     {
         $this->client->request('GET', '/');
@@ -61,9 +56,10 @@ class AbstractFunctionalTestCase extends PantherTestCase
         $this->doAssertPathMatches($expectedPath, $isRegex, true, $errorMessage);
     }
 
-    protected function getUrlPath()
+    protected function getUrlPath(): ?string
     {
-        return parse_url($this->client->getCurrentURL(), PHP_URL_PATH);
+        $urlPath = parse_url($this->client->getCurrentURL(), PHP_URL_PATH);
+        return !$urlPath ? null : $urlPath;
     }
 
     protected function getHeading(): string
@@ -73,7 +69,7 @@ class AbstractFunctionalTestCase extends PantherTestCase
 
     protected function getTableData(string $xpathToTableRows = '//*[@id="main-content"]/table/tbody/tr'): array
     {
-        return array_map(function (WebDriverElement $tableRow) {
+        return array_map(function (WebDriverElement $tableRow): array {
             $subElements = $tableRow->findElements(WebDriverBy::xpath('./*'));
             return array_map(fn(WebDriverElement $x) => $x->getText(), $subElements);
         }, $this->client->findElements(WebDriverBy::xpath($xpathToTableRows)));
@@ -174,7 +170,7 @@ class AbstractFunctionalTestCase extends PantherTestCase
         }
     }
 
-    protected function assertDataHasKeyValuePair(array $data, string $key, string $value) {
+    protected function assertDataHasKeyValuePair(array $data, string $key, string $value, ?string $failReference = null): void {
         foreach($data as [$rowKey, $rowValue]) {
             if ($key === $rowKey) {
                 $this->assertEquals($value, $rowValue);
@@ -182,7 +178,8 @@ class AbstractFunctionalTestCase extends PantherTestCase
             }
         }
 
-        $this->fail("Missing data in table: '$key' => '$value'");
+        $reference = $failReference ? " (ref: $failReference)" : "";
+        $this->fail("Missing data in table{$reference}: '$key' => '$value'");
     }
 
     protected function assertTimeEquals(\DateTime $expected, ?\DateTime $actual): void

@@ -6,7 +6,7 @@ use App\Form\OnBoarding\DiaryKeeperWizard\DetailsType;
 use App\Form\OnBoarding\DiaryKeeperWizard\UserIdentifierType;
 use App\FormWizard\OnBoarding\DiaryKeeperState as State;
 
-return static function (ContainerConfigurator $container) {
+return static function (ContainerConfigurator $container): void {
     $editFinishMetadata =  [
         'persist' => true,
         'redirect_route' => 'onboarding_dashboard',

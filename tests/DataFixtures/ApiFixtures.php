@@ -12,12 +12,12 @@ class ApiFixtures extends AbstractFixture implements DependentFixtureInterface
 {
     public function load(ObjectManager $manager): void
     {
-        /** @var Household $householdOnboarded */
-        $householdOnboarded = $this->getReference('household:onboarded');
+        $householdOnboarded = $this->getReference('household:onboarded', Household::class);
 
-        $householdOnboarded->getDiaryKeepers()->map(fn (DiaryKeeper $dk) =>
+        $householdOnboarded->getDiaryKeepers()->map(fn (DiaryKeeper $dk): DiaryKeeper =>
             $dk->setDiaryState(DiaryKeeper::STATE_APPROVED)
         );
+
         $householdOnboarded
             ->setSubmittedAt(new \DateTime('2021-11-22 13:30'))
             ->setSubmittedBy('T1000');
@@ -30,4 +30,3 @@ class ApiFixtures extends AbstractFixture implements DependentFixtureInterface
         return [StageFixtures::class, HouseholdFixtures::class];
     }
 }
-

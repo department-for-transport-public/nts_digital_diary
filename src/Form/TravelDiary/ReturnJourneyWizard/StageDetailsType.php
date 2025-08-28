@@ -15,11 +15,11 @@ use Symfony\Component\OptionsResolver\OptionsResolver;
 
 class StageDetailsType extends AbstractStageDetailsType
 {
-    public function buildForm(FormBuilderInterface $builder, array $options)
+    public function buildForm(FormBuilderInterface $builder, array $options): void
     {
         parent::buildForm($builder, $options);
 
-        $builder->addEventListener(FormEvents::PRE_SET_DATA, function (FormEvent $event) {
+        $builder->addEventListener(FormEvents::PRE_SET_DATA, function (FormEvent $event): void {
             /** @var Stage $stage */
             $stage = $event->getData();
             $form = $event->getForm();
@@ -43,7 +43,7 @@ class StageDetailsType extends AbstractStageDetailsType
         });
     }
 
-    public function configureOptions(OptionsResolver $resolver)
+    public function configureOptions(OptionsResolver $resolver): void
     {
         parent::configureOptions($resolver);
         $resolver->setDefaults([

@@ -4,6 +4,6 @@
     <div class="govuk-body govuk-!-margin-bottom-2">
         {{ note.note | nl2br }}
     </div>
-    <div class="govuk-body-s">{{ note.userIdentifier }}, {{ note.createdAt | date(format_date_time) }}</div>
+    <div class="govuk-body-s">{{ note.userIdentifier | replace({'accounts.google.com:': ''}) }}, {{ note.createdAt | date(date_time_format.date('default') ~ " " ~ date_time_format.time('24-hour')) }}</div>
     <hr class="govuk-section-break govuk-section-break--visible govuk-section-break--m">
 {%- endfor -%}

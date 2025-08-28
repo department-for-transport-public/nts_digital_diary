@@ -1,0 +1,23 @@
+<div class="prose-scope">
+{%- apply markdown_to_html -%}
+This module allows you to practice manual set-up. To begin the module, you will need to enter the passcodes from below on the login screen. You can then enter any household and vehicles details to practise setting up.
+
+This module can be retaken as many times as required.
+
+{%- endapply -%}
+</div>
+{% from '@GhostGovUkFrontend/components/macros.html.twig' import summaryListRow %}
+<dl class="govuk-summary-list">
+    {{ summaryListRow({
+        key: 'First passcode',
+        value: passcode1 | format_otp,
+    }, false) }}
+    {{ summaryListRow({
+        key: 'Second passcode',
+        value: passcode2 | format_otp,
+    }, false) }}
+</dl>
+
+<div class="govuk-button-group"><a class="govuk-button" href="{{ practicalUrl }}">Access set-up training</a></div>
+
+<p class="govuk-body-s">The passcodes above can only be used for this training module. During fieldwork, CAPI will provide the passcodes to enter.</p>

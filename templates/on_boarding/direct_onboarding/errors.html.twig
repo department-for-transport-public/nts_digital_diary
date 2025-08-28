@@ -1,0 +1,20 @@
+{% extends 'base.html.twig' %}
+{% trans_default_domain 'on-boarding' %}
+{% set title_translation_prefix = 'direct-onboarding.ingress.errors' %}
+
+{% block content %}
+    <p class="govuk-body">{{ 'direct-onboarding.ingress.errors.help' | trans }}</p>
+    {% if form ?? false %}
+        <h2 class="govuk-heading-s">Debug information</h2>
+        <p class="govuk-body">Please share these details when reporting the error.</p>
+        <pre class="pre-break-word">
+passcode1={{ app.user.userIdentifier }}
+{{ requestParams}}
+        </pre>
+        <ul class="govuk-list govuk-list--bullet">
+        {% for error in [form] | form_views_to_errors %}
+            <li>{% if error.full_name ?? false %}{{ error.full_name }}: {% endif %}{{ error.text }}</li>
+        {% endfor %}
+        </ul>
+    {% endif %}
+{% endblock %}

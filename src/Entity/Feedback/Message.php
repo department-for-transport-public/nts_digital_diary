@@ -10,75 +10,56 @@ use Doctrine\Common\Collections\Collection;
 use Doctrine\ORM\Mapping as ORM;
 use Symfony\Component\Workflow\Exception\LogicException;
 
-/**
- * @ORM\Entity(repositoryClass=MessageRepository::class)
- * @ORM\Table(name="feedback_message")
- */
+#[ORM\Entity(repositoryClass: MessageRepository::class)]
+#[ORM\Table(name: 'feedback_message')]
 class Message
 {
-    public const STATE_NEW = 'new';
-    public const STATE_ASSIGNED = 'assigned';
-    public const STATE_IN_PROGRESS = 'in-progress';
-    public const STATE_CLOSED = 'closed';
+    public const string STATE_NEW = 'new';
+    public const string STATE_ASSIGNED = 'assigned';
+    public const string STATE_IN_PROGRESS = 'in-progress';
+    public const string STATE_REJECTED = 'rejected';
+    public const string STATE_CLOSED = 'closed';
 
-    public const TRANSITION_ASSIGN = 'assign';
-    public const TRANSITION_ACKNOWLEDGE = 'acknowledge';
-    public const TRANSITION_CLOSE = 'close';
+    public const string TRANSITION_ASSIGN = 'assign';
+    public const string TRANSITION_REJECT = 'reject';
+    public const string TRANSITION_ACKNOWLEDGE = 'acknowledge';
+    public const string TRANSITION_CLOSE = 'close';
+    public const string TRANSITION_REOPEN = 'reopen';
 
-    public const TRANSITION_CONTEXT_ASSIGN_TO = 'assignTo';
+    public const string TRANSITION_CONTEXT_ASSIGN_TO = 'assignTo';
 
     use IdTrait;
 
-    /**
-     * @ORM\Column(type="text")
-     */
+    #[ORM\Column(type: 'text')]
     private string $message;
 
-    /**
-     * @ORM\Column(type="string", length=255, nullable=true)
-     */
-    private ?string $emailAddress;
+    #[ORM\Column(type: 'string', length: 255, nullable: true)]
+    private ?string $emailAddress = null;
 
-    /**
-     * @ORM\Column(type="string", length=20, nullable=false, enumType=CategoryEnum::class)
-     */
+    #[ORM\Column(type: 'string', length: 20, nullable: false, enumType: CategoryEnum::class)]
     private CategoryEnum $category = CategoryEnum::Feedback;
 
-    /**
-     * @ORM\Column(type="string", length=20, nullable=true)
-     */
-    private ?string $assignedTo;
+    #[ORM\Column(type: 'string', length: 20, nullable: true)]
+    private ?string $assignedTo = null;
 
-    /**
-     * @ORM\Column(type="datetime")
-     */
+    #[ORM\Column(type: 'datetime')]
     private DateTime $sent;
 
-    /**
-     * @ORM\Column(type="string", length=20)
-     */
+    #[ORM\Column(type: 'string', length: 20)]
     private string $state = self::STATE_NEW;
 
-    /**
-     * @ORM\Column(type="string", length=20, nullable=true)
-     */
-    private ?string $currentUserSerial;
+    #[ORM\Column(type: 'string', length: 20, nullable: true)]
+    private ?string $currentUserSerial = null;
 
-    /**
-     * @ORM\Column(type="string", length=20, nullable=true)
-     */
-    private ?string $originalUserSerial;
+    #[ORM\Column(type: 'string', length: 20, nullable: true)]
+    private ?string $originalUserSerial = null;
 
-    /**
-     * @ORM\OneToMany(targetEntity=Note::class, mappedBy="message", orphanRemoval=true)
-     * @ORM\OrderBy({"createdAt"="ASC"})
-     */
+    #[ORM\OneToMany(targetEntity: Note::class, mappedBy: 'message', orphanRemoval: true)]
+    #[ORM\OrderBy(['createdAt' => 'ASC'])]
     private Collection $notes;
 
-    /**
-     * @ORM\Column(type="string", length=255, nullable=true)
-     */
-    private ?string $page;
+    #[ORM\Column(type: 'text', nullable: true)]
+    private ?string $page = null;
 
     public function __construct()
     {

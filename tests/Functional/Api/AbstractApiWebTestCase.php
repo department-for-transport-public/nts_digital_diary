@@ -19,7 +19,7 @@ abstract class AbstractApiWebTestCase extends AbstractFunctionalWebTestCase
 
     public function getHousehold(string $reference): Household
     {
-        $household = $this->fixtureReferenceRepository->getReference($reference);
+        $household = $this->fixtureReferenceRepository->getReference($reference, Household::class);
         $this->assertInstanceOf(Household::class, $household);
         return $household;
     }
@@ -70,7 +70,7 @@ abstract class AbstractApiWebTestCase extends AbstractFunctionalWebTestCase
         if ($addNonce && !isset($queryParams['_nonce'])) {
             try {
                 $queryParams['_nonce'] = bin2hex(random_bytes(4));
-            } catch (\Throwable $e) {
+            } catch (\Throwable) {
             }
         }
         $this->makeSignedRequest($endPoint, $queryParams, $options, $data);
@@ -87,7 +87,7 @@ abstract class AbstractApiWebTestCase extends AbstractFunctionalWebTestCase
     protected function signString($string, ApiUser $apiUser): string
     {
         $secret = $this->secretGenerator->getSecretForApiUser($apiUser);
-        return base64_encode(hash_hmac('sha256', $string, $secret, true));
+        return base64_encode(hash_hmac('sha256', (string) $string, $secret, true));
     }
 
     protected function getExportTestQueryParams($timestamp = null, $startTime = null, $endTime = null): array
@@ -102,8 +102,8 @@ abstract class AbstractApiWebTestCase extends AbstractFunctionalWebTestCase
 
     protected function getApiUserFixture(): ApiUser
     {
-        /** @var ApiUser $apiUser */
-        $apiUser = $this->getFixtureByReference('api-user:1');
+        $apiUser = $this->fixtureReferenceRepository->getReference('api-user:1', ApiUser::class);
+
         if (!$apiUser instanceof ApiUser) {
             throw new RuntimeException("unexpected reference type");
         }
@@ -116,8 +116,8 @@ abstract class AbstractApiWebTestCase extends AbstractFunctionalWebTestCase
     protected function getAreaPeriodFixtures(): array
     {
         return [
-            $this->getFixtureByReference('area-period:1'),
-            $this->getFixtureByReference('area-period:2'),
+            $this->fixtureReferenceRepository->getReference('area-period:1', AreaPeriod::class),
+            $this->fixtureReferenceRepository->getReference('area-period:2', AreaPeriod::class),
         ];
     }
 

@@ -4,6 +4,7 @@ namespace App\Tests\EventSubscriber;
 
 use App\Entity\Journey\Method;
 use App\Entity\Journey\Stage;
+use App\Entity\Vehicle;
 use Brick\Math\BigDecimal;
 
 class StagePropertyChangeLogTest extends AbstractPropertyChangeLogTest
@@ -13,9 +14,9 @@ class StagePropertyChangeLogTest extends AbstractPropertyChangeLogTest
         $privateStage = 'journey:1/stage:1';
         $publicStage = 'journey:2/stage:1';
 
-        $getDecimal = fn(?string $value) => fn() => $value === null ?: BigDecimal::of($value);
-        $getMethod = fn(int $id) => fn() => $this->entityManager->getRepository(Method::class)->find($id);
-        $getReference = fn(string $name) => fn() => $this->referenceRepository->getReference($name);
+        $getDecimal = fn(?string $value): \Closure => fn(): BigDecimal|bool => $value === null ?: BigDecimal::of($value);
+        $getMethod = fn(int $id): \Closure => fn(): ?object => $this->entityManager->getRepository(Method::class)->find($id);
+        $getReference = fn(string $name, string $class): \Closure => fn() => $this->referenceRepository->getReference($name, $class);
 
         $getTests = fn(string $userDesc, string $userRef) => [
             // $userRef, $refName, $refClass, $propertyPath, $value, $changeLogIsExpected, $expectedLoggedPath = null, $expectedLoggedValue = null
@@ -46,7 +47,7 @@ class StagePropertyChangeLogTest extends AbstractPropertyChangeLogTest
             "$userDesc: Stage => travelTime              (non-change)"      => [$userRef, $privateStage, Stage::class, 'travelTime', 30, false],
             "$userDesc: Stage => travelTime              (change)"          => [$userRef, $privateStage, Stage::class, 'travelTime', 31, true],
             "$userDesc: Stage => vehicle                 (non-change)"      => [$userRef, $privateStage, Stage::class, 'vehicle', null, false],
-            "$userDesc: Stage => vehicle                 (change)"          => [$userRef, $privateStage, Stage::class, 'vehicle', $getReference('vehicle:1'), true, 'vehicle', 'A-Team van'],
+            "$userDesc: Stage => vehicle                 (change)"          => [$userRef, $privateStage, Stage::class, 'vehicle', $getReference('vehicle:1', Vehicle::class), true, 'vehicle', 'A-Team van'],
             "$userDesc: Stage => vehicleOther            (non-change)"      => [$userRef, $privateStage, Stage::class, 'vehicleOther', null, false],
             "$userDesc: Stage => vehicleOther            (change)"          => [$userRef, $privateStage, Stage::class, 'vehicleOther', 'Red combine harvester', true, 'vehicle'],
         ];

@@ -8,7 +8,7 @@ use Symfony\Component\Security\Core\Authorization\Voter\Voter;
 
 class UserValidForLoginVoter extends Voter
 {
-    const USER_VALID_FOR_LOGIN = 'USER_VALID_FOR_LOGIN';
+    public const USER_VALID_FOR_LOGIN = 'USER_VALID_FOR_LOGIN';
 
     protected function supports(string $attribute, $subject): bool
     {

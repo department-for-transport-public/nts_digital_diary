@@ -9,17 +9,12 @@ use Symfony\Component\Security\Core\User\UserInterface;
 
 class InMemoryOtpUser implements UserInterface, OtpUserInterface
 {
-    public const ROLE_ON_BOARDING_TRAINING = 'ROLE_ON_BOARDING_TRAINING';
+    public const string ROLE_ON_BOARDING_TRAINING = 'ROLE_ON_BOARDING_TRAINING';
+    public const string ROLE_DIRECT_ON_BOARDING_TRAINING = 'ROLE_DIRECT_ON_BOARDING_TRAINING';
+    public const string ROLE_MANUAL_ON_BOARDING_TRAINING = 'ROLE_MANUAL_ON_BOARDING_TRAINING';
 
-    private ?string $userIdentifier;
-    private ?Interviewer $interviewer;
-    private ?Household $household;
-
-    public function __construct(string $userIdentifier, ?Interviewer $interviewer, ?Household $household = null)
+    public function __construct(private ?string $userIdentifier, private ?Interviewer $interviewer, private ?Household $household = null)
     {
-        $this->userIdentifier = $userIdentifier;
-        $this->interviewer = $interviewer;
-        $this->household = $household;
     }
 
     public function getRoles(): array
@@ -27,6 +22,10 @@ class InMemoryOtpUser implements UserInterface, OtpUserInterface
         return [
             'ROLE_ON_BOARDING',
             self::ROLE_ON_BOARDING_TRAINING,
+            match($this->getUserIdentifier()) {
+                DirectOnboardingTrainingUserProvider::USER_IDENTIFIER => self::ROLE_DIRECT_ON_BOARDING_TRAINING,
+                InterviewerLinkedTrainingUserProvider::USER_IDENTIFIER => self::ROLE_MANUAL_ON_BOARDING_TRAINING,
+            },
         ];
     }
 
@@ -40,7 +39,7 @@ class InMemoryOtpUser implements UserInterface, OtpUserInterface
         return null;
     }
 
-    public function eraseCredentials()
+    public function eraseCredentials(): void
     {
     }
 
@@ -49,9 +48,9 @@ class InMemoryOtpUser implements UserInterface, OtpUserInterface
         return $this->getUserIdentifier();
     }
 
-    public function getUserIdentifier(): ?string
+    public function getUserIdentifier(): string
     {
-        return $this->userIdentifier ?? null;
+        return $this->userIdentifier;
     }
 
     public function setUserIdentifier(?string $userIdentifier): self
@@ -86,6 +85,4 @@ class InMemoryOtpUser implements UserInterface, OtpUserInterface
         $this->interviewer = $interviewer;
         return $this;
     }
-
-
 }

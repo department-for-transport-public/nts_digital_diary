@@ -9,16 +9,22 @@ doctrine:
 
     orm:
         auto_generate_proxy_classes: true
+        controller_resolver:
+            auto_mapping: false
         default_entity_manager: default
         entity_managers:
             default:
                 dql:
                     datetime_functions:
                         Year: DoctrineExtensions\Query\Mysql\Year
+                        Week: DoctrineExtensions\Query\Mysql\Week
+                        Month: DoctrineExtensions\Query\Mysql\Month
+                        date_format: DoctrineExtensions\Query\Mysql\DateFormat
+                        YearWeek: DoctrineExtensions\Query\Mysql\YearWeek
                 naming_strategy: doctrine.orm.naming_strategy.underscore_number_aware
                 mappings:
                     App:
-                        type: annotation
+                        type: attribute
                         dir: '%kernel.project_dir%/src/Entity'
                         prefix: 'App\Entity'
                         alias: App
@@ -31,7 +37,7 @@ doctrine:
                 naming_strategy: doctrine.orm.naming_strategy.underscore_number_aware
                 mappings:
                     Metrics:
-                        type: annotation
+                        type: attribute
                         dir: '%kernel.project_dir%/src/Entity/Utility'
                         prefix: 'App\Entity\Utility\MetricsLog'
                         alias: App

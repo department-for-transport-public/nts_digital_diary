@@ -6,6 +6,7 @@ use Doctrine\Common\DataFixtures\ReferenceRepository;
 use Liip\TestFixturesBundle\Services\DatabaseToolCollection;
 use Symfony\Bundle\FrameworkBundle\KernelBrowser;
 use Symfony\Bundle\FrameworkBundle\Test\WebTestCase;
+use Symfony\Component\HttpFoundation\Request;
 
 class AbstractFunctionalWebTestCase extends WebTestCase
 {
@@ -23,14 +24,9 @@ class AbstractFunctionalWebTestCase extends WebTestCase
         $this->fixtureReferenceRepository = $fixtures->getReferenceRepository();
     }
 
-    protected function getFixtureByReference($reference): object
-    {
-        return $this->fixtureReferenceRepository->getReference($reference);
-    }
-
     protected function submitLoginForm(string $username, string $password): void
     {
-        $this->client->request('GET', '/login');
+        $this->client->request(Request::METHOD_GET, '/login');
 
         $this->client->submitForm('Sign in', [
             'user_login[group][email]' => $username,

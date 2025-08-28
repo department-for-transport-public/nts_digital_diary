@@ -3,24 +3,25 @@
 namespace App\ListPage\Admin;
 
 use App\Entity\Interviewer;
-use App\ListPage\AbstractListPage;
-use App\ListPage\Field\Simple;
-use App\ListPage\Field\TextFilter;
 use App\Repository\AreaPeriodRepository;
 use Doctrine\ORM\Query\Expr\Join;
 use Doctrine\ORM\QueryBuilder;
+use Ghost\GovUkCoreBundle\ListPage\AbstractListPage;
+use Ghost\GovUkCoreBundle\ListPage\Field\Simple;
+use Ghost\GovUkCoreBundle\ListPage\Field\TextFilter;
 use Symfony\Component\Form\FormFactoryInterface;
 use Symfony\Component\Routing\RouterInterface;
 
 class InterviewerAreaList extends AbstractListPage
 {
-    private AreaPeriodRepository $repository;
     private Interviewer $interviewer;
 
-    public function __construct(AreaPeriodRepository $repository, FormFactoryInterface $formFactory, RouterInterface $router)
-    {
+    public function __construct(
+        protected readonly AreaPeriodRepository $repository,
+        FormFactoryInterface                    $formFactory,
+        RouterInterface                         $router
+    ) {
         parent::__construct($formFactory, $router);
-        $this->repository = $repository;
     }
 
     public function setInterviewer(Interviewer $interviewer): self
@@ -47,11 +48,8 @@ class InterviewerAreaList extends AbstractListPage
             ->leftJoin('areaPeriod.interviewers', 'interviewer')
             ->leftJoin('areaPeriod.households', 'household', Join::WITH, 'household.isOnboardingComplete = :true')
             ->having('interviewer = :interviewer')
-            ->setParameters([
-                'interviewer' => $this->interviewer,
-                'true' => true,
-            ])
-            ;
+            ->setParameter('interviewer', $this->interviewer)
+            ->setParameter('true', true);
     }
 
     protected function getDefaultOrder(): array
@@ -62,5 +60,4 @@ class InterviewerAreaList extends AbstractListPage
             Simple::generateId('Area code') => 'ASC',
         ];
     }
-
 }

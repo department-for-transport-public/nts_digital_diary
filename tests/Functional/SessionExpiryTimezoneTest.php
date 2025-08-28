@@ -16,14 +16,13 @@ class SessionExpiryTimezoneTest extends AbstractFunctionalTestCase
         $this->initialiseClientAndLoadFixtures([UserFixtures::class], ['env' => ['TZ' => 'America/Belize']]);
     }
 
-    public function testSessionExpiryWithDifferentBrowserTimezone()
+    public function testSessionExpiryWithDifferentBrowserTimezone(): void
     {
         // Session expiry element is not included unless a user is logged in
-        /** @var User $interviewerUser */
-        $interviewerUser = $this->getFixtureByReference('user:interviewer');
+        $interviewerUser = $this->fixtureReferenceRepository->getReference('user:interviewer', User::class);
         $this->loginUser($interviewerUser->getUserIdentifier(), 'password');
 
         sleep(2);
-        $this->assertSelectorIsNotVisible('#session-reminder .expired');
+        $this->assertSelectorIsNotVisible('#session-timeout-reminder .expired');
     }
 }

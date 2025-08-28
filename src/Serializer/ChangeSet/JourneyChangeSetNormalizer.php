@@ -3,8 +3,8 @@
 namespace App\Serializer\ChangeSet;
 
 use App\Entity\Journey\Journey;
-use App\Utility\Comparator\Comparator;
-use App\Utility\Comparator\Comparators\DateTimeComparator;
+use Ghost\GovUkCoreBundle\Utility\Comparator\Comparator;
+use Ghost\GovUkCoreBundle\Utility\Comparator\Comparators\DateTimeComparator;
 
 class JourneyChangeSetNormalizer extends AbstractChangeSetNormalizer
 {
@@ -15,6 +15,13 @@ class JourneyChangeSetNormalizer extends AbstractChangeSetNormalizer
     {
         return is_array($data) &&
             ($context[self::CHANGE_SET_ENTITY_KEY] ?? null) instanceof Journey;
+    }
+
+    public function getSupportedTypes(?string $format): array
+    {
+        return [
+            'native-array' => false, // false/not-cacheable because it depends upon the $context
+        ];
     }
 
     public function normalize($object, string $format = null, array $context = []): array|string|int|float|bool|\ArrayObject|null

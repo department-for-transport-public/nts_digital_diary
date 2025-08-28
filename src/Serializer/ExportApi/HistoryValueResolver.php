@@ -7,14 +7,11 @@ use Doctrine\ORM\EntityManagerInterface;
 
 class HistoryValueResolver
 {
-    protected EntityManagerInterface $entityManager;
     protected array $entities;
 
     // Service is lazy to avoid early database calls which were upsetting cloud build deployment
-    public function __construct(EntityManagerInterface $entityManager)
+    public function __construct(protected EntityManagerInterface $entityManager)
     {
-        $this->entityManager = $entityManager;
-
         $map = [
             'method' => Method::class,
         ];

@@ -10,6 +10,7 @@ use ApiPlatform\Metadata\Delete;
 use ApiPlatform\Metadata\ApiResource;
 use App\ApiPlatform\ApiIdInterface;
 use App\ApiPlatform\Provider\InterviewerProvider;
+use App\Attribute\ApiViolationMap;
 use App\Attribute\DisableTrainingAreaPeriodFilter;
 use App\Repository\InterviewerRepository;
 use Doctrine\Common\Collections\ArrayCollection;
@@ -17,16 +18,9 @@ use Doctrine\Common\Collections\Collection;
 use Doctrine\ORM\Mapping as ORM;
 use Symfony\Bridge\Doctrine\Validator\Constraints\UniqueEntity;
 use Symfony\Component\Validator\Constraints as Assert;
-use App\Annotation\ApiViolationMap;
 use App\Controller\Api\AreaAllocationController;
 use App\Controller\Api\AreaDeallocationController;
 
-
-/**
- * @ORM\Entity (repositoryClass=InterviewerRepository::class)
- * @UniqueEntity ("serialId", groups={"admin.interviewer", "api.interviewer"})
- * @ApiViolationMap ({"user.username"="email"})
- */
 #[ApiResource(
     operations: [
         new Get(
@@ -43,48 +37,41 @@ use App\Controller\Api\AreaDeallocationController;
     validationContext: ['groups' => ['api.interviewer']],
     filters: ['api.interviewer.search_filter', 'api.interviewer.mapped_property_filter'],
 )]
+#[ApiViolationMap(['user.username' => 'email'])]
 #[DisableTrainingAreaPeriodFilter]
+#[UniqueEntity('serialId', groups: ['admin.interviewer', 'api.interviewer'])]
+#[ORM\Entity(repositoryClass: InterviewerRepository::class)]
 class Interviewer implements UserPersonInterface, ApiIdInterface
 {
 
     use ApiIdTrait;
 
-    /**
-     * @ORM\ManyToMany(targetEntity=AreaPeriod::class, mappedBy="interviewers")
-     */
+    #[ORM\ManyToMany(targetEntity: AreaPeriod::class, mappedBy: 'interviewers')]
     private Collection $areaPeriods;
 
-    /**
-     * @ORM\Column(type="string", length=255, nullable=false)
-     * @Assert\NotBlank(groups={"admin.interviewer"})
-     * @Assert\NotBlank(groups={"api.interviewer"}, message="api.interviewer.name.not-blank")
-     */
+    #[Assert\NotBlank(groups: ['admin.interviewer'])]
+    #[Assert\NotBlank(message: 'api.interviewer.name.not-blank', groups: ['api.interviewer'])]
+    #[ORM\Column(type: 'string', length: 255, nullable: false)]
     private ?string $name = null;
 
-    /**
-     * @ORM\OneToOne(targetEntity=User::class, mappedBy="interviewer", cascade={"persist", "remove"})
-     * @Assert\Valid(groups={"admin.interviewer", "api.interviewer"})
-     */
+    #[Assert\Valid(groups: ['admin.interviewer', 'api.interviewer'])]
+    #[ORM\OneToOne(targetEntity: User::class, mappedBy: 'interviewer', cascade: ['persist', 'remove'])]
     private ?User $user = null;
 
-    /**
-     * @ORM\Column(type="string", length="10", unique=true, nullable=false)
-     * @Assert\NotBlank(groups={"admin.interviewer"})
-     * @Assert\NotBlank(groups={"api.interviewer"}, message="api.interviewer.serial-id.not-blank")
-     */
     #[ApiProperty(identifier: true)]
-    private ?string $serialId;
+    #[Assert\NotBlank(groups: ['admin.interviewer'])]
+    #[Assert\NotBlank(message: 'api.interviewer.serial-id.not-blank', groups: ['api.interviewer'])]
+    #[ORM\Column(type: 'string', length: '10', unique: true, nullable: false)]
+    private ?string $serialId = null;
 
     /**
-     * @ORM\OneToMany(targetEntity=AreaPeriod::class, mappedBy="trainingInterviewer", orphanRemoval=true)
      * @var Collection<int, AreaPeriod>
      */
+    #[ORM\OneToMany(targetEntity: AreaPeriod::class, mappedBy: 'trainingInterviewer', orphanRemoval: true)]
     private Collection $trainingAreaPeriods;
 
-    /**
-     * @ORM\OneToMany(targetEntity=InterviewerTrainingRecord::class, mappedBy="interviewer", orphanRemoval=true)
-     * @ORM\OrderBy({"createdAt" = "ASC"})
-     */
+    #[ORM\OneToMany(targetEntity: InterviewerTrainingRecord::class, mappedBy: 'interviewer', orphanRemoval: true)]
+    #[ORM\OrderBy(['createdAt' => 'ASC'])]
     private Collection $trainingRecords;
 
     public function __construct()
@@ -124,7 +111,7 @@ class Interviewer implements UserPersonInterface, ApiIdInterface
     }
 
     /**
-     * @return Collection|AreaPeriod[]
+     * @return Collection<AreaPeriod>
      */
     public function getAreaPeriods(): Collection
     {
@@ -198,12 +185,12 @@ class Interviewer implements UserPersonInterface, ApiIdInterface
     public function getTrainingRecordsForModule(string $module): Collection
     {
         return $this->getTrainingRecords()
-            ->filter(fn(InterviewerTrainingRecord $trainingRecord) => $trainingRecord->getModuleName() === $module);
+            ->filter(fn(InterviewerTrainingRecord $trainingRecord): bool => $trainingRecord->getModuleName() === $module);
     }
 
     public function getLatestTrainingRecordForModule(string $module): ?InterviewerTrainingRecord
     {
-        return $this->getTrainingRecordsForModule($module)->last() ?? null;
+        return $this->getTrainingRecordsForModule($module)->last() ?: null;
     }
 
     public function getTrainingPersonalDiaryKeeper(): DiaryKeeper

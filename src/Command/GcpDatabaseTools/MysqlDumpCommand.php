@@ -32,7 +32,7 @@ class MysqlDumpCommand extends AbstractGcpDatabaseCommand
     {
         $dumpFilename = $this->input->getOption('filename') ?? "var/dumps/{$this->environment}-dump-" . date('Ymd-His') . ".sql";
 
-        $dirName = dirname($dumpFilename);
+        $dirName = dirname((string) $dumpFilename);
         if (!file_exists($dirName)) {
             $this->io->error("output directory {$dirName} does not exist");
             return self::FAILURE;

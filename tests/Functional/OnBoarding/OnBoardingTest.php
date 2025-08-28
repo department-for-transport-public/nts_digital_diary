@@ -55,12 +55,9 @@ class OnBoardingTest extends AbstractOtpTest
         return [$tests, $isEdit, $userIdentifier];
     }
 
-    /**
-     * @return array
-     */
     protected function getDetailsTestCases(int $adjustNumbersBy): array
     {
-        $merge = fn(array $x) => array_merge([
+        $merge = fn(array $x): array => array_merge([
             "household[addressNumber]" => '',
             "household[householdNumber]" => '',
             "household[checkLetter]" => '',
@@ -95,14 +92,14 @@ class OnBoardingTest extends AbstractOtpTest
                 "#household_checkLetter",
             ]),
             new FormTestCase($merge([
-                "household[addressNumber]" => '99',
+                "household[addressNumber]" => '22',
                 "household[householdNumber]" => '99',
             ]), [
                 "#household_diaryWeekStartDate",
                 "#household_checkLetter",
             ]),
             new FormTestCase($merge([
-                "household[addressNumber]" => '100',
+                "household[addressNumber]" => '23',
                 "household[householdNumber]" => '100',
             ]), [
                 "#household_addressNumber",
@@ -167,7 +164,7 @@ class OnBoardingTest extends AbstractOtpTest
     ): callable
     {
         return function (Context $context)
-        use ($userIdentifier, $expectedAddressNumber, $expectedHouseholdNumber, $expectedDiaryWeekStartDate, $expectedCheckLetter) {
+        use ($userIdentifier, $expectedAddressNumber, $expectedHouseholdNumber, $expectedDiaryWeekStartDate, $expectedCheckLetter): void {
             $otpUser = $context->getEntityManager()->getRepository(OtpUser::class)->findOneBy(['userIdentifier' => $userIdentifier]);
 
             $household = $otpUser->getHousehold();
@@ -192,7 +189,7 @@ class OnBoardingTest extends AbstractOtpTest
     /**
      * @dataProvider wizardData
      */
-    public function testOnboardingWizard(array $wizardData, bool $isEdit, string $userIdentifier)
+    public function testOnboardingWizard(array $wizardData, bool $isEdit, string $userIdentifier): void
     {
         $this->initialiseClientAndLoadFixtures([OtpUserFixtures::class]);
         $this->loginOtpUser($userIdentifier, $this->passcodeGenerator->getPasswordForUserIdentifier($userIdentifier));

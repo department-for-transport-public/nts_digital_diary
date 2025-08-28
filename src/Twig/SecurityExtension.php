@@ -14,29 +14,22 @@ use Twig\TwigFunction;
 
 class SecurityExtension extends AbstractExtension
 {
-    protected ImpersonatorAuthorizationChecker $impersonatorAuthorizationChecker;
-    protected TokenStorageInterface $tokenStorage;
-    protected UserRepository $userRepository;
-
-    public function __construct(ImpersonatorAuthorizationChecker $impersonatorAuthorizationChecker, TokenStorageInterface $tokenStorage, UserRepository $userRepository)
+    public function __construct(protected ImpersonatorAuthorizationChecker $impersonatorAuthorizationChecker, protected TokenStorageInterface $tokenStorage, protected UserRepository $userRepository)
     {
-        $this->impersonatorAuthorizationChecker = $impersonatorAuthorizationChecker;
-        $this->tokenStorage = $tokenStorage;
-        $this->userRepository = $userRepository;
     }
 
     public function getFilters(): array
     {
         return [
-            new TwigFilter('diary_keeper_display_name', [$this, 'getDiaryKeeperDisplayName'])
+            new TwigFilter('diary_keeper_display_name', $this->getDiaryKeeperDisplayName(...))
         ];
     }
 
     public function getFunctions(): array
     {
         return [
-            new TwigFunction('impersonator', [$this, 'impersonator']),
-            new TwigFunction('is_impersonator_granted', [$this, 'isImpersonatorGranted']),
+            new TwigFunction('impersonator', $this->impersonator(...)),
+            new TwigFunction('is_impersonator_granted', $this->isImpersonatorGranted(...)),
         ];
     }
 

@@ -2,26 +2,24 @@
 
 namespace App\Controller\TravelDiary;
 
-use App\Annotation\Redirect;
-use App\Controller\FormWizard\AbstractSessionStateFormWizardController;
+use App\Attribute\Redirect;
 use App\Entity\Journey\Journey;
 use App\Entity\Journey\Stage;
-use App\FormWizard\FormWizardStateInterface;
-use App\FormWizard\Place;
 use App\FormWizard\TravelDiary\StageState;
 use App\Security\Voter\TravelDiary\DiaryAccessVoter;
-use Sensio\Bundle\FrameworkExtraBundle\Configuration\Entity;
-use Sensio\Bundle\FrameworkExtraBundle\Configuration\IsGranted;
+use Ghost\GovUkCoreBundle\Controller\FormWizard\AbstractSessionStateFormWizardController;
+use Ghost\GovUkCoreBundle\FormWizard\FormWizardStateInterface;
+use Ghost\GovUkCoreBundle\FormWizard\Place;
+use Symfony\Bridge\Doctrine\Attribute\MapEntity;
 use Symfony\Component\HttpFoundation\RedirectResponse;
 use Symfony\Component\HttpFoundation\Request;
 use Symfony\Component\HttpFoundation\Response;
-use Symfony\Component\Routing\Annotation\Route;
+use Symfony\Component\Routing\Attribute\Route;
+use Symfony\Component\Security\Http\Attribute\IsGranted;
 use Symfony\Component\Serializer\Exception\ExceptionInterface;
 
-/**
- * @Route(name="stage_wizard_")
- * @Redirect("!is_granted('EDIT_DIARY')", route="traveldiary_dashboard")
- */
+#[Redirect("!is_granted('EDIT_DIARY')", route: "traveldiary_dashboard")]
+#[Route(name: 'stage_wizard_')]
 class StageWizardController extends AbstractSessionStateFormWizardController
 {
     private ?Journey $journey = null;
@@ -29,13 +27,17 @@ class StageWizardController extends AbstractSessionStateFormWizardController
     private bool $isAdd;
 
     /**
-     * @Route("/journey/{journeyId}/add-stage/{place}", name="place")
-     * @Route("/journey/{journeyId}/add-stage", name="start")
-     * @IsGranted(DiaryAccessVoter::ACCESS, subject="journey", statusCode=404)
-     * @Entity("journey", expr="repository.findByJourneyId(journeyId)")
      * @throws ExceptionInterface
      */
-    public function add(Request $request, Journey $journey, ?string $place = null): Response
+    #[Route(path: '/journey/{journeyId}/add-stage/{place}', name: 'place')]
+    #[Route(path: '/journey/{journeyId}/add-stage', name: 'start')]
+    #[IsGranted(DiaryAccessVoter::ACCESS, subject: 'journey', statusCode: 404)]
+    public function add(
+        Request $request,
+        #[MapEntity(expr: "repository.findByJourneyId(journeyId)")]
+        Journey $journey,
+        ?string $place = null
+    ): Response
     {
         $this->journey = $journey;
 
@@ -45,12 +47,16 @@ class StageWizardController extends AbstractSessionStateFormWizardController
     }
 
     /**
-     * @Route("/stage/{stageId}/edit/{place}", name="edit")
-     * @IsGranted(DiaryAccessVoter::ACCESS, subject="stage", statusCode=404)
-     * @Entity("stage", expr="repository.findByStageId(stageId)")
      * @throws ExceptionInterface
      */
-    public function edit(Request $request, Stage $stage, ?string $place = null): Response
+    #[Route(path: '/stage/{stageId}/edit/{place}', name: 'edit')]
+    #[IsGranted(DiaryAccessVoter::ACCESS, subject: 'stage', statusCode: 404)]
+    public function edit(
+        Request $request,
+        #[MapEntity(expr: "repository.findByStageId(stageId)")]
+        Stage $stage,
+        ?string $place = null
+    ): Response
     {
         $this->stage = $stage;
 

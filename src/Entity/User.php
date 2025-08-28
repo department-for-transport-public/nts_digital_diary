@@ -14,18 +14,13 @@ use Symfony\Component\Uid\Ulid;
 use Symfony\Component\Validator\Constraints as Assert;
 use Symfony\Component\Validator\Context\ExecutionContextInterface;
 
-/**
- * @ORM\Entity(repositoryClass=UserRepository::class)
- * @ORM\Table(uniqueConstraints={@ORM\UniqueConstraint(columns={"username", "virtual_column_training_interviewer_id"})})
- * @UniqueEntity(
- *     groups={"wizard.on-boarding.diary-keeper.user-identifier", "admin.interviewer", "api.interviewer"},
- *     fields={"username", "trainingInterviewer"},
- *     message="common.email.already-used",
- *     ignoreNull=false
- * )
- * @ORM\HasLifecycleCallbacks()
- */
-class User implements UserInterface, PasswordAuthenticatedUserInterface
+#[UniqueEntity(fields: ['username', 'trainingInterviewer'], message: 'common.email.already-used', ignoreNull: false, groups: ['wizard.on-boarding.diary-keeper.user-identifier', 'admin.interviewer', 'api.interviewer'])]
+#[UniqueEntity(fields: ['username', 'diaryKeeper'], message: 'common.email.already-used', repositoryMethod: 'findByForDirectOnboarding', ignoreNull: false, groups: ['direct-onboarding.logins'])]
+#[ORM\Entity(repositoryClass: UserRepository::class)]
+#[ORM\HasLifecycleCallbacks]
+#[ORM\Table]
+#[ORM\UniqueConstraint(columns: ['username', 'virtual_column_training_interviewer_id'])]
+class User implements UserInterface, PasswordAuthenticatedUserInterface, PreferenceUserInterface
 {
     public const NO_LOGIN_PLACEHOLDER = "no-login";
     public const INTERVIEWER_TRAINING_PLACEHOLDER = "int-trng";
@@ -36,18 +31,31 @@ class User implements UserInterface, PasswordAuthenticatedUserInterface
 
     use IdTrait;
 
-    /**
-     * @ORM\Column(type="string", length=180)
-     * @Assert\Email(groups={"admin.interviewer", "api.interviewer"}, message="wizard.diary-keeper.user-identifier.email")
-     * @Assert\NotBlank(groups={"admin.interviewer", "api.interviewer"}, message="wizard.diary-keeper.user-identifier.not-blank")
-     * @Assert\Length(groups={"wizard.on-boarding.diary-keeper.user-identifier", "admin.interviewer", "api.interviewer"}, maxMessage="common.string.max-length", max=180)
-     */
-    private ?string $username;
+    #[Assert\Email(message: 'wizard.diary-keeper.user-identifier.email', groups: ['admin.interviewer', 'api.interviewer'])]
+    #[Assert\NotBlank(message: 'wizard.diary-keeper.user-identifier.not-blank', groups: ['admin.interviewer', 'api.interviewer'])]
+    #[Assert\Length(max: 180, maxMessage: 'common.string.max-length', groups: ['wizard.on-boarding.diary-keeper.user-identifier', 'admin.interviewer', 'api.interviewer', 'direct-onboarding.logins'])]
+    #[EmailOrNoLoginPlaceholder(message: "wizard.diary-keeper.user-identifier.email", groups: ["wizard.on-boarding.diary-keeper.user-identifier", "direct-onboarding.logins"])]
+    #[ORM\Column(type: 'string', length: 180)]
+    private string $username = '';
 
-    /**
-     * @Assert\Callback(groups="wizard.on-boarding.diary-keeper.user-identifier")
-     */
-    public function validateIdentity(ExecutionContextInterface $context)
+    #[Assert\Callback(groups: ['wizard.on-boarding.direct.interviewer-training'])]
+    public function validateDirectOnboardingTrainingDuplicateUsernames(ExecutionContextInterface $context): void
+    {
+        // special case during direct onboarding training - because entities are not persisted
+        $otherDiaryKeepers = $this->getDiaryKeeper()->getHousehold()->getDiaryKeepers()
+            ->filter(fn($dk) => $dk != $this->getDiaryKeeper())
+            ->toArray();
+        foreach ($otherDiaryKeepers as $diaryKeeper) {
+            if ($diaryKeeper->getUser()->getUserIdentifier() === $this->getUserIdentifier()) {
+                $context->buildViolation("common.email.already-used")
+                    ->atPath("username")
+                    ->addViolation();
+            }
+        }
+    }
+
+    #[Assert\Callback(groups: ['wizard.on-boarding.diary-keeper.user-identifier', 'direct-onboarding.logins'])]
+    public function validateIdentity(ExecutionContextInterface $context): void
     {
         $hasIdentifier = $this->hasIdentifierForLogin();
         $hasProxier = $this->getDiaryKeeper()->getProxies()->count() > 0;
@@ -65,84 +73,62 @@ class User implements UserInterface, PasswordAuthenticatedUserInterface
             } else if ($this->getDiaryKeeper()->isActingAsAProxyForOthers()) {
                 $context->buildViolation("wizard.on-boarding.diary-keeper.identity.not-empty-when-acting-as-a-proxy")
                     ->atPath("username")
-                    ->setParameters([
-                        'names' => join(', ', $this->getDiaryKeeper()->getActingAsAProxyForNames()),
-                    ])
+                    ->setParameter('names', join(', ', $this->getDiaryKeeper()->getActingAsAProxyForNames()))
                     ->addViolation();
             }
         }
     }
 
-    /**
-     * @ORM\OneToOne(targetEntity=Interviewer::class, inversedBy="user", fetch="EAGER")
-     */
+    #[ORM\OneToOne(targetEntity: Interviewer::class, inversedBy: 'user', fetch: 'EAGER')]
     private ?Interviewer $interviewer = null;
 
-    /**
-     * @ORM\OneToOne(targetEntity=DiaryKeeper::class, inversedBy="user", fetch="EAGER")
-     * @Assert\Valid(groups={"wizard.on-boarding.diary-keeper.user-identifier"})
-     */
+    #[Assert\Valid(groups: ['wizard.on-boarding.diary-keeper.user-identifier'])]
+    #[ORM\OneToOne(targetEntity: DiaryKeeper::class, inversedBy: 'user', fetch: 'EAGER')]
     private ?DiaryKeeper $diaryKeeper = null;
 
-    /**
-     * @ORM\Column(type="string", nullable=true)
-     */
+    #[ORM\Column(type: 'string', nullable: true)]
     private ?string $password = null;
 
     private ?string $plainPassword = null;
     private array $roles;
 
-    /**
-     * @ORM\Column(type="string", nullable=true)
-     */
-    private ?string $passwordResetCode;
+    #[ORM\Column(type: 'string', nullable: true)]
+    private ?string $passwordResetCode = null;
 
-    /**
-     * @ORM\Column(type="boolean", nullable=true)
-     * DISABLED: Assert\Expression(
-     *     "this.getUserIdentifier() matches '/^no-login:/' || (this.getUserIdentifier() and this.getHasConsented())",
-     *     groups={"wizard.on-boarding.diary-keeper.user-identifier"},
-     *     message="wizard.diary-keeper.consent.not-null"
-     * )
-     */
-    private ?bool $hasConsented;
+    #[ORM\Column(type: 'boolean', nullable: true)] // DISABLED: Assert\Expression(
+    private ?bool $hasConsented = null;
 
-    /**
-     * @ORM\Column(type="datetime", nullable=true)
-     */
+    #[ORM\Column(type: 'datetime', nullable: true)]
     private ?\DateTime $emailPurgeDate = null;
 
-    /**
-     * @ORM\ManyToOne(targetEntity=Interviewer::class)
-     */
-    private ?Interviewer $trainingInterviewer;
+    #[ORM\ManyToOne(targetEntity: Interviewer::class)]
+    private ?Interviewer $trainingInterviewer = null;
 
-    /**
-     * @ORM\Column(type="string", length=26, insertable=false, updatable=false, generated="ALWAYS", columnDefinition="VARCHAR(26) GENERATED ALWAYS AS (ifNull(training_interviewer_id, 'no-interviewer')) VIRTUAL")
-     */
-    private ?string $virtualColumnTrainingInterviewerId;
+    #[ORM\Column(type: 'string', length: 26, nullable: true, insertable: false, updatable: false, columnDefinition: "VARCHAR(26) GENERATED ALWAYS AS (ifNull(training_interviewer_id, 'no-interviewer')) VIRTUAL", generated: 'ALWAYS')]
+    private ?string $virtualColumnTrainingInterviewerId = null;
 
-    /**
-     * @ORM\Column(type="boolean")
-     */
+    #[ORM\Column(type: 'boolean')]
     private bool $hasPendingUsernameChange = false;
 
-    public function getUserIdentifier(): ?string
+    #[ORM\OneToOne(targetEntity: UserPreferences::class, inversedBy: 'user', cascade: ['persist', 'remove'], fetch: 'EAGER')]
+    private ?UserPreferences $preferences = null;
+
+    #[ORM\Column(type: 'boolean', nullable: true)]
+    private ?bool $hasLoggedIn = false;
+
+    public function getUserIdentifier(): string
     {
-        return $this->username ?? null;
+        return $this->username;
     }
 
-    /**
-     * @EmailOrNoLoginPlaceholder(groups={"wizard.on-boarding.diary-keeper.user-identifier"}, message="wizard.diary-keeper.user-identifier.email")
-     */
     public function getUsername(): ?string
     {
-        return $this->getUserIdentifier();
+        return $this->username;
     }
 
     public function setUserIdentifier(?string $username): self
     {
-        $this->username = is_null($username) ? $username : strtolower($username);
+        $this->username = strtolower($username ?? '');
         return $this;
     }
 
@@ -206,7 +192,7 @@ class User implements UserInterface, PasswordAuthenticatedUserInterface
         return null;
     }
 
-    public function eraseCredentials()
+    public function eraseCredentials(): void
     {
     }
 
@@ -257,12 +243,22 @@ class User implements UserInterface, PasswordAuthenticatedUserInterface
      */
     public function __serialize(): array
     {
-        return [$this->id ?? null, $this->username ?? null, $this->password ?? null, $this->getRoles()];
+        return [$this->id ?? null, $this->username ?? null, $this->password ?? null, $this->getRoles(), $this->getPreferences()];
     }
 
     public function __unserialize($data)
     {
-        [$this->id, $this->username, $this->password, $this->roles] = $data;
+        // This special case is needed to cope with users who are already logged in when we deploy the user preferences
+        // changes. Shortly after that has been deployed, we can remove everything except the default case below.
+
+        /** @noRector \Rector\Php80\Rector\Switch_\ChangeSwitchToMatchRector */
+        switch(count($data)) {
+            case 4:
+                [$this->id, $this->username, $this->password, $this->roles] = $data;
+                break;
+            default:
+                [$this->id, $this->username, $this->password, $this->roles, $this->preferences] = $data;
+        }
     }
 
     public function hasIdentifierForLogin(): bool
@@ -300,7 +296,6 @@ class User implements UserInterface, PasswordAuthenticatedUserInterface
     public function setEmailPurgeDate(?\DateTimeInterface $emailPurgeDate): self
     {
         $this->emailPurgeDate = $emailPurgeDate;
-
         return $this;
     }
 
@@ -316,9 +311,7 @@ class User implements UserInterface, PasswordAuthenticatedUserInterface
         return $this;
     }
 
-    /**
-     * @ORM\PreFlush()
-     */
+    #[ORM\PreFlush]
     public function trainingInterviewerPreFlush(PreFlushEventArgs $eventArgs): void
     {
         if (
@@ -341,5 +334,24 @@ class User implements UserInterface, PasswordAuthenticatedUserInterface
         $this->hasPendingUsernameChange = $hasPendingUsernameChange;
 
         return $this;
+    }
+
+    public function getHasLoggedIn(): ?bool
+    {
+        return $this->hasLoggedIn;
+    }
+
+    public function setHasLoggedIn(?bool $hasLoggedIn): static
+    {
+        $this->hasLoggedIn = $hasLoggedIn;
+        return $this;
+    }
+
+    public function getPreferences(): UserPreferences
+    {
+        if (!isset($this->preferences)) {
+            $this->preferences = new UserPreferences();
+        }
+        return $this->preferences;
     }
 }

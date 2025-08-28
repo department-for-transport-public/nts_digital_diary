@@ -58,18 +58,16 @@ class DiaryKeeperCrashTest extends AbstractDiaryKeeperTest
                     new FormTestCallbackAction(
                         '/onboarding/diary-keeper/add/identity',
                         'user_identifier_button_group_continue',
-                        function(Context $context) {
-                            return [
-                                new FormTestCase([
-                                    'user_identifier[mediaType]' => DiaryKeeper::MEDIA_TYPE_DIGITAL,
-                                    'user_identifier[user][username]' => 'two',
+                        fn(Context $context): array => [
+                            new FormTestCase([
+                                'user_identifier[mediaType]' => DiaryKeeper::MEDIA_TYPE_DIGITAL,
+                                'user_identifier[user][username]' => 'two',
 //                                    'user_identifier[user][consent]' => '1',
-                                    'user_identifier[user][proxies][]' => [
-                                        $context->get('diary-keeper-one'),
-                                    ],
-                                ], ['#user_identifier_user_username'])
-                            ];
-                        }),
+                                'user_identifier[user][proxies][]' => [
+                                    $context->get('diary-keeper-one'),
+                                ],
+                            ], ['#user_identifier_user_username'])
+                        ]),
                     new FormTestAction(
                         '/onboarding/diary-keeper/add/identity',
                         'user_identifier_button_group_continue',
@@ -81,7 +79,7 @@ class DiaryKeeperCrashTest extends AbstractDiaryKeeperTest
                                     'user_identifier[user][proxies][]' => [],
                                 ], [], null, true)
                         ]),
-                    new CallbackAction(function(Context $context) {
+                    new CallbackAction(function(Context $context): void {
                         $pageSource = $context->getClient()->getPageSource();
 
                         // Tried to do this directly via $context->getClient()->getCrawler(), but that didn't work :/
@@ -100,7 +98,7 @@ class DiaryKeeperCrashTest extends AbstractDiaryKeeperTest
     /**
      * @dataProvider wizardData
      */
-    public function testOnboardingDiaryKeeperWizard(array $wizardData)
+    public function testOnboardingDiaryKeeperWizard(array $wizardData): void
     {
         $this->initialiseClientAndLoadFixtures([OtpUserFixtures::class]);
         $identifier = self::USER_IDENTIFIER; // OTP user where address #, household #, and diary week start date already entered

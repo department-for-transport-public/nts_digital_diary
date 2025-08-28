@@ -15,7 +15,7 @@ use App\Tests\Functional\Wizard\Form\FormTestCase;
 
 class VehicleTest extends AbstractOtpTest
 {
-    const USER_IDENTIFIER = '2345678901';
+    public const USER_IDENTIFIER = '2345678901';
 
     protected function generateTest(bool $doEdit, bool $overwriteDetails): array
     {
@@ -23,14 +23,14 @@ class VehicleTest extends AbstractOtpTest
             'vehicleName' => 'Red ID3',
             'methodId' => 2,
             'capiNumber' => 1,
-            'primaryDriverId' => $this->getDiaryKeeperByReference('diary-keeper:not-onboarded:1')->getId(),
+            'primaryDriverId' => $this->fixtureReferenceRepository->getReference('diary-keeper:not-onboarded:1', DiaryKeeper::class)->getId(),
         ];
 
         $secondVehicle = [
             'vehicleName' => 'Green ID Buzz',
             'methodId' => 3,
             'capiNumber' => 2,
-            'primaryDriverId' => $this->getDiaryKeeperByReference('diary-keeper:not-onboarded:2')->getId(),
+            'primaryDriverId' => $this->fixtureReferenceRepository->getReference('diary-keeper:not-onboarded:2', DiaryKeeper::class)->getId(),
         ];
 
         $getStepTestCases = function (bool $isEdit, bool $overwriteDetails, string $vehicleName, string $methodId, string $capiNumber, ?string $primaryDriverId): array {
@@ -52,6 +52,13 @@ class VehicleTest extends AbstractOtpTest
                             $isEdit ? [] : ['#vehicle_method', '#vehicle_primaryDriver'],
                         )
                     ),
+
+                    new FormTestCase([
+                        'vehicle[friendlyName]' => $vehicleName,
+                        'vehicle[capiNumber]' => 'a',
+                        'vehicle[primaryDriver]' => $primaryDriverId,
+                        'vehicle[method]' => $methodId,
+                    ], ['#vehicle_capiNumber']),
                     new FormTestCase([
                         'vehicle[friendlyName]' => $vehicleName,
                         'vehicle[capiNumber]' => $capiNumber,
@@ -71,14 +78,14 @@ class VehicleTest extends AbstractOtpTest
         $tests[] = new FormTestAction(
             '/onboarding/vehicle/add',
             'vehicle_button_group_save',
-            $getStepTestCases(false, true, ...$firstVehicle));
+            $getStepTestCases(false, $overwriteDetails, ...$firstVehicle));
 
         $tests[] = new PathTestAction('/onboarding');
 
         $tests[] = new CallbackAction($this->detailsDatabaseCheck(self::USER_IDENTIFIER, ...$firstVehicle));
 
         if ($doEdit) {
-            $tests[] = new Action\CallbackAction(function (Context $context) {
+            $tests[] = new Action\CallbackAction(function (Context $context): void {
                 $testCase = $context->getTestCase();
                 // $testCase->getSummaryListData("//*[@id='household-vehicles']/div");
 
@@ -107,7 +114,7 @@ class VehicleTest extends AbstractOtpTest
     protected function detailsDatabaseCheck(string $userIdentifier, string $vehicleName, int $methodId, int $capiNumber, ?string $primaryDriverId): callable
     {
         return function (Context $context)
-        use ($userIdentifier, $vehicleName, $methodId, $capiNumber, $primaryDriverId) {
+        use ($userIdentifier, $vehicleName, $methodId, $capiNumber, $primaryDriverId): void {
             $otpUser = $context->getEntityManager()->getRepository(OtpUser::class)->findOneBy(['userIdentifier' => $userIdentifier]);
 
             $household = $otpUser->getHousehold();
@@ -137,7 +144,7 @@ class VehicleTest extends AbstractOtpTest
     /**
      * @dataProvider wizardData
      */
-    public function testOnboardingVehicleWizard(array $wizardData)
+    public function testOnboardingVehicleWizard(array $wizardData): void
     {
         $this->initialiseClientAndLoadFixtures([OtpUserFixtures::class, DiaryKeeperForVehicleOnboardingFixtures::class]);
         $identifier = self::USER_IDENTIFIER; // OTP user where address #, household #, and diary week start date already entered
@@ -146,11 +153,5 @@ class VehicleTest extends AbstractOtpTest
         $this->clickLinkContaining('Add a vehicle');
 
         $this->doWizardTest($this->generateTest(...$wizardData));
-    }
-
-    protected function getDiaryKeeperByReference(string $fixtureReference): DiaryKeeper
-    {
-        /** @var DiaryKeeper */
-        return $this->getFixtureByReference($fixtureReference);
     }
 }

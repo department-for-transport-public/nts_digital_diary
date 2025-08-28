@@ -8,6 +8,7 @@ use App\Tests\Functional\AbstractWebTestCase;
 use App\Utility\Test\CrawlerTableHelper;
 use Doctrine\ORM\EntityManagerInterface;
 use Symfony\Bundle\FrameworkBundle\Test\KernelTestCase;
+use Symfony\Component\HttpFoundation\Request;
 
 abstract class AbstractInterviewerDiaryKeeperTest extends AbstractWebTestCase
 {
@@ -15,7 +16,7 @@ abstract class AbstractInterviewerDiaryKeeperTest extends AbstractWebTestCase
     public function logInAsInterviewerAndDrillDownToUsersHouseholdPage(string $username): void
     {
         // Log in as an interviewer
-        $this->client->request('GET', '/');
+        $this->client->request(Request::METHOD_GET, '/');
         $this->submitLoginForm('interviewer@example.com', 'password');
         $this->assertEquals('/interviewer', $this->client->getRequest()->getRequestUri());
 
@@ -38,12 +39,12 @@ abstract class AbstractInterviewerDiaryKeeperTest extends AbstractWebTestCase
         $viewAreaUrl = $tableHelper->getLinkUrlForRowMatching('View', [
             'Area ID' => "" . $areaPeriod->getArea(),
         ], false);
-        $this->client->request('GET', $viewAreaUrl);
+        $this->client->request(Request::METHOD_GET, $viewAreaUrl);
 
         $tableHelper = new CrawlerTableHelper($this->client->getCrawler());
         $viewHouseholdUrl = $tableHelper->getLinkUrlForRowMatching('View', [
             'Serial' => $areaPeriod->getArea() . ' / ' . str_pad($household->getAddressNumber(), 2, '0', STR_PAD_LEFT) . ' / ' . $household->getHouseholdNumber(),
         ], false);
-        $this->client->request('GET', $viewHouseholdUrl);
+        $this->client->request(Request::METHOD_GET, $viewHouseholdUrl);
     }
 }

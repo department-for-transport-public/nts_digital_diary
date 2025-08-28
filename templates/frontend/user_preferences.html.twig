@@ -1,0 +1,10 @@
+{% extends 'base.html.twig' %}
+
+{% set title_translation_prefix = 'user-preferences' %}
+{% set title_translation_parameters = {
+    'name': name
+} %}
+
+{% block content %}
+    {{ form(form) }}
+{% endblock %}

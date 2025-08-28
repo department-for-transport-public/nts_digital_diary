@@ -25,15 +25,16 @@ class DiaryCompletionType extends AbstractType
                 'label' => 'satisfaction.how-often-entries-added.label',
                 'help' => 'satisfaction.how-often-entries-added.help',
                 'choices' => array_combine(
-                    array_map(fn(string $choice) => "satisfaction.how-often-entries-added.choices.{$choice}", $howOftenEntriesAddedChoices),
+                    array_map(fn(string $choice): string => "satisfaction.how-often-entries-added.choices.{$choice}", $howOftenEntriesAddedChoices),
                     $howOftenEntriesAddedChoices,
                 ),
-                'label_attr' => ['class' => 'govuk-label--m'],
+                'label_attr' => ['class' => 'govuk-fieldset__legend--m'],
             ])
             ->add('writtenNoteKept', BooleanChoiceType::class, [
                 'label' => 'satisfaction.written-note-kept.label',
                 'help' => 'satisfaction.written-note-kept.help',
-                'label_attr' => ['class' => 'govuk-label--m'],
+                'label_attr' => ['class' => 'govuk-fieldset__legend--m'],
+                'inline' => true,
             ]);
     }
 

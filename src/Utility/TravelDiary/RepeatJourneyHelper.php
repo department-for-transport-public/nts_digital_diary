@@ -4,22 +4,18 @@ namespace App\Utility\TravelDiary;
 
 use App\Entity\Journey\Journey;
 use App\Entity\Journey\Stage;
-use App\FormWizard\PropertyMerger;
+use Ghost\GovUkCoreBundle\FormWizard\PropertyMerger;
 
 class RepeatJourneyHelper
 {
-    private PropertyMerger $propertyMerger;
-
     private const JOURNEY_CLONE_PROPERTIES = [
         /* times */             'startTime', 'endTime',
         /* purpose form */      'purpose',
         /* locations form */    'startLocation', 'isStartHome', 'endLocation', 'isEndHome',
     ];
 
-    public function __construct(PropertyMerger $propertyMerger)
-    {
-        $this->propertyMerger = $propertyMerger;
-    }
+    public function __construct(protected readonly PropertyMerger $propertyMerger)
+    {}
 
     public function cloneSourceJourney(Journey $sourceJourney): Journey
     {

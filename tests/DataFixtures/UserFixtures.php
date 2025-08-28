@@ -16,11 +16,8 @@ class UserFixtures extends AbstractFixture implements DependentFixtureInterface
 {
     public function load(ObjectManager $manager): void
     {
-        $areaPeriodOne = $this->getReference('area-period:1');
-        $householdOnboarded = $this->getReference('household:onboarded');
-
-        assert($areaPeriodOne instanceof AreaPeriod);
-        assert($householdOnboarded instanceof Household);
+        $areaPeriodOne = $this->getReference('area-period:1', AreaPeriod::class);
+        $householdOnboarded = $this->getReference('household:onboarded', Household::class);
 
         // AddDiaryKeeperSubscriber assumes that any diary-keeper added to a household where onboarding
         // is completed was added via the admin control panel. As such, it then triggers an account
@@ -102,7 +99,9 @@ class UserFixtures extends AbstractFixture implements DependentFixtureInterface
     protected function createUser(ObjectManager $manager, string $email, ?string $password='password'): User
     {
         $user = (new User())
-            ->setUsername($email);
+            ->setUsername($email)
+            ->setHasLoggedIn(true)
+        ;
 
         if ($password) {
             $user->setPlainPassword($password);

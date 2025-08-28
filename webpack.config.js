@@ -4,7 +4,7 @@ const path = require('path')
 // Manually configure the runtime environment if not already configured yet by the "encore" command.
 // It's useful when you use tools that rely on webpack.config.js file.
 if (!Encore.isRuntimeEnvironmentConfigured()) {
-    Encore.configureRuntimeEnvironment(process.env.NODE_ENV || 'dev');
+    Encore.configureRuntimeEnvironment(process.env.NODE_ENV || 'dev')
 }
 
 Encore
@@ -25,15 +25,14 @@ Encore
     .addEntry('admin', './assets/admin.js')
 
     // enables the Symfony UX Stimulus bridge (used in assets/bootstrap.js)
-    // .enableStimulusBridge('./assets/controllers.json')
+    .enableStimulusBridge('./assets/controllers.json')
 
     // When enabled, Webpack "splits" your files into smaller pieces for greater optimization.
     .splitEntryChunks()
 
     // will require an extra script tag for runtime.js
     // but, you probably want this, unless you're building a single-page app
-    // .enableSingleRuntimeChunk()
-    .disableSingleRuntimeChunk()
+    .enableSingleRuntimeChunk()
 
     /*
      * FEATURE CONFIG
@@ -48,18 +47,31 @@ Encore
     // enables hashed filenames (e.g. app.abc123.css)
     .enableVersioning(Encore.isProduction())
 
-    .configureBabel((config) => {
-        config.plugins.push('@babel/plugin-proposal-class-properties');
-    })
-
     // enables @babel/preset-env polyfills
     .configureBabelPresetEnv((config) => {
-        config.useBuiltIns = 'usage';
-        config.corejs = 3;
+        config.useBuiltIns = 'usage'
+        config.corejs = '3.23'
     })
 
     // enables Sass/SCSS support
-    .enableSassLoader()
+    .enableSassLoader(function(options) {
+        options.sassOptions['quietDeps'] = true // Don't show deprecation warnings that originate from inside node_modules/
+    })
+
+    .copyFiles({
+        from: './assets/images/onboarding',
+        to: 'images/onboarding/[name].[hash:8].[ext]',
+    })
+
+    .copyFiles({
+        from: './node_modules/govuk-frontend/dist/govuk/assets/images',
+        to: 'images/[path][name].[ext]',
+    })
+
+    .copyFiles({
+        from: './node_modules/govuk-frontend/dist/govuk/assets/rebrand',
+        to: 'rebrand/[path][name].[ext]',
+    })
 
     // uncomment if you use TypeScript
     //.enableTypeScriptLoader()
@@ -72,42 +84,23 @@ Encore
     //.enableIntegrityHashes(Encore.isProduction())
 
     // uncomment if you're having problems with a jQuery plugin
-    .autoProvidejQuery()
+    //.autoProvidejQuery()
+    ;
 
-    .copyFiles({
-        from: './node_modules/govuk-frontend/govuk/assets/images',
+let config = Encore.getWebpackConfig()
 
-        // optional target path, relative to the output dir
-        to: 'images/[name].[hash:8].[ext]',
-    })
-    .copyFiles({
-        from: './assets/images/onboarding',
-        to: 'images/onboarding/[name].[hash:8].[ext]',
-    })
-;
-
-var config = Encore.getWebpackConfig();
-
-let govukAssetsPath = path.resolve('./node_modules/govuk-frontend/govuk/assets/');
+let govukAssetsPath = path.resolve('./node_modules/govuk-frontend/dist/govuk/assets/')
 
 for(let rule of config.module.rules) {
     if (rule.test.toString().match(/s\[ac]ss/)) {
-        for(let one of rule.oneOf) {
-            for(let tool of one.use) {
+        for (let one of rule.oneOf) {
+            for (let tool of one.use) {
                 if (tool.loader.includes('/sass-loader/')) {
-                    tool.options.additionalData = '$govuk-assets-path: "' + govukAssetsPath + '/";';
+                    tool.options.additionalData = '$govuk-assets-path: "' + govukAssetsPath + '/";'
                 }
             }
         }
     }
 }
 
-config.module.rules.push({
-    test: /\.mjs$/,
-    type: 'javascript/auto',
-    resolve: {
-        fullySpecified: false
-    }
-});
-
-module.exports = config;
+module.exports = config

@@ -30,6 +30,8 @@ class DecimalBrickType extends Type
     public function convertToDatabaseValue($value, AbstractPlatform $platform): ?string
     {
         if ($value instanceof BigDecimal) {
+            // Yes we're converting to string to pass this safely to the database, BUT the database
+            // column type is actually a DECIMAL(p,s) field (see getSQLDeclaration above!)
             $value = strval($value);
         }
 

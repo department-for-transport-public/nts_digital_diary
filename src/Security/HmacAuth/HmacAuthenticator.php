@@ -24,25 +24,20 @@ use Symfony\Component\Security\Http\Authenticator\Passport\Passport;
 
 class HmacAuthenticator extends AbstractAuthenticator
 {
-    private SecretGenerator $secretGenerator;
-    private CacheItemPoolInterface $cache;
-
     private const SIGNATURE_VALID_FOR = 30;
     private const SIGNATURE_EARLY = 5;
 
-    public function __construct(SecretGenerator $secretGenerator, CacheItemPoolInterface $hmacAuthenticatorCache)
-    {
-        $this->secretGenerator = $secretGenerator;
-        $this->cache = $hmacAuthenticatorCache;
-    }
+    public function __construct(
+        protected readonly SecretGenerator        $secretGenerator,
+        protected readonly CacheItemPoolInterface $cache,
+    ) {}
 
     public function supports(Request $request): ?bool
     {
         return
             $request->headers->has('X-AUTH-KEY')
             && $request->headers->has('X-AUTH-SIGNATURE')
-            && $request->query->has('timestamp')
-            ;
+            && $request->query->has('timestamp');
     }
 
     public function authenticate(Request $request): Passport
@@ -60,7 +55,7 @@ class HmacAuthenticator extends AbstractAuthenticator
         return new Passport(
             new UserBadge($key),
             new CustomCredentials(
-                [$this, 'customAuthenticator'],
+                $this->customAuthenticator(...),
                 [
                     'key' => $key,
                     'signature' => $signature,
@@ -74,9 +69,8 @@ class HmacAuthenticator extends AbstractAuthenticator
     /**
      * @param $credentials
      * @param ApiUser $user
-     * @return bool
      */
-    public function customAuthenticator($credentials, UserInterface $user): bool
+    public function customAuthenticator(array $credentials, UserInterface $user): bool
     {
         $now = time();
 
@@ -96,7 +90,7 @@ class HmacAuthenticator extends AbstractAuthenticator
 
         // check signature
         $secret = $this->secretGenerator->getSecretForApiUser($user);
-        $derivedSig = base64_encode(hash_hmac('sha256', $credentials['queryString'], $secret, true));
+        $derivedSig = base64_encode(hash_hmac('sha256', (string) $credentials['queryString'], $secret, true));
         if (!hash_equals($derivedSig, $credentials['signature'])) {
             throw new BadCredentialsException('Bad credentials');
         }
@@ -125,15 +119,13 @@ class HmacAuthenticator extends AbstractAuthenticator
     public function onAuthenticationFailure(Request $request, AuthenticationException $exception): ?Response
     {
         if ($exception->getPrevious()) {
-            switch (get_class($exception->getPrevious()))
-            {
+            switch ($exception->getPrevious()::class) {
                 case CredentialsExpiredException::class :
                     throw $exception->getPrevious();
             }
         }
 
-        if ($exception instanceof TooManyLoginAttemptsAuthenticationException)
-        {
+        if ($exception instanceof TooManyLoginAttemptsAuthenticationException) {
             throw new TooManyRequestsHttpException(null, strtr($exception->getMessageKey(), $exception->getMessageData()));
         }
 

@@ -10,21 +10,20 @@ use ReflectionClass;
 abstract class AbstractMessage extends AbstractAsyncMessage
 {
     protected ?string $originatingEntityClass;
-    protected ?string $originatingEntityId;
-    private ?string $templateId;
-    private ?array $personalisation;
-    private ?string $reference;
-    private ?string $eventName;
+    protected ?string $reference;
 
-    public function __construct(string $eventName, ?string $originatingEntityClass, ?string $originatingEntityId, string $templateId, $personalisation = [], ?string $reference = null)
+    public function __construct(
+        protected ?string $eventName,
+        ?string           $originatingEntityClass,
+        protected ?string $originatingEntityId,
+        protected ?string $templateId,
+        protected ?array  $personalisation = [],
+        ?string           $reference = null
+    )
     {
         $this->originatingEntityClass = ($originatingEntityClass !== null) ?
             ClassUtils::getRealClass($originatingEntityClass) :
             null;
-
-        $this->originatingEntityId = $originatingEntityId;
-        $this->templateId = $templateId;
-        $this->personalisation = $personalisation;
         if (empty($reference)) {
             if ($this->originatingEntityClass && $this->originatingEntityId) {
                 $this->reference = "$this->originatingEntityClass::$this->originatingEntityId";
@@ -34,7 +33,6 @@ abstract class AbstractMessage extends AbstractAsyncMessage
         } else {
             $this->reference = $reference;
         }
-        $this->eventName = $eventName;
     }
 
     abstract public function getSendMethodParameters(): array;

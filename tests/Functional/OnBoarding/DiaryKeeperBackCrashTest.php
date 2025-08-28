@@ -37,7 +37,7 @@ class DiaryKeeperBackCrashTest extends AbstractDiaryKeeperTest
                             ])
                         ]),
                     new CallbackAction($this->fetchDiaryKeeperAndStoreId(['name' => 'One'], 'diary-keeper-one')),
-                    new CallbackAction(function(Context $context) {
+                    new CallbackAction(function(Context $context): void {
                         $client = $context->getClient();
 
                         $client->back();
@@ -58,8 +58,15 @@ class DiaryKeeperBackCrashTest extends AbstractDiaryKeeperTest
     /**
      * @dataProvider wizardData
      */
-    public function testOnboardingDiaryKeeperBackCrash(array $wizardData)
+    public function testOnboardingDiaryKeeperBackCrash(array $wizardData): void
     {
+        $this->markTestSkipped('Chrome v128 breaks this test; seems to be related to its changes to the --headless option (see comments in code)');
+        // Replacing "--headless" in ChromeManager.php#101 with "--headless=old" allows this test to pass
+        // Found this option by seeing it mentioned in <https://github.com/symfony/panther/issues/638>
+        // Related bug on the chromium tracker <https://issues.chromium.org/issues/362522328>
+        // Cannot reproduce in Windows with manual testing; it simply functions as expected by the test
+        // Marking this test as skipped for the moment, as this seems to be a Chrome issue
+
         $this->initialiseClientAndLoadFixtures([OtpUserFixtures::class]);
         $identifier = self::USER_IDENTIFIER; // OTP user where address #, household #, and diary week start date already entered
         $this->loginOtpUser($identifier, $this->passcodeGenerator->getPasswordForUserIdentifier($identifier));

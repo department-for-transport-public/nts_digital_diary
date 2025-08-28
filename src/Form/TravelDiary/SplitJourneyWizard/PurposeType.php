@@ -15,7 +15,7 @@ class PurposeType extends AbstractType
     public function buildForm(FormBuilderInterface $builder, array $options): void
     {
         $builder
-            ->addEventListener(FormEvents::POST_SET_DATA, function(PostSetDataEvent $event) {
+            ->addEventListener(FormEvents::POST_SET_DATA, function(PostSetDataEvent $event): void {
                 $form = $event->getForm();
 
                 /** @var SplitJourneySubject $data */

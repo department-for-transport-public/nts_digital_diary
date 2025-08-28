@@ -7,9 +7,11 @@
         <th scope="col" class="govuk-table__header">{{ "diary-keeper.view.summary.capi" | trans }}</th>
         <th scope="col" class="govuk-table__header">{{ "diary-keeper.view.summary.name" | trans }}</th>
         <th scope="col" class="govuk-table__header">{{ "diary-keeper.view.summary.is-adult" | trans }}</th>
-        <th scope="col" class="govuk-table__header">{{ "diary-keeper.view.summary.media-type" | trans }}</th>
-        <th scope="col" class="govuk-table__header">{{ "diary-keeper.view.summary.email" | trans }}</th>
-        <th scope="col" class="govuk-table__header">{{ "diary-keeper.view.summary.proxied-by" | trans }}</th>
+        {% if fullSummary ?? true %}
+            <th scope="col" class="govuk-table__header">{{ "diary-keeper.view.summary.media-type" | trans }}</th>
+            <th scope="col" class="govuk-table__header">{{ "diary-keeper.view.summary.email" | trans }}</th>
+            <th scope="col" class="govuk-table__header">{{ "diary-keeper.view.summary.proxied-by" | trans }}</th>
+        {% endif %}
     </tr>
     </thead>
     <tbody class="govuk-table__body">
@@ -20,9 +22,11 @@
             <th scope="row" class="govuk-table__cell">{{ diaryKeeper.number }}</th>
             <td class="govuk-table__cell">{{ diaryKeeper.name }}</td>
             <td class="govuk-table__cell">{{ diaryKeeper.isAdult | format_bool | trans }}</td>
-            <td class="govuk-table__cell">{{ diaryKeeper.mediaType ? ("diary-keeper.user-identifier.media-type.choices.#{diaryKeeper.mediaType}.label" | trans) : '-' }}</td>
-            <td class="govuk-table__cell">{{ diaryKeeper.hasIdentifierForLogin ? diaryKeeper.user.userIdentifier : '-' }}</td>
-            <td class="govuk-table__cell">{{ proxyNames is not empty ? (proxyNames | join(', ')) : '-' }}</td>
+            {% if fullSummary ?? true %}
+                <td class="govuk-table__cell">{{ diaryKeeper.mediaType ? ("diary-keeper.user-identifier.media-type.choices.#{diaryKeeper.mediaType}.label" | trans) : '-' }}</td>
+                <td class="govuk-table__cell">{{ diaryKeeper.hasIdentifierForLogin ? diaryKeeper.user.userIdentifier : '-' }}</td>
+                <td class="govuk-table__cell">{{ proxyNames is not empty ? (proxyNames | join(', ')) : '-' }}</td>
+            {% endif %}
         </tr>
     {% endfor %}
     </tbody>

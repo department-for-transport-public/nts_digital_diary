@@ -10,14 +10,11 @@ use Symfony\Contracts\Translation\TranslatorInterface;
 
 class TranslatableParameterTranslator implements TranslatorInterface, TranslatorBagInterface, LocaleAwareInterface
 {
-    protected TranslatorInterface $translator;
-
-    public function __construct(TranslatorInterface $translator)
+    public function __construct(protected TranslatorInterface $translator)
     {
-        $this->translator = $translator;
     }
 
-    public function trans(?string $id, array $parameters = [], string $domain = null, string $locale = null): string
+    public function trans(string $id, array $parameters = [], ?string $domain = null, ?string $locale = null): string
     {
         foreach ($parameters as $key => $param) {
             if ($param instanceof TranslatableInterface) {
@@ -32,7 +29,7 @@ class TranslatableParameterTranslator implements TranslatorInterface, Translator
         return $this->translator->getLocale();
     }
 
-    public function setLocale(string $locale)
+    public function setLocale(string $locale): void
     {
         $this->translator->setLocale($locale);
     }
@@ -48,5 +45,10 @@ class TranslatableParameterTranslator implements TranslatorInterface, Translator
     public function __call(string $method, array $args)
     {
         return $this->translator->{$method}(...$args);
+    }
+
+    public function getCatalogues(): array
+    {
+        return $this->translator->getCatalogues();
     }
 }

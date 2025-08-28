@@ -12,20 +12,13 @@ use App\Entity\InterviewerTrainingRecord;
 use App\Entity\Journey\Journey;
 use App\Entity\Journey\Method;
 use App\Entity\User;
-use App\Entity\Utility\MetricsLog;
 use App\Entity\Vehicle;
-use App\Utility\Metrics\Events\Entity\JourneyPersistEvent;
-use App\Utility\Metrics\Events\Entity\StagePersistEvent;
-use App\Utility\Metrics\MetricsHelper;
 use DateTime;
 use DateTimeImmutable;
 use Doctrine\ORM\EntityManagerInterface;
 
 class InterviewerTrainingHelper
 {
-    /** @var array<Method>  */
-    private array $methods;
-
     public function __construct(protected EntityManagerInterface $entityManager) {}
 
     public function checkOrCreateTrainingData(Interviewer $interviewer): void
@@ -60,7 +53,7 @@ class InterviewerTrainingHelper
                 $this->createPersonalDiaryTrainingData($trainingRecord);
                 break;
 
-            case InterviewerTrainingRecord::MODULE_ONBOARDING_PRACTICE :
+            case InterviewerTrainingRecord::MODULE_MANUAL_ONBOARDING_PRACTICE :
                 $this->createOnboardingTrainingData($trainingRecord);
                 break;
 
@@ -100,7 +93,7 @@ class InterviewerTrainingHelper
 
     protected function getNextAddressNumber(AreaPeriod $areaPeriod): ?int
     {
-        $latestHousehold = array_reduce($areaPeriod->getHouseholds()->toArray(), fn(?Household $a, ?Household $b) => $a?->getAddressNumber() > $b?->getAddressNumber() ? $a : $b);
+        $latestHousehold = array_reduce($areaPeriod->getHouseholds()->toArray(), fn(?Household $a, ?Household $b): ?\App\Entity\Household => $a?->getAddressNumber() > $b?->getAddressNumber() ? $a : $b);
         if (!$latestHousehold) {
             return 1;
         }
@@ -125,19 +118,26 @@ class InterviewerTrainingHelper
         $area = $interviewer->getTrainingAreaPeriodBySerial(AreaPeriod::TRAINING_PERSONAL_DIARY_AREA_SERIAL);
 
         $dk = $this->createDiaryKeeper($interviewer->getName(), 1);
-        $household = $this->createHousehold($this->getNextAddressNumber($area), 1, new DateTime(), [$dk]);
+        $dk2 = $this->createDiaryKeeper('Alice', 2);
+        $dk3 = $this->createDiaryKeeper('Bob', 3, false);
+        $dk
+            ->addActingAsProxyFor($dk2)
+            ->addActingAsProxyFor($dk3);
+        $household = $this->createHousehold($this->getNextAddressNumber($area), 1, new DateTime(), [$dk, $dk2, $dk3]);
 
         $area->addHousehold($household);
         $trainingRecord->setHousehold($household);
 
         $this->entityManager->persist($dk);
+        $this->entityManager->persist($dk2);
+        $this->entityManager->persist($dk3);
         $this->entityManager->persist($household);
     }
 
     protected function createOnboardingTrainingData(InterviewerTrainingRecord $trainingRecord): void
     {
-        $interviewer = $trainingRecord->getInterviewer();
-        $area = $interviewer->getTrainingAreaPeriodBySerial(AreaPeriod::TRAINING_ONBOARDING_AREA_SERIAL);
+//        $interviewer = $trainingRecord->getInterviewer();
+//        $area = $interviewer->getTrainingAreaPeriodBySerial(AreaPeriod::TRAINING_ONBOARDING_AREA_SERIAL);
     }
 
     protected function createExampleForCorrectionTrainingData(InterviewerTrainingRecord $trainingRecord): void

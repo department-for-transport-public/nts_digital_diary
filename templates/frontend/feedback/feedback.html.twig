@@ -1,0 +1,36 @@
+{% extends 'base.html.twig' %}
+
+{% set title_translation_key = 'feedback.form.page-title' %}
+{% set title_translation_parameters = {
+    category: category
+} %}
+{% set heading_class = "govuk-heading-xl" %}
+
+{%- block beforePageHeading -%}
+    {{- parent() -}}
+
+    {%- from '@GhostGovUkFrontend/components/macros.html.twig' import notificationBanner -%}
+
+    {%- if is_interviewer and category == 'support' -%}
+        {{- notificationBanner({
+            title: 'feedback.interviewer-support-warning.title',
+            content: 'feedback.interviewer-support-warning.content',
+            options: {style: 'warning', nl2br: true},
+        }) -}}
+    {%- endif -%}
+{%- endblock -%}
+
+
+{% block content %}
+    <div class="govuk-grid-row">
+        <div class="govuk-grid-column-two-thirds">
+            {{ form(form) }}
+        </div>
+        <div class="govuk-grid-column-one-third">
+        </div>
+    </div>
+    {% set notes = 'feedback.form.notes' | trans(title_translation_parameters) %}
+    {% if notes ?? false %}
+        <p class="govuk-body">{{ notes | nl2br }}</p>
+    {% endif %}
+{% endblock %}

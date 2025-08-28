@@ -2,7 +2,6 @@
 
 namespace App\Utility\Screenshots;
 
-use App\Doctrine\ORM\Filter\TrainingAreaPeriodFilter;
 use App\Entity\AreaPeriod;
 use App\Entity\Interviewer;
 use App\Entity\User;
@@ -11,22 +10,21 @@ use Doctrine\ORM\EntityManagerInterface;
 
 class FixtureManager
 {
-    const USERNAME = 'screenshots@example.com';
-    const PASSWORD = 'password';
-    const AREA_CODE = '111111';
+    public const USERNAME = 'screenshots@example.com';
+    public const PASSWORD = 'password';
+    public const AREA_CODE = '111111';
 
-    protected EntityManagerInterface $entityManager;
-
-    public function __construct(EntityManagerInterface $entityManager)
+    public function __construct(protected EntityManagerInterface $entityManager)
     {
-        $this->entityManager = $entityManager;
     }
 
     public function createInterviewer(): Interviewer
     {
         $user = (new User())
             ->setUserIdentifier(self::USERNAME)
-            ->setPlainPassword(self::PASSWORD);
+            ->setPlainPassword(self::PASSWORD)
+            ->setHasLoggedIn(true)
+        ;
 
         $interviewer = (new Interviewer())
             ->setUser($user)
@@ -37,7 +35,7 @@ class FixtureManager
         $areaPeriod = $areaRepository->findOneBy(['area' => self::AREA_CODE]);
 
         if (!$areaPeriod) {
-            $now = new \DateTime();
+            $now = new \DateTime('first day of this month');
             $areaPeriod = (new AreaPeriod())
                 ->setArea(self::AREA_CODE)
                 ->addInterviewer($interviewer)

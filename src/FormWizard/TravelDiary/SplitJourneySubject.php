@@ -2,28 +2,22 @@
 
 namespace App\FormWizard\TravelDiary;
 
-use App\FormWizard\MultipleEntityInterface;
 use App\Entity\Journey\Journey;
+use Ghost\GovUkCoreBundle\FormWizard\MultipleEntityInterface;
 use Symfony\Component\Validator\Constraints as Assert;
 
 class SplitJourneySubject implements MultipleEntityInterface
 {
-    protected ?string $originalJourneyPurpose;
-
-    /** @Assert\Valid(groups={"wizard.split-journey.midpoint-other"}) */
-    protected Journey $sourceJourney;
-
-    /** @Assert\Valid(groups={"wizard.split-journey.purpose"}) */
+    #[Assert\Valid(groups: ['wizard.split-journey.purpose'])]
     protected Journey $destinationJourney;
 
     public function __construct(
-        ?string $originalJourneyPurpose,
-        Journey $sourceJourney,
+        protected ?string $originalJourneyPurpose,
+        #[Assert\Valid(groups: ['wizard.split-journey.midpoint-other'])]
+        protected Journey $sourceJourney,
         ?Journey $destinationJourney = null,
     ) {
-        $this->originalJourneyPurpose = $originalJourneyPurpose;
-        $this->sourceJourney = $sourceJourney;
-        $this->destinationJourney = $destinationJourney ?? $sourceJourney;
+        $this->destinationJourney = $destinationJourney ?? $this->sourceJourney;
     }
 
     public function getOriginalJourneyPurpose(): ?string

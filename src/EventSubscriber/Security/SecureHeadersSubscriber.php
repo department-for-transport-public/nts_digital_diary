@@ -1,11 +1,8 @@
 <?php
 
-
 namespace App\EventSubscriber\Security;
 
-
 use App\Features;
-use App\Utility\Security\CspInlineScriptHelper;
 use App\Utility\Security\RecaptchaHelper;
 use App\Utility\VimeoHelper;
 use Symfony\Component\EventDispatcher\EventSubscriberInterface;
@@ -15,56 +12,106 @@ use Symfony\Component\HttpKernel\KernelEvents;
 class SecureHeadersSubscriber implements EventSubscriberInterface
 {
     public function __construct(
-        protected CspInlineScriptHelper $cspInlineScriptHelper,
         protected RecaptchaHelper $recaptchaHelper,
-        protected VimeoHelper $vimeoHelper,
+        protected VimeoHelper     $vimeoHelper,
     ) {}
 
+    // NOTES:
+    // - If you dump() anywhere, then the CSP header gets removed by WebDebugToolbarListener.php (at ~line 99)!
+    // - Mentions of unsafe-inline in dev mode probably originate from ContentSecurityPolicyHandler.php (again
+    //   part of the web-profiler-bundle)
     public function kernelResponseEvent(ResponseEvent $event): void
     {
-        $cspScriptSrc = "'self' {$this->nonce('js-detect')}";
-        $inlineSessionStyle = "'sha256-biLFinpqYMtWHmXfkA1BPeCY0/fNt46SAZ+BBk5YUog='";
-        $cspStyleSrc = "'self' {$this->nonce('env-label')}";
-        $cspFrameSrc = "'self'";
-        $cspImgSrc = "'self'";
+        $headers = $event->getResponse()->headers;
+        $cspHeader = $headers->get('Content-Security-Policy');
+
+        if ($cspHeader === null) {
+            // If there's no CSP header, no point trying to add things to it!
+            // N.B. this happens on error pages, for example
+            return;
+        }
+
+        $cspRules = [];
+
+        // Extract CSP rules and index by rule name
+        foreach(array_map(trim(...), explode(';', $cspHeader)) as $rule) {
+            $name = explode(' ', $rule)[0];
+            $cspRules[$name] = $rule;
+        }
+
+        $addEntry = function(string $name, string $entry) use (&$cspRules) {
+            if (!isset($cspRules[$name])) {
+                $cspRules[$name] = $name;
+            }
+
+            $cspRules[$name] .= " $entry";
+        };
 
         if ($this->recaptchaHelper->isRecaptchaUsed()) {
-            $cspFrameSrc .= " www.google.com/recaptcha/";
-            $cspScriptSrc .= " www.google.com/recaptcha/ www.gstatic.com/recaptcha/";
+            $addEntry('frame-src', 'www.google.com/recaptcha/');
+            $addEntry('script-src', 'www.google.com/recaptcha/');
+            $addEntry('script-src', 'www.gstatic.com/recaptcha/');
         }
 
         if ($this->vimeoHelper->isVimeoUsed()) {
-            $cspFrameSrc .= " player.vimeo.com";
-            $cspScriptSrc .= " player.vimeo.com";
-            $cspImgSrc .= " i.vimeocdn.com";
+            $addEntry('frame-src', 'player.vimeo.com');
+            $addEntry('script-src', 'player.vimeo.com');
+            $addEntry('img-src', 'i.vimeocdn.com');
         }
 
-        $event->getResponse()->headers->add([
-            'X-Frame-Options' => 'sameorigin',
-            'X-Content-Type-Options' => 'nosniff',
-            'Strict-Transport-Security' => 'max-age=31536000; includeSubDomains',
-            'Content-Security-Policy' => "default-src 'self'; script-src $cspScriptSrc; style-src $cspStyleSrc; frame-src $cspFrameSrc; img-src $cspImgSrc",
-            'X-Permitted-Cross-Domain-Policies' => 'none',
-            'Referrer-Policy' => 'strict-origin-when-cross-origin',
-        ]);
-
-        if (Features::isEnabled(Features::SMARTLOOK_SESSION_RECORDING))
-        {
-            $event->getResponse()->headers->add([
-                'Content-Security-Policy' => "default-src 'self'; style-src $cspStyleSrc; frame-src $cspFrameSrc; script-src $cspScriptSrc {$this->nonce('smartlook')} 'unsafe-eval' https://*.smartlook.com https://*.smartlook.cloud; connect-src 'self' https://*.smartlook.com https://*.smartlook.cloud; child-src 'self' blob:; worker-src 'self' blob:",
-            ]);
+        if (Features::isEnabled(Features::SMARTLOOK_SESSION_RECORDING)) {
+            $addEntry('connect-src', 'https://*.smartlook.com');
+            $addEntry('connect-src', 'https://*.smartlook.cloud');
+            $addEntry('script-src', 'https://*.smartlook.com');
+            $addEntry('script-src', 'https://*.smartlook.cloud');
         }
-    }
 
-    protected function nonce(string $context): string
-    {
-        return "'nonce-{$this->cspInlineScriptHelper->getNonce($context)}'";
+        // If we want the CSP rules to comprise only authorised sources, we need to set
+        // e.g. style-src: 'none'
+
+        // However, if we then use csp_nonce('style') to add nonces, nelmio generates
+        // a header that looks like so:
+        // style-src: 'none' 'nonce-abc123'
+
+        // Browsers moan about this, and so here we strip the 'none' if there are other
+        // entries
+
+        // (So if csp_nonce() not called, we end up with style-src: 'none', and if there
+        //  are calls, we end up with style-src: 'nonce-abc123' 'nonce-def234')
+
+        foreach($cspRules as $idx => $cspRule) {
+            $cspRuleParts = explode(' ', $cspRule);
+
+            $cspRuleName = $cspRuleParts[0] ?? null;
+            $cspRuleEntries = array_slice($cspRuleParts, 1);
+
+            // N.B. Not exhaustive - amend as needed
+            if (in_array($cspRuleName, [
+                'child-src',
+                'connect-src',
+                'font-src',
+                'img-src',
+                'media-src',
+                'script-src',
+                'style-src',
+            ])) {
+                $hasMultipleEntries = count($cspRuleEntries) > 1;
+                $cspRuleEntries = array_filter($cspRuleEntries, fn($entry) =>
+                    !$hasMultipleEntries ||
+                    !in_array(strtolower($entry), ["'none'", "none", '"none"'])
+                );
+
+                $cspRules[$idx] = join(' ', array_merge([$cspRuleName], $cspRuleEntries));
+            }
+        }
+
+        $headers->set('Content-Security-Policy', join('; ', $cspRules));
     }
 
     public static function getSubscribedEvents(): array
     {
         return [
-            KernelEvents::RESPONSE => 'kernelResponseEvent',
+            KernelEvents::RESPONSE => ['kernelResponseEvent', -128],
         ];
     }
 }

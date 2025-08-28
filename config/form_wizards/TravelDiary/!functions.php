@@ -3,9 +3,9 @@ namespace Symfony\Component\DependencyInjection\Loader\Configurator {
 
     function td_place(string $name, ?string $formClass = null, ?string $translationPrefixPart = null, array $additionalMetadata = [], string $template = null): array {
         if ($template === null) {
-            if (stripos($formClass, '\\JourneyWizard\\') !== false) {
+            if (stripos((string) $formClass, '\\JourneyWizard\\') !== false) {
                 $template = 'travel_diary/journey/wizard_form.html.twig';
-            } else if (stripos($formClass, '\\StageWizard\\') !== false) {
+            } else if (stripos((string) $formClass, '\\StageWizard\\') !== false) {
                 $template = 'travel_diary/stage/wizard_form.html.twig';
             } else {
                 $template = 'travel_diary/base_form.html.twig';
@@ -18,6 +18,7 @@ namespace Symfony\Component\DependencyInjection\Loader\Configurator {
                     'template' => $template,
                     'view_data' => $translationPrefixPart ? [
                         'translation_prefix' => $translationPrefixPart,
+                        'translation_domain' => 'travel-diary'
                     ] : [],
                 ],
                 $formClass ? ['form_class' => $formClass] : [],

@@ -2,7 +2,6 @@
 
 namespace App\Security;
 
-use Symfony\Component\Security\Core\Authentication\AuthenticationManagerInterface;
 use Symfony\Component\Security\Core\Authentication\Token\NullToken;
 use Symfony\Component\Security\Core\Authentication\Token\Storage\TokenStorageInterface;
 use Symfony\Component\Security\Core\Authentication\Token\SwitchUserToken;
@@ -12,16 +11,11 @@ use Symfony\Component\Security\Core\Exception\AuthenticationCredentialsNotFoundE
 
 class ImpersonatorAuthorizationChecker implements AuthorizationCheckerInterface
 {
-    private TokenStorageInterface $tokenStorage;
-    private AccessDecisionManagerInterface $accessDecisionManager;
-    private bool $exceptionOnNoToken;
-
-    public function __construct(TokenStorageInterface $tokenStorage, AccessDecisionManagerInterface $accessDecisionManager, bool $exceptionOnNoToken = false)
-    {
-        $this->tokenStorage = $tokenStorage;
-        $this->accessDecisionManager = $accessDecisionManager;
-        $this->exceptionOnNoToken = $exceptionOnNoToken;
-    }
+    public function __construct(
+        protected readonly TokenStorageInterface          $tokenStorage,
+        protected readonly AccessDecisionManagerInterface $accessDecisionManager,
+        protected readonly bool                           $exceptionOnNoToken = false
+    ) {}
 
     /**
      * {@inheritdoc}

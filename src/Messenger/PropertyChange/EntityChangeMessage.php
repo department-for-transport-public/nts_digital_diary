@@ -4,15 +4,8 @@ namespace App\Messenger\PropertyChange;
 
 class EntityChangeMessage extends AbstractMessage
 {
-    protected string $entityId;
-    protected string $entityClass;
-    protected array $fieldsChanged;
-
-    public function __construct(string $entityId, string $entityClass, array $fieldsChanged)
+    public function __construct(protected string $entityId, protected string $entityClass, protected array $fieldsChanged)
     {
-        $this->entityId = $entityId;
-        $this->entityClass = $entityClass;
-        $this->fieldsChanged = $fieldsChanged;
     }
 
     public function getEntityId(): string

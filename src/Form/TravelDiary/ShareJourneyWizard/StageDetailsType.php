@@ -17,9 +17,9 @@ use Symfony\Component\OptionsResolver\OptionsResolver;
 
 class StageDetailsType extends AbstractType
 {
-    public function buildForm(FormBuilderInterface $builder, array $options)
+    public function buildForm(FormBuilderInterface $builder, array $options): void
     {
-        $builder->addEventListener(FormEvents::PRE_SET_DATA, function(PreSetDataEvent $event) use ($options) {
+        $builder->addEventListener(FormEvents::PRE_SET_DATA, function(PreSetDataEvent $event) use ($options): void {
             /** @var Stage $stage */
             $stage = $event->getData();
             $sourceStage = $stage->getJourney()->getSharedFrom()->getStageByNumber($stage->getNumber());
@@ -34,7 +34,7 @@ class StageDetailsType extends AbstractType
                     $form
                         ->add("isDriver", BooleanChoiceType::class, [
                             'label' => "share-journey.stage-details.driver-or-passenger.label",
-                            'label_attr' => ['class' => 'govuk-label--s'],
+                            'label_attr' => ['class' => 'govuk-fieldset__legend--s'],
                             'label_translation_parameters' => $translationParams,
                             'help' => "share-journey.stage-details.driver-or-passenger.help",
                             'row_attr' => ['class' => 'govuk-grid-column-one-half'],
@@ -52,7 +52,7 @@ class StageDetailsType extends AbstractType
                             'translation_prefix' => 'share-journey.stage-details.parking-cost',
                             'translation_parameters' => $translationParams,
                             'row_attr' => ['class' => 'govuk-grid-column-one-half'],
-                            'label_class' => 'govuk-label--s',
+                            'label_class' => 'govuk-fieldset__legend--s',
                         ]);
                     break;
 
@@ -68,14 +68,14 @@ class StageDetailsType extends AbstractType
                             'translation_prefix' => "share-journey.stage-details.ticket-cost",
                             'translation_parameters' => $translationParams,
                             'row_attr' => ['class' => 'govuk-grid-column-one-half'],
-                            'label_class' => 'govuk-label--s',
+                            'label_class' => 'govuk-fieldset__legend--s',
                         ]);
                     break;
             }
         });
     }
 
-    public function finishView(FormView $view, FormInterface $form, array $options)
+    public function finishView(FormView $view, FormInterface $form, array $options): void
     {
         $view->vars['label_translation_parameters'] = array_merge(
             $view->children['isDriver']?->vars['label_translation_parameters'] ?? [],
@@ -84,7 +84,7 @@ class StageDetailsType extends AbstractType
         );
     }
 
-    public function configureOptions(OptionsResolver $resolver)
+    public function configureOptions(OptionsResolver $resolver): void
     {
         $resolver->setDefaults([
             'label' => 'share-journey.stage-details.shared-with-section-title',

@@ -7,19 +7,18 @@ use App\Entity\PropertyChangeLog;
 use App\Tests\DataFixtures\JourneyFixtures;
 use App\Tests\DataFixtures\StageFixtures;
 use Doctrine\Common\DataFixtures\ReferenceRepository;
-use Doctrine\ORM\EntityManager;
 use Doctrine\ORM\EntityManagerInterface;
 use Liip\TestFixturesBundle\Services\DatabaseToolCollection;
 use Symfony\Bundle\FrameworkBundle\Test\WebTestCase;
+use Symfony\Bundle\SecurityBundle\Security;
 use Symfony\Component\Security\Core\Authentication\Token\NullToken;
-use Symfony\Component\Security\Core\Security;
 use Symfony\Component\Serializer\Normalizer\NormalizerInterface;
 use Symfony\Component\Serializer\Serializer;
 
 class NormalizerComparisonTest extends WebTestCase
 {
     private ReferenceRepository $fixtureReferenceRepository;
-    private EntityManager $entityManager;
+    private EntityManagerInterface $entityManager;
     private Serializer $normalizer;
 
     protected function setUp(): void
@@ -32,7 +31,7 @@ class NormalizerComparisonTest extends WebTestCase
         // The mocked security service is to ensure that the property change log works
 //        $securityMock = $this->createMock(Security::class);
         $securityMock->method('getToken')->willReturn(new NullToken());
-        $container->set(Security::class, $securityMock);
+        $container->set('app.test.security', $securityMock);
 
         $databaseTool = $container->get(DatabaseToolCollection::class)->get();
         $fixtures = $databaseTool->loadFixtures([JourneyFixtures::class, StageFixtures::class]);
@@ -42,7 +41,7 @@ class NormalizerComparisonTest extends WebTestCase
         $this->normalizer = $container->get(NormalizerInterface::class);
     }
 
-    public function testJourney()
+    public function testJourney(): void
     {
         $this->compareNormalizerWithChangeLog(
             $this->getJourney(),
@@ -50,7 +49,7 @@ class NormalizerComparisonTest extends WebTestCase
         );
     }
 
-    public function testStage()
+    public function testStage(): void
     {
         $this->compareNormalizerWithChangeLog(
             $this->getJourney()->getStageByNumber(1),
@@ -73,14 +72,14 @@ class NormalizerComparisonTest extends WebTestCase
             ->findBy(['entityId' => $entity->getId()]);
 
         $changeLogProperties = array_diff(
-            array_map(fn(PropertyChangeLog $l) => $l->getPropertyName(), $changeLogChanges),
+            array_map(fn(PropertyChangeLog $l): ?string => $l->getPropertyName(), $changeLogChanges),
             $ignorePropertyChangeLogProperties
         );
 
         $this->assertArraysSameValues($normalizedProperties, $changeLogProperties);
     }
 
-    protected function assertArraysSameValues($expected, $actual, $message = 'Missing (-) and excess (+)')
+    protected function assertArraysSameValues($expected, $actual, string $message = 'Missing (-) and excess (+)'): void
     {
         $missing = array_diff($expected, $actual);
         $excess = array_diff($actual, $expected);
@@ -90,6 +89,6 @@ class NormalizerComparisonTest extends WebTestCase
 
     protected function getJourney(): Journey
     {
-        return $this->fixtureReferenceRepository->getReference('journey:2');
+        return $this->fixtureReferenceRepository->getReference('journey:2', Journey::class);
     }
 }

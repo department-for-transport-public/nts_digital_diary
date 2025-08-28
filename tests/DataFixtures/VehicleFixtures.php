@@ -13,15 +13,13 @@ use Doctrine\Persistence\ObjectManager;
 
 class VehicleFixtures extends AbstractFixture implements DependentFixtureInterface
 {
-    public function load(ObjectManager $manager)
+    public function load(ObjectManager $manager): void
     {
         $methodRepo = $manager->getRepository(Method::class);
         $method = $methodRepo->findOneBy(['descriptionTranslationKey' => 'van-or-lorry']);
 
-        /** @var Household $household */
-        $household = $this->getReference('household:onboarded');
-        /** @var DiaryKeeper $diaryKeeper */
-        $diaryKeeper = $this->getReference('diary-keeper:adult');
+        $household = $this->getReference('household:onboarded', Household::class);
+        $diaryKeeper = $this->getReference('diary-keeper:adult', DiaryKeeper::class);
 
         $vehicle = (new Vehicle())
             ->setMethod($method)

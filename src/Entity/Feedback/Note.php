@@ -8,35 +8,25 @@ use DateTime;
 use Doctrine\ORM\Mapping as ORM;
 use Symfony\Component\Validator\Constraints as Assert;
 
-/**
- * @ORM\Entity(repositoryClass=NoteRepository::class)
- * @ORM\Table(name="feedback_note")
- */
+#[ORM\Entity(repositoryClass: NoteRepository::class)]
+#[ORM\Table(name: 'feedback_note')]
 class Note
 {
     use IdTrait;
 
-    /**
-     * @ORM\Column(type="text")
-     * @Assert\NotBlank(groups="feedback.note", message="admin.feedback.note.not-blank")
-     */
+    #[Assert\NotBlank(message: 'admin.feedback.note.not-blank', groups: ['feedback.note'])]
+    #[ORM\Column(type: 'text')]
     private string $note;
 
-    /**
-     * @ORM\Column(type="string", length=255)
-     */
+    #[ORM\Column(type: 'string', length: 255)]
     private string $userIdentifier;
 
-    /**
-     * @ORM\Column(type="datetime")
-     */
+    #[ORM\Column(type: 'datetime')]
     private DateTime $createdAt;
 
-    /**
-     * @ORM\ManyToOne(targetEntity=Message::class, inversedBy="notes")
-     * @ORM\JoinColumn(nullable=false)
-     */
-    private ?Message $message;
+    #[ORM\ManyToOne(targetEntity: Message::class, inversedBy: 'notes')]
+    #[ORM\JoinColumn(nullable: false)]
+    private ?Message $message = null;
 
     public function getNote(): ?string
     {

@@ -47,9 +47,7 @@ class JourneyFixtures extends AbstractFixture implements DependentFixtureInterfa
 
     public function load(ObjectManager $manager): void
     {
-        $diaryKeeper = $this->getReference('diary-keeper:adult');
-
-        assert($diaryKeeper instanceof DiaryKeeper);
+        $diaryKeeper = $this->getReference('diary-keeper:adult', DiaryKeeper::class);
 
         foreach(self::getAllJourneyDefinitions() as $name => $definition) {
             $day = $diaryKeeper->getDiaryDayByNumber($definition->getDayNumber());
@@ -67,4 +65,3 @@ class JourneyFixtures extends AbstractFixture implements DependentFixtureInterfa
         return [UserFixtures::class];
     }
 }
-

@@ -4,12 +4,11 @@ namespace App\Tests\Functional\Wizard;
 
 class SummaryTestCase
 {
-    /** @var array|SummaryRowTestCase[] */
-    protected array $cases;
-
-    public function __construct(array $cases)
+    public function __construct(
+        /** @var array|SummaryRowTestCase[] */
+        protected array $cases
+    )
     {
-        $this->cases = $cases;
     }
 
     public function getCases(): array

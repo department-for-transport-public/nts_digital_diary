@@ -4,15 +4,16 @@ namespace App\Security\Voter\Interviewer;
 
 use App\Entity\AreaPeriod;
 use App\Entity\User;
+use Symfony\Bundle\SecurityBundle\Security;
 use Symfony\Component\Security\Core\Authentication\Token\TokenInterface;
 use Symfony\Component\Security\Core\Authorization\Voter\Voter;
-use Symfony\Component\Security\Core\Security;
 
 class AreaPeriodVoter extends Voter
 {
     public const IS_SUBSCRIBED = "INTERVIEWER_IS_SUBSCRIBED";
 
-    public function __construct(protected Security $security) {}
+    public function __construct(protected Security $security)
+    {}
 
     protected function supports(string $attribute, $subject): bool
     {

@@ -6,12 +6,12 @@ use App\Entity\Journey\Journey;
 use App\Serializer\ExportApi\Utils;
 use Symfony\Component\Serializer\Exception\ExceptionInterface;
 use Symfony\Component\Serializer\Normalizer\AbstractObjectNormalizer;
-use Symfony\Component\Serializer\Normalizer\ContextAwareNormalizerInterface;
 use Symfony\Component\Serializer\Normalizer\DateTimeNormalizer;
 use Symfony\Component\Serializer\Normalizer\NormalizerAwareInterface;
 use Symfony\Component\Serializer\Normalizer\NormalizerAwareTrait;
+use Symfony\Component\Serializer\Normalizer\NormalizerInterface;
 
-class JourneyNormalizer implements ContextAwareNormalizerInterface, NormalizerAwareInterface
+class JourneyNormalizer implements NormalizerInterface, NormalizerAwareInterface
 {
     use NormalizerAwareTrait;
 
@@ -19,6 +19,13 @@ class JourneyNormalizer implements ContextAwareNormalizerInterface, NormalizerAw
     {
         return ($context['apiVersion'] ?? 0) === 1
             && $data instanceof Journey;
+    }
+
+    public function getSupportedTypes(?string $format): array
+    {
+        return [
+            Journey::class => false, // false/not-cacheable because it depends upon the $context
+        ];
     }
 
     /**

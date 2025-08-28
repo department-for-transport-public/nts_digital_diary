@@ -5,21 +5,16 @@ namespace App\Serializer\ExportApi;
 use App\Entity\DiaryKeeper;
 use App\Repository\PropertyChangeLogRepository;
 use Symfony\Component\Serializer\Exception\ExceptionInterface;
-use Symfony\Component\Serializer\Normalizer\ContextAwareNormalizerInterface;
 use Symfony\Component\Serializer\Normalizer\NormalizerAwareInterface;
 use Symfony\Component\Serializer\Normalizer\NormalizerAwareTrait;
+use Symfony\Component\Serializer\Normalizer\NormalizerInterface;
 
-class HistoryNormalizer implements ContextAwareNormalizerInterface, NormalizerAwareInterface
+class HistoryNormalizer implements NormalizerInterface, NormalizerAwareInterface
 {
-    protected PropertyChangeLogRepository $changeLogRepository;
-    protected HistoryValueResolver $historyValueResolver;
-
     use NormalizerAwareTrait;
 
-    public function __construct(PropertyChangeLogRepository $changeLogRepository, HistoryValueResolver $historyValueResolver)
+    public function __construct(protected PropertyChangeLogRepository $changeLogRepository, protected HistoryValueResolver $historyValueResolver)
     {
-        $this->changeLogRepository = $changeLogRepository;
-        $this->historyValueResolver = $historyValueResolver;
     }
 
     public function supportsNormalization($data, string $format = null, array $context = []): bool
@@ -28,6 +23,13 @@ class HistoryNormalizer implements ContextAwareNormalizerInterface, NormalizerAw
         //      (i.e. in the PropertyChangeLog)
         return $data instanceof DiaryKeeper &&
             ($context['history'] ?? null) === true;
+    }
+
+    public function getSupportedTypes(?string $format): array
+    {
+        return [
+            DiaryKeeper::class => false, // false/not-cacheable because it depends upon the $context
+        ];
     }
 
     /**

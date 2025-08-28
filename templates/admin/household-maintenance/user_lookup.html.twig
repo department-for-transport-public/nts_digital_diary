@@ -1,0 +1,11 @@
+{% extends 'admin/household-maintenance/base.html.twig' %}
+
+{% set title_translation_prefix = "user.lookup" %}
+{% set title_translation_domain = 'admin' %}
+
+{% set breadcrumb_action = 'user-lookup' %}
+
+{% block content %}
+    <div class="govuk-body prose-scope">{{ 'user.lookup.help' | trans([], 'admin') }}</div>
+    {{ form(form) }}
+{% endblock %}

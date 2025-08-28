@@ -2,6 +2,8 @@
 
 namespace App\Tests\Utility\Metrics;
 
+use App\Entity\Journey\Journey;
+use App\Entity\Journey\Stage;
 use App\Entity\Utility\MetricsLog;
 use App\Repository\Utility\MetricsLogRepository;
 use App\Tests\AbstractFixturesTest;
@@ -25,18 +27,18 @@ class EntityDeleteEventTest extends AbstractFixturesTest
     public function dataIgnoreOtherEventsWhenDeletingEntity(): array
     {
         return [
-            ['journey:2'],
-            ['journey:2/stage:1'],
+            ['journey:2', Journey::class],
+            ['journey:2/stage:1', Stage::class],
         ];
     }
 
     /**
      * @dataProvider dataIgnoreOtherEventsWhenDeletingEntity
      */
-    public function testIgnoreOtherEventsWhenDeletingEntity($fixtureRef): void
+    public function testIgnoreOtherEventsWhenDeletingEntity(string $fixtureRef, string $class): void
     {
         // delete journey with stages
-        $entity = $this->getFixtureByReference($fixtureRef);
+        $entity = $this->fixtureReferenceRepository->getReference($fixtureRef, $class);
         $entityId = $entity->getId();
 
         $this->entityManager->remove($entity);

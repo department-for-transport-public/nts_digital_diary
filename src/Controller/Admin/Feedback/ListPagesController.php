@@ -2,28 +2,28 @@
 
 namespace App\Controller\Admin\Feedback;
 
-use App\ListPage\AbstractListPage;
 use App\ListPage\Admin\FeedbackAssignmentListPage;
 use App\ListPage\Admin\FeedbackViewListPage;
-use Sensio\Bundle\FrameworkExtraBundle\Configuration\Security;
+use Ghost\GovUkCoreBundle\ListPage\AbstractListPage;
 use Symfony\Bundle\FrameworkBundle\Controller\AbstractController;
 use Symfony\Component\HttpFoundation\RedirectResponse;
 use Symfony\Component\HttpFoundation\Request;
 use Symfony\Component\HttpFoundation\Response;
-use Symfony\Component\Routing\Annotation\Route;
+use Symfony\Component\Routing\Attribute\Route;
+use Symfony\Component\Security\Http\Attribute\IsGranted;
 
 #[Route("/feedback", name: "feedback_")]
 class ListPagesController extends AbstractController
 {
     #[Route("/assignment", name: "assignment_dashboard")]
-    #[Security("is_granted('ADMIN_FEEDBACK_ASSIGN')")]
+    #[IsGranted(attribute: 'ADMIN_FEEDBACK_ASSIGN')]
     public function assignmentDashboard(FeedbackAssignmentListPage $listPage, Request $request): Response
     {
         return $this->renderListPage($listPage, $request, "admin/feedback/assignment_list.html.twig");
     }
 
     #[Route("/dashboard", name: "view_dashboard")]
-    #[Security("is_granted('ADMIN_FEEDBACK_VIEW')")]
+    #[IsGranted(attribute: 'ADMIN_FEEDBACK_VIEW')]
     public function viewDashboard(FeedbackViewListPage $listPage, Request $request): Response
     {
         return $this->renderListPage($listPage, $request, "admin/feedback/view_list.html.twig");
@@ -39,7 +39,7 @@ class ListPagesController extends AbstractController
 
         return $this->render($template, [
             'data' => $listPage->getData(),
-            'form' => $listPage->getFiltersForm()->createView(),
+            'form' => $listPage->getFiltersForm(),
         ]);
     }
 }

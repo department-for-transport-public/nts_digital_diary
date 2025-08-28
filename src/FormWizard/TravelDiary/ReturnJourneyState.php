@@ -6,21 +6,21 @@ use Symfony\Component\Translation\TranslatableMessage;
 
 class ReturnJourneyState extends AbstractDuplicateJourneyState
 {
-    const STATE_INTRODUCTION = 'introduction';
-    const STATE_DAY = 'day';
-    const STATE_PURPOSE = 'purpose';
-    const STATE_TIMES = 'times';
-    const STATE_STAGE_DETAILS = 'stage-details';
-    const STATE_FINISH = 'finish';
+    public const STATE_INTRODUCTION = 'introduction';
+    public const STATE_DAY = 'day';
+    public const STATE_PURPOSE = 'purpose';
+    public const STATE_TIMES = 'times';
+    public const STATE_STAGE_DETAILS = 'stage-details';
+    public const STATE_FINISH = 'finish';
 
-    const TRANSITION_INTRO_TO_DAY = 'introduction-to-day';
-    const TRANSITION_DAY_TO_PURPOSE = 'day-to-purpose';
-    const TRANSITION_DAY_TO_TIMES = 'day-to-times';
-    const TRANSITION_PURPOSE_TO_TIMES = 'purpose-to-times';
-    const TRANSITION_TIMES_TO_FINISH = 'times-to-finish';
-    const TRANSITION_TIMES_TO_STAGE = 'times-to-stage';
-    const TRANSITION_STAGE_TO_NEXT_STAGE = 'stage-to-next-stage';
-    const TRANSITION_STAGE_TO_FINISH = 'stage-to-finish';
+    public const TRANSITION_INTRO_TO_DAY = 'introduction-to-day';
+    public const TRANSITION_DAY_TO_PURPOSE = 'day-to-purpose';
+    public const TRANSITION_DAY_TO_TIMES = 'day-to-times';
+    public const TRANSITION_PURPOSE_TO_TIMES = 'purpose-to-times';
+    public const TRANSITION_TIMES_TO_FINISH = 'times-to-finish';
+    public const TRANSITION_TIMES_TO_STAGE = 'times-to-stage';
+    public const TRANSITION_STAGE_TO_NEXT_STAGE = 'stage-to-next-stage';
+    public const TRANSITION_STAGE_TO_FINISH = 'stage-to-finish';
 
     public ?string $sourceJourneyId = null;
 

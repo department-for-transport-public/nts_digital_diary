@@ -5,7 +5,6 @@ namespace App\Form\TravelDiary\RepeatJourneyWizard;
 
 
 use App\Entity\Journey\Journey;
-use App\FormWizard\PropertyMerger;
 use App\FormWizard\TravelDiary\RepeatJourneyState;
 use App\Repository\Journey\JourneyRepository;
 use App\Utility\DateTimeFormats;
@@ -20,24 +19,22 @@ use Symfony\Component\Translation\TranslatableMessage;
 
 class SourceJourneyType extends AbstractType
 {
-    private RepeatJourneyHelper $repeatJourneyHelper;
+    public function __construct(
+        readonly private RepeatJourneyHelper $repeatJourneyHelper,
+        protected DateTimeFormats $dateTimeFormats,
+    ){}
 
-    public function __construct(RepeatJourneyHelper $repeatJourneyHelper)
-    {
-        $this->repeatJourneyHelper = $repeatJourneyHelper;
-    }
-
-    public function buildForm(FormBuilderInterface $builder, array $options)
+    public function buildForm(FormBuilderInterface $builder, array $options): void
     {
         $builder
             ->setDataMapper(new SourceJourneyDataMapper($this->repeatJourneyHelper))
-            ->addEventListener(FormEvents::PRE_SET_DATA, function(FormEvent $event) {
+            ->addEventListener(FormEvents::PRE_SET_DATA, function(FormEvent $event): void {
                 /** @var RepeatJourneyState $state */
                 $state = $event->getData();
                 $event->getForm()
                     ->add('sourceJourneyId', EntityType::class, [
                         'class' => Journey::class,
-                        'query_builder' => fn(JourneyRepository $r) => $r->getQueryBuilderByDayId($state->sourceDayId),
+                        'query_builder' => fn(JourneyRepository $r): \Doctrine\ORM\QueryBuilder => $r->getQueryBuilderByDayId($state->sourceDayId),
                         'model_property' => 'id',
 
                         'translation_domain' => 'travel-diary',
@@ -45,17 +42,17 @@ class SourceJourneyType extends AbstractType
                         'label' => 'repeat-journey.select-journey.label',
                         'label_attr' => ['class' => 'govuk-label--l'],
                         'help' => 'repeat-journey.select-journey.help',
-                        'choice_label' => fn(Journey $j) => new TranslatableMessage('repeat-journey.select-journey.choice.label', [
+                        'choice_label' => fn(Journey $j): \Symfony\Component\Translation\TranslatableMessage => new TranslatableMessage('repeat-journey.select-journey.choice.label', [
                             'startLocation' => $j->getStartLocationForDisplay(),
                             'endLocation' => $j->getEndLocationForDisplay(),
                             'purpose' => $j->getPurpose(),
-                            'time' => $j->getStartTime()->format(DateTimeFormats::TIME_SHORT),
+                            'time' => $j->getStartTime()->format($this->dateTimeFormats->getTime('user-pref')),
                         ], 'travel-diary'),
                     ]);
             });
     }
 
-    public function configureOptions(OptionsResolver $resolver)
+    public function configureOptions(OptionsResolver $resolver): void
     {
         $resolver->setDefaults([
             'validation_groups' => ["wizard.repeat-journey.source-journey"],

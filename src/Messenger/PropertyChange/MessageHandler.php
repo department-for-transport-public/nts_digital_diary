@@ -5,19 +5,16 @@ namespace App\Messenger\PropertyChange;
 use App\Entity\PropertyChangeLog;
 use App\Repository\PropertyChangeLogRepository;
 use Doctrine\ORM\EntityManagerInterface;
-use Symfony\Component\Messenger\Handler\MessageHandlerInterface;
+use Symfony\Component\Messenger\Attribute\AsMessageHandler;
 
-class MessageHandler implements MessageHandlerInterface
+#[AsMessageHandler]
+class MessageHandler
 {
     protected PropertyChangeLogRepository $changeLogRepository;
-    protected EntityManagerInterface $entityManager;
-
-    public function __construct(EntityManagerInterface $entityManager)
+    public function __construct(protected EntityManagerInterface $entityManager)
     {
-        $this->entityManager = $entityManager;
         $this->changeLogRepository = $this->entityManager->getRepository(PropertyChangeLog::class);
     }
-
     public function __invoke(AbstractMessage $message): void
     {
         if ($message instanceof EntityChangeMessage) {
@@ -26,7 +23,6 @@ class MessageHandler implements MessageHandlerInterface
             $this->handleDeleteMessage($message);
         }
     }
-
     protected function handleChangeMessage(EntityChangeMessage $message): void
     {
         /** @var PropertyChangeLog[] $changeLogs */
@@ -35,16 +31,14 @@ class MessageHandler implements MessageHandlerInterface
             ->andWhere('cl.entityClass = :entityClass')
             ->andWhere('cl.propertyName IN (:fieldsChanged)')
             ->orderBy('cl.timestamp', 'DESC')
-            ->setParameters([
-                'entityId' => $message->getEntityId(),
-                'entityClass' => $message->getEntityClass(),
-                'fieldsChanged' => $message->getFieldsChanged()
-            ])
+            ->setParameter('entityId', $message->getEntityId())
+            ->setParameter('entityClass', $message->getEntityClass())
+            ->setParameter('fieldsChanged', $message->getFieldsChanged())
             ->getQuery()
             ->execute();
 
         foreach($message->getFieldsChanged() as $field) {
-            $filteredChangeLogs = array_filter($changeLogs, fn(PropertyChangeLog $cl) => $cl->getPropertyName() === $field);
+            $filteredChangeLogs = array_filter($changeLogs, fn(PropertyChangeLog $cl): bool => $cl->getPropertyName() === $field);
             $keeps = self::getKeepsForChangeLogs($filteredChangeLogs);
 //            dump('Processing '.$message->getEntityClass().' / '.$message->getEntityId().' / '.$field);
             foreach ($filteredChangeLogs as $changeLog) {
@@ -57,21 +51,17 @@ class MessageHandler implements MessageHandlerInterface
 
         $this->entityManager->flush();
     }
-
     protected function handleDeleteMessage(EntityDeletionMessage $message): void
     {
         $this->changeLogRepository->createQueryBuilder('cl')
             ->delete()
             ->where('cl.entityId = :entityId')
             ->andWhere('cl.entityClass = :entityClass')
-            ->setParameters([
-                'entityId' => $message->getEntityId(),
-                'entityClass' => $message->getEntityClass(),
-            ])
+            ->setParameter('entityId', $message->getEntityId())
+            ->setParameter('entityClass', $message->getEntityClass())
             ->getQuery()
             ->execute();
     }
-
     public static function getKeepsForChangeLogs(array $changeLogs): array
     {
         $keeps = [];

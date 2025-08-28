@@ -3,12 +3,13 @@
 namespace App\Tests\Utility\Metrics;
 
 use App\Entity\Interviewer;
+use App\Entity\InterviewerTrainingRecord;
 use App\Entity\OtpUser;
 use App\Entity\User;
 use App\Entity\Utility\MetricsLog;
 use App\Repository\Utility\MetricsLogRepository;
 use App\Security\OneTimePassword\PasscodeGenerator;
-use App\Security\OneTimePassword\TrainingUserProvider;
+use App\Security\OneTimePassword\InterviewerLinkedTrainingUserProvider;
 use App\Tests\DataFixtures\OtpUserFixtures;
 use App\Tests\DataFixtures\UserFixtures;
 use App\Tests\Functional\AbstractFunctionalTestCase;
@@ -124,7 +125,6 @@ class LoginEventTest extends AbstractFunctionalTestCase
 
     protected function validateOnboardingLoginMetrics(MetricsLog $metric, ?string $passcode1, bool $expectSuccess, ?string $expectedArea = null): void
     {
-        /** @var OtpUser $otpUser */
         self::assertEquals('ob:' . $passcode1, $metric->getUserSerial());
         self::assertEquals($expectSuccess ? 'Login: success' : 'Login: failure', $metric->getEvent());
         self::assertEquals($expectedArea, $metric->getDiarySerial());
@@ -133,8 +133,8 @@ class LoginEventTest extends AbstractFunctionalTestCase
     public function dataOnboardingTrainingLoginEvent(): array
     {
         return [
-            [TrainingUserProvider::USER_IDENTIFIER, true],
-            [TrainingUserProvider::USER_IDENTIFIER, false],
+            [InterviewerLinkedTrainingUserProvider::USER_IDENTIFIER, true],
+            [InterviewerLinkedTrainingUserProvider::USER_IDENTIFIER, false],
             ['1234567890', false], // real OTP user, but not valid for onboarding training
             ['invalid', false],
         ];
@@ -145,15 +145,14 @@ class LoginEventTest extends AbstractFunctionalTestCase
      */
     public function testOnboardingTrainingLoginEvent(?string $passcode1, bool $expectSuccess): void
     {
-        /** @var Interviewer $interviewer */
-        $interviewer = $this->getFixtureByReference('interviewer');
+        $interviewer = $this->fixtureReferenceRepository->getReference('interviewer', Interviewer::class);
         $this->loginUser($interviewer->getUser()->getUserIdentifier());
         $this->client->request('GET', '/interviewer/training');
 
         // navigate to onboarding training login
         $this->client->request('GET', '/interviewer/training');
-        $this->client->request('GET', '/interviewer/training/module/onboarding-practice');
-        $this->clickLinkContaining('Access onboarding training');
+        $this->client->request('GET', '/interviewer/training/module/' . InterviewerTrainingRecord::MODULE_MANUAL_ONBOARDING_PRACTICE);
+        $this->clickLinkContaining('Access set-up training');
 
         $this->client->submitForm('otp_login_sign_in', [
             'otp_login[group][identifier]' => $passcode1,

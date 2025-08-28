@@ -8,7 +8,7 @@ use App\Tests\Functional\AbstractWizardTest;
 
 class AddStageTest extends AbstractWizardTest
 {
-    const TEST_USERNAME = 'diary-keeper-adult@example.com';
+    public const TEST_USERNAME = 'diary-keeper-adult@example.com';
 
     public function dataProvider(): array
     {
@@ -22,7 +22,7 @@ class AddStageTest extends AbstractWizardTest
     /**
      * @dataProvider dataProvider
      */
-    public function testAddJourneyWizard(array $testData)
+    public function testAddJourneyWizard(array $testData): void
     {
         $this->initialiseClientAndLoadFixtures([StageFixtures::class]);
         $this->loginUser(self::TEST_USERNAME);

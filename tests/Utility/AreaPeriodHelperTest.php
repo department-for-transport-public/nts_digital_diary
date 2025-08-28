@@ -34,7 +34,7 @@ class AreaPeriodHelperTest extends TestCase
     /**
      * @dataProvider dataGuessYear
      */
-    public function testGuessYear($area, $expectedYear)
+    public function testGuessYear(string $area, int $expectedYear): void
     {
         $this->assertSame($expectedYear, AreaPeriodHelper::guessYearFromArea($area));
     }

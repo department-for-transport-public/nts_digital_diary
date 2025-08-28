@@ -42,7 +42,7 @@ class EditDiaryVoterTest extends WebTestCase
     /**
      * @dataProvider dataCanEditDiary
      */
-    public function testCanChangeEmail(DiaryKeeper $diaryKeeper, User $user, $state, $expectedToBeAllowed): void
+    public function testCanChangeEmail(DiaryKeeper $diaryKeeper, User $user, string $state, bool $expectedToBeAllowed): void
     {
         $client = static::createClient();
         $client->loginUser($user);

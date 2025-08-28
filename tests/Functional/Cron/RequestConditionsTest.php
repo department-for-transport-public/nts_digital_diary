@@ -4,6 +4,7 @@
 namespace App\Tests\Functional\Cron;
 
 use App\Tests\Functional\AbstractFunctionalWebTestCase;
+use Symfony\Component\HttpFoundation\Request;
 
 class RequestConditionsTest extends AbstractFunctionalWebTestCase
 {
@@ -23,17 +24,17 @@ class RequestConditionsTest extends AbstractFunctionalWebTestCase
     /**
      * @dataProvider cronUrlsProvider
      */
-    public function testConditionsNotMet($url)
+    public function testConditionsNotMet(string $url): void
     {
-        $this->client->request('GET', "//localhost{$url}");
+        $this->client->request(Request::METHOD_GET, "//localhost{$url}");
         self::assertResponseStatusCodeSame(404);
 
-        $this->client->request('GET', "//localhost{$url}", [], [], [
+        $this->client->request(Request::METHOD_GET, "//localhost{$url}", [], [], [
             'HTTP_X_Appengine_Cron' => 'false',
         ]);
         self::assertResponseStatusCodeSame(404);
 
-        $this->client->request('GET', "//localhost{$url}", [], [], [
+        $this->client->request(Request::METHOD_GET, "//localhost{$url}", [], [], [
             'HTTP_X_Cloudscheduler' => 'false',
         ]);
         self::assertResponseStatusCodeSame(404);
@@ -42,19 +43,19 @@ class RequestConditionsTest extends AbstractFunctionalWebTestCase
     /**
      * @dataProvider cronUrlsProvider
      */
-    public function testConditionsMet($url)
+    public function testConditionsMet(string $url): void
     {
-        $this->client->request('GET', "//localhost{$url}", [], [], [
+        $this->client->request(Request::METHOD_GET, "//localhost{$url}", [], [], [
             'HTTP_X_Appengine_Cron' => 'true',
         ]);
         self::assertResponseStatusCodeSame(200);
 
-        $this->client->request('GET', "//localhost{$url}", [], [], [
+        $this->client->request(Request::METHOD_GET, "//localhost{$url}", [], [], [
             'HTTP_X_Cloudscheduler' => 'true',
         ]);
         self::assertResponseStatusCodeSame(200);
 
-        $this->client->request('GET', "//localhost{$url}", [], [], [
+        $this->client->request(Request::METHOD_GET, "//localhost{$url}", [], [], [
             'HTTP_X_Appengine_Cron' => 'true',
             'HTTP_X_Cloudscheduler' => 'true',
         ]);

@@ -14,11 +14,11 @@ use Symfony\Component\Routing\RouterInterface;
 class NotifyHelper
 {
     public function __construct(
-        protected MessageBusInterface $messageBus,
-        protected RouterInterface $router,
-        protected string $appEnvironment,
+        protected string                 $appEnvironment,
         protected EntityManagerInterface $entityManager,
-        protected FormatExtension $formatExtension,
+        protected FormatExtension        $formatExtension,
+        protected MessageBusInterface    $messageBus,
+        protected RouterInterface        $router,
     ) {}
 
     public function sendFeedbackArrivedMessage(string $recipient, Message $message): void
@@ -51,6 +51,11 @@ class NotifyHelper
 //        $url = $this->router->generate('admin_feedback_message_view', ['message' => $messageId], UrlGeneratorInterface::ABSOLUTE_URL);
         $message = $this->entityManager->find(Message::class, $messageId);
 
+        // Prevent markdown [...](...) style links, and strip off URL prefixes (http://, https:// or //)
+        $messageCopy = $message->getMessage();
+        $messageCopy = str_replace(['[', ']'], ['\[', '\]'], $messageCopy);
+        $messageCopy = preg_replace('/(https?:)?(\/\/)/i', '', $messageCopy);
+
         $this->messageBus->dispatch(new Email(
             Reference::FEEDBACK_CENTRE_MESSAGE_ASSIGNED,
             Message::class,
@@ -58,7 +63,7 @@ class NotifyHelper
             $recipient,
             Reference::FEEDBACK_CENTRE_MESSAGE_ASSIGNED_TEMPLATE_ID,
             [
-                'message' => $message->getMessage(),
+                'message' => $messageCopy,
                 'messageEmailAddress' => $message->getEmailAddressOrAnon(),
                 'messageId' => $messageId,
                 'assignedTo' => $message->getAssignedTo(),

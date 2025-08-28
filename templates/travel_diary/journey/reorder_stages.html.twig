@@ -47,25 +47,31 @@
                 travelTime: stage.travelTime,
             } -%}
             {%- set disabledAttributes = {class: 'govuk-summary-list-reorder__link_hidden', 'aria-hidden': 'true', 'tabIndex': '-1'} -%}
-            {%- set links = {
-                (loop.first ? '#' : moveUpLink): {
-                    label: 'actions.move-up',
-                    srHiddenSuffix: loop.first ? {} : srHiddenSuffix,
-                    srHiddenSuffixParams: srHiddenSuffixParams,
-                    srHiddenSuffixDomain: "travel-diary",
+            {%- set actions = [
+                {
+                    href: loop.first ? '#' : moveUpLink,
+                    text: 'actions.move-up' | trans({}, 'messages'),
+                    visuallyHiddenText: loop.first ?
+                        null :
+                        srHiddenSuffix | trans(srHiddenSuffixParams, 'travel-diary'),
                     attributes: loop.first ? disabledAttributes : {},
                 },
-                (loop.last ? '#' : moveDownLink): {
-                    label: 'actions.move-down',
-                    srHiddenSuffix: loop.last ? {} : srHiddenSuffix,
-                    srHiddenSuffixParams: srHiddenSuffixParams,
-                    srHiddenSuffixDomain: "travel-diary",
+                {
+                    href: loop.last ? '#' : moveDownLink,
+                    text: 'actions.move-down' | trans({}, 'messages'),
+                    visuallyHiddenText: loop.last ?
+                        null :
+                        srHiddenSuffix | trans(srHiddenSuffixParams, 'travel-diary'),
                     attributes: loop.last ? disabledAttributes : {},
                 }
-            } -%}
+            ] -%}
 
             {%- import '@GhostGovUkFrontend/components/macros.html.twig' as m -%}
-            {{- m.summaryListRow("#{stage.number}.", value, links) -}}
+            {{- m.summaryListRow({
+                key: "#{stage.number}.",
+                value: value,
+                actions: actions
+            }) -}}
         {%- endfor -%}
     </dl>
 

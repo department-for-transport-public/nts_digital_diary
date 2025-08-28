@@ -2,7 +2,7 @@
 
 namespace App\ApiPlatform\Doctrine\Orm\Filter;
 
-use ApiPlatform\Api\IriConverterInterface;
+use ApiPlatform\Metadata\IriConverterInterface;
 use ApiPlatform\Doctrine\Common\Filter\SearchFilterInterface;
 use ApiPlatform\Doctrine\Common\Filter\SearchFilterTrait;
 use ApiPlatform\Doctrine\Orm\Filter\AbstractFilter;
@@ -36,7 +36,7 @@ class MappedPropertySearchFilter extends AbstractFilter implements SearchFilterI
         $searchProperties = [];
 
         foreach($properties ?? [] as $property => $filter) {
-            $filterParts = explode(self::SEPARATOR, $filter);
+            $filterParts = explode(self::SEPARATOR, (string) $filter);
             $this->mappings[$property] = $filterParts[0];
             $searchProperties[$filterParts[0]] = $filterParts[1];
         }
@@ -44,12 +44,12 @@ class MappedPropertySearchFilter extends AbstractFilter implements SearchFilterI
         $this->searchFilter = new SearchFilter($managerRegistry, $iriConverter, $propertyAccessor, $logger, $searchProperties, $nameConverter);
     }
 
-    protected function filterProperty(string $property, $value, QueryBuilder $queryBuilder, QueryNameGeneratorInterface $queryNameGenerator, string $resourceClass, Operation $operation = null, array $context = [])
+    protected function filterProperty(string $property, $value, QueryBuilder $queryBuilder, QueryNameGeneratorInterface $queryNameGenerator, string $resourceClass, Operation $operation = null, array $context = []): void
     {
         // Never gets called because apply() has been overridden...
     }
 
-    public function apply(QueryBuilder $queryBuilder, QueryNameGeneratorInterface $queryNameGenerator, string $resourceClass, Operation $operation = null, array $context = [])
+    public function apply(QueryBuilder $queryBuilder, QueryNameGeneratorInterface $queryNameGenerator, string $resourceClass, Operation $operation = null, array $context = []): void
     {
         $searchContext = $context;
         $searchContext['filters'] = [];

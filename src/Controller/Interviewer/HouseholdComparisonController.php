@@ -5,8 +5,8 @@ namespace App\Controller\Interviewer;
 use App\Entity\Household;
 use App\Utility\Metrics\Events\HouseholdComparisonEvent;
 use App\Utility\Metrics\MetricsHelper;
-use Sensio\Bundle\FrameworkExtraBundle\Configuration\Template;
-use Symfony\Component\Routing\Annotation\Route;
+use Symfony\Bridge\Twig\Attribute\Template;
+use Symfony\Component\Routing\Attribute\Route;
 
 #[Route("/household/{household}/compare", name: "household_compare_")]
 class HouseholdComparisonController extends AbstractController

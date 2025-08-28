@@ -19,7 +19,7 @@ class SerialHelperTest extends TestCase
     /**
      * @dataProvider dataCheckLetters
      */
-    public function testCheckLetter(int $area, int $addressNumber, int $householdNumber, $expectedCheckLetter): void
+    public function testCheckLetter(int $area, int $addressNumber, int $householdNumber, string $expectedCheckLetter): void
     {
         $this->assertSame($expectedCheckLetter, SerialHelper::getCheckLetter($area, $addressNumber, $householdNumber));
     }

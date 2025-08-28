@@ -6,36 +6,24 @@ use App\Entity\IdTrait;
 use App\Repository\Utility\MetricsLogRepository;
 use Doctrine\ORM\Mapping as ORM;
 
-/**
- * @ORM\Entity(repositoryClass=MetricsLogRepository::class)
- */
+#[ORM\Entity(repositoryClass: MetricsLogRepository::class)]
 class MetricsLog
 {
     use IdTrait;
 
-    /**
-     * @ORM\Column(type="datetime_immutable")
-     */
+    #[ORM\Column(type: 'datetime_immutable')]
     private \DateTimeImmutable $createdAt;
 
-    /**
-     * @ORM\Column(type="string", length=180, nullable=true)
-     */
-    private ?string $userSerial;
+    #[ORM\Column(type: 'string', length: 180, nullable: true)]
+    private ?string $userSerial = null;
 
-    /**
-     * @ORM\Column(type="string", length=20, nullable=true)
-     */
-    private ?string $diarySerial;
+    #[ORM\Column(type: 'string', length: 20, nullable: true)]
+    private ?string $diarySerial = null;
 
-    /**
-     * @ORM\Column(type="string", length=255)
-     */
-    private ?string $event;
+    #[ORM\Column(type: 'string', length: 255)]
+    private ?string $event = null;
 
-    /**
-     * @ORM\Column(type="json", nullable=true)
-     */
+    #[ORM\Column(type: 'json', nullable: true)]
     private ?array $metadata = [];
 
     public function getCreatedAt(): ?\DateTimeImmutable

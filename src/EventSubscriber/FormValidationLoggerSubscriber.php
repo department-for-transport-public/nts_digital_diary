@@ -4,25 +4,20 @@ namespace App\EventSubscriber;
 
 use App\Features;
 use Psr\Log\LoggerInterface;
+use Symfony\Bundle\SecurityBundle\Security;
 use Symfony\Component\EventDispatcher\EventSubscriberInterface;
 use Symfony\Component\Form\FormEvent;
 use Symfony\Component\Form\FormEvents;
 use Symfony\Component\Form\FormInterface;
 use Symfony\Component\HttpFoundation\RequestStack;
-use Symfony\Component\Security\Core\Security;
 
 class FormValidationLoggerSubscriber implements EventSubscriberInterface
 {
-    private Security $security;
-    private LoggerInterface $logger;
-    private RequestStack $requestStack;
-
-    public function __construct(Security $security, RequestStack $requestStack, LoggerInterface $formValidationLogger)
-    {
-        $this->security = $security;
-        $this->logger = $formValidationLogger;
-        $this->requestStack = $requestStack;
-    }
+    public function __construct(
+        protected readonly Security        $security,
+        protected readonly RequestStack    $requestStack,
+        protected readonly LoggerInterface $logger
+    ) {}
 
     public static function getSubscribedEvents(): array
     {
@@ -34,7 +29,7 @@ class FormValidationLoggerSubscriber implements EventSubscriberInterface
         ];
     }
 
-    public function onPostSubmit(FormEvent $event)
+    public function onPostSubmit(FormEvent $event): void
     {
         $form = $event->getForm();
 
@@ -48,13 +43,13 @@ class FormValidationLoggerSubscriber implements EventSubscriberInterface
     {
         if ($form->getErrors(true)->count() > 0) {
             $logData = [
-                'user' => $this->security->getUser() ? $this->security->getUser()->getUsername() : null,
+                'user' => $this->security->getUser() ? $this->security->getUser()->getUserIdentifier() : null,
                 'form' => $form->getName(),
                 'path' => $this->requestStack->getCurrentRequest()->getPathInfo(),
                 'errors' => [],
             ];
 
-            foreach ($form->getErrors(true) as $error) {
+            foreach($form->getErrors(true) as $error) {
                 $origin = $error->getOrigin();
                 if (!isset($logData['errors'][$origin->getName()])) $logData['errors'][$origin->getName()] = [];
                 $logData['errors'][$error->getOrigin()->getName()][] = [

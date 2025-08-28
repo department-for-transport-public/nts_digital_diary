@@ -13,14 +13,12 @@ class InterviewerDeallocateAreaConfirmAction extends AbstractConfirmAction
 {
     /** @var Interviewer */
     protected $subject;
-    protected EntityManagerInterface $entityManager;
 
     protected AreaPeriod $areaPeriod;
 
-    public function __construct(FormFactoryInterface $formFactory, RequestStack $requestStack, EntityManagerInterface $entityManager)
+    public function __construct(FormFactoryInterface $formFactory, RequestStack $requestStack, protected EntityManagerInterface $entityManager)
     {
         parent::__construct($formFactory, $requestStack);
-        $this->entityManager = $entityManager;
     }
 
     public function setAreaPeriod(AreaPeriod $areaPeriod): self
@@ -62,7 +60,7 @@ class InterviewerDeallocateAreaConfirmAction extends AbstractConfirmAction
         return 'interviewer.deallocate';
     }
 
-    public function doConfirmedAction($formData)
+    public function doConfirmedAction($formData): void
     {
         $this->subject->removeAreaPeriod($this->areaPeriod);
         $this->entityManager->flush();

@@ -16,14 +16,11 @@ use Symfony\Component\Validator\Constraints\NotBlank;
 
 class ChangeEmailType extends AbstractType
 {
-    protected UserRepository $userRepository;
-
-    public function __construct(UserRepository $userRepository)
+    public function __construct(protected UserRepository $userRepository)
     {
-        $this->userRepository = $userRepository;
     }
 
-    public function buildForm(FormBuilderInterface $builder, array $options)
+    public function buildForm(FormBuilderInterface $builder, array $options): void
     {
         $builder
             ->add('emailAddress', EmailType::class, [
@@ -33,7 +30,7 @@ class ChangeEmailType extends AbstractType
                 'constraints' => [
                     new NotBlank(['message' => 'change-email.email.not-blank']),
                     new Email(),
-                    new ChangeUserEmailAddress(['userId' => $options['user_id']]),
+                    new ChangeUserEmailAddress(userId: $options['user_id']),
                 ],
                 'attr' => [
                     'class' => 'govuk-input--width-20',
@@ -57,7 +54,7 @@ class ChangeEmailType extends AbstractType
         }
     }
 
-    public function configureOptions(OptionsResolver $resolver)
+    public function configureOptions(OptionsResolver $resolver): void
     {
         $resolver->setDefault('translation_domain', 'auth');
         $resolver->setDefault('cancel_link_href', null);

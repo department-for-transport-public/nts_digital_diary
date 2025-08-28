@@ -38,12 +38,10 @@ class JourneyRepository extends ServiceEntityRepository
                 ->leftJoin('dk.household', 'h')
                 ->leftJoin('h.areaPeriod', 'a')
                 ->where('j.id = :id')
-                ->setParameters([
-                    'id' => $id,
-                ])
+                ->setParameter('id', $id)
                 ->getQuery()
                 ->getOneOrNullResult();
-        } catch (NonUniqueResultException $e) {
+        } catch (NonUniqueResultException) {
             return null;
         }
     }
@@ -60,7 +58,7 @@ class JourneyRepository extends ServiceEntityRepository
             $sharedFromId = $this->getEntityManager()
                 ->getUnitOfWork()
                 ->getEntityIdentifier($sharedFrom)['id'];
-        } catch (EntityNotFoundException $e) {
+        } catch (EntityNotFoundException) {
             return null;
         }
 
@@ -69,12 +67,12 @@ class JourneyRepository extends ServiceEntityRepository
             ->leftJoin('j.diaryDay', 'dd')
             ->leftJoin('dd.diaryKeeper', 'dk')
             ->where('j.id = :id')
-            ->setParameters(['id' => $sharedFromId])
+            ->setParameter('id', $sharedFromId)
             ->getQuery();
 
         try {
             return $query->getSingleScalarResult();
-        } catch (UnexpectedResultException $e) {
+        } catch (UnexpectedResultException) {
             return null;
         }
     }
@@ -86,11 +84,11 @@ class JourneyRepository extends ServiceEntityRepository
             ->leftJoin('j.diaryDay', 'dd')
             ->leftJoin('dd.diaryKeeper', 'dk')
             ->where('j.sharedFrom = :sourceJourney')
-            ->setParameters(['sourceJourney' => $journey])
+            ->setParameter('sourceJourney', $journey)
             ->getQuery();
 
         $names = array_map(
-            fn($x) => $x['name'],
+            fn($x): mixed => $x['name'],
             $query->getArrayResult()
         );
 

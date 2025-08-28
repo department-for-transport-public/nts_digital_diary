@@ -16,12 +16,15 @@ actions:
 
 admin:
   menu:
-    household-maintenance: Maintenance
+    household-maintenance: Households
+    tools: Tools
     feedback:
       assigner: Assign messages
       viewer: View messages
     interviewers: Interviewers
     sample-import: Sample import
+    data-export: Data export
+    logout: Logout
 
 boolean:
   'true': Yes
@@ -85,6 +88,9 @@ errors:
       The service is undergoing scheduled maintenance, and is not available. Check back in 15 minutes.
 
 feedback:
+  interviewer-support-warning:
+    title: Information
+    content: If your issue is urgent, contact the Survey Enquiry Team (SET) on 0800 652 4568
   form:
     comments:
       label: >-
@@ -92,7 +98,12 @@ feedback:
           support     {Issue details}
           other       {Comments}
         }
-      help: ''
+      help:
+        feedback: ''
+        support: |-
+          Provide as much information as possible.
+          
+          If you are reporting a bug, please include what you were doing, and what happened.
     email:
       help: >-
         {category, select,
@@ -112,7 +123,11 @@ feedback:
       }
     notes: >-
       {category, select,
-        support     {Please note that when submitting this form, your comments, along with your email address, will be viewable by staff working on the National Travel Survey at the Department for Transport and Ghost Digital Ltd. Depending on the nature of your comment, it may be sent to the National Centre for Social Research (NatCen) via unencrypted email. If a response is needed, you will be contacted by email. For this reason, we do not recommend that you include any confidential information in this form. Alternatively, you can contact NatCen by telephone on 0800 652 4568.}
+        support     {
+          When submitting this form, your email address and comments will be viewable by staff working on the National Travel Survey at the National Centre for Social Research (NatCen), the Department for Transport and Ghost Digital Ltd. If a response is needed, you will be contacted by email.
+
+          Alternatively, you can contact NatCen by telephone on 0800 652 4568.
+        }
         other       {}
       }
   thanks:
@@ -122,10 +137,6 @@ feedback:
         support     {Your support request has been successfully submitted. Someone will get back to you as soon as possible.}
         other       {Your feedback has been successfully submitted}
       }
-
-format: # Unused??
-  date:
-    default: 'd/m/Y'
 
 home:
   page-title: National Travel Survey Diary
@@ -179,8 +190,20 @@ time:
     label: am or pm
     am.label: am
     pm.label: pm
-  help: For example, 11:36am or 2:11pm
-
+  12-hour:
+    label: 12 hour
+    help: |-
+      Use 12-hour format.  
+      For example, 7:30 am or 10:15 pm.
+      Midday is 12pm.
+    short-help: For example, 7:30 am or 10:15 pm.
+  24-hour:
+    label: 24 hour
+    help: |-
+      Use 24-hour format.
+      For example, 7:30 or 22:15
+      Midnight is 0:00.
+    short-help: For example, 7:30 or 22:15
 unit.distance:
   miles: Miles
   metres: Metres
@@ -190,3 +213,27 @@ unit.distance:
 unit.odometer-reading:
   miles: Miles
   kilometres: Kilometres
+
+wizard.unique-constraint-violation.notification:
+  title: Duplicate record
+  heading: A duplicate record already exists
+  content: The information you were trying to add has not been saved, as an existing record with matching information was
+    found. Check the record details to ensure they are correct before proceeding.
+
+
+user-preferences:
+  page-title: "User preferences for {name}"
+  time-format:
+    label: Time format
+    help: Use this option to change how times are entered and displayed
+    12-hour.help:
+
+  save.notification-banner:
+    title: 'Success'
+    heading: 'Preferences updated'
+    content: 'Your user preferences have been saved. Changes will be reflected immediately.'
+
+  new-feature-notification-banner:
+    title: 'New feature'
+    heading: 'User preferences'
+    content: "A new feature has been added to the NTS digital diary. It allows you to set a preference for the time format used across the site. Set and save your preference here. You can return to this page using the preferences menu item above."

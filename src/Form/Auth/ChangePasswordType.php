@@ -18,7 +18,7 @@ use Symfony\Component\Validator\Context\ExecutionContextInterface;
 
 class ChangePasswordType extends AbstractType
 {
-    public function buildForm(FormBuilderInterface $builder, array $options)
+    public function buildForm(FormBuilderInterface $builder, array $options): void
     {
         $passwordOptions = [
             'attr' => [
@@ -75,13 +75,13 @@ class ChangePasswordType extends AbstractType
         }
     }
 
-    public function configureOptions(OptionsResolver $resolver)
+    public function configureOptions(OptionsResolver $resolver): void
     {
         $resolver->setDefault('data_class', User::class);
         $resolver->setDefault('translation_domain', 'auth');
 
         $resolver->setDefault('constraints', [
-            new Callback(function(User $user, ExecutionContextInterface $context) {
+            new Callback(function(User $user, ExecutionContextInterface $context): void {
                 /** @var FormInterface $form */
                 $form = $context->getRoot();
                 $password1 = $form->get('password1')->getData();

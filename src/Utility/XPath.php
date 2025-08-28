@@ -2,7 +2,7 @@
 
 namespace App\Utility;
 
-class XPath
+class XPath implements \Stringable
 {
     protected ?string $class;
     protected ?string $prefix;
@@ -89,7 +89,7 @@ class XPath
         } else {
             $xPath .= '*';
 
-            $selfTags = array_map(fn(string $tag) => "self::$tag", $this->tags);
+            $selfTags = array_map(fn(string $tag): string => "self::$tag", $this->tags);
             $tagPredicates = join(' or ', $selfTags);
             $predicates = "({$tagPredicates}) and ({$predicates})";
         }

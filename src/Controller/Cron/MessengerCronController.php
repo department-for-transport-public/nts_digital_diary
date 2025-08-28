@@ -5,14 +5,14 @@ namespace App\Controller\Cron;
 use Exception;
 use Symfony\Component\HttpFoundation\Response;
 use Symfony\Component\HttpKernel\KernelInterface;
-use Symfony\Component\Routing\Annotation\Route;
+use Symfony\Component\Routing\Attribute\Route;
 
 class MessengerCronController extends AbstractCronController
 {
     /**
-     * @Route("/messenger/consume", name="messengerconsumer")
      * @throws Exception
      */
+    #[Route(path: '/messenger/consume', name: 'messengerconsumer')]
     public function messengerConsumer(KernelInterface $kernel): Response
     {
         return $this->runCommand(

@@ -3,9 +3,9 @@
 namespace App\Serializer\ApiPlatform;
 
 use App\ApiPlatform\ApiIdInterface;
-use Symfony\Component\Serializer\Normalizer\ContextAwareNormalizerInterface;
+use Symfony\Component\Serializer\Normalizer\NormalizerInterface;
 
-class EntityAsIdNormalizer implements ContextAwareNormalizerInterface
+class EntityAsIdNormalizer implements NormalizerInterface
 {
     public const CONTEXT_KEY = "entity_as_id";
 
@@ -13,6 +13,13 @@ class EntityAsIdNormalizer implements ContextAwareNormalizerInterface
     {
         return ($context[self::CONTEXT_KEY] ?? false) === true
             && $data instanceof ApiIdInterface;
+    }
+
+    public function getSupportedTypes(?string $format): array
+    {
+        return [
+            ApiIdInterface::class => false, // false/not-cacheable because it depends upon the $context
+        ];
     }
 
     /**

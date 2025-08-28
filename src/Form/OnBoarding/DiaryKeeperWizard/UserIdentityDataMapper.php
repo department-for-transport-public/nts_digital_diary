@@ -6,17 +6,16 @@ use App\Entity\DiaryKeeper;
 use App\Entity\User;
 use Symfony\Component\Form\Extension\Core\DataMapper\DataMapper;
 use Symfony\Component\Form\FormInterface;
-use Symfony\Component\Uid\Ulid;
-use Traversable;
 
 class UserIdentityDataMapper extends DataMapper
 {
     /**
-     * @param Traversable|iterable $forms
      * @param DiaryKeeper $data
      */
-    public function mapDataToForms($data, iterable $forms): void
+    public function mapDataToForms(mixed $data, \Traversable $forms): void
     {
+        $traversableForms = $forms;
+
         $forms = iterator_to_array($forms);
         /** @var FormInterface[] $forms */
 
@@ -28,9 +27,14 @@ class UserIdentityDataMapper extends DataMapper
             $data->setUser(new User());
         }
 
-        parent::mapDataToForms($data, $forms);
+        parent::mapDataToForms($data, $traversableForms);
 
         $user = $data->getUser();
+
+        if (in_array($data->getMediaType(), [DiaryKeeper::MEDIA_TYPE_INTERVIEWER_TRANSCRIBED, DiaryKeeper::MEDIA_TYPE_PAPER])) {
+            $forms['mediaType']->setData('other');
+            $forms['interviewerMediaType']->setData($data->getMediaType());
+        }
 
         if ($user->hasIdentifierForLogin()) {
             $userIdentifier = $user->getUserIdentifier();
@@ -45,11 +49,12 @@ class UserIdentityDataMapper extends DataMapper
     }
 
     /**
-     * @param Traversable|iterable $forms
      * @param DiaryKeeper $data
      */
-    public function mapFormsToData(iterable $forms, &$data): void
+    public function mapFormsToData(\Traversable $forms, mixed &$data): void
     {
+        $traversableForms = $forms;
+
         $forms = iterator_to_array($forms);
         /** @var FormInterface[] $forms */
 
@@ -60,9 +65,12 @@ class UserIdentityDataMapper extends DataMapper
         $user = $data->getUser();
         $currentUserIdentifier = $user->getUserIdentifier();
 
-        parent::mapFormsToData($forms, $data);
+        parent::mapFormsToData($traversableForms, $data);
+        if ($data->getMediaType() === 'other' && $forms['interviewerMediaType']->getData()) {
+            $data->setMediaType($forms['interviewerMediaType']->getData());
+        }
 
-        if($data->getMediaType() === DiaryKeeper::MEDIA_TYPE_PAPER) {
+        if (in_array($data->getMediaType(), [DiaryKeeper::MEDIA_TYPE_INTERVIEWER_TRANSCRIBED, DiaryKeeper::MEDIA_TYPE_PAPER])) {
             $user->setUserIdentifier(null);
             $proxies = $data->getProxies()->toArray();
             array_walk($proxies, fn($p) => $data->removeProxy($p));

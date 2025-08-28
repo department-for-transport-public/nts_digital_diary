@@ -3,30 +3,30 @@
 namespace App\ListPage\Admin;
 
 use App\Entity\Feedback\Group;
-use App\ListPage\Field\ChoiceFilter;
-use App\ListPage\Field\DateTextFilter;
 use App\Entity\Feedback\Message;
-use App\ListPage\AbstractListPage;
-use App\ListPage\Field\Simple;
-use App\ListPage\Field\TextFilter;
 use App\Repository\Feedback\MessageRepository;
 use App\Security\GoogleIap\AdminRoleResolver;
 use App\Security\GoogleIap\IapUser;
 use Doctrine\ORM\QueryBuilder;
+use Ghost\GovUkCoreBundle\ListPage\AbstractListPage;
+use Ghost\GovUkCoreBundle\ListPage\Field\ChoiceFilter;
+use Ghost\GovUkCoreBundle\ListPage\Field\DateTextFilter;
+use Ghost\GovUkCoreBundle\ListPage\Field\Simple;
+use Ghost\GovUkCoreBundle\ListPage\Field\TextFilter;
+use Symfony\Bundle\SecurityBundle\Security;
 use Symfony\Component\Form\FormFactoryInterface;
 use Symfony\Component\HttpKernel\Exception\NotFoundHttpException;
 use Symfony\Component\Routing\RouterInterface;
-use Symfony\Component\Security\Core\Security;
 use Symfony\Contracts\Translation\TranslatorInterface;
 
 class FeedbackViewListPage extends AbstractListPage
 {
     public function __construct(
-        protected AdminRoleResolver $adminRoleResolver,
-        protected MessageRepository $repository,
-        FormFactoryInterface $formFactory,
-        RouterInterface $router,
-        protected Security $security,
+        protected AdminRoleResolver   $adminRoleResolver,
+        protected MessageRepository   $repository,
+        FormFactoryInterface          $formFactory,
+        RouterInterface               $router,
+        protected Security            $security,
         protected TranslatorInterface $translator,
     ) {
         parent::__construct($formFactory, $router);
@@ -34,12 +34,12 @@ class FeedbackViewListPage extends AbstractListPage
 
     protected function getFieldsDefinition(): array
     {
-        $assignees = array_map(fn(Group $g) => $g->getName(), $this->adminRoleResolver->getAssignees());
+        $assignees = array_map(fn(Group $g): string => $g->getName(), $this->adminRoleResolver->getAssignees());
         $assignees = array_combine($assignees, $assignees);
 
-        $states = [Message::STATE_ASSIGNED, Message::STATE_IN_PROGRESS, Message::STATE_CLOSED];
+        $states = [Message::STATE_ASSIGNED, Message::STATE_IN_PROGRESS, Message::STATE_CLOSED, Message::STATE_REJECTED];
         $states = array_combine(
-            array_map(fn($k) => $this->translator->trans("feedback.view.state.labels.{$k}", [], 'admin'), $states),
+            array_map(fn($k): string => $this->translator->trans("feedback.view.state.labels.{$k}", [], 'admin'), $states),
             $states
         );
 
@@ -47,7 +47,9 @@ class FeedbackViewListPage extends AbstractListPage
             (new DateTextFilter('Received', 'message.sent'))->sortable(),
             (new TextFilter('Email address', 'message.emailAddress'))->sortable(),
             (new Simple('Category', 'message.category')),
-            (new ChoiceFilter('Assigned', 'message.assignedTo', $assignees))->sortable(),
+            $this->security->isGranted('ADMIN_FEEDBACK_ASSIGN')
+                ? (new ChoiceFilter('Assigned', 'message.assignedTo', $assignees))->sortable()
+                : (new Simple('Assigned', 'message.assignedTo')),
             (new ChoiceFilter('State', 'message.state', $states))->sortable(),
         ];
     }

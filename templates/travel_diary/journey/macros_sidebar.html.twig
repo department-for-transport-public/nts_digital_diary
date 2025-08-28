@@ -17,7 +17,7 @@
             {% if journey.startTime is not null %}
                 {{- "journey.view.location-and-time" | trans({
                     location: journey.startLocationForDisplay,
-                    time: journey.startTime | date(format_time_short),
+                    time: journey.startTime | date(date_time_format.time('user-pref')),
                 }) | nl2br -}}
             {%- else -%}
                 {{- journey.startLocationForDisplay -}}
@@ -31,7 +31,7 @@
             {% if journey.endTime is not null %}
                 {{- "journey.view.location-and-time" | trans({
                     location: journey.endLocationForDisplay,
-                    time: journey.endTime | date(format_time_short),
+                    time: journey.endTime | date(date_time_format.time('user-pref')),
                 }) | nl2br -}}
             {%- else -%}
                 {{- journey.endLocationForDisplay -}}

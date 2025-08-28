@@ -24,10 +24,10 @@ class ShareJourneyTestFixtures extends AbstractFixture implements DependentFixtu
         return [StageFixtures::class];
     }
 
-    public function load(ObjectManager $manager)
+    public function load(ObjectManager $manager): void
     {
-        /** @var DiaryKeeper $sourceDiaryKeeper */
-        $sourceDiaryKeeper = $this->getReference('diary-keeper:adult');
+        $sourceDiaryKeeper = $this->getReference('diary-keeper:adult', DiaryKeeper::class);
+
         $household = $sourceDiaryKeeper->getHousehold();
         $vehicleRepo = $manager->getRepository(Vehicle::class);
         $methodRepo = $manager->getRepository(Method::class);

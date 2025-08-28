@@ -2,9 +2,12 @@
 
 namespace App\Twig;
 
+use App\Entity\PreferenceUserInterface;
 use App\Features;
 use Exception;
 use Symfony\Component\HttpFoundation\RequestStack;
+use Symfony\Component\Security\Core\User\UserInterface;
+use Symfony\Component\Translation\TranslatableMessage;
 use Twig\Error\SyntaxError;
 use Twig\Extension\AbstractExtension;
 use Twig\Extension\GlobalsInterface;
@@ -13,36 +16,38 @@ use Twig\TwigFunction;
 
 class AppExtension extends AbstractExtension implements GlobalsInterface
 {
-    private RequestStack $requestStack;
-
-    public function __construct(RequestStack $requestStack) {
-        $this->requestStack = $requestStack;
-    }
+    public function __construct(protected readonly RequestStack $requestStack)
+    {}
 
     public function getFilters(): array
     {
         return [
-            new TwigFilter('flattenChoices', [$this, 'flattenChoices']),
-            new TwigFilter('data_uri', [$this, 'dataUri']),
+            new TwigFilter('flattenChoices', $this->flattenChoices(...)),
+            new TwigFilter('data_uri', $this->dataUri(...)),
+            new TwigFilter('diaryKeeperStateToTranslationChoice', fn(?string $state): string|array|null =>
+                $state ? str_replace('-', '_', $state) : null
+            ),
+            new TwigFilter('is_preference_user', fn(?UserInterface $user): bool => $user instanceof PreferenceUserInterface),
         ];
     }
 
     public function getFunctions(): array
     {
         return [
-            new TwigFunction('choiceLabel', [$this, 'choiceLabel']),
-            new TwigFunction('is_feature_enabled', [$this, 'isFeatureEnabled']),
-            new TwigFunction('shiftMapping', [$this, 'shiftMapping']),
+            new TwigFunction('choiceLabel', $this->choiceLabel(...)),
+            new TwigFunction('is_feature_enabled', $this->isFeatureEnabled(...)),
+            new TwigFunction('shiftMapping', $this->shiftMapping(...)),
+            new TwigFunction('is_translatable_message',fn(mixed $x) => $x instanceof TranslatableMessage),
         ];
     }
 
     /**
      * @throws SyntaxError
      */
-    public function isFeatureEnabled($str): bool {
+    public function isFeatureEnabled(string $str): bool {
         try {
             return Features::isEnabled($str);
-        } catch(Exception $e) {
+        } catch(Exception) {
             throw new SyntaxError("Unknown feature '$str'");
         }
     }
@@ -92,7 +97,7 @@ class AppExtension extends AbstractExtension implements GlobalsInterface
 
         if ($this->requestStack->getCurrentRequest()) {
             $route = $this->requestStack->getCurrentRequest()->attributes->get('_route', "");
-            if (preg_match('/^(?<prefix>[^_]+)/', $route, $matches)) {
+            if (preg_match('/^(?<prefix>[^_]+)/', (string) $route, $matches)) {
                 return $routeTranslationMap[$matches['prefix']] ?? null;
             }
         }
@@ -130,10 +135,10 @@ class AppExtension extends AbstractExtension implements GlobalsInterface
         $dataUri = 'data:' . $mimeType;
 
         foreach ($parameters as $key => $value) {
-            $dataUri .= ';'.$key.'='.rawurlencode($value);
+            $dataUri .= ';'.$key.'='.rawurlencode((string) $value);
         }
 
-        if (0 === strpos($mimeType, 'text/')) {
+        if (str_starts_with($mimeType, 'text/')) {
             $dataUri .= ','.rawurlencode($data);
         } else {
             $dataUri .= ';base64,'.base64_encode($data);

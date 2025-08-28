@@ -2,7 +2,6 @@
 
 namespace App;
 
-use App\Doctrine\DBAL\Schema\CustomSchemaManagerFactory;
 use Symfony\Bundle\FrameworkBundle\Kernel\MicroKernelTrait;
 use Symfony\Component\DependencyInjection\Compiler\CompilerPassInterface;
 use Symfony\Component\DependencyInjection\ContainerBuilder;
@@ -61,7 +60,7 @@ class Kernel extends BaseKernel implements CompilerPassInterface
             : parent::getLogDir();
     }
 
-    public function process(ContainerBuilder $container)
+    public function process(ContainerBuilder $container): void
     {
         // Register Workflow Expression Language providers
         if ($container->hasDefinition('workflow.security.expression_language')) {
@@ -77,7 +76,7 @@ class Kernel extends BaseKernel implements CompilerPassInterface
             $providers = $container->findTaggedServiceIds('validator.expression_language_provider');
 
             $expressionLanguage = (new Definition(ExpressionLanguage::class, [
-                null, array_map(function($service){return new Reference($service);}, array_keys($providers))
+                null, array_map(fn($service): \Symfony\Component\DependencyInjection\Reference => new Reference($service), array_keys($providers))
             ]));
             $definition->setArguments([$expressionLanguage]);
         }
@@ -86,17 +85,11 @@ class Kernel extends BaseKernel implements CompilerPassInterface
         $formWizardServiceIds = array_filter(
             $container->getServiceIds(),
             // filter services that start with 'state_machine.form_wizard', but don't end with '.definition' or '.metadata_store'
-            fn($id) => preg_match('/^state_machine\.form_wizard(\.(?!(definition|metadata_store))\w+)+$/', $id)
+            fn($id): int|false => preg_match('/^state_machine\.form_wizard(\.(?!(definition|metadata_store))\w+)+$/', $id)
         );
         foreach ($formWizardServiceIds as $formWizardServiceId) {
             $definition = $container->findDefinition($formWizardServiceId);
             $definition->addTag('app.form_wizard.workflow');
-        }
-
-        // specify custom schema manager factory for dbal connection
-        if ($container->hasDefinition('doctrine.dbal.connection.configuration')) {
-            $dbalConfig = $container->getDefinition('doctrine.dbal.connection.configuration');
-            $dbalConfig->addMethodCall('setSchemaManagerFactory', [new Reference(CustomSchemaManagerFactory::class)]);
         }
     }
 }

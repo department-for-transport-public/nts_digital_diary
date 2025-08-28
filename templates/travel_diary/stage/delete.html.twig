@@ -14,7 +14,7 @@
     {%- set stage = subject -%}
 
     {{- j.showJourney(stage.journey, options) -}}
-    {{- j.showStage(stage, options|merge({headingElement: 'h2'})) -}}
+    {{- j.showStageDetails(stage, options|merge({headingElement: 'h2'})) -}}
 
     {{- form(form) -}}
 {%- endblock -%}

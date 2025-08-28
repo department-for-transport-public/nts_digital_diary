@@ -4,27 +4,18 @@ namespace App\Command\MaintenanceMode;
 
 use App\Entity\Utility\MaintenanceLock;
 use Doctrine\ORM\EntityManagerInterface;
+use Symfony\Component\Console\Attribute\AsCommand;
 use Symfony\Component\Console\Command\Command;
 use Symfony\Component\Console\Input\InputInterface;
 use Symfony\Component\Console\Output\OutputInterface;
 use Symfony\Component\Console\Style\SymfonyStyle;
 
+#[AsCommand(name: 'nts:maintenance-mode:unlock', description: 'Unlock the website for maintenance')]
 class UnlockCommand extends Command
 {
-    protected static $defaultName = 'nts:maintenance-mode:unlock';
-    private EntityManagerInterface $entityManager;
-
-    public function __construct(EntityManagerInterface $entityManager)
+    public function __construct(protected readonly EntityManagerInterface $entityManager)
     {
         parent::__construct();
-        $this->entityManager = $entityManager;
-    }
-
-    protected function configure()
-    {
-        $this
-            ->setDescription('Unlock the website for maintenance')
-        ;
     }
 
     protected function execute(InputInterface $input, OutputInterface $output): int
@@ -34,10 +25,10 @@ class UnlockCommand extends Command
         $this->unlock();
         $io->success('Maintenance mode is inactive.');
 
-        return 0;
+        return Command::SUCCESS;
     }
 
-    protected function unlock()
+    protected function unlock(): void
     {
         $this->entityManager->createQueryBuilder()
             ->delete()

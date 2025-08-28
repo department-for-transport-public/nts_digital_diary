@@ -2,14 +2,15 @@
 
 namespace App\Serializer\ApiPlatform;
 
-use App\Entity\AreaPeriod;
+use ApiPlatform\Metadata\Get;
+use ApiPlatform\Metadata\Post;
 use App\Entity\Interviewer;
 use App\Repository\InterviewerTrainingRecordRepository;
-use Symfony\Component\Serializer\Normalizer\ContextAwareNormalizerInterface;
 use Symfony\Component\Serializer\Normalizer\NormalizerAwareInterface;
 use Symfony\Component\Serializer\Normalizer\NormalizerAwareTrait;
+use Symfony\Component\Serializer\Normalizer\NormalizerInterface;
 
-class InterviewerNormalizer implements ContextAwareNormalizerInterface, NormalizerAwareInterface
+class InterviewerNormalizer implements NormalizerInterface, NormalizerAwareInterface
 {
     use NormalizerAwareTrait;
 
@@ -21,6 +22,13 @@ class InterviewerNormalizer implements ContextAwareNormalizerInterface, Normaliz
     {
         return ($context['resource_class'] ?? null) === Interviewer::class
             && ($data instanceof Interviewer);
+    }
+
+    public function getSupportedTypes(?string $format): array
+    {
+        return [
+            Interviewer::class => false, // false/not-cacheable because it depends upon the $context
+        ];
     }
 
     /**
@@ -35,7 +43,7 @@ class InterviewerNormalizer implements ContextAwareNormalizerInterface, Normaliz
             'email' => $object->getUser()->getUserIdentifier(),
         ];
 
-        if ($context['operation_type'] === 'item') {
+        if ($context['operation'] instanceof Get || $context['operation'] instanceof Post) {
             $interviewer['area_periods'] = $this->normalizer->normalize(
                 $object->getAreaPeriods(),
                 $format,

@@ -13,30 +13,21 @@ use Ghost\GovUkFrontendBundle\Model\NotificationBanner;
 use Symfony\Component\EventDispatcher\EventDispatcherInterface;
 use Symfony\Component\HttpFoundation\RedirectResponse;
 use Symfony\Component\HttpFoundation\RequestStack;
-use Symfony\Component\HttpKernel\Exception\NotFoundHttpException;
 use Symfony\Component\Security\Core\Authentication\Token\Storage\TokenStorageInterface;
 use Symfony\Component\Security\Core\Authentication\Token\UsernamePasswordToken;
-use Symfony\Component\Security\Core\Security;
 use Symfony\Component\Security\Http\Event\InteractiveLoginEvent;
+use Symfony\Component\Security\Http\SecurityRequestAttributes;
 
 class AbstractController extends RootAbstractController
 {
-    protected EntityManagerInterface $entityManager;
-    protected RequestStack $requestStack;
-    protected UrlSigner $urlSigner;
-    protected UserRepository $userRepository;
-    private TokenStorageInterface $tokenStorage;
-    private EventDispatcherInterface $eventDispatcher;
-
-    public function __construct(EntityManagerInterface $entityManager, RequestStack $requestStack, UrlSigner $urlSigner, UserRepository $userRepository, TokenStorageInterface $tokenStorage, EventDispatcherInterface $eventDispatcher)
-    {
-        $this->entityManager = $entityManager;
-        $this->requestStack = $requestStack;
-        $this->urlSigner = $urlSigner;
-        $this->userRepository = $userRepository;
-        $this->tokenStorage = $tokenStorage;
-        $this->eventDispatcher = $eventDispatcher;
-    }
+    public function __construct(
+        protected EntityManagerInterface   $entityManager,
+        protected RequestStack             $requestStack,
+        protected UrlSigner                $urlSigner,
+        protected UserRepository           $userRepository,
+        protected TokenStorageInterface    $tokenStorage,
+        protected EventDispatcherInterface $eventDispatcher,
+    ) {}
 
     protected function fetchUserAndCacheCriteria(string $sessionKey, array $findCriteria, array $extraData = [], bool $userMustBeValidForLogin = true): User
     {
@@ -68,7 +59,7 @@ class AbstractController extends RootAbstractController
         return $user;
     }
 
-    protected function redirectToLoginWithInvalidLinkMessage()
+    protected function redirectToLoginWithInvalidLinkMessage(): never
     {
         $this->addFlash(NotificationBanner::FLASH_BAG_TYPE, new NotificationBanner(
             'link-invalid.flash-notification.title',
@@ -82,7 +73,7 @@ class AbstractController extends RootAbstractController
     protected function clearSessionAndSetLastUser(User $user, string $sessionKey): void
     {
         $this->clearSessionData($sessionKey);
-        $this->requestStack->getSession()->set(Security::LAST_USERNAME, $user->getUserIdentifier());
+        $this->requestStack->getSession()->set(SecurityRequestAttributes::LAST_USERNAME, $user->getUserIdentifier());
     }
 
     private function setSessionData(string $sessionKey, array $criteria, array $extraData): void

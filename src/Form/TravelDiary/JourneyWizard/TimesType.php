@@ -1,35 +1,35 @@
 <?php
 
-
 namespace App\Form\TravelDiary\JourneyWizard;
 
-
 use App\Entity\Journey\Journey;
-use Ghost\GovUkFrontendBundle\Form\Type\TimeType;
+use App\Form\OldGhostBundle\TimeType;
+use App\Utility\TravelDiary\UserPreferencesHelper;
 use Symfony\Component\Form\AbstractType;
 use Symfony\Component\Form\FormBuilderInterface;
 use Symfony\Component\OptionsResolver\OptionsResolver;
 
 class TimesType extends AbstractType
 {
-    public function buildForm(FormBuilderInterface $builder, array $options)
+    public function __construct(protected UserPreferencesHelper $userPreferencesHelper) {}
+
+    public function buildForm(FormBuilderInterface $builder, array $options): void
     {
-        $transPrefix = "journey.times";
         $builder
             ->add('startTime', TimeType::class, [
-                'label' => "$transPrefix.start.label",
-                'help' => "$transPrefix.start.help",
-                'label_attr' => ['class' => 'govuk-label--m'],
+                'label' => "journey.times.start.label",
+                'label_attr' => ['class' => 'govuk-fieldset__legend--m'],
+                'mode' => $this->userPreferencesHelper->getOriginalUserPreferences()->getTimeFormat(),
             ])
             ->add('endTime', TimeType::class, [
-                'label' => "$transPrefix.end.label",
-                'help' => "$transPrefix.end.help",
-                'label_attr' => ['class' => 'govuk-label--m'],
+                'label' => "journey.times.end.label",
+                'label_attr' => ['class' => 'govuk-fieldset__legend--m'],
+                'mode' => $this->userPreferencesHelper->getOriginalUserPreferences()->getTimeFormat(),
             ])
         ;
     }
 
-    public function configureOptions(OptionsResolver $resolver)
+    public function configureOptions(OptionsResolver $resolver): void
     {
         $resolver->setDefaults([
             'data_class' => Journey::class,

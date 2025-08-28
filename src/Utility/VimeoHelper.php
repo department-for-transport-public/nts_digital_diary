@@ -21,8 +21,8 @@ class VimeoHelper extends AbstractExtension
     public function getFunctions(): array
     {
         return [
-            new TwigFunction('isVimeoUsed', fn() => $this->vimeoUsed),
-            new TwigFunction('setVimeoUsed', function(bool $value) {
+            new TwigFunction('isVimeoUsed', fn(): bool => $this->vimeoUsed),
+            new TwigFunction('setVimeoUsed', function(bool $value): null {
                 $this->vimeoUsed = $value;
                 return null;
             }),

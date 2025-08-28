@@ -2,11 +2,13 @@
 
 namespace App\Tests\Functional\Interviewer;
 
+use App\Entity\Journey\Journey;
 use App\Tests\DataFixtures\TestSpecific\SplitJourneyTestFixtures;
 use App\Utility\Test\CrawlerTableHelper;
 use Doctrine\Common\DataFixtures\ReferenceRepository;
 use Liip\TestFixturesBundle\Services\DatabaseToolCollection;
 use Symfony\Bundle\FrameworkBundle\KernelBrowser;
+use Symfony\Component\HttpFoundation\Request;
 use Symfony\Component\Routing\RouterInterface;
 
 
@@ -62,7 +64,7 @@ class SplitJourneyVisibilityTest extends AbstractInterviewerDiaryKeeperTest
         $impersonateUrl = $tableHelper->getLinkUrlForRowMatching('Impersonate', [
             'Name' => 'Test Diary Keeper (Adult)',
         ], false);
-        $this->client->request('GET', $impersonateUrl);
+        $this->client->request(Request::METHOD_GET, $impersonateUrl);
 
         $this->assertSplitJourneyLinkState($expectedToHaveSplitJourneyLink, $journeyReference);
     }
@@ -90,7 +92,7 @@ class SplitJourneyVisibilityTest extends AbstractInterviewerDiaryKeeperTest
      */
     public function testJourneySplitVisibilityForDiaryKeeper(bool $expectedToHaveSplitJourneyLink, string $journeyReference): void
     {
-        $this->client->request('GET', '/');
+        $this->client->request(Request::METHOD_GET, '/');
         $this->submitLoginForm('diary-keeper-adult@example.com', 'password');
         $this->assertEquals('/travel-diary', $this->client->getRequest()->getRequestUri());
 
@@ -99,9 +101,9 @@ class SplitJourneyVisibilityTest extends AbstractInterviewerDiaryKeeperTest
 
     protected function assertSplitJourneyLinkState(bool $expectedToHaveSplitJourneyLink, string $journeyReference): void
     {
-        $journey = $this->referenceRepository->getReference($journeyReference);
+        $journey = $this->referenceRepository->getReference($journeyReference, Journey::class);
 
-        $this->client->request('GET', $this->router->generate('traveldiary_journey_view', [
+        $this->client->request(Request::METHOD_GET, $this->router->generate('traveldiary_journey_view', [
             'journeyId' => $journey->getId(),
         ]));
 

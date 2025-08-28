@@ -6,35 +6,32 @@ use App\Entity\DiaryKeeper;
 use App\Entity\Journey\Journey;
 use App\Entity\Journey\Stage;
 use App\Entity\User;
-use Doctrine\Common\EventSubscriber;
-use Doctrine\ORM\Event\LifecycleEventArgs;
+use Doctrine\Bundle\DoctrineBundle\Attribute\AsDoctrineListener;
 use Doctrine\ORM\Event\OnFlushEventArgs;
+use Doctrine\ORM\Event\PrePersistEventArgs;
 use Doctrine\ORM\Events;
+use Symfony\Bundle\SecurityBundle\Security;
 use Symfony\Component\Security\Core\Authorization\AuthorizationCheckerInterface;
-use Symfony\Component\Security\Core\Security;
 use Symfony\Component\Workflow\WorkflowInterface;
 
-class DiaryKeeperStateSubscriber implements EventSubscriber
+#[AsDoctrineListener(event: Events::onFlush)]
+#[AsDoctrineListener(event: Events::prePersist)]
+class DiaryKeeperStateSubscriber
 {
-    protected WorkflowInterface $travelDiaryStateStateMachine;
-    protected AuthorizationCheckerInterface $authorizationChecker;
-    protected Security $security;
+    public function __construct(
+        protected WorkflowInterface             $travelDiaryStateStateMachine,
+        protected AuthorizationCheckerInterface $authorizationChecker,
+        protected Security                      $security,
+    ) {}
 
-    public function __construct(WorkflowInterface $travelDiaryStateStateMachine, AuthorizationCheckerInterface $authorizationChecker, Security $security)
+    public function prePersist(PrePersistEventArgs $eventArgs): void
     {
-        $this->travelDiaryStateStateMachine = $travelDiaryStateStateMachine;
-        $this->authorizationChecker = $authorizationChecker;
-        $this->security = $security;
-    }
-
-    public function prePersist(LifecycleEventArgs $eventArgs): void
-    {
-        $entity = $eventArgs->getEntity();
+        $entity = $eventArgs->getObject();
 
         // Set diary to "started" (if not already in that state) when creating a Journey
         if ($entity instanceof Journey) {
             $diaryDay = $entity->getDiaryDay();
-            if ($diaryDay->getNumber() === 0) {
+            if ($diaryDay && $diaryDay->isPracticeDay()) {
                 // Practice day - don't change state
                 return;
             }
@@ -52,7 +49,7 @@ class DiaryKeeperStateSubscriber implements EventSubscriber
         // (Effect: If the diary is "completed", make it "in progress" upon editing)
         $isImpersonator = $this->authorizationChecker->isGranted('IS_IMPERSONATOR');
 
-        $entityManager = $eventArgs->getEntityManager();
+        $entityManager = $eventArgs->getObjectManager();
         $unitOfWork = $entityManager->getUnitOfWork();
 
         $diaryKeeper = $this->getDiaryKeeper();
@@ -101,8 +98,8 @@ class DiaryKeeperStateSubscriber implements EventSubscriber
     {
         // Qualifying edits are to journeys or stages not on day 0 (practice day)
         return
-            (get_class($entity) === Journey::class && $entity->getDiaryDay()->getNumber() !== 0)
-            || (get_class($entity) === Stage::class && $entity->getJourney()->getDiaryDay()->getNumber() !== 0);
+            ($entity::class === Journey::class && $entity->getDiaryDay()->getNumber() !== 0)
+            || ($entity::class === Stage::class && $entity->getJourney()->getDiaryDay()->getNumber() !== 0);
     }
 
     protected function getDiaryKeeper(): ?DiaryKeeper
@@ -112,13 +109,5 @@ class DiaryKeeperStateSubscriber implements EventSubscriber
             return null;
         }
         return $user->getDiaryKeeper();
-    }
-
-    public function getSubscribedEvents(): array
-    {
-        return [
-            Events::prePersist,
-            Events::onFlush,
-        ];
     }
 }

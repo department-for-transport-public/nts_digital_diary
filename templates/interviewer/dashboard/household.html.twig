@@ -9,8 +9,24 @@
     serial: household.serialNumber
 } %}
 
+{%- block beforePageHeading -%}
+    {{- parent() -}}
+
+    {%- from '@GhostGovUkFrontend/components/macros.html.twig' import notificationBanner -%}
+
+    {%- if household.isOverdue() -%}
+        {{- notificationBanner({
+            title: 'household.overdue.title',
+            content: 'household.overdue.content',
+            options: {style: 'warning', nl2br: true},
+            translation_domain: 'interviewer',
+        }) -}}
+    {%- endif -%}
+{%- endblock -%}
+
 {% block content %}
-    {%- from "@GhostGovUkFrontend/components/macros.html.twig" import actionlessSummaryListRow, actionLinks, details -%}
+    {%- from "@GhostGovUkFrontend/components/macros.html.twig" import details, summaryListActionsList, summaryListRow, tag -%}
+    {% from "interviewer/dashboard/macros.html.twig" import diaryKeeperState, householdState %}
 
     {% set htmlContent %}
         <p class="govuk-body">{{ 'household.help-details.content' | trans }}</p>
@@ -23,20 +39,30 @@
     }) }}
 
     <dl class="govuk-summary-list">
-        {{ actionlessSummaryListRow(
-            "household.diary-week-start-date" | trans,
-            household.diaryWeekStartDate|date(format_date_default),
-        ) }}
-        {{ actionlessSummaryListRow(
-            "household.journey-sharing" | trans,
-            ("boolean." ~ (household.journeySharingEnabled ? 'true' : 'false')) | trans([], 'messages'),
-        ) }}
+        {{ summaryListRow({
+            key: "household.diary-week-start-date" | trans,
+            value: household.diaryWeekStartDate|date(date_time_format.date('default')),
+        }, false) }}
+        {%- set stateContent -%}
+            {{- householdState(household.state) -}}{%- if household.isOverdue() %} {{ householdState('overdue') }}{% endif -%}
+        {%- endset -%}
+        {{ summaryListRow({
+            key: "household.table.state" | trans,
+            value: {html: stateContent},
+        }, false) }}
+        {{ summaryListRow({
+            key: "household.journey-sharing" | trans,
+            value: ("boolean." ~ (household.journeySharingEnabled ? 'true' : 'false')) | trans([], 'messages'),
+        }, false) }}
         {% if household.isSubmitted %}
-            {{ actionlessSummaryListRow(
-                "household.submitted-for-processing" | trans,
-                household.submittedAt | date(format_date_default ~ " " ~ format_time_short)
-                ~ "\n" ~ household.submittedBy,
-            ) }}
+            {{ summaryListRow({
+                key: "household.submitted-for-processing" | trans,
+                value: (
+                    household.submittedAt | date(
+                        date_time_format.date('default') ~ " " ~ date_time_format.time('user-pref')
+                    ) ~ "\n" ~ household.submittedBy
+                )
+            }, false) }}
         {% endif %}
     </dl>
 
@@ -49,46 +75,62 @@
         <thead class="govuk-table__head">
         <tr class="govuk-table__row">
             <th scope="col" class="govuk-table__header">{{ "household.table.number" | trans }}</th>
-            <th scope="col" class="govuk-table__header">{{ "household.table.name" | trans }}</th>
-            <th scope="col" class="govuk-table__header">{{ "household.table.has-login" | trans }}</th>
-            <th scope="col" class="govuk-table__header">{{ "household.table.type" | trans }}</th>
-            <th scope="col" class="govuk-table__header">{{ "household.table.state" | trans }}</th>
+            <th scope="col" class="govuk-table__header nowrap">{{ "household.table.name" | trans }}</th>
+            <th scope="col" class="govuk-table__header nowrap">{{ "household.table.has-journeys" | trans }}</th>
+            <th scope="col" class="govuk-table__header nowrap">{{ "household.table.media-type" | trans }}</th>
+            <th scope="col" class="govuk-table__header nowrap">{{ "household.table.has-login" | trans }}</th>
+            <th scope="col" class="govuk-table__header nowrap">{{ "household.table.type" | trans }}</th>
+            <th scope="col" class="govuk-table__header nowrap">{{ "household.table.state" | trans }}</th>
             <th scope="col" class="govuk-table__header"><span class="govuk-visually-hidden">{{ 'table.action-links'|trans({}, 'messages') }}</span></th>
         </tr>
         </thead>
         <tbody class="govuk-table__body">
         {%- for diaryKeeper in household.diaryKeepers -%}
-            {# @var diaryKeeper DiaryKeeper #}
+            {# @var diaryKeeper App\Entity\DiaryKeeper #}
             <tr class="govuk-table__row">
                 <th scope="row" class="govuk-table__cell">{{ diaryKeeper.number }}</th>
                 <td class="govuk-table__cell">{{ diaryKeeper.name }}{%- if diaryKeeper.proxies | length > 0 %}<br>({{ "household.proxied-by" | trans({proxyNames: diaryKeeper.proxyNames | join(', ')}) }}){% endif %}</td>
-                <td class="govuk-table__cell">{{ "boolean.#{diaryKeeper.hasIdentifierForLogin ? 'true' : 'false'}" | trans({}, 'messages') }}</td>
-                <td class="govuk-table__cell">{{ "household.type.#{diaryKeeper.isAdult ? 'adult' : 'child'}" | trans }}</td>
-                <td class="govuk-table__cell">{{ ("diary-keeper.states." ~ (diaryKeeper.diaryState ?? 'new')) | trans }}</td>
+                <td class="govuk-table__cell">{{ diaryKeeper.hasJourneys | format_bool | trans({}, 'messages') }}</td>
+                <td class="govuk-table__cell">{{ "diary-keeper.user-identifier.media-type.choices.#{diaryKeeper.mediaType}.label" | trans({}, 'on-boarding') }}</td>
+                <td class="govuk-table__cell nowrap">{{ "boolean.#{diaryKeeper.hasIdentifierForLogin ? 'true' : 'false'}" | trans({}, 'messages') }}</td>
+                <td class="govuk-table__cell nowrap">{{ "household.type.#{diaryKeeper.isAdult ? 'adult' : 'child'}" | trans }}</td>
+                <td class="govuk-table__cell">{{ diaryKeeperState(diaryKeeper.diaryState) }}</td>
                 <td class="govuk-table__cell govuk-table__cell--numeric">
                     {% set testingActions = is_feature_enabled(constant('App\\Features::REVEAL_INVITE_LINKS'))
-                        ? {(url_signer.sign(url('auth_account_setup', {userId: diaryKeeper.user.id | lower}), constant('App\\Utility\\AlphagovNotify\\Reference::ACCOUNT_CREATION_LINK_EXPIRY'))): {label: 'Invite link'}}
-                        : {}
+                        ? [
+                            {
+                                href: url_signer.sign(
+                                    url('auth_account_setup', {userId: diaryKeeper.user.id | lower}),
+                                    constant('App\\Utility\\AlphagovNotify\\Reference::ACCOUNT_CREATION_LINK_EXPIRY')
+                                ),
+                                text: 'Invite link',
+                            }
+                        ] : []
                     %}
                     {% set impersonationAction = is_granted('EDIT_DIARY', diaryKeeper)
-                        ? {(path('app_home', {_switch_user: diaryKeeper.user.userIdentifier})): {
-                            label: "household.impersonate",
-                            labelDomain: 'interviewer',
-                            srHiddenSuffix: "household.impersonate-sr-hidden-suffix",
-                            srHiddenSuffixDomain: "interviewer",
-                            srHiddenSuffixParams: {name: diaryKeeper.name},
-                        }} : {}
+                        ? [
+                            {
+                                href: path('app_home', {_switch_user: diaryKeeper.user.userIdentifier}),
+                                text: "household.impersonate" | trans({}, 'interviewer'),
+                                visuallyHiddenText: "household.impersonate-sr-hidden-suffix" | trans({name: diaryKeeper.name}, 'interviewer')
+                            }
+                        ] : []
                     %}
 
-                    {{ actionLinks(testingActions | merge(impersonationAction) | merge({
-                        (path('interviewer_dashboard_diary_keeper', {diaryKeeper: diaryKeeper.id})): {
-                            label: "household.diary-keeper-summary",
-                            labelDomain: 'interviewer',
-                            srHiddenSuffix: "household.diary-keeper-summary-sr-hidden-suffix",
-                            srHiddenSuffixDomain: "interviewer",
-                            srHiddenSuffixParams: {name: diaryKeeper.name},
-                        }
-                    })) }}
+                    {{ summaryListActionsList(
+                        testingActions
+                        | merge(impersonationAction)
+                        | merge([
+                            {
+                                href: path('interviewer_dashboard_diary_keeper', {diaryKeeper: diaryKeeper.id}),
+                                text: "household.diary-keeper-summary" | trans({}, 'interviewer'),
+                                visuallyHiddenText: "household.diary-keeper-summary-sr-hidden-suffix" | trans(
+                                    {name: diaryKeeper.name},
+                                    'interviewer'
+                                )
+                            }
+                        ])
+                    ) }}
                 </td>
             </tr>
         {%- else -%}

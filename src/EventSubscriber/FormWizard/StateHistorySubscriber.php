@@ -4,13 +4,13 @@
 namespace App\EventSubscriber\FormWizard;
 
 
-use App\FormWizard\FormWizardStateInterface;
+use Ghost\GovUkCoreBundle\FormWizard\FormWizardStateInterface;
 use Symfony\Component\EventDispatcher\EventSubscriberInterface;
 use Symfony\Component\Workflow\Event\Event;
 
 class StateHistorySubscriber implements EventSubscriberInterface
 {
-    public function onEnter(Event $event)
+    public function onEnter(Event $event): void
     {
         $subject = $event->getSubject();
         if ($subject instanceof FormWizardStateInterface) {

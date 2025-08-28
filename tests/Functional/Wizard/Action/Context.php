@@ -16,21 +16,9 @@ class Context
 {
     protected array $context;
 
-    protected Client $client;
-    protected EntityManagerInterface $entityManager;
-    protected AbstractWizardTest $testCase;
-    protected ?OutputInterface $output;
-    protected array $config;
-
-    public function __construct(Client $client, EntityManagerInterface $entityManager, AbstractWizardTest $testCase, ?OutputInterface $output, array $config)
+    public function __construct(protected Client $client, protected EntityManagerInterface $entityManager, protected AbstractWizardTest $testCase, protected ?OutputInterface $output, protected array $config)
     {
         $this->context = [];
-
-        $this->client = $client;
-        $this->entityManager = $entityManager;
-        $this->testCase = $testCase;
-        $this->output = $output;
-        $this->config = $config;
     }
 
     public function get(?string $key): string

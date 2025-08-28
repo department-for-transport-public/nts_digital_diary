@@ -8,7 +8,7 @@ use Doctrine\ORM\Query\Filter\SQLFilter;
 
 class TrainingAreaPeriodFilter extends SQLFilter
 {
-    const FILTER_NAME = "interviewer-training-area-period";
+    public const FILTER_NAME = "interviewer-training-area-period";
 
     public function addFilterConstraint(ClassMetadata $targetEntity, $targetTableAlias): string
     {

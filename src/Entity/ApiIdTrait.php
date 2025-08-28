@@ -10,12 +10,10 @@ trait ApiIdTrait
 {
     use IdTrait;
 
-    /**
-     * @ORM\Id
-     * @ORM\Column(type="string", unique=true, length=26)
-     * @ORM\GeneratedValue(strategy="CUSTOM")
-     * @ORM\CustomIdGenerator(class=UlidGenerator::class)
-     */
     #[ApiProperty(identifier: false)]
+    #[ORM\Id]
+    #[ORM\Column(type: 'string', length: 26, unique: true)]
+    #[ORM\GeneratedValue(strategy: 'CUSTOM')]
+    #[ORM\CustomIdGenerator(class: UlidGenerator::class)]
     protected ?string $id;
 }

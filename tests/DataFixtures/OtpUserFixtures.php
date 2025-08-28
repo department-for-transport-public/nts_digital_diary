@@ -14,11 +14,8 @@ class OtpUserFixtures extends AbstractFixture implements DependentFixtureInterfa
 {
     public function load(ObjectManager $manager): void
     {
-        $areaPeriod = $this->getReference('area-period:1');
-        $household = $this->getReference('household:not-onboarded');
-
-        assert($areaPeriod instanceof AreaPeriod);
-        assert($household instanceof Household);
+        $areaPeriod = $this->getReference('area-period:1', AreaPeriod::class);
+        $household = $this->getReference('household:not-onboarded', Household::class);
 
         $otpUserOne = (new OtpUser())
             ->setUserIdentifier('1234567890')

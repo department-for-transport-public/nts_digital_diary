@@ -2,8 +2,8 @@
 
 namespace App\Form\Admin\HouseholdMaintenance;
 
+use App\Form\OldGhostBundle\NumberType;
 use Ghost\GovUkFrontendBundle\Form\Type\ButtonType;
-use Ghost\GovUkFrontendBundle\Form\Type\NumberType;
 use Symfony\Component\Form\AbstractType;
 use Symfony\Component\Form\FormBuilderInterface;
 use Symfony\Component\OptionsResolver\OptionsResolver;

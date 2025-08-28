@@ -5,19 +5,17 @@ namespace App\Form\Auth;
 use App\Entity\User;
 use Symfony\Component\Form\DataMapperInterface;
 use Symfony\Component\Form\FormInterface;
-use Traversable;
 
 class ChangePasswordDataMapper implements DataMapperInterface
 {
-    public function mapDataToForms($viewData, iterable $forms): void
+    public function mapDataToForms($viewData, \Traversable $forms): void
     {
     }
 
     /**
      * @param User | null $viewData
-     * @param Traversable|iterable $forms
      */
-    public function mapFormsToData(iterable $forms, &$viewData): void
+    public function mapFormsToData(\Traversable $forms, &$viewData): void
     {
         $forms = iterator_to_array($forms);
         /** @var FormInterface[] $forms */

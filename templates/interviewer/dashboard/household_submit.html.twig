@@ -5,17 +5,17 @@
 {% set action = 'submit-household' %}
 
 {% block content %}
-    {%- from "@GhostGovUkFrontend/components/macros.html.twig" import actionlessSummaryListRow, warningText -%}
+    {%- from "@GhostGovUkFrontend/components/macros.html.twig" import summaryListRow, warningText -%}
 
     <dl class="govuk-summary-list">
-        {{ actionlessSummaryListRow(
-            "household.diary-week-start-date" | trans,
-            household.diaryWeekStartDate|date(format_date_default),
-        ) }}
+        {{ summaryListRow({
+            key: "household.diary-week-start-date" | trans,
+            value: household.diaryWeekStartDate|date(date_time_format.date('default')),
+        }, false) }}
     </dl>
 
     <p class="govuk-body">{{ 'household.submit.copy' | trans }}</p>
-    {{ warningText('household.submit.warning' | trans) }}
+    {{ warningText({text: 'household.submit.warning' | trans}) }}
 
     {{ form(form) }}
 {% endblock %}

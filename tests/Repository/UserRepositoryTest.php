@@ -2,6 +2,7 @@
 
 namespace App\Tests\Repository;
 
+use App\Entity\User;
 use App\Repository\UserRepository;
 use App\Tests\AbstractFixturesTest;
 use App\Tests\DataFixtures\TestSpecific\UserRepositoryTestFixtures;
@@ -32,7 +33,7 @@ class UserRepositoryTest extends AbstractFixturesTest
     public function testIsExistingUserWithEmailAddress(bool $expectedResult, string $email, ?string $userReferenceForExcludingUserId): void
     {
         $excludingUserId = $userReferenceForExcludingUserId ?
-            $this->fixtureReferenceRepository->getReference($userReferenceForExcludingUserId)->getId() :
+            $this->fixtureReferenceRepository->getReference($userReferenceForExcludingUserId, User::class)->getId() :
             null;
 
         $this->assertEquals($expectedResult, $this->userRepository->canChangeEmailTo($email, $excludingUserId));

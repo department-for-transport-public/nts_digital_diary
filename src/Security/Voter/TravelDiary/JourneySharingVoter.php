@@ -12,9 +12,9 @@ use Symfony\Component\Security\Core\Authorization\Voter\Voter;
 
 class JourneySharingVoter extends Voter
 {
-    const CAN_SHARE_JOURNEY = 'CAN_SHARE_JOURNEY';
-    const CAN_SHARE_JOURNEYS = 'CAN_SHARE_JOURNEYS';
-    const CAN_SHARE_WITH_DIARY_KEEPER = 'CAN_SHARE_WITH_DIARY_KEEPER';
+    public const CAN_SHARE_JOURNEY = 'CAN_SHARE_JOURNEY';
+    public const CAN_SHARE_JOURNEYS = 'CAN_SHARE_JOURNEYS';
+    public const CAN_SHARE_WITH_DIARY_KEEPER = 'CAN_SHARE_WITH_DIARY_KEEPER';
 
     public function __construct(protected AccessDecisionManagerInterface $accessDecisionManager)
     {}

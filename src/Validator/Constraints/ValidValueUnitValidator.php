@@ -36,11 +36,11 @@ class ValidValueUnitValidator extends ConstraintValidator
                 new $numericConstraintClass(['message' => "{$constraint->translationPrefix}.{$constraint->valuePositiveTranslationKey}"]),
             ];
             if ($constraint->isDecimal) {
-                $validators[] = new Decimal([
-                    'precision' => $constraint->decimalPrecision,
-                    'scale' => $constraint->decimalScale,
-                    'translationPrefix' => "$constraint->translationPrefix.value",
-                ]);
+                $validators[] = new Decimal(
+                    translationPrefix: "{$constraint->translationPrefix}.value",
+                    precision: $constraint->decimalPrecision,
+                    scale: $constraint->decimalScale,
+                );
             }
             $validator->atPath('value')->validate(strval($value->getValue()), $validators, ['Default']);
 

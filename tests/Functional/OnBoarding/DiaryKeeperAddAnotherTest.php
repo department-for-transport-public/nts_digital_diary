@@ -73,7 +73,7 @@ class DiaryKeeperAddAnotherTest extends AbstractDiaryKeeperTest
     /**
      * @dataProvider wizardData
      */
-    public function testOnboardingDiaryKeeperWizard(array $wizardData)
+    public function testOnboardingDiaryKeeperWizard(array $wizardData): void
     {
         $this->initialiseClientAndLoadFixtures([OtpUserFixtures::class, UserFixtures::class]);
         $identifier = self::USER_IDENTIFIER; // OTP user where address #, household #, and diary week start date already entered

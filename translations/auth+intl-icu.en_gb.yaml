@@ -48,7 +48,8 @@ forgotten-password:
     content: "If your email address was valid, an email will be sent to you."
 
 setup:
-  page-title: Set password for Travel Diary account
+  page-title-diary: Set password for Travel Diary account
+  page-title-interviewer: Set password for Interviewer account
 
   create-account: Create account
   password:
@@ -62,3 +63,15 @@ setup:
   success-banner:
     heading: "Setup complete"
     content: "Your password was successfully set."
+
+setup-link-expired:
+  page-title: Account setup link expired
+  intro: |-
+    The link you followed has expired.
+    
+    {emailSent, select,
+      1     {A new link has been sent to your email address ({obfuscatedEmailAddress})}
+      other {A new link was sent to your email address ({obfuscatedEmailAddress}) within the last day}
+    }.
+    
+    Use the new link in order to complete the account setup process.

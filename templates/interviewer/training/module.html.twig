@@ -2,7 +2,7 @@
 {% trans_default_domain "interviewer" %}
 
 {%- block modukeHeading -%}
-    {{- "training.module.number" | trans({number: trainingRecord.moduleNumber}) | capitalize }}: {{ "training.module.title.#{trainingRecord.moduleName}" | trans | capitalize -}}
+    {{- "training.module.number" | trans({number: trainingRecord.moduleNumber}) | capitalize }}: {{ "training.module.title.#{trainingRecord.moduleName}" | trans -}}
 {%- endblock -%}
 
 {%- block pageTitlePrefix -%}
@@ -23,7 +23,22 @@
         {% include "interviewer/training/modules/#{trainingRecord.moduleName}.html.twig" %}
     {%- endblock -%}
 
-{#    {% include 'interviewer/training/module-history.html.twig' %}#}
+    <ul class="govuk-list govuk-!-margin-top-5">
+        {% if nextTrainingRecord and (nextTrainingRecord.moduleNumber not in [1,3]) %}
+            <li>{{ 'training.module.next' | trans }} <a class="govuk-link" href="{{ path('interviewer_training_module_index', {moduleName: nextTrainingRecord.moduleName}) }}">{{ "training.module.title.#{nextTrainingRecord.moduleName}" | trans }}</a></li>
+        {% endif %}
+        {%  if (practicalUrl ?? false) and trainingRecord.state != constant('App\\Entity\\InterviewerTrainingRecord::STATE_NEW') %}
+            <li>
+                <a class="govuk-link" href="{{ path('interviewer_training_module_retake', {moduleName: trainingRecord.moduleName}) }}">
+                    {{ 'training.retake.page-title' | trans({
+                        moduleName: "training.module.title.#{trainingRecord.moduleName}" | trans,
+                        moduleNumber: 'training.module.number' | trans({number: trainingRecord.moduleNumber})
+                    }) }}
+                </a>
+            </li>
+        {% endif %}
+        <li class="govuk-!-margin-top-6"><a class="govuk-link" href="{{ path('interviewer_training_dashboard') }}">{{ 'training.module.back' | trans }}</a></li>
+    </ul>
 {%- endblock -%}
 
 {%- macro moduleActions(trainingRecord, context) -%}
@@ -31,18 +46,9 @@
     {%- from 'interviewer/training/macros.html.twig' import statusTag -%}
 
     <div class="govuk-summary-list" id="training-module-status">
-        {{- summaryListRow('training.module.status' | trans, statusTag(trainingRecord)) -}}
+        {{- summaryListRow({
+            key: 'training.module.status' | trans,
+            value: {html: statusTag(trainingRecord)},
+        }) -}}
     </div>
-
-    {%- set formAction = false -%}
-    {%- set buttonText = false -%}
-
-    {%- if formAction -%}
-        <form method="post" action="{{ formAction }}" class="govuk-!-margin-top-1">
-            <div class="govuk-button-group">
-                <button class="govuk-button" type="submit">{{ buttonText }}</button>
-            </div>
-        </form>
-    {%- endif -%}
-
 {%- endmacro -%}

@@ -27,7 +27,7 @@ class TypeOfDevicesType extends AbstractType
                 'label' => 'satisfaction.type-of-devices.label',
                 'help' => 'satisfaction.type-of-devices.help',
                 'choices' => array_combine(
-                    array_map(fn(string $choice) => "satisfaction.type-of-devices.choices.{$choice}", $typeOfDevicesChoices),
+                    array_map(fn(string $choice): string => "satisfaction.type-of-devices.choices.{$choice}", $typeOfDevicesChoices),
                     $typeOfDevicesChoices,
                 ),
                 'choice_options' => [
@@ -35,7 +35,7 @@ class TypeOfDevicesType extends AbstractType
                         'conditional_form_name' => "typeOfDevicesOther",
                     ],
                 ],
-                'label_attr' => ['class' => 'govuk-label--m'],
+                'label_attr' => ['class' => 'govuk-fieldset__legend--m'],
                 'multiple' => true,
             ])
             ->add("typeOfDevicesOther", InputType::class, [
@@ -43,7 +43,7 @@ class TypeOfDevicesType extends AbstractType
                 'help' => 'satisfaction.type-of-devices-other.help',
                 'label_attr' => ['class' => 'govuk-label--s'],
             ])
-            ->addEventListener(FormEvents::POST_SUBMIT, function(PostSubmitEvent $event) {
+            ->addEventListener(FormEvents::POST_SUBMIT, function(PostSubmitEvent $event): void {
                 /** @var SatisfactionSurvey $data */
                 $data = $event->getData();
 

@@ -1,0 +1,9 @@
+{% extends 'admin/base.html.twig' %}
+
+{% trans_default_domain 'admin' %}
+{% set title_translation_domain = 'admin' %}
+{% set title_translation_prefix = "household.edit" %}
+
+{% block content %}
+    {{ form(form) }}
+{% endblock %}

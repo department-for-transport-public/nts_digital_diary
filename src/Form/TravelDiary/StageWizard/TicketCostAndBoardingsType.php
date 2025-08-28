@@ -4,14 +4,19 @@ namespace App\Form\TravelDiary\StageWizard;
 
 use App\Entity\Journey\Stage;
 use App\Form\CostOrNilType;
-use Ghost\GovUkFrontendBundle\Form\Type\NumberType;
+use App\Form\OldGhostBundle\NumberType;
 use Symfony\Component\Form\AbstractType;
 use Symfony\Component\Form\FormBuilderInterface;
 use Symfony\Component\OptionsResolver\OptionsResolver;
 
 class TicketCostAndBoardingsType extends AbstractType
 {
-    public function buildForm(FormBuilderInterface $builder, array $options)
+    public const array INJECT_TRANSLATION_PARAMETERS = [
+        'stage_method_key' => 'methodKeyForTranslationParameterInjection',
+        'stage_method' => 'methodForDisplayWithoutTypePrefixWhenOther',
+    ];
+
+    public function buildForm(FormBuilderInterface $builder, array $options): void
     {
         $builder
             ->add('ticketCost', CostOrNilType::class, [
@@ -25,7 +30,7 @@ class TicketCostAndBoardingsType extends AbstractType
             ]);
     }
 
-    public function configureOptions(OptionsResolver $resolver)
+    public function configureOptions(OptionsResolver $resolver): void
     {
         $resolver->setDefaults([
             'data_class' => Stage::class,

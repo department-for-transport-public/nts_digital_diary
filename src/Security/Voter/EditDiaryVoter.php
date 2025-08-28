@@ -37,7 +37,10 @@ class EditDiaryVoter extends Voter
             return false;
         }
 
-        if (!($subject instanceof DiaryKeeper)) {
+        if (
+            !($subject instanceof DiaryKeeper)
+            || $subject->getHousehold()->getIsSubmitted()
+        ) {
             return false;
         }
 

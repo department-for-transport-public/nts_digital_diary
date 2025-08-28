@@ -43,7 +43,7 @@ class RecaptchaHelper extends AbstractExtension
     public function getFunctions(): array
     {
         return [
-            new TwigFunction('isRecaptchaUsed', fn() => $this->recaptchaUsed),
+            new TwigFunction('isRecaptchaUsed', fn(): bool => $this->recaptchaUsed),
         ];
     }
 }

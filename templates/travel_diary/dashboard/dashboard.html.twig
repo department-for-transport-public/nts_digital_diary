@@ -42,31 +42,27 @@
     <div class="prose-scope">{{ 'days.diary-week-intro-copy' | trans | markdown_to_html }}</div>
     <dl class="govuk-summary-list">
         {% for day in diaryKeeper.diaryDays %}
-            {{ m.summaryListRow(
-                "descriptions.day" | trans({
+            {{ m.summaryListRow({
+                key: "descriptions.day" | trans({
                     dayNumber: day.number,
-                    date: day.date | date(format_date_with_dow),
+                    date: day.date | date(date_time_format.date('with-dow')),
                 }),
-                "days.x-journeys" | trans({
+                value: "days.x-journeys" | trans({
                     journeyCount: day.journeys | length,
                 }),
-                {
-                    (path('traveldiary_journey_wizard_start', {dayNumber: day.number})): {
-                        label: "days.add-journey",
-                        labelDomain: 'travel-diary',
-                        srHiddenSuffix: "days.add-journey-sr-hidden-suffix",
-                        srHiddenSuffixParams: { dayNumber: day.number },
-                        srHiddenSuffixDomain: 'travel-diary',
+                actions: [
+                    {
+                        href: path('traveldiary_journey_wizard_start', {dayNumber: day.number}),
+                        text: "days.add-journey" | trans({}, 'travel-diary'),
+                        visuallyHiddenText: "days.add-journey-sr-hidden-suffix" | trans({dayNumber: day.number}, 'travel-diary'),
                     },
-                    (path('traveldiary_dashboard_day', {dayNumber: day.number})): {
-                        label: "days.view",
-                        labelDomain: 'travel-diary',
-                        srHiddenSuffix: "days.view-sr-hidden-suffix",
-                        srHiddenSuffixParams: { dayNumber: day.number },
-                        srHiddenSuffixDomain: 'travel-diary',
-                    }
-                }
-            ) }}
+                    {
+                        href: path('traveldiary_dashboard_day', {dayNumber: day.number}),
+                        text: "days.view" | trans({}, 'travel-diary'),
+                        visuallyHiddenText: "days.view-sr-hidden-suffix" | trans({dayNumber: day.number}, 'travel-diary')
+                    },
+                ]
+            }) }}
         {% endfor %}
     </dl>
 

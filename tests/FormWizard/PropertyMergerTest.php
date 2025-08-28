@@ -3,19 +3,16 @@
 namespace App\Tests\FormWizard;
 
 use App\Entity\Journey\Journey;
-use App\Entity\Journey\Stage;
-use App\FormWizard\PropertyMerger;
 use App\Tests\DataFixtures\StageFixtures;
 use App\Tests\Functional\AbstractWebTestCase;
-use Doctrine\Common\Util\ClassUtils;
 use Doctrine\ORM\EntityManager;
+use Ghost\GovUkCoreBundle\FormWizard\PropertyMerger;
 use Liip\TestFixturesBundle\Services\DatabaseToolCollection;
 
 class PropertyMergerTest extends AbstractWebTestCase
 {
-    public function testCollections()
+    public function testCollections(): void
     {
-        // load some fixture data, as part of an arraycollection property
         $databaseTool = static::getContainer()->get(DatabaseToolCollection::class)->get();
         $fixtures = $databaseTool->loadFixtures([
             StageFixtures::class
@@ -29,7 +26,7 @@ class PropertyMergerTest extends AbstractWebTestCase
             ->from(Journey::class, 'j')
             ->leftJoin('j.stages', 's')
             ->where('j.id = :id')
-            ->setParameter('id', $fixtureReferenceRepository->getReference('journey:2')->getId())
+            ->setParameter('id', $fixtureReferenceRepository->getReference('journey:2', Journey::class)->getId())
             ->getQuery()
             ->getOneOrNullResult();
 
@@ -43,6 +40,8 @@ class PropertyMergerTest extends AbstractWebTestCase
 
         // merge the properties to a new instance of the class
         $targetJourney = new Journey();
+
+        /** @var PropertyMerger $propertyMerger */
         $propertyMerger = static::getContainer()->get(PropertyMerger::class);
         $propertyMerger->merge($targetJourney, $sourceJourney, ['stages']);
 

@@ -16,7 +16,6 @@ use Symfony\Component\Security\Core\Exception\AuthenticationException;
 use Symfony\Component\Security\Core\Exception\BadCredentialsException;
 use Symfony\Component\Security\Core\Exception\CustomUserMessageAccountStatusException;
 use Symfony\Component\Security\Core\Exception\InvalidCsrfTokenException;
-use Symfony\Component\Security\Core\Security;
 use Symfony\Component\Security\Csrf\CsrfToken;
 use Symfony\Component\Security\Http\Authenticator\AbstractAuthenticator;
 use Symfony\Component\Security\Http\Authenticator\InteractiveAuthenticatorInterface;
@@ -24,28 +23,21 @@ use Symfony\Component\Security\Http\Authenticator\Passport\Badge\UserBadge;
 use Symfony\Component\Security\Http\Authenticator\Passport\Credentials\CustomCredentials;
 use Symfony\Component\Security\Http\Authenticator\Passport\Passport;
 use Symfony\Component\Security\Http\EntryPoint\AuthenticationEntryPointInterface;
+use Symfony\Component\Security\Http\SecurityRequestAttributes;
 
 class FormAuthenticator extends AbstractAuthenticator implements AuthenticationEntryPointInterface, InteractiveAuthenticatorInterface
 {
     public const TRAINING_INTERVIEWER_SIG_VERIFIED_REQUEST_KEY = 'interviewer_training.login_verified';
     public const TRAINING_INTERVIEWER_INVALID_USER_CREDENTIALS = 'interviewer_training.invalid_user';
 
-    private FormFactoryInterface $formFactory;
-    private PasscodeGenerator $passcodeGenerator;
-    private RouterInterface $router;
-    private TranslatedAuthenticationUtils $translatedAuthenticationUtils;
-    private RequestStack $requestStack;
-    private UrlSigner $urlSigner;
-
-    public function __construct(FormFactoryInterface $formFactory, PasscodeGenerator $passcodeGenerator, RouterInterface $router, TranslatedAuthenticationUtils $translatedAuthenticationUtils, RequestStack $requestStack, UrlSigner $urlSigner)
-    {
-        $this->formFactory = $formFactory;
-        $this->passcodeGenerator = $passcodeGenerator;
-        $this->router = $router;
-        $this->translatedAuthenticationUtils = $translatedAuthenticationUtils;
-        $this->requestStack = $requestStack;
-        $this->urlSigner = $urlSigner;
-    }
+    public function __construct(
+        protected readonly FormFactoryInterface $formFactory,
+        protected readonly PasscodeGenerator $passcodeGenerator,
+        protected readonly RouterInterface $router,
+        protected readonly TranslatedAuthenticationUtils $translatedAuthenticationUtils,
+        protected readonly RequestStack $requestStack,
+        protected readonly UrlSigner $urlSigner
+    ) {}
 
     public function supports(Request $request): ?bool
     {
@@ -81,22 +73,22 @@ class FormAuthenticator extends AbstractAuthenticator implements AuthenticationE
         $credentials['identifier'] = str_replace(' ', '', $credentials['identifier']);
         $credentials['passcode'] = str_replace(' ', '', $credentials['passcode']);
 
-        $isInterviewerTraining = $request->query->has(TrainingUserProvider::INTERVIEWER_ID_QUERY_PARAM);
+        $isInterviewerTraining = $request->query->has(InterviewerLinkedTrainingUserProvider::INTERVIEWER_ID_QUERY_PARAM);
 
         // Prevent logging in with genuine passcodes when accessing onboarding via interviewer training
         // Nothing strictly bad will happen, but if they're training, we don't want them using real codes
         if ($isInterviewerTraining) {
-            if ($credentials['identifier'] !== TrainingUserProvider::USER_IDENTIFIER) {
+            if ($credentials['identifier'] !== InterviewerLinkedTrainingUserProvider::USER_IDENTIFIER) {
                 $this->requestStack->getCurrentRequest()->attributes->set(
                     self::TRAINING_INTERVIEWER_INVALID_USER_CREDENTIALS,
                     $credentials
                 );
-                throw new CustomUserMessageAccountStatusException("Only training passcodes can be used to access onboarding training");
+                throw new CustomUserMessageAccountStatusException("Only training passcodes can be used to access set-up training");
             }
         }
 
         // We need to verify the Url signature early, in order to prevent the login rate limiter for onboarding (when training)
-        if ($isInterviewerTraining || $credentials['identifier'] === TrainingUserProvider::USER_IDENTIFIER)
+        if ($isInterviewerTraining || $credentials['identifier'] === InterviewerLinkedTrainingUserProvider::USER_IDENTIFIER)
         {
             $this->requestStack->getCurrentRequest()->attributes->set(
                 self::TRAINING_INTERVIEWER_SIG_VERIFIED_REQUEST_KEY,
@@ -106,7 +98,7 @@ class FormAuthenticator extends AbstractAuthenticator implements AuthenticationE
 
         return new Passport(
             new UserBadge($credentials['identifier']),
-            new CustomCredentials([$this, 'checkCredentials'], $credentials)
+            new CustomCredentials($this->checkCredentials(...), $credentials)
         );
     }
 
@@ -133,7 +125,7 @@ class FormAuthenticator extends AbstractAuthenticator implements AuthenticationE
     public function onAuthenticationFailure(Request $request, AuthenticationException $exception): ?Response
     {
         if ($request->hasSession()) {
-            $request->getSession()->set(Security::AUTHENTICATION_ERROR, $exception);
+            $request->getSession()->set(SecurityRequestAttributes::AUTHENTICATION_ERROR, $exception);
         }
 
         return new RedirectResponse($this->getLoginUrl());

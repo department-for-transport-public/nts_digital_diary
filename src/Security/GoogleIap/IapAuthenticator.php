@@ -5,7 +5,6 @@ namespace App\Security\GoogleIap;
 
 
 use App\Features;
-use Exception;
 use Google\Auth\AccessToken;
 use Google\Cloud\Core\Compute\Metadata;
 use Symfony\Component\HttpFoundation\Request;
@@ -20,8 +19,8 @@ use Symfony\Component\Security\Http\Authenticator\Passport\Passport;
 
 class IapAuthenticator extends AbstractAuthenticator
 {
-    const EXTRA_FIELD_USER_ID = 'IAPid';
-    private bool $isGaeEnvironment;
+    public const EXTRA_FIELD_USER_ID = 'IAPid';
+    protected readonly bool $isGaeEnvironment;
 
     public function __construct(protected AdminRoleResolver $roleResolver)
     {
@@ -59,19 +58,19 @@ class IapAuthenticator extends AbstractAuthenticator
         ];
 
         return new Passport(
-            new UserBadge('', fn() => new IapUser(
+            new UserBadge('', fn(): \App\Security\GoogleIap\IapUser => new IapUser(
                 $emailAddress,
                 $credentials['assertion'],
                 $this->roleResolver->getRolesForEmailAddress($emailAddress),
             )),
             new CustomCredentials(
-                [$this, 'customAuthenticator'],
+                $this->customAuthenticator(...),
                 $credentials
             ),
         );
     }
 
-    public function customAuthenticator($credentials, UserInterface $user): bool
+    public function customAuthenticator(array $credentials, UserInterface $user): bool
     {
         if ($user->getPassword() === false) {
             return false;
@@ -87,7 +86,7 @@ class IapAuthenticator extends AbstractAuthenticator
             $audience = "/projects/{$metadata->getNumericProjectId()}/apps/{$metadata->getProjectId()}";
             $assertionId = $this->validateAssertion($user->getPassword(), $audience);
             return $assertionId === $credentials['userId'];
-        } catch (Exception $e) {
+        } catch (ValidationException $e) {
             return false;
         }
     }
@@ -101,17 +100,17 @@ class IapAuthenticator extends AbstractAuthenticator
         ]);
 
         if ($info === false) {
-            throw new Exception('Google token verification failed');
+            throw new ValidationException('Google token verification failed');
         }
 
         if ($audience != $info['aud'] ?? '') {
-            throw new Exception(sprintf(
+            throw new ValidationException(sprintf(
                 'Audience %s did not match expected %s', $info['aud'], $audience
             ));
         }
 
         if (empty($info['email']) || empty($info['sub'])) {
-            throw new Exception('Google token verification does not contain email/sub.');
+            throw new ValidationException('Google token verification does not contain email/sub.');
         }
 
         // The email address returned is the plain email address (without namespace)

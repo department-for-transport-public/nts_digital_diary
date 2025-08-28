@@ -18,8 +18,15 @@ class TranslatableMessageNormalizer implements NormalizerInterface
         return $object->trans($this->translator);
     }
 
-    public function supportsNormalization($data, string $format = null): bool
+    public function supportsNormalization($data, string $format = null, array $context = []): bool
     {
         return $data instanceof TranslatableMessage;
+    }
+
+    public function getSupportedTypes(?string $format): array
+    {
+        return [
+            TranslatableMessage::class => true,
+        ];
     }
 }

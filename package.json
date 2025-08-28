@@ -1,17 +1,30 @@
 {
     "devDependencies": {
-        "@nesk/puphpeteer": "^2.0.0",
-        "@symfony/webpack-encore": "^1.0.0",
+        "@babel/core": "^7.28.0",
+        "@babel/preset-env": "^7.28.0",
+        "@ghost/govuk-core-bundle": "portal:vendor/ghost/govuk-core-bundle",
+        "@ghost/govuk-frontend-bundle": "portal:vendor/ghost/govuk-frontend-bundle",
+        "@govuk-prototype-kit/step-by-step": "^2.2.3",
+        "@hotwired/stimulus": "^3.0.0",
+        "@symfony/stimulus-bridge": "^3.2.0",
+        "@symfony/ux-chartjs": "file:vendor/symfony/ux-chartjs/assets",
+        "@symfony/webpack-encore": "^5.1.0",
+        "chart.js": "^3.4.1 || ^4.0",
         "core-js": "^3.0.0",
         "file-loader": "^6.0.0",
-        "govuk-frontend": "^4.1.0",
-        "node-sass": "^6.0.1",
-        "regenerator-runtime": "^0.13.2",
-        "sass-loader": "^12.2.0",
-        "webpack-notifier": "^1.6.0"
+        "sass": "1.79.6",
+        "sass-loader": "^16.0.0",
+        "webpack": "^5.93",
+        "webpack-cli": "^5.0.0",
+        "webpack-notifier": "^1.15.0"
     },
     "license": "UNLICENSED",
     "private": true,
+    "resolutions": {
+        "brace-expansion": "4.0.1",
+        "cross-spawn": "7.0.6",
+        "nanoid": "3.3.11"
+    },
     "scripts": {
         "dev-server": "encore dev-server",
         "dev": "encore dev",
@@ -30,5 +43,5 @@
         "ie 8-11",
         "iOS >= 9"
     ],
-    "dependencies": {}
+    "packageManager": "yarn@4.9.2"
 }

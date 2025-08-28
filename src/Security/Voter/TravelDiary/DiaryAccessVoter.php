@@ -15,14 +15,14 @@ class DiaryAccessVoter extends Voter
     {
         return $attribute === self::ACCESS
             && in_array(
-                get_class($subject),
+                $subject::class,
                 [Journey::class, Stage::class]
             );
     }
 
     protected function voteOnAttribute(string $attribute, $subject, TokenInterface $token): bool
     {
-        $diaryKeeper = match(get_class($subject)) {
+        $diaryKeeper = match($subject::class) {
             Journey::class => $subject->getDiaryDay()->getDiaryKeeper(),
             Stage::class => $subject->getJourney()->getDiaryDay()->getDiaryKeeper(),
         };

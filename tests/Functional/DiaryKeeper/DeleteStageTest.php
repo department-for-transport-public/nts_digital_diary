@@ -7,6 +7,8 @@ use App\Tests\Functional\AbstractWebTestCase;
 use Liip\TestFixturesBundle\Services\DatabaseToolCollection;
 use Symfony\Bundle\FrameworkBundle\KernelBrowser;
 use Symfony\Component\DomCrawler\Crawler;
+use Symfony\Component\DomCrawler\Link;
+use Symfony\Component\HttpFoundation\Request;
 
 class DeleteStageTest extends AbstractWebTestCase
 {
@@ -14,8 +16,7 @@ class DeleteStageTest extends AbstractWebTestCase
 
     public function setUp(): void
     {
-        $this->client = static::createClient();
-        $this->client->followRedirects();
+        parent::setUp();
 
         $databaseTool = static::getContainer()->get(DatabaseToolCollection::class)->get();
         $databaseTool->loadFixtures([
@@ -37,7 +38,7 @@ class DeleteStageTest extends AbstractWebTestCase
     {
         $emailAddress = 'diary-keeper-adult@example.com';
 
-        $this->client->request('GET', '/');
+        $this->client->request(Request::METHOD_GET, '/');
         $this->submitLoginForm($emailAddress, 'password');
         $this->assertEquals('/travel-diary', $this->client->getRequest()->getRequestUri());
 
@@ -59,9 +60,9 @@ class DeleteStageTest extends AbstractWebTestCase
 
         $this->client->click($link);
 
-        $getPanels = fn() => $this->client->getCrawler()->filterXPath('//h2[contains(text(),"Stage")]/following-sibling::div/section');
-        $getTransportMethods = fn(Crawler $panels) => $panels->each(fn($n) => $n->filterXPath('//dt[contains(text(),"Transport method")]/following-sibling::dd')->text());
-        $getDeleteLink = fn(Crawler $panels, int $panelToDelete) => $panels->eq($panelToDelete)->filterXPath('//a[contains(text(), "Delete this stage")]')->link();
+        $getPanels = fn(): Crawler => $this->client->getCrawler()->filterXPath("//div[@id='step-by-step-navigation']//div[contains(concat(' ',@class,' '), ' app-step-nav__header ')]");
+        $getTransportMethods = fn(Crawler $panels): array => $panels->each(fn($n) => $n->filterXPath("//span[contains(concat(' ',@class,' '), ' app-step-nav__title-text ')]")->innerText());
+        $getDeleteLink = fn(Crawler $panels, int $panelToDelete): Link => $panels->eq($panelToDelete)->filterXPath('//a[contains(text(), "Delete this stage")]')->link();
 
         $panels = $getPanels();
 

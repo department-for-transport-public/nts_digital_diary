@@ -5,11 +5,13 @@ namespace App\Utility\ConfirmAction\Interviewer;
 use App\Entity\DiaryKeeper;
 use App\Utility\ConfirmAction\AbstractConfirmAction;
 use Doctrine\ORM\EntityManagerInterface;
+use Ghost\GovUkFrontendBundle\Model\NotificationBanner;
 use Symfony\Component\Form\FormFactoryInterface;
 use Symfony\Component\HttpFoundation\RedirectResponse;
 use Symfony\Component\HttpFoundation\Request;
 use Symfony\Component\HttpFoundation\RequestStack;
 use Symfony\Component\Routing\RouterInterface;
+use Symfony\Component\Translation\TranslatableMessage;
 use Symfony\Component\Workflow\WorkflowInterface;
 
 class ChangeDiaryStateConfirmAction extends AbstractConfirmAction
@@ -61,7 +63,7 @@ class ChangeDiaryStateConfirmAction extends AbstractConfirmAction
         ];
     }
 
-    public function doConfirmedAction($formData)
+    public function doConfirmedAction($formData): void
     {
         $this->travelDiaryStateStateMachine->apply($this->subject, $this->stateTransition);
         $this->entityManager->flush();
@@ -72,9 +74,26 @@ class ChangeDiaryStateConfirmAction extends AbstractConfirmAction
         $this->setSubject($diaryKeeper);
         $this->translationKeyPrefix = $translationKeyPrefix;
         $this->stateTransition = $stateTransition;
-        return $this->controller(
-            $request,
-            $this->router->generate('interviewer_dashboard_household', ['household' => $diaryKeeper->getHousehold()->getId()])
+        try {
+            return $this->controller(
+                $request,
+                $this->router->generate('interviewer_dashboard_household', ['household' => $diaryKeeper->getHousehold()->getId()])
+            );
+        } catch (\Throwable) {
+            $this->flashBag->add(NotificationBanner::FLASH_BAG_TYPE, $this->getFailedBanner());
+            return new RedirectResponse($this->router->generate('interviewer_dashboard_diary_keeper', ['diaryKeeper' => $diaryKeeper->getId()]));
+        }
+    }
+
+    protected function getFailedBanner(): NotificationBanner
+    {
+        return new NotificationBanner(
+            new TranslatableMessage('notification.important'),
+            "{$this->getTranslationKeyPrefix()}.failed-notification.heading",
+            "{$this->getTranslationKeyPrefix()}.failed-notification.content",
+            [NotificationBanner::OPTION_STYLE => NotificationBanner::STYLE_WARNING],
+            $this->getTranslationParameters(),
+            $this->getTranslationDomain()
         );
     }
 }

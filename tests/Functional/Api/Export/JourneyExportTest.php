@@ -11,9 +11,9 @@ class JourneyExportTest extends AbstractApiWebTestCase
 {
     protected const ENDPOINT = '/api/v1/survey-data';
 
-    const OTHER = 'other';
-    const PRIVATE = 'private';
-    const PUBLIC = 'public';
+    public const OTHER = 'other';
+    public const PRIVATE = 'private';
+    public const PUBLIC = 'public';
 
     protected function setUp(): void
     {
@@ -21,7 +21,7 @@ class JourneyExportTest extends AbstractApiWebTestCase
         parent::setUp();
     }
 
-    public function testJourneyExport() {
+    public function testJourneyExport(): void {
         $household = $this->getHousehold('household:onboarded');
 
         $queryParams = ['householdSerials' => $household->getSerialNumber(null, false, false)];

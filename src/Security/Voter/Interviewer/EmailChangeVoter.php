@@ -34,6 +34,7 @@ class EmailChangeVoter extends Voter
             || $subject->getPassword() !== null
             || !in_array($diaryKeeper->getDiaryState(), [DiaryKeeper::STATE_NEW, DiaryKeeper::STATE_IN_PROGRESS])
             || $subject->getTrainingInterviewer() !== null
+            || $subject->getDiaryKeeper()->getHousehold()->getIsSubmitted()
         ) {
             return false;
         }

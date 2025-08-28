@@ -16,15 +16,13 @@ use Symfony\Component\Validator\Constraints\NotNull;
 class SampleImportForm extends AbstractType
 {
     protected string $cancelUrl;
-    private SerializerInterface $serializer;
 
-    public function __construct(RouterInterface $router, SerializerInterface $serializer)
+    public function __construct(RouterInterface $router, protected readonly SerializerInterface $serializer)
     {
         $this->cancelUrl = $router->generate('admin_dashboard');
-        $this->serializer = $serializer;
     }
 
-    public function buildForm(FormBuilderInterface $builder, array $options)
+    public function buildForm(FormBuilderInterface $builder, array $options): void
     {
         $builder
             ->setDataMapper(new SampleImportDataMapper($this->serializer))
@@ -49,7 +47,7 @@ class SampleImportForm extends AbstractType
             ]);
     }
 
-    public function configureOptions(OptionsResolver $resolver)
+    public function configureOptions(OptionsResolver $resolver): void
     {
         $resolver->setDefaults([
             'validation_groups' => "area.import",

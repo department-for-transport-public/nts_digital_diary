@@ -1,7 +1,7 @@
 {%- extends 'on_boarding/base.html.twig' -%}
 
 {%- trans_default_domain 'on-boarding' -%}
-{%- set translation_prefix = "submit" -%}
+{%- set translation_prefix = translation_prefix ?? "submit" -%}
 
 {%- block content -%}
     <p class="govuk-body">{{ 'submit.intro' | trans }}</p>

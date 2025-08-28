@@ -2,15 +2,16 @@
 
 namespace App\EventSubscriber\Test;
 
-use Doctrine\Common\EventSubscriber;
-use Doctrine\DBAL\Driver\Exception as DbalDriverException;
+use Doctrine\Bundle\DoctrineBundle\Attribute\AsDoctrineListener;
 use Doctrine\DBAL\Exception as DbalException;
+use Doctrine\DBAL\Platforms\SqlitePlatform;
 use Doctrine\ORM\Event\PreFlushEventArgs;
 use Doctrine\ORM\Events;
 
-class PreFlushEventSubscriber implements EventSubscriber
+#[AsDoctrineListener(event: Events::preFlush)]
+class PreFlushEventSubscriber
 {
-    private bool $isTestEnvironment;
+    protected readonly bool $isTestEnvironment;
 
     public function __construct(string $appEnvironment)
     {
@@ -19,22 +20,18 @@ class PreFlushEventSubscriber implements EventSubscriber
 
     /**
      * @throws DbalException
-     * @throws DbalDriverException
      */
-    public function preFlush(PreFlushEventArgs $eventArgs)
+    public function preFlush(PreFlushEventArgs $eventArgs): void
     {
         if (!$this->isTestEnvironment) return;
-        if ($eventArgs->getEntityManager()->getConnection()->getDriver()->getDatabasePlatform()->getName() !== 'sqlite') return;
+        $entityManager = $eventArgs->getObjectManager();
 
-        $eventArgs->getEntityManager()->getConnection()
+        if ($entityManager->getConnection()->getDatabasePlatform() instanceof  SqlitePlatform) {
+            return;
+        }
+
+        $entityManager->getConnection()
             ->prepare("PRAGMA foreign_keys = ON")
             ->executeStatement();
-    }
-
-    public function getSubscribedEvents(): array
-    {
-        return [
-            Events::preFlush,
-        ];
     }
 }

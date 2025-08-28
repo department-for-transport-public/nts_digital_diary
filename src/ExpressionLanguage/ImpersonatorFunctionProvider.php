@@ -25,12 +25,8 @@ class ImpersonatorFunctionProvider implements ExpressionFunctionProviderInterfac
             //
             // Instead, we just provide the function directly.
             new ExpressionFunction('impersonator_is_granted',
-                function($attributes, $object='null') {
-                    return sprintf('impersonator_is_granted(%s, %s)', $attributes, $object);
-                },
-                function(array $variables, $attributes, $object=null) {
-                    return $this->impersonatorAuthorizationChecker->isGranted($attributes, $object);
-                }
+                fn($attributes, $object='null'): string => sprintf('impersonator_is_granted(%s, %s)', $attributes, $object),
+                fn(array $variables, $attributes, $object=null): bool => $this->impersonatorAuthorizationChecker->isGranted($attributes, $object)
             ),
         ];
     }

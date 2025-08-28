@@ -6,11 +6,8 @@ use Symfony\Component\Form\FormInterface;
 
 class IdPrefixHelper
 {
-    protected array $fieldPrefixes;
-
-    public function __construct(array $fieldPrefixes)
+    public function __construct(protected array $fieldPrefixes)
     {
-        $this->fieldPrefixes = $fieldPrefixes;
     }
 
     public function isRelevantForm(array $forms): bool
@@ -40,7 +37,7 @@ class IdPrefixHelper
 
     public function getIdFromFormName(string $formName, string $fieldPrefix = null): ?string
     {
-        $fieldPrefix = $fieldPrefix ?? $this->getRelevantPrefix($formName);
+        $fieldPrefix ??= $this->getRelevantPrefix($formName);
 
         return $fieldPrefix ?
             substr($formName, strlen($fieldPrefix) + 1) :
@@ -49,7 +46,7 @@ class IdPrefixHelper
 
     public function getRelevantPrefix(string $formName): ?string {
         foreach($this->fieldPrefixes as $fieldPrefix) {
-            if (strpos($formName, "{$fieldPrefix}") === 0) {
+            if (str_starts_with($formName, "{$fieldPrefix}")) {
                 return $fieldPrefix;
             }
         }

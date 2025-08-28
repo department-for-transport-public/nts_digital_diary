@@ -16,6 +16,7 @@ class DashboardTest extends AbstractFunctionalTestCase
 {
     protected CostOrNilExtension $costOrNilExtension;
     protected TranslatorInterface $translator;
+    protected DateTimeFormats $dateTimeFormats;
 
     public function setUp(): void
     {
@@ -25,9 +26,10 @@ class DashboardTest extends AbstractFunctionalTestCase
 
         $this->loginUser('diary-keeper-adult@example.com');
 
-        $container = self::$kernel->getContainer()->get('test.service_container');
+        $container = static::getContainer();
         $this->costOrNilExtension = $container->get(CostOrNilExtension::class);
         $this->translator = $container->get(TranslatorInterface::class);
+        $this->dateTimeFormats = $container->get(DateTimeFormats::class);
     }
 
     public function testDashboard(): void
@@ -68,7 +70,7 @@ class DashboardTest extends AbstractFunctionalTestCase
             $rowData = $data[$idx];
 
             $this->assertEquals(
-                (new \DateTime($definition->getStartTime()))->format(DateTimeFormats::TIME_SHORT),
+                (new \DateTime($definition->getStartTime()))->format($this->dateTimeFormats->getTime(DateTimeFormats::MODE_12_HOUR)),
                 $rowData[0],
             );
 
@@ -91,19 +93,19 @@ class DashboardTest extends AbstractFunctionalTestCase
             $this->client->request('GET', '/travel-diary/day-1/');
 
             // Find the relevant link for the given journeyDefinition and click it...
-            $journeyTime = (new \DateTime($journeyDefinition->getStartTime()))->format(DateTimeFormats::TIME_SHORT);
+            $journeyTime = (new \DateTime($journeyDefinition->getStartTime()))->format($this->dateTimeFormats->getTime(DateTimeFormats::MODE_12_HOUR));
             $links = $this->client->getCrawler()->filterXPath("//dt[text()='{$journeyTime}']/following-sibling::dd//a")->links();
             $this->assertCount(1, $links);
             $this->client->click($links[0]);
 
             foreach($journeyDefinition->getStageDefinitions() as $stageDefinition) {
                 // Click the relevant tab header
-                $links = $this->client->getCrawler()->filterXPath("//a[@href='#stage-{$stageDefinition->getNumber()}']")->links();
-                $this->assertCount(1, $links);
-                $this->client->click($links[0]);
+                $showButton = $this->client->getCrawler()->filterXPath("//li[@id='step-nav-stage-{$stageDefinition->getNumber()}']//span[contains(concat(' ', normalize-space(@class), ' '), ' app-step-nav__button-text ')]");
+                $this->assertCount(1, $showButton);
+                $showButton->getElement(0)->click();
 
                 // Read the data from the summary list
-                $data = $this->getSummaryListData("//*[@id='stage-{$stageDefinition->getNumber()}']/dl/div");
+                $data = $this->getSummaryListData("//div[@id='step-panel-stage-{$stageDefinition->getNumber()}']/dl/div");
 
                 $method = $this->translator->trans("stage.method.choices.{$stageDefinition->getMethod()}", [], 'travel-diary');
                 $methodOther = $stageDefinition->getMethodOther();

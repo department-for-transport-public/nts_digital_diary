@@ -1,11 +1,9 @@
 <?php
 
-
 namespace App\Form\TravelDiary;
 
-
 use App\Entity\Journey\Stage;
-use Ghost\GovUkFrontendBundle\Form\Type\NumberType;
+use App\Form\OldGhostBundle\NumberType;
 use Symfony\Component\Form\AbstractType;
 use Symfony\Component\Form\Extension\Core\Type\FormType;
 use Symfony\Component\Form\FormBuilderInterface;
@@ -13,11 +11,11 @@ use Symfony\Component\OptionsResolver\OptionsResolver;
 
 abstract class AbstractStageDetailsType extends AbstractType
 {
-    const INJECT_TRANSLATION_PARAMETERS = [
+    public const array INJECT_TRANSLATION_PARAMETERS = [
         'method_type' => 'method.type',
     ];
 
-    public function buildForm(FormBuilderInterface $builder, array $options)
+    public function buildForm(FormBuilderInterface $builder, array $options): void
     {
         $transPrefix = "stage.details";
         $builder
@@ -53,7 +51,7 @@ abstract class AbstractStageDetailsType extends AbstractType
         ;
     }
 
-    public function configureOptions(OptionsResolver $resolver)
+    public function configureOptions(OptionsResolver $resolver): void
     {
         $resolver->setDefaults([
             'data_class' => Stage::class,

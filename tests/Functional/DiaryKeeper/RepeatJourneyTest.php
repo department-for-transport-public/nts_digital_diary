@@ -14,11 +14,11 @@ use Facebook\WebDriver\WebDriverBy;
 
 class RepeatJourneyTest extends AbstractJourneyTest
 {
-    const TEST_USERNAME = 'diary-keeper-adult@example.com';
+    public const TEST_USERNAME = 'diary-keeper-adult@example.com';
 
     protected function generateTest(bool $overwriteStageDetails, int $sourceJourneyIndex, int $numberOfStages): array
     {
-        $url = fn(string $pathEnd) => '/travel-diary/day-3' . $pathEnd;
+        $url = fn(string $pathEnd): string => '/travel-diary/day-3' . $pathEnd;
 
         $tests[] = new FormTestAction(
             $url('/repeat-journey/full-introduction'),
@@ -43,7 +43,7 @@ class RepeatJourneyTest extends AbstractJourneyTest
             [
                 new FormTestCase([], ["#source_journey_sourceJourneyId"]),
                 new CallbackFormTestCase(
-                    function(Context $context) use ($sourceJourneyIndex) {
+                    function(Context $context) use ($sourceJourneyIndex): array {
                         $input = $context->getClient()->findElement(WebDriverBy::xpath('//div[@id="source_journey_sourceJourneyId"]/div['.($sourceJourneyIndex + 1).']/input'));
                         return ['source_journey[sourceJourneyId]' => $input->getAttribute('value')];
                     }
@@ -76,10 +76,8 @@ class RepeatJourneyTest extends AbstractJourneyTest
                 [new FormTestCase([
                     "times[startTime][hour]" => "",
                     "times[startTime][minute]" => "",
-                    "times[startTime][am_or_pm]" => "",
                     "times[endTime][hour]" => "",
                     "times[endTime][minute]" => "",
-                    "times[endTime][am_or_pm]" => "",
                 ], ["#times_startTime", "#times_endTime"])],
                 [
                     new FormTestCase([
@@ -107,7 +105,7 @@ class RepeatJourneyTest extends AbstractJourneyTest
         ]);
 
         $tests[] = new CallbackAction(function (Context $context)
-        use ($overwriteStageDetails, $sourceJourneyIndex) {
+        use ($overwriteStageDetails, $sourceJourneyIndex): void {
             $dk = $context->getEntityManager()->getRepository(User::class)->getDiaryKeeperJourneysAndStagesForTests(self::TEST_USERNAME);
 
             $dayOneJourneys = $dk->getDiaryDayByNumber(1)->getJourneys();
@@ -146,7 +144,7 @@ class RepeatJourneyTest extends AbstractJourneyTest
     /**
      * @dataProvider wizardData
      */
-    public function testRepeatJourneyWizard(array $wizardData)
+    public function testRepeatJourneyWizard(array $wizardData): void
     {
         $this->initialiseClientAndLoadFixtures([StageFixtures::class]);
         $this->loginUser(self::TEST_USERNAME);

@@ -25,7 +25,7 @@
     {%- elseif methodType == 'private' -%}
         {%- if current_stage.isDriver == true -%}
             <div class="prose-scope">
-                {{ m.warningText('share-journey.stage-details.private.source-was-driver-introduction' | trans) }}
+                {{ m.warningText({text: 'share-journey.stage-details.private.source-was-driver-introduction' | trans}) }}
             </div>
         {%- endif -%}
     {%- endif -%}

@@ -5,15 +5,13 @@ namespace App\Form\TravelDiary\JourneyWizard;
 use App\Entity\Journey\Journey;
 use Symfony\Component\Form\DataMapperInterface;
 use Symfony\Component\Form\FormInterface;
-use Traversable;
 
 class LocationsDataMapper implements DataMapperInterface
 {
     /**
      * @param Journey | null $viewData
-     * @param Traversable|iterable $forms
      */
-    public function mapDataToForms($viewData, iterable $forms): void
+    public function mapDataToForms($viewData, \Traversable $forms): void
     {
         $forms = iterator_to_array($forms);
         /** @var FormInterface[] $forms */
@@ -33,12 +31,12 @@ class LocationsDataMapper implements DataMapperInterface
                     $forms["{$locationType}_choice"]->setData(LocationsType::CHOICE_HOME);
                     break;
 
-                case in_array(strtolower($viewData->{"get{$ucfLocationType}Location"}()), $choiceValues) :
+                case in_array(strtolower((string) $viewData->{"get{$ucfLocationType}Location"}()), $choiceValues) :
                     $forms["{$locationType}Location"]->setData(null);
                     $forms["{$locationType}_choice"]->setData($viewData->{"get{$ucfLocationType}Location"}());
                     break;
 
-                case !empty(strtolower($viewData->{"get{$ucfLocationType}Location"}())) :
+                case !empty(strtolower((string) $viewData->{"get{$ucfLocationType}Location"}())) :
                     $forms["{$locationType}Location"]->setData($viewData->{"get{$ucfLocationType}Location"}());
                     $forms["{$locationType}_choice"]->setData(LocationsType::CHOICE_OTHER);
                     break;
@@ -48,9 +46,8 @@ class LocationsDataMapper implements DataMapperInterface
 
     /**
      * @param Journey | null $viewData
-     * @param Traversable|iterable $forms
      */
-    public function mapFormsToData(iterable $forms, &$viewData): void
+    public function mapFormsToData(\Traversable $forms, &$viewData): void
     {
         $forms = iterator_to_array($forms);
         /** @var FormInterface[] $forms */
@@ -67,11 +64,10 @@ class LocationsDataMapper implements DataMapperInterface
     /**
      * @param $locationType
      * @param FormInterface[] | array $forms
-     * @param Journey $viewData
      */
     protected function mapLocationFormsToData($locationType, array $forms, Journey $viewData): void
     {
-        $ucfLocationType = ucfirst($locationType);
+        $ucfLocationType = ucfirst((string) $locationType);
         if (isset($forms["{$locationType}Location"]) && isset($forms["{$locationType}_choice"])) {
             switch ($forms["{$locationType}_choice"]->getData()) {
                 case LocationsType::CHOICE_HOME :
@@ -82,7 +78,7 @@ class LocationsDataMapper implements DataMapperInterface
                 case LocationsType::CHOICE_OTHER :
                     $otherData = $forms["{$locationType}Location"]->getData();
 
-                    if (strtolower($otherData) === 'home') {
+                    if (strtolower((string) $otherData) === 'home') {
                         // User literally typed "home" (or variation thereof) into the "other" field
                         $viewData->{"setIs{$ucfLocationType}Home"}(true);
                         $viewData->{"set{$ucfLocationType}Location"}(null);

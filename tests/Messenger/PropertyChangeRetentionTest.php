@@ -13,7 +13,7 @@ class PropertyChangeRetentionTest extends TestCase
         $toCl = function(array $intSerialIdValues): array  {
             $count = 0;
 
-            return array_map(function(?string $interviewerSerialId) use (&$count) {
+            return array_map(function(?string $interviewerSerialId) use (&$count): \App\Entity\PropertyChangeLog {
                 return (new PropertyChangeLog())
                     ->setEntityId($count++)
                     ->setInterviewerSerialId($interviewerSerialId);
@@ -79,7 +79,7 @@ class PropertyChangeRetentionTest extends TestCase
     public function testKeeps(array $changeLogs, array $expectedKeepEntityIds): void
     {
         $keeps = MessageHandler::getKeepsForChangeLogs($changeLogs);
-        $keepEntityIds = array_map(fn(PropertyChangeLog $cl) => $cl->getEntityId(), $keeps);
-        $this->assertEquals(array_map(fn($x) => strval($x), $expectedKeepEntityIds), $keepEntityIds);
+        $keepEntityIds = array_map(fn(PropertyChangeLog $cl): ?string => $cl->getEntityId(), $keeps);
+        $this->assertEquals(array_map(fn($x): string => strval($x), $expectedKeepEntityIds), $keepEntityIds);
     }
 }

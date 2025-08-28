@@ -2,20 +2,24 @@
 
 namespace App\Utility\ConfirmAction\Interviewer;
 
-use App\Entity\DiaryDay;
-use App\Form\DoubleConfirmActionType;
 use App\Form\TravelDiary\ApproveDiaryConfirmActionType;
 use Doctrine\ORM\EntityManagerInterface;
+use Symfony\Bundle\SecurityBundle\Security;
 use Symfony\Component\Form\FormFactoryInterface;
 use Symfony\Component\HttpFoundation\RequestStack;
 use Symfony\Component\Routing\RouterInterface;
-use Symfony\Component\Security\Core\Security;
 use Symfony\Component\Workflow\WorkflowInterface;
 
 class ApprovalDiaryStateConfirmAction extends ChangeDiaryStateConfirmAction
 {
-    public function __construct(FormFactoryInterface $formFactory, RequestStack $requestStack, EntityManagerInterface $entityManager, WorkflowInterface $travelDiaryStateStateMachine, RouterInterface $router, protected Security $security)
-    {
+    public function __construct(
+        FormFactoryInterface $formFactory,
+        RequestStack $requestStack,
+        EntityManagerInterface $entityManager,
+        WorkflowInterface $travelDiaryStateStateMachine,
+        RouterInterface $router,
+        protected Security $security
+    ) {
         parent::__construct($formFactory, $requestStack, $entityManager, $travelDiaryStateStateMachine, $router);
     }
 
@@ -38,7 +42,7 @@ class ApprovalDiaryStateConfirmAction extends ChangeDiaryStateConfirmAction
         ]);
     }
 
-    public function doConfirmedAction($formData)
+    public function doConfirmedAction($formData): void
     {
         // if the form validated, all items were checked
         $this->subject

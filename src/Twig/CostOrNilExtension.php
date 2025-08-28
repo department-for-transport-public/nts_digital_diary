@@ -16,26 +16,26 @@ class CostOrNilExtension extends AbstractExtension
     public function getFilters(): array
     {
         return [
-            new TwigFilter('format_cost_or_nil', [$this, 'format_cost_or_nil']),
+            new TwigFilter('format_cost_or_nil', $this->format_cost_or_nil(...)),
         ];
     }
 
     public function format_cost_or_nil(?CostOrNil $costOrNil, string $translationKey, string $emptyPlaceholder = ' - ', string $nilTranslationKey = 'common.cost.nil'): string
     {
-        if ($costOrNil->getHasCost() === false) {
+        if ($costOrNil && $costOrNil->getHasCost() === false) {
             return $this->translator->trans($nilTranslationKey, [], 'travel-diary');
         }
 
         return $this->format_string($costOrNil?->getCost(), $translationKey, $emptyPlaceholder);
     }
 
-    private function format_string(?string $decimal, string $translationKey, string $emptyPlaceHolder = ' - '): string
+    private function format_string(?BigDecimal $decimal, string $translationKey, string $emptyPlaceHolder = ' - '): string
     {
         if ($decimal === null) {
             return $emptyPlaceHolder;
         }
 
-        return $this->format_big_decimal(BigDecimal::of($decimal), $translationKey, $emptyPlaceHolder);
+        return $this->format_big_decimal($decimal, $translationKey, $emptyPlaceHolder);
     }
 
     private function format_big_decimal(?BigDecimal $decimal, string $translationKey, string $emptyPlaceHolder = ' - '): string

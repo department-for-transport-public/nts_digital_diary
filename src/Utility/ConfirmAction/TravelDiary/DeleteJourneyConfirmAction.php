@@ -13,12 +13,12 @@ class DeleteJourneyConfirmAction extends AbstractConfirmAction
 {
     /** @var Journey | object */
     protected $subject;
-    protected EntityManagerInterface $entityManager;
 
-    public function __construct(FormFactoryInterface $formFactory, RequestStack $requestStack, EntityManagerInterface $entityManager)
-    {
+    public function __construct(FormFactoryInterface $formFactory, RequestStack $requestStack,
+        protected EntityManagerInterface $entityManager,
+        protected DateTimeFormats $dateTimeFormats,
+    ) {
         parent::__construct($formFactory, $requestStack);
-        $this->entityManager = $entityManager;
     }
 
     public function getExtraViewData(): array
@@ -58,11 +58,11 @@ class DeleteJourneyConfirmAction extends AbstractConfirmAction
         return [
             'startLocation' => $this->subject->getStartLocationForDisplay(),
             'endLocation' => $this->subject->getEndLocationForDisplay(),
-            'time' => $this->subject->getStartTime()->format(DateTimeFormats::TIME_SHORT),
+            'time' => $this->subject->getStartTime()->format($this->dateTimeFormats->getTime('user-pref')),
         ];
     }
 
-    public function doConfirmedAction($formData)
+    public function doConfirmedAction($formData): void
     {
         $this->entityManager->remove($this->subject);
         $this->entityManager->flush();

@@ -9,18 +9,16 @@ use Symfony\Component\Form\DataMapperInterface;
 use Symfony\Component\Form\Exception\TransformationFailedException;
 use Symfony\Component\Form\Exception\UnexpectedTypeException;
 use Symfony\Component\Form\FormInterface;
-use Traversable;
 
 class MidpointDataMapper implements DataMapperInterface
 {
     /**
-     * @param Journey | null $viewData
-     * @param Traversable|iterable $forms
+     * @param ?Journey $viewData
+     * @param \Traversable<FormInterface> $forms
      */
-    public function mapDataToForms($viewData, iterable $forms): void
+    public function mapDataToForms($viewData, \Traversable $forms): void
     {
         $forms = iterator_to_array($forms);
-        /** @var FormInterface[] $forms */
 
         if ($viewData === null) {
             return;
@@ -42,7 +40,7 @@ class MidpointDataMapper implements DataMapperInterface
         $sourceJourney = $viewData->getSourceJourney();
         $dataIsHome = $sourceJourney->getIsEndHome();
         $dataLocation = $sourceJourney->getEndLocation();
-        $lcDataLocation = strtolower($dataLocation);
+        $lcDataLocation = strtolower((string) $dataLocation);
 
         $formChoice = null;
         $formLocation = null;
@@ -62,13 +60,10 @@ class MidpointDataMapper implements DataMapperInterface
 
     /**
      * @param Journey | null $viewData
-     * @param Traversable|iterable $forms
      */
-    public function mapFormsToData(iterable $forms, &$viewData): void
+    public function mapFormsToData(\Traversable $forms, &$viewData): void
     {
         $forms = iterator_to_array($forms);
-        /** @var FormInterface[] $forms */
-
         if ($viewData === null) {
             return;
         }
@@ -86,11 +81,11 @@ class MidpointDataMapper implements DataMapperInterface
         $disallowedChoices = $this->getDisallowedChoices($viewData);
 
         foreach($disallowedChoices as $disallowedChoice) {
-            $disallowedChoice = strtolower($disallowedChoice);
+            $disallowedChoice = strtolower((string) $disallowedChoice);
 
             if (
-                ($formChoice && strtolower($formChoice) === $disallowedChoice) ||
-                ($formLocation && strtolower($formLocation) === $disallowedChoice)
+                ($formChoice && strtolower((string) $formChoice) === $disallowedChoice) ||
+                ($formLocation && strtolower((string) $formLocation) === $disallowedChoice)
             ) {
                 throw new TransformationFailedException('Invalid choice', 0, null, 'wizard.split-journey.midpoint.invalid-choice');
             }
@@ -129,7 +124,7 @@ class MidpointDataMapper implements DataMapperInterface
         // User literally typed "home" into the "other" field
         if (
             $formChoice === AbstractLocationType::CHOICE_OTHER &&
-            strtolower($formLocation) == 'home'
+            strtolower((string) $formLocation) == 'home'
         ) {
             $formChoice = AbstractLocationType::CHOICE_HOME;
             $formLocation = null;
@@ -145,7 +140,7 @@ class MidpointDataMapper implements DataMapperInterface
         $sourceJourney = $viewData->getSourceJourney();
         $destinationJourney = $viewData->getDestinationJourney();
 
-        $addDisallowedChoice = function(string $choice) use (&$disallowedChoices) {
+        $addDisallowedChoice = function(string $choice) use (&$disallowedChoices): void {
             $disallowedChoices[$choice] = $choice;
         };
 

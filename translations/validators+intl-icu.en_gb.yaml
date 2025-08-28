@@ -33,6 +33,9 @@ feedback.form:
   comments.not-blank: Enter the details
   email.not-valid: Enter a valid email address
   email.not-blank: Enter an email address
+  xss-nonsense:
+    no-gt-or-lt: Message must not contain < or > characters
+    no-bad-strings: Enter a valid message
 
 forgotten-password:
   email.not-blank: Enter an email address
@@ -133,14 +136,14 @@ wizard.on-boarding:
     unique-in-area-period: A household with this address number and household number already exists within this area
     address-number:
       not-blank: Enter the address number
-      not-in-range: The address number must be between 1 and 99 inclusive
+      not-in-range: The address number must be between {min} and {max} inclusive
     check-letter:
       not-null: Enter the check letter
       invalid: Enter the correct check letter. Are the address and household number correct?
       too-long: Enter a single character
     household-number:
       not-blank: Enter the household number
-      not-in-range: The household number must be between 1 and 99 inclusive
+      not-in-range: The household number must be between {min} and {max} inclusive
     start-date:
       not-blank: Enter the diary week start date
       too-early: This date is too early. Enter a date in the correct range.
@@ -266,3 +269,11 @@ wizard.satisfaction-survey:
 vehicle.odometer-readings:
     end-not-less-than-start: This cannot be less than the first milometer reading
     units-required: Select a unit
+
+wizard.direct-onboarding:
+    diary-keeper-logins:
+      at-least-one: Provide an email address for at least one household member
+      email.already-used: This email address is in use by another member of the household. Enter a unique email address, or leave the field blank.
+    ingress:
+      household-mismatch: "Direct set-up has already been started using these passcodes, but the household details do not match (existing household: {originalSerial}, new serial: {newSerial})"
+      existing-household: "A household with this serial already exists"

@@ -7,73 +7,48 @@ use Doctrine\ORM\Mapping as ORM;
 use Symfony\Component\Validator\Constraints as Assert;
 use Symfony\Component\Validator\Context\ExecutionContextInterface;
 
-/**
- * @ORM\Entity(repositoryClass=SatisfactionSurveyRepository::class)
- */
+#[ORM\Entity(repositoryClass: SatisfactionSurveyRepository::class)]
 class SatisfactionSurvey
 {
     use IdTrait;
 
-    /**
-     * @ORM\Column(type="string", length=32)
-     * @Assert\NotBlank(groups={"wizard.satisfaction-survey.ease-of-use"}, message="wizard.satisfaction-survey.ease-of-use.not-blank")
-     */
+    #[Assert\NotBlank(message: 'wizard.satisfaction-survey.ease-of-use.not-blank', groups: ['wizard.satisfaction-survey.ease-of-use'])]
+    #[ORM\Column(type: 'string', length: 32)]
     private ?string $easeRating = null;
 
-    /**
-     * @ORM\Column(type="string", length=32)
-     * @Assert\NotBlank(groups={"wizard.satisfaction-survey.burden"}, message="wizard.satisfaction-survey.burden-rating.not-blank")
-     */
+    #[Assert\NotBlank(message: 'wizard.satisfaction-survey.burden-rating.not-blank', groups: ['wizard.satisfaction-survey.burden'])]
+    #[ORM\Column(type: 'string', length: 32)]
     private ?string $burdenRating = null;
 
 
-    /**
-     * @ORM\Column(type="json")
-     */
+    #[ORM\Column(type: 'json')]
     private array $burdenReason = [];
 
-    /**
-     * @ORM\Column(type="text", nullable=true)
-     */
+    #[ORM\Column(type: 'text', nullable: true)]
     private ?string $burdenReasonOther = null;
 
-    /**
-     * @ORM\Column(type="json")
-     */
+    #[ORM\Column(type: 'json')]
     private array $typeOfDevices = [];
 
-    /**
-     * @ORM\Column(type="text", nullable=true)
-     */
+    #[ORM\Column(type: 'text', nullable: true)]
     private ?string $typeOfDevicesOther = null;
 
-    /**
-     * @ORM\Column(type="string", length=32)
-     * @Assert\NotBlank(groups={"wizard.satisfaction-survey.diary-completion"}, message="wizard.satisfaction-survey.how-often.not-blank")
-     */
+    #[Assert\NotBlank(message: 'wizard.satisfaction-survey.how-often.not-blank', groups: ['wizard.satisfaction-survey.diary-completion'])]
+    #[ORM\Column(type: 'string', length: 32)]
     private ?string $howOftenEntriesAdded = null;
 
-    /**
-     * @ORM\Column(type="boolean")
-     * @Assert\NotNull(groups={"wizard.satisfaction-survey.diary-completion"}, message="wizard.satisfaction-survey.written-note.not-blank")
-     */
+    #[Assert\NotNull(message: 'wizard.satisfaction-survey.written-note.not-blank', groups: ['wizard.satisfaction-survey.diary-completion'])]
+    #[ORM\Column(type: 'boolean')]
     private ?bool $writtenNoteKept = null;
 
-    /**
-     * @ORM\Column(type="string", length=32)
-     * @Assert\NotBlank(groups={"wizard.satisfaction-survey.preferred-method"}, message="wizard.satisfaction-survey.preferred-method.not-blank")
-     */
+    #[Assert\NotBlank(message: 'wizard.satisfaction-survey.preferred-method.not-blank', groups: ['wizard.satisfaction-survey.preferred-method'])]
+    #[ORM\Column(type: 'string', length: 32)]
     private ?string $preferredMethod = null;
 
-    /**
-     * @ORM\Column(type="text", nullable=true)
-     */
+    #[ORM\Column(type: 'text', nullable: true)]
     private ?string $preferredMethodOther = null;
 
-    /**
-     * @ORM\OneToOne(targetEntity=DiaryKeeper::class, inversedBy="satisfactionSurvey", cascade={"persist", "remove"})
-     * @ORM\JoinColumn(name="diarykeeper_id", referencedColumnName="id", onDelete="SET NULL")
-     */
+    #[ORM\OneToOne(mappedBy: 'satisfactionSurvey', targetEntity: DiaryKeeper::class, cascade: ['persist', 'remove'])]
     private ?DiaryKeeper $diaryKeeper = null;
 
     public function getEaseRating(): ?string
@@ -193,15 +168,22 @@ class SatisfactionSurvey
 
     public function setDiaryKeeper(?DiaryKeeper $diaryKeeper): self
     {
+        // unset the owning side of the relation if necessary
+        if ($diaryKeeper === null && $this->diaryKeeper !== null) {
+            $this->diaryKeeper->setSatisfactionSurvey(null);
+        }
+
+        // set the owning side of the relation if necessary
+        if ($diaryKeeper !== null && $diaryKeeper->getSatisfactionSurvey() !== $this) {
+            $diaryKeeper->setSatisfactionSurvey($this);
+        }
+
         $this->diaryKeeper = $diaryKeeper;
         return $this;
     }
 
     // -----
-
-    /**
-     * @Assert\Callback(groups="wizard.satisfaction-survey.burden")
-     */
+    #[Assert\Callback(groups: ['wizard.satisfaction-survey.burden'])]
     public function validateBurdenReason(ExecutionContextInterface $context): void
     {
         $burdenRating = $this->getBurdenRating();
@@ -223,9 +205,7 @@ class SatisfactionSurvey
         }
     }
 
-    /**
-     * @Assert\Callback(groups="wizard.satisfaction-survey.type-of-devices")
-     */
+    #[Assert\Callback(groups: ['wizard.satisfaction-survey.type-of-devices'])]
     public function validateTypeOfDevices(ExecutionContextInterface $context): void
     {
         $typeOfDevices = $this->getTypeOfDevices();
@@ -243,9 +223,7 @@ class SatisfactionSurvey
         }
     }
 
-    /**
-     * @Assert\Callback(groups="wizard.satisfaction-survey.preferred-method")
-     */
+    #[Assert\Callback(groups: ['wizard.satisfaction-survey.preferred-method'])]
     public function validatePreferredMethodOther(ExecutionContextInterface $context): void
     {
         $preferredMethod = $this->getPreferredMethod();

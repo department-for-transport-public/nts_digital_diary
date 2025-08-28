@@ -10,11 +10,8 @@ use Symfony\Component\Validator\Exception\UnexpectedTypeException;
 
 class ChangeUserEmailAddressValidator extends ConstraintValidator
 {
-    protected UserRepository $userRepository;
-
-    public function __construct(UserRepository $userRepository)
+    public function __construct(protected UserRepository $userRepository)
     {
-        $this->userRepository = $userRepository;
     }
 
     public function validate($value, Constraint $constraint): void
@@ -22,7 +19,6 @@ class ChangeUserEmailAddressValidator extends ConstraintValidator
         if (!$constraint instanceof ChangeUserEmailAddress) {
             throw new UnexpectedTypeException($constraint, ChangeUserEmailAddress::class);
         }
-
 
         if (null === $value) {
             return;

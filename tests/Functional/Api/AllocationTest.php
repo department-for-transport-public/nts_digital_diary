@@ -1,10 +1,9 @@
 <?php
 
-namespace Api;
+namespace App\Tests\Functional\Api;
 
 use App\Tests\DataFixtures\ApiFixtures;
 use App\Tests\DataFixtures\ApiUserFixtures;
-use App\Tests\Functional\Api\AbstractApiWebTestCase;
 
 class AllocationTest extends AbstractApiWebTestCase
 {
@@ -14,7 +13,7 @@ class AllocationTest extends AbstractApiWebTestCase
         parent::setUp();
     }
 
-    public function testAllocation()
+    public function testAllocation(): void
     {
         [$areaPeriod1, $areaPeriod2] = $this->getAreaPeriodFixtures();
         $interviewer = $this->getInterviewerUserBySerialId(101)->getInterviewer();
@@ -26,6 +25,7 @@ class AllocationTest extends AbstractApiWebTestCase
             [],
             ['method' => 'POST', 'expectedResponseCode' => 201]
         );
+
         self::assertEquals([0 => $areaPeriod1->getApiId(), 1 => $areaPeriod2->getApiId()], $allocationResponse['area_periods'] ?? null);
 
         $interviewer = $this->getInterviewerUserBySerialId(101)->getInterviewer();
@@ -35,7 +35,7 @@ class AllocationTest extends AbstractApiWebTestCase
 
     }
 
-    public function testDeAllocation()
+    public function testDeAllocation(): void
     {
         [$areaPeriod1, $areaPeriod2] = $this->getAreaPeriodFixtures();
         $interviewer = $this->getInterviewerUserBySerialId(101)->getInterviewer();

@@ -17,16 +17,16 @@ use Symfony\Contracts\Translation\TranslatorInterface;
 abstract class AbstractConfirmAction implements ConfirmActionInterface
 {
     protected $subject;
-    protected FormFactoryInterface $formFactory;
     protected FlashBagInterface $flashBag;
     protected TranslatorInterface $translator;
     protected array $extraViewData;
     protected string $confirmedActionUrl;
     protected string $cancelledActionUrl;
 
-    public function __construct(FormFactoryInterface $formFactory, RequestStack $requestStack)
-    {
-        $this->formFactory = $formFactory;
+    public function __construct(
+        protected FormFactoryInterface $formFactory,
+        RequestStack $requestStack
+    ) {
         $this->flashBag = $requestStack->getSession()->getFlashBag();
     }
 

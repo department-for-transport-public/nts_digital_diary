@@ -5,19 +5,19 @@ namespace App\Form\TravelDiary\JourneyWizard;
 use App\Entity\Journey\Journey;
 use App\Form\TravelDiary\AbstractLocationType;
 use App\Repository\DiaryKeeperRepository;
+use Symfony\Bundle\SecurityBundle\Security;
 use Symfony\Component\Form\FormBuilderInterface;
 use Symfony\Component\Form\FormInterface;
 use Symfony\Component\OptionsResolver\OptionsResolver;
-use Symfony\Component\Security\Core\Security;
 
 class LocationsType extends AbstractLocationType
 {
-    private LocationsDataMapper $locationsDataMapper;
-
-    public function __construct(DiaryKeeperRepository $diaryKeeperRepository, Security $security, LocationsDataMapper $locationsDataMapper)
-    {
+    public function __construct(
+        DiaryKeeperRepository                  $diaryKeeperRepository,
+        Security                               $security,
+        protected readonly LocationsDataMapper $locationsDataMapper,
+    ) {
         parent::__construct($diaryKeeperRepository, $security);
-        $this->locationsDataMapper = $locationsDataMapper;
     }
 
     public function buildForm(FormBuilderInterface $builder, array $options): void
@@ -39,7 +39,7 @@ class LocationsType extends AbstractLocationType
             'help' => 'journey.locations.help',
             'data_class' => Journey::class,
             'translation_domain' => 'travel-diary',
-            'validation_groups' => function(FormInterface $form) {
+            'validation_groups' => function (FormInterface $form) {
                 $vg = ['wizard.journey.locations'];
 
                 foreach(['start', 'end'] as $startOrEnd) {

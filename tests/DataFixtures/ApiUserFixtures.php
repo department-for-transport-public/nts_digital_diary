@@ -8,7 +8,7 @@ use Doctrine\Persistence\ObjectManager;
 
 class ApiUserFixtures extends AbstractFixture
 {
-    public function load(ObjectManager $manager)
+    public function load(ObjectManager $manager): void
     {
         $apiUser = (new ApiUser())->setKey('test-key')->setNonce(time());
         $manager->persist($apiUser);

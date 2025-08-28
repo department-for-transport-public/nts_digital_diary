@@ -8,38 +8,29 @@ use Symfony\Component\Security\Core\User\UserInterface;
 use App\Security\OneTimePassword\OtpUserInterface;
 use Symfony\Component\Serializer\Annotation\Ignore;
 
-/**
- * @ORM\Entity(repositoryClass=OtpUserRepository::class)
- */
+#[ORM\Entity(repositoryClass: OtpUserRepository::class)]
 class OtpUser implements UserInterface, OtpUserInterface
 {
     use IdTrait;
 
-    /**
-     * @ORM\Column(type="string", length=10)
-     */
+    #[ORM\Column(type: 'string', length: 10)]
     private string $userIdentifier;
 
-    /**
-     * @ORM\ManyToOne(targetEntity=AreaPeriod::class, inversedBy="otpUsers")
-     * @ORM\JoinColumn(nullable=false)
-     */
-    private ?AreaPeriod $areaPeriod;
+    #[ORM\ManyToOne(targetEntity: AreaPeriod::class, inversedBy: 'otpUsers')]
+    #[ORM\JoinColumn(nullable: false)]
+    private ?AreaPeriod $areaPeriod = null;
 
-    /**
-     * @ORM\OneToOne(targetEntity=Household::class, cascade={"persist"})
-     */
-    private ?Household $household;
+    #[ORM\OneToOne(targetEntity: Household::class, cascade: ['persist'])]
+    private ?Household $household = null;
 
-    public function getUserIdentifier(): ?string
+    public function getUserIdentifier(): string
     {
-        return $this->userIdentifier ?? null;
+        return $this->userIdentifier;
     }
 
     public function setUserIdentifier(string $userIdentifier): self
     {
         $this->userIdentifier = $userIdentifier;
-
         return $this;
     }
 
@@ -76,7 +67,7 @@ class OtpUser implements UserInterface, OtpUserInterface
     {
     }
 
-    public function eraseCredentials()
+    public function eraseCredentials(): void
     {
     }
 
@@ -108,8 +99,6 @@ class OtpUser implements UserInterface, OtpUserInterface
     public function setHousehold(Household $household): self
     {
         $this->household = $household;
-
         return $this;
     }
-
 }

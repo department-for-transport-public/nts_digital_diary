@@ -18,8 +18,7 @@ class StageFixtures extends AbstractFixture implements DependentFixtureInterface
         $vehicleRepo = $manager->getRepository(Vehicle::class);
 
         foreach(JourneyFixtures::getAllJourneyDefinitions() as $name => $definition) {
-            /** @var Journey $journey */
-            $journey = $this->getReference($name);
+            $journey = $this->getReference($name, Journey::class);
 
             $household = $journey->getDiaryDay()->getDiaryKeeper()->getHousehold();
             $vehicles = $vehicleRepo->createQueryBuilder('v', 'v.friendlyName')

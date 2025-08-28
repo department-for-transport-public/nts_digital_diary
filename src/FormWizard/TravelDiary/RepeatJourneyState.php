@@ -7,31 +7,27 @@ use Symfony\Component\Validator\Constraints as Assert;
 
 class RepeatJourneyState extends AbstractDuplicateJourneyState
 {
-    const STATE_FULL_INTRODUCTION = 'full-introduction';
-    const STATE_SELECT_SOURCE_DAY = 'select-source-day';
-    const STATE_SELECT_SOURCE_JOURNEY = 'select-source-journey';
-    const STATE_PURPOSE = 'purpose';
-    const STATE_ADJUST_TIMES = 'adjust-times';
-    const STATE_ADJUST_STAGE_DETAILS = 'adjust-stage-details';
-    const STATE_FINISH = 'finish';
+    public const STATE_FULL_INTRODUCTION = 'full-introduction';
+    public const STATE_SELECT_SOURCE_DAY = 'select-source-day';
+    public const STATE_SELECT_SOURCE_JOURNEY = 'select-source-journey';
+    public const STATE_PURPOSE = 'purpose';
+    public const STATE_ADJUST_TIMES = 'adjust-times';
+    public const STATE_ADJUST_STAGE_DETAILS = 'adjust-stage-details';
+    public const STATE_FINISH = 'finish';
 
-    const TRANSITION_FULL_INTRO_TO_SOURCE_DAY = 'introduction-to-source-day';
-    const TRANSITION_DAY_TO_SOURCE_JOURNEY = 'source-day-to-source-journey';
-    const TRANSITION_SOURCE_JOURNEY_TO_PURPOSE = 'source-journey-to-purpose';
-    const TRANSITION_PURPOSE_TO_TIMES = 'purpose-to-times';
-    const TRANSITION_TIMES_TO_FINISH = 'times-to-finish';
-    const TRANSITION_TIMES_TO_STAGE = 'times-to-stage';
-    const TRANSITION_STAGE_TO_NEXT_STAGE = 'stage-to-next-stage';
-    const TRANSITION_STAGE_TO_FINISH = 'stage-to-finish';
+    public const TRANSITION_FULL_INTRO_TO_SOURCE_DAY = 'introduction-to-source-day';
+    public const TRANSITION_DAY_TO_SOURCE_JOURNEY = 'source-day-to-source-journey';
+    public const TRANSITION_SOURCE_JOURNEY_TO_PURPOSE = 'source-journey-to-purpose';
+    public const TRANSITION_PURPOSE_TO_TIMES = 'purpose-to-times';
+    public const TRANSITION_TIMES_TO_FINISH = 'times-to-finish';
+    public const TRANSITION_TIMES_TO_STAGE = 'times-to-stage';
+    public const TRANSITION_STAGE_TO_NEXT_STAGE = 'stage-to-next-stage';
+    public const TRANSITION_STAGE_TO_FINISH = 'stage-to-finish';
 
-    /**
-     * @Assert\NotNull(message="wizard.repeat-journey.source-day.not-null", groups={"wizard.repeat-journey.source-day"})
-     */
+    #[Assert\NotNull(message: 'wizard.repeat-journey.source-day.not-null', groups: ['wizard.repeat-journey.source-day'])]
     public ?string $sourceDayId = null;
 
-    /**
-     * @Assert\NotNull(message="wizard.repeat-journey.source-journey.not-null", groups={"wizard.repeat-journey.source-journey"})
-     */
+    #[Assert\NotNull(message: 'wizard.repeat-journey.source-journey.not-null', groups: ['wizard.repeat-journey.source-journey'])]
     public ?string $sourceJourneyId = null;
 
     public int $targetDayNumber;

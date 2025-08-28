@@ -28,7 +28,7 @@ class PantherBugWorkaround
 
             if (
                 strtolower($element->getTagName()) !== 'input' ||
-                strtolower($element->getAttribute('type')) !== 'checkbox'
+                strtolower((string) $element->getAttribute('type')) !== 'checkbox'
             ){
                 continue;
             }

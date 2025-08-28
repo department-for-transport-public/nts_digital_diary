@@ -2,11 +2,10 @@
 
 namespace App\Security\Voter\Admin;
 
-use App\Entity\Feedback\Message;
 use App\Entity\Household;
+use Symfony\Bundle\SecurityBundle\Security;
 use Symfony\Component\Security\Core\Authentication\Token\TokenInterface;
 use Symfony\Component\Security\Core\Authorization\Voter\Voter;
-use Symfony\Component\Security\Core\Security;
 
 class HouseholdMaintenanceVoter extends Voter
 {
@@ -23,13 +22,12 @@ class HouseholdMaintenanceVoter extends Voter
     }
 
     /**
-     * @param Message $subject
+     * @param Household $subject
      */
     protected function voteOnAttribute(string $attribute, $subject, TokenInterface $token): bool
     {
         return
-            $this->security->isGranted('ROLE_MAINTENANCE') &&
-            $subject instanceof Household &&
-            !$subject->getIsSubmitted();
+            $this->security->isGranted('ROLE_MAINTENANCE')
+            && in_array($subject->getState(), [Household::STATE_NEW, Household::STATE_IN_PROGRESS]);
     }
 }

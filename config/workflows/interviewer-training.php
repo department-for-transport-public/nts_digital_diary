@@ -4,7 +4,7 @@ namespace Symfony\Component\DependencyInjection\Loader\Configurator;
 
 use App\Entity\InterviewerTrainingRecord as State;
 
-return static function (ContainerConfigurator $container) {
+return static function (ContainerConfigurator $container): void {
     $container->extension('framework', [
         'workflows' => [
             'interviewer_training_state' => [

@@ -7,7 +7,7 @@
     {% from 'on_boarding/macros.html.twig' import showHouseholdDetails, showHouseholdVehicles %}
     {{ showHouseholdDetails() }}
 
-    {%- from '@GhostGovUkFrontend/components/macros.html.twig' import actionlessSummaryListRow, summaryListRow, tabsHead -%}
+    {%- from '@GhostGovUkFrontend/components/macros.html.twig' import summaryListRow, summaryListRow, tabsHead -%}
     <h2 class="govuk-heading-m govuk-!-margin-top-6">{{ "dashboard.diary-keepers" | trans }}</h2>
 
     {%- set thereAreDiaryKeepers = app.user.household.diaryKeepers | length > 0 -%}
@@ -31,7 +31,10 @@
         </div>
     {%- else -%}
         <div class="govuk-summary-list">
-            {{- actionlessSummaryListRow("dashboard.no-diary-keepers" | trans) -}}
+            {{- summaryListRow({
+                key: "dashboard.no-diary-keepers" | trans,
+                value: '',
+            }, false) -}}
         </div>
     {%- endif -%}
     <a class="govuk-button govuk-button--secondary" href="{{ path('onboarding_diarykeeper_add') }}">{{ 'dashboard.add-diary-keeper' | trans }}</a>

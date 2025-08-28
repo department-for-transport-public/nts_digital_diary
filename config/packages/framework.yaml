@@ -1,11 +1,12 @@
 # see https://symfony.com/doc/current/reference/configuration/framework.html
 framework:
+    annotations:
+        enabled: false
+
     secret: '%env(APP_SECRET)%'
     csrf_protection: true
 
-    form:
-        legacy_error_messages: false
-
+    handle_all_throwables: true
     http_method_override: false
 
     # Enables session support. Note that the session will ONLY be started if you read or write from it.
@@ -21,6 +22,11 @@ framework:
         gc_maxlifetime: 3600
         gc_probability: 5
         gc_divisor: 100
+
+    uid:
+        # https://symfony.com/blog/new-in-symfony-5-3-uid-improvements#new-ways-to-generate-uids
+        default_uuid_version: 7
+        time_based_uuid_version: 7
 
     #esi: true
     #fragments: true

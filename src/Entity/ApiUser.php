@@ -6,24 +6,18 @@ use App\Repository\ApiUserRepository;
 use Doctrine\ORM\Mapping as ORM;
 use Symfony\Component\Security\Core\User\UserInterface;
 
-/**
- * @ORM\Entity(repositoryClass=ApiUserRepository::class)
- */
+#[ORM\Entity(repositoryClass: ApiUserRepository::class)]
 class ApiUser implements UserInterface
 {
-    const ROLE_API_USER = 'ROLE_API_USER';
+    public const ROLE_API_USER = 'ROLE_API_USER';
 
     use IdTrait;
 
-    /**
-     * @ORM\Column(type="string", length=255, name="key_")
-     */
-    private ?string $key;
+    #[ORM\Column(name: 'key_', type: 'string', length: 255)]
+    private ?string $key = null;
 
-    /**
-     * @ORM\Column(type="integer")
-     */
-    private ?int $nonce;
+    #[ORM\Column(type: 'integer')]
+    private ?int $nonce = null;
 
     public function getKey(): ?string
     {
@@ -33,7 +27,6 @@ class ApiUser implements UserInterface
     public function setKey(string $key): self
     {
         $this->key = $key;
-
         return $this;
     }
 
@@ -45,7 +38,6 @@ class ApiUser implements UserInterface
     public function setNonce(int $nonce): self
     {
         $this->nonce = $nonce;
-
         return $this;
     }
 
@@ -66,7 +58,7 @@ class ApiUser implements UserInterface
         return null;
     }
 
-    public function eraseCredentials()
+    public function eraseCredentials(): void
     {
     }
 
@@ -75,8 +67,14 @@ class ApiUser implements UserInterface
         return $this->getKey();
     }
 
-    public function getUserIdentifier(): ?string
+    public function getUserIdentifier(): string
     {
-        return $this->getKey();
+        $key = $this->getKey();
+
+        if (is_null($key)) {
+            throw new \RuntimeException('Cannot get userIdentifier before it has been set');
+        }
+
+        return $key;
     }
 }

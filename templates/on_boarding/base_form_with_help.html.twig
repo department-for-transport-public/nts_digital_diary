@@ -2,6 +2,11 @@
 {% trans_default_domain 'on-boarding' %}
 
 {% block content %}
-    <p class="govuk-body">{{ "#{translation_prefix}.help" | trans | nl2br }}</p>
+    {% if help_as_markdown ?? false %}
+        <div class="prose-scope">{{ "#{translation_prefix}.help" | trans | markdown_to_html }}</div>
+    {% else %}
+        <p class="govuk-body">{{ "#{translation_prefix}.help" | trans | nl2br }}</p>
+    {% endif %}
+
     {{ form(form) }}
 {% endblock %}

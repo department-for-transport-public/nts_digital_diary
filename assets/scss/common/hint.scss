@@ -1,0 +1,15 @@
+@import "govuk-frontend/dist/govuk/helpers/colour";
+
+.govuk-hint {
+  :first-child {
+    margin-top: 0;
+  }
+
+  :last-child {
+    margin-bottom: 0;
+  }
+}
+
+.govuk-label.govuk-hint {
+  color: govuk-colour('dark-grey');
+}

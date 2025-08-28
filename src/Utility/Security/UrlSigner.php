@@ -2,20 +2,18 @@
 
 namespace App\Utility\Security;
 
-use App\Utility\Security\Url;
-
 class UrlSigner
 {
-    protected string $secret;
-    protected string $algorithm;
+    public const REASON_HASH_INVALID = 'hash-invalid';
+    public const REASON_EXPIRED = 'expired';
 
-    public function __construct(string $secret, string $algorithm = 'ripemd128')
+    protected ?string $lastInvalidReason = null;
+
+    public function __construct(protected string $secret, protected string $algorithm = 'ripemd128')
     {
-        $this->secret = $secret;
-        $this->algorithm = $algorithm;
     }
 
-    public function sign(string $url, int $validFor = 0, int $currentTime=null): string {
+    public function sign(string $url, int $validFor = 0, ?int $currentTime=null): string {
         $currentTime ??= time();
         $encodedUrl = new Url($url);
         $until = $validFor ? ($currentTime + $validFor) : 0;
@@ -31,6 +29,7 @@ class UrlSigner
     }
 
     public function isValid(string $url, int $currentTime=null): bool {
+        unset($this->lastInvalidReason);
         $currentTime ??= time();
         $signedUrl = new Url($url);
 
@@ -40,10 +39,21 @@ class UrlSigner
         $calculatedHash = $this->calculateUrlHash($signedUrl, $until);
 
         if (!hash_equals($signature, $calculatedHash)) {
+            $this->lastInvalidReason = self::REASON_HASH_INVALID;
             return false;
         }
 
-        return ($until === 0 || $until > $currentTime);
+        if ($until !== 0 && $until <= $currentTime) {
+            $this->lastInvalidReason = self::REASON_EXPIRED;
+            return false;
+        }
+
+        return true;
+    }
+
+    public function getLastInvalidReason(): ?string
+    {
+        return $this->lastInvalidReason ?? null;
     }
 
     protected function calculateUrlHash(Url $url, int $until): string

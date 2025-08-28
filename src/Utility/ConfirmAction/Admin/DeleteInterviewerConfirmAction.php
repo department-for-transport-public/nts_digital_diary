@@ -12,12 +12,10 @@ class DeleteInterviewerConfirmAction extends AbstractConfirmAction
 {
     /** @var Interviewer */
     protected $subject;
-    protected EntityManagerInterface $entityManager;
 
-    public function __construct(FormFactoryInterface $formFactory, RequestStack $requestStack, EntityManagerInterface $entityManager)
+    public function __construct(FormFactoryInterface $formFactory, RequestStack $requestStack, protected EntityManagerInterface $entityManager)
     {
         parent::__construct($formFactory, $requestStack);
-        $this->entityManager = $entityManager;
     }
 
     public function getFormOptions(): array
@@ -47,7 +45,7 @@ class DeleteInterviewerConfirmAction extends AbstractConfirmAction
         return 'interviewer.delete';
     }
 
-    public function doConfirmedAction($formData)
+    public function doConfirmedAction($formData): void
     {
         foreach ($this->subject->getAreaPeriods() as $areaPeriod) {
             $this->subject->removeAreaPeriod($areaPeriod);

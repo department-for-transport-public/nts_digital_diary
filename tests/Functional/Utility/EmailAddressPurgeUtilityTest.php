@@ -39,8 +39,7 @@ class EmailAddressPurgeUtilityTest extends AbstractPurgeTest
 
     protected function assertUserEmailWipeStatus(string $dateString, bool $expectedToBeWiped): void
     {
-        /** @var User $user */
-        $user = $this->getFixtureByReference("surveys:{$dateString}:user");
+        $user = $this->fixtureReferenceRepository->getReference("surveys:{$dateString}:user", User::class);
 
         if ($expectedToBeWiped) {
             $this->assertStringStartsWith(User::NO_LOGIN_PLACEHOLDER . ':', $user->getUserIdentifier());

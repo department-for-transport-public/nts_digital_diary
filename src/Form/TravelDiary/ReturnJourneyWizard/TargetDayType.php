@@ -17,28 +17,26 @@ use Symfony\Component\Translation\TranslatableMessage;
 
 class TargetDayType extends AbstractType
 {
-    private RequestStack $requestStack;
+    public function __construct(
+        protected RequestStack $requestStack,
+        protected DateTimeFormats $dateTimeFormats,
+    ) {}
 
-    public function __construct(RequestStack $requestStack)
-    {
-        $this->requestStack = $requestStack;
-    }
-
-    public function buildForm(FormBuilderInterface $builder, array $options)
+    public function buildForm(FormBuilderInterface $builder, array $options): void
     {
         $sourceJourneyId = $this->requestStack->getCurrentRequest()->get('_route_params')['journeyId'];
 
         $builder
             ->add('diaryDay', EntityType::class, [
                 'class' => DiaryDay::class,
-                'query_builder' => fn(DiaryDayRepository $r) => $r->getQueryBuilderForReturnJourneyTargetDay($sourceJourneyId),
+                'query_builder' => fn(DiaryDayRepository $r): \Doctrine\ORM\QueryBuilder => $r->getQueryBuilderForReturnJourneyTargetDay($sourceJourneyId),
 
-                'choice_label' => fn(DiaryDay $d, $index) => new TranslatableMessage('return-journey.select-day.choice-label', [
+                'choice_label' => fn(DiaryDay $d, $index): \Symfony\Component\Translation\TranslatableMessage => new TranslatableMessage('return-journey.select-day.choice-label', [
                     'index' => $index,
-                    'date' => $d->getDate()->format(DateTimeFormats::DATE_WITH_DOW),
+                    'date' => $d->getDate()->format($this->dateTimeFormats->getDate('with-dow')),
                     'dayNumber' => $d->getNumber(),
                 ], 'travel-diary'),
-                'choice_value' => fn(?DiaryDay $d) => $d ? 'day-'.$d->getNumber() : '',
+                'choice_value' => fn(?DiaryDay $d): string => $d ? 'day-'.$d->getNumber() : '',
                 'label_is_page_heading' => true,
                 'label' => 'return-journey.select-day.label',
                 'label_attr' => ['class' => 'govuk-label--l'],
@@ -46,7 +44,7 @@ class TargetDayType extends AbstractType
             ]);
     }
 
-    public function configureOptions(OptionsResolver $resolver)
+    public function configureOptions(OptionsResolver $resolver): void
     {
         $resolver->setDefaults([
             'data_class' => Journey::class,

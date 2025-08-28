@@ -8,7 +8,7 @@
 
 {% block formContext %}
     <h2 class="govuk-heading-s">{{ 'vehicle.odometer-readings.week-start' | trans() }}</h2>
-    <p class="govuk-body">{{ vehicle.household.diaryWeekStartDate | date(format_date_with_dow) }}</p>
+    <p class="govuk-body">{{ vehicle.household.diaryWeekStartDate | date(date_time_format.date('with-dow')) }}</p>
     <h2 class="govuk-heading-s">{{ 'vehicle.odometer-readings.week-end' | trans() }}</h2>
-    <p class="govuk-body">{{ vehicle.primaryDriver.diaryDays.last.date | date(format_date_with_dow) }}</p>
+    <p class="govuk-body">{{ vehicle.primaryDriver.diaryDays.last.date | date(date_time_format.date('with-dow')) }}</p>
 {% endblock %}

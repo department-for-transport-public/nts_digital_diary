@@ -40,7 +40,7 @@ class DiaryKeeperImpersonationVoter extends Voter
         if ($user->hasRole('ROLE_INTERVIEWER')) {
             $household = $subject->getDiaryKeeper()->getHousehold();
             $interviewers = $household->getAreaPeriod()->getInterviewers();
-            $interviewerUserIds = array_map(fn(Interviewer $i) => $i->getUser()->getId(), $interviewers->toArray());
+            $interviewerUserIds = array_map(fn(Interviewer $i): ?string => $i->getUser()->getId(), $interviewers->toArray());
             return $household->getIsOnboardingComplete() && in_array($user->getId(), $interviewerUserIds);
         }
 

@@ -3,7 +3,6 @@ parameters:
     regex.admin_host: ^admin(\.|-dot-)
 
 security:
-    enable_authenticator_manager: true
     # https://symfony.com/doc/current/security.html#registering-the-user-hashing-passwords
     password_hashers:
         Symfony\Component\Security\Core\User\PasswordAuthenticatedUserInterface: 'auto'
@@ -17,11 +16,13 @@ security:
         otp_entity:
             entity:
                 class: App\Entity\OtpUser
-        otp_training:
-            id: App\Security\OneTimePassword\TrainingUserProvider
+        otp_interviewer_linked_training:
+            id: App\Security\OneTimePassword\InterviewerLinkedTrainingUserProvider
+        otp_direct_onboarding_training:
+            id: App\Security\OneTimePassword\DirectOnboardingTrainingUserProvider
         otp:
             chain:
-                providers: ['otp_training', 'otp_entity']
+                providers: ['otp_interviewer_linked_training', 'otp_direct_onboarding_training', 'otp_entity']
 
         hmac:
             entity:
@@ -39,6 +40,7 @@ security:
             entry_point: App\Security\OneTimePassword\FormAuthenticator
             custom_authenticators:
                 - App\Security\OneTimePassword\FormAuthenticator
+                - App\Security\OneTimePassword\DirectOnboardingAuthenticator
             logout:
                 path: onboarding_logout
                 target: onboarding_login
@@ -95,7 +97,7 @@ security:
 
         ROLE_FEEDBACK: ROLE_ADMIN
         ROLE_FEEDBACK_ASSIGNER: ROLE_FEEDBACK
-        ROLE_FEEDBACK_VIEWER: ROLE_FEEDBACK
+        ROLE_FEEDBACK_ASSIGNEE: ROLE_FEEDBACK
         ROLE_INTERVIEWER_ADMIN: ROLE_ADMIN
         ROLE_SAMPLE_IMPORTER: ROLE_ADMIN
 
@@ -106,7 +108,8 @@ security:
     access_control:
 
         ## Frontend / un-secured
-        - { path: ^/onboarding/login, host: '%regex.frontend_host%', requires_channel: '%env(SECURE_SCHEME)%' }
+        - { path: ^/onboarding/login$, host: '%regex.frontend_host%', requires_channel: '%env(SECURE_SCHEME)%' }
+        - { path: ^/onboarding/direct$, host: '%regex.frontend_host%', requires_channel: '%env(SECURE_SCHEME)%' }
         - { path: ^/feedback, host: '%regex.frontend_host%', requires_channel: '%env(SECURE_SCHEME)%' }
         ## Frontend / secured
         - { path: ^/interviewer, host: '%regex.frontend_host%', roles: ROLE_INTERVIEWER, requires_channel: '%env(SECURE_SCHEME)%' }

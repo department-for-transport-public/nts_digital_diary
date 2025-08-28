@@ -1,5 +1,4 @@
 api_platform:
-    metadata_backward_compatibility_layer: false
     mapping:
         paths: ['%kernel.project_dir%/src/Entity']
     patch_formats:
@@ -14,9 +13,12 @@ api_platform:
             mime_types: ['text/html']
 #        jsonld:
 #            mime_types: ['application/ld+json']
-
+    error_formats:
+        json:
+            mime_types: ['application/json']
     defaults:
         pagination_enabled: false
+    use_symfony_listeners: true
 
 services:
     ## filters

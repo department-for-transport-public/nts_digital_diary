@@ -25,8 +25,8 @@ abstract class AbstractGcpDatabaseCommand extends Command
     protected SymfonyStyle $io;
     protected InputInterface $input;
     protected Process $proxy;
-    const COMMAND_NAME_PREFIX = 'nts:gcp-database';
-    const COMMAND_DESCRIPTION_PREFIX = 'GCP database tools';
+    public const COMMAND_NAME_PREFIX = 'nts:gcp-database';
+    public const COMMAND_DESCRIPTION_PREFIX = 'GCP database tools';
 
     public function __construct(protected readonly array $config)
     {
@@ -133,7 +133,7 @@ abstract class AbstractGcpDatabaseCommand extends Command
 
     protected function getDbInstanceId(): string
     {
-        $parts = explode('/', $this->getDbParams()['unix_socket']);
+        $parts = explode('/', (string) $this->getDbParams()['unix_socket']);
         return array_pop($parts);
     }
 
@@ -146,7 +146,7 @@ abstract class AbstractGcpDatabaseCommand extends Command
 
     protected function getDbSocketDir(): string
     {
-        $parts = explode('/', $this->getDbParams()['unix_socket']);
+        $parts = explode('/', (string) $this->getDbParams()['unix_socket']);
         array_pop($parts);
         return implode('/', $parts);
     }

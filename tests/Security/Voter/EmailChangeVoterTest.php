@@ -13,7 +13,7 @@ class EmailChangeVoterTest extends WebTestCase
 {
     public function generateData(bool $withIdentifierForLogin): array
     {
-        $userName = fn(string $email) => $withIdentifierForLogin ? $email : ('no-login:'.md5($email));
+        $userName = fn(string $email): string => $withIdentifierForLogin ? $email : ('no-login:'.md5($email));
 
         $household = (new Household())
             ->setIsOnboardingComplete(true);

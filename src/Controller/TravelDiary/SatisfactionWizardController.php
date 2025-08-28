@@ -2,26 +2,25 @@
 
 namespace App\Controller\TravelDiary;
 
-use App\Controller\FormWizard\AbstractSessionStateFormWizardController;
 use App\Entity\DiaryKeeper;
 use App\Entity\SatisfactionSurvey;
-use App\FormWizard\FormWizardManager;
-use App\FormWizard\FormWizardStateInterface;
-use App\FormWizard\Place;
-use App\FormWizard\PropertyMerger;
 use App\FormWizard\SatisfactionSurvey\SatisfactionSurveyState;
-use Sensio\Bundle\FrameworkExtraBundle\Configuration\Entity;
-use Sensio\Bundle\FrameworkExtraBundle\Configuration\Security;
+use Ghost\GovUkCoreBundle\Controller\FormWizard\AbstractSessionStateFormWizardController;
+use Ghost\GovUkCoreBundle\FormWizard\FormWizardManager;
+use Ghost\GovUkCoreBundle\FormWizard\FormWizardStateInterface;
+use Ghost\GovUkCoreBundle\FormWizard\Place;
+use Ghost\GovUkCoreBundle\FormWizard\PropertyMerger;
+use Symfony\Bridge\Doctrine\Attribute\MapEntity;
 use Symfony\Component\HttpFoundation\RedirectResponse;
 use Symfony\Component\HttpFoundation\Request;
 use Symfony\Component\HttpFoundation\RequestStack;
 use Symfony\Component\HttpFoundation\Response;
-use Symfony\Component\Routing\Annotation\Route;
+use Symfony\Component\Routing\Attribute\Route;
+use Symfony\Component\Security\Http\Attribute\IsGranted;
 use Symfony\Component\Serializer\Exception\ExceptionInterface;
 
 #[Route("/satisfaction-survey/{diaryKeeperId}", name: "satisfaction_survey_")]
-#[Entity("diaryKeeper", "repository.find(diaryKeeperId)")]
-#[Security("is_granted('ELIGIBLE_FOR_SATISFACTION_SURVEY')")]
+#[IsGranted(attribute: 'ELIGIBLE_FOR_SATISFACTION_SURVEY')]
 class SatisfactionWizardController extends AbstractSessionStateFormWizardController
 {
     protected DiaryKeeper $diaryKeeper;
@@ -40,6 +39,7 @@ class SatisfactionWizardController extends AbstractSessionStateFormWizardControl
     #[Route("", name: "start")]
     #[Route("/{place}", name: "place")]
     public function index(
+        #[MapEntity(expr: "repository.find(diaryKeeperId)")]
         DiaryKeeper $diaryKeeper,
         Request $request,
         ?string $place = null): Response

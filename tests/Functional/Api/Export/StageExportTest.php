@@ -10,9 +10,9 @@ class StageExportTest extends AbstractApiWebTestCase
 {
     protected const ENDPOINT = '/api/v1/survey-data';
 
-    const OTHER = 'other';
-    const PRIVATE = 'private';
-    const PUBLIC = 'public';
+    public const OTHER = 'other';
+    public const PRIVATE = 'private';
+    public const PUBLIC = 'public';
 
     protected function setUp(): void
     {
@@ -20,7 +20,7 @@ class StageExportTest extends AbstractApiWebTestCase
         parent::setUp();
     }
 
-    public function testStage() {
+    public function testStage(): void {
         $household = $this->getHousehold('household:onboarded');
 
         $queryParams = ['householdSerials' => $household->getSerialNumber(null, false, false)];

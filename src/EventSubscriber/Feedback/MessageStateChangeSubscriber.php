@@ -21,7 +21,7 @@ class MessageStateChangeSubscriber implements EventSubscriberInterface
         /** @var Message $subject */
         $subject = $event->getSubject();
 
-        $noteText = $this->twigEnvironment->render('feedback/state-transition-note.txt.twig', [
+        $noteText = $this->twigEnvironment->render('travel_diary/mark_as_complete/state-transition-note.txt.twig', [
             'fromState' => $event->getTransition()->getFroms()[0],
             'toState' => $event->getTransition()->getTos()[0],
             'context' => $event->getContext(),

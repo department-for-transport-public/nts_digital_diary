@@ -11,7 +11,7 @@ class FormTestCallbackAction extends AbstractFormTestAction
     public function __construct(string $expectedPath, string $submitButtonId = null, ?callable $formTestCallback = null, array $options = [])
     {
         parent::__construct($expectedPath, $submitButtonId, $options);
-        $this->formTestCallback = $formTestCallback ?? fn(Context $c) => [];
+        $this->formTestCallback = $formTestCallback ?? fn(Context $c): array => [];
     }
 
     /**

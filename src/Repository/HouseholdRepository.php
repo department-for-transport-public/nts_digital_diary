@@ -2,11 +2,14 @@
 
 namespace App\Repository;
 
+use App\Entity\AreaPeriod;
 use App\Entity\DiaryKeeper;
 use App\Entity\Household;
+use App\Entity\Interviewer;
 use App\Entity\Journey\Method;
 use DateTime;
 use Doctrine\Bundle\DoctrineBundle\Repository\ServiceEntityRepository;
+use Doctrine\ORM\NonUniqueResultException;
 use Doctrine\ORM\QueryBuilder;
 use Doctrine\Persistence\ManagerRegistry;
 
@@ -21,6 +24,25 @@ class HouseholdRepository extends ServiceEntityRepository
     public function __construct(ManagerRegistry $registry)
     {
         parent::__construct($registry, Household::class);
+    }
+
+    /**
+     * @throws NonUniqueResultException
+     */
+    public function findWithRelations(string $id): ?Household
+    {
+        return $this->createQueryBuilder('household')
+            ->select('household, areaPeriod, vehicles, diaryKeepers, diaryDays, journeys, user')
+            ->leftJoin('household.vehicles', 'vehicles')
+            ->leftJoin('household.areaPeriod', 'areaPeriod')
+            ->leftJoin('household.diaryKeepers', 'diaryKeepers')
+            ->leftJoin('diaryKeepers.diaryDays', 'diaryDays')
+            ->leftJoin('diaryDays.journeys', 'journeys')
+            ->leftJoin('diaryKeepers.user', 'user')
+            ->where('household.id = :id')
+            ->getQuery()
+            ->setParameter('id', $id)
+            ->getOneOrNullResult();
     }
 
     public function findForExportByTimestamps(DateTime $startTime, DateTime $endTime)
@@ -47,7 +69,7 @@ class HouseholdRepository extends ServiceEntityRepository
             ->andWhere('diaryKeeper.diaryState IN (:states)')
             ->setParameter('startTime', $startTime)
             ->setParameter('endTime', $endTime)
-            ->setParameter('states', array(DiaryKeeper::STATE_APPROVED, DiaryKeeper::STATE_DISCARDED))
+            ->setParameter('states', [DiaryKeeper::STATE_APPROVED, DiaryKeeper::STATE_DISCARDED])
             ->getQuery()
             ->execute();
     }
@@ -81,10 +103,8 @@ class HouseholdRepository extends ServiceEntityRepository
             ))
             ->andWhere('diaryKeeper.diaryState IN (:states)')
             ->andWhere('household.submittedAt IS NOT NULL')
-            ->setParameters([
-                'serials' => $householdSerials,
-                'states' => array(DiaryKeeper::STATE_APPROVED, DiaryKeeper::STATE_DISCARDED),
-            ])
+            ->setParameter('serials', $householdSerials)
+            ->setParameter('states', [DiaryKeeper::STATE_APPROVED, DiaryKeeper::STATE_DISCARDED])
             ->getQuery()
             ->execute();
     }
@@ -108,19 +128,20 @@ class HouseholdRepository extends ServiceEntityRepository
     /**
      * @return array<Household>
      */
-    public function getSubmittedSurveysForPurge(\DateTime $before): array
+    public function getSurveysForPurge(\DateTime $diaryWeekEndsBefore): array
     {
         return $this->createQueryBuilder('household')
-            ->join('household.diaryKeepers', 'dk')
-            ->join('dk.user', 'user')
+            ->leftJoin('household.diaryKeepers', 'dk')
+            ->leftJoin('household.areaPeriod', 'areaPeriod')
+            ->leftJoin('dk.user', 'user')
             ->leftJoin('household.vehicles', 'vehicle')
-            ->join('dk.diaryDays', 'day')
+            ->leftJoin('dk.diaryDays', 'day')
             ->leftJoin('day.journeys', 'journey')
             ->leftJoin('journey.stages', 'stage')
-            ->where('household.submittedAt IS NOT NULL')
-            ->andWhere('household.submittedAt < :before')
+            ->andWhere('household.diaryWeekStartDate < :before')
+            ->andWhere('areaPeriod.trainingInterviewer is NULL')
             ->getQuery()
-            ->setParameter('before', $before)
+            ->setParameter('before', $diaryWeekEndsBefore->modify('-1 week'))
             ->getResult();
     }
 
@@ -140,12 +161,52 @@ class HouseholdRepository extends ServiceEntityRepository
         }
 
         return $qb
-            ->setParameters([
-                'area' => $area,
-                'address_number' => $addressNumber,
-                'household_number' => $householdNumber,
-            ])
+            ->setParameter('area', $area)
+            ->setParameter('address_number', $addressNumber)
+            ->setParameter('household_number', $householdNumber)
             ->getQuery()
             ->getOneOrNullResult();
+    }
+
+    public function findOverdueHouseholdsForInterviewer(array $areaPeriods, ?Interviewer $interviewer): array
+    {
+        return $this->queryBuilderForOverdueHousesholdsForInterviewer($areaPeriods, $interviewer)
+            ->select('household, area')
+            ->getQuery()
+            ->getResult();
+    }
+
+    public function countOverdueUnsubmittedHouseholdsForInterviewer(array $areaPeriods, ?Interviewer $interviewer): ?int
+    {
+        return $this->queryBuilderForOverdueHousesholdsForInterviewer($areaPeriods, $interviewer)
+            ->select('count(household)')
+            ->getQuery()
+            ->getSingleScalarResult();
+    }
+
+    protected function queryBuilderForOverdueHousesholdsForInterviewer(array $areaPeriods, ?Interviewer $interviewer): QueryBuilder
+    {
+        $areaPeriodIds = array_map(fn(AreaPeriod $a): ?string => $a->getId(), $areaPeriods);
+
+        $qb = $this->createQueryBuilder('household')
+            ->join('household.areaPeriod', 'area')
+            ->where('area.id IN (:areaPeriodIds)')
+            ->andWhere('household.isOnboardingComplete = 1');
+
+        if ($interviewer) {
+            $qb
+                ->join('area.interviewers', 'interviewer')
+                ->andWhere('interviewer = :interviewer')
+                ->setParameter('interviewer', $interviewer);
+        }
+
+        $overdueDate = (new \DateTime())
+            ->modify('-1 week'); // surveys last a week
+
+        return $qb
+            ->andWhere('household.submittedAt IS NULL')
+            ->andWhere('household.diaryWeekStartDate < :overdueDate')
+            ->setParameter('areaPeriodIds', $areaPeriodIds)
+            ->setParameter('overdueDate', $overdueDate);
     }
 }

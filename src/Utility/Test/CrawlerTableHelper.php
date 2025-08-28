@@ -7,17 +7,13 @@ use Symfony\Component\Panther\DomCrawler\Crawler as PantherCrawler;
 
 class CrawlerTableHelper
 {
-    protected Crawler $crawler;
     protected string $crawlerClass;
     protected array $headers;
-    protected string $tableXpath;
 
-    public function __construct(Crawler $crawler, string $tableXpath="//table[contains(concat(' ',normalize-space(@class),' '),' govuk-table ')]")
+    public function __construct(protected Crawler $crawler, protected string $tableXpath="//table[contains(concat(' ',normalize-space(@class),' '),' govuk-table ')]")
     {
-        $this->crawler = $crawler;
-        $this->crawlerClass = get_class($crawler);
-        $this->tableXpath = $tableXpath;
-        $this->headers = $crawler->filterXPath($this->tableXpath . "/thead/tr/th")->each(fn(Crawler $node, $i) => $node->text());
+        $this->crawlerClass = $this->crawler::class;
+        $this->headers = $this->crawler->filterXPath($this->tableXpath . "/thead/tr/th")->each(fn(Crawler $node, $i): string => $node->text());
     }
 
     public function getTableHtml(): string

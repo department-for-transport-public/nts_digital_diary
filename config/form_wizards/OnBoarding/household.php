@@ -4,7 +4,7 @@ namespace Symfony\Component\DependencyInjection\Loader\Configurator;
 use App\Form\OnBoarding\HouseholdWizard\HouseholdType;
 use App\FormWizard\OnBoarding\HouseholdState as State;
 
-return static function (ContainerConfigurator $container) {
+return static function (ContainerConfigurator $container): void {
     $editFinishMetadata =  [
         'persist' => true,
         'redirect_route' => 'onboarding_dashboard',

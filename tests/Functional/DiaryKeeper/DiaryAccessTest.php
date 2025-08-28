@@ -7,6 +7,7 @@ use App\Entity\Journey\Journey;
 use App\Tests\DataFixtures\StageFixtures;
 use App\Tests\DataFixtures\TestSpecific\DiaryKeeperForDiaryAccessFixtures;
 use App\Tests\Functional\AbstractFunctionalWebTestCase;
+use Symfony\Component\HttpFoundation\Request;
 use Symfony\Component\Routing\Route;
 use Symfony\Component\Routing\RouterInterface;
 use function PHPUnit\Framework\assertEquals;
@@ -27,8 +28,8 @@ class DiaryAccessTest extends AbstractFunctionalWebTestCase
     {
         $this->initialiseClientAndLoadFixtures([StageFixtures::class, DiaryKeeperForDiaryAccessFixtures::class]);
 
-        $loggedInDiaryKeeper = $this->getDiaryKeeper('diary-keeper:access');
-        $this->patsyDiaryKeeper = $this->getDiaryKeeper('diary-keeper:adult');
+        $loggedInDiaryKeeper = $this->fixtureReferenceRepository->getReference('diary-keeper:access', DiaryKeeper::class);
+        $this->patsyDiaryKeeper = $this->fixtureReferenceRepository->getReference('diary-keeper:adult', DiaryKeeper::class);
 
         $this->submitLoginForm($loggedInDiaryKeeper->getUser()->getUserIdentifier(), 'access');
     }
@@ -38,7 +39,6 @@ class DiaryAccessTest extends AbstractFunctionalWebTestCase
         return [
             'View journey' => ["/journey/{journeyId}"],
             'Delete journey' => ["/journey/{journeyId}/delete"],
-            'Complete journey' => ["/journey/{journeyId}/complete"],
             'Edit journey' => ["/journey/{journeyId}/edit"],
             'Return journey' => ["/journey/{journeyId}/return-journey/introduction"],
             'Share journey' => ["/journey/{journeyId}/share-journey/introduction"],
@@ -59,14 +59,14 @@ class DiaryAccessTest extends AbstractFunctionalWebTestCase
      * access another users data. This test is used to check whether the test data is comprehensive, and
      * covering all relevant travel diary routes.
      */
-    public function testData()
+    public function testData(): void
     {
         $data = array_map(fn($a) => $a[0], $this->dataAccess());
 
         /** @var RouterInterface $router */
         $router = $this->getContainer()->get(RouterInterface::class);
 
-        $relevantRoutes = array_filter($router->getRouteCollection()->all(), function(Route $route, string $name) {
+        $relevantRoutes = array_filter($router->getRouteCollection()->all(), function(Route $route, string $name): bool {
             if (in_array($name, self::IGNORED_ROUTES)) return false;
             if (!str_starts_with($name, "traveldiary_")) return false;
             if (!preg_match('/\{(journey(Id)?|stage(Id)?|vehicle(Id)?)}/', $route->getPath())) return false;
@@ -74,7 +74,7 @@ class DiaryAccessTest extends AbstractFunctionalWebTestCase
         }, ARRAY_FILTER_USE_BOTH);
 
         // needed to reset the router context
-        $this->client->request('GET', '/');
+        $this->client->request(Request::METHOD_GET, '/');
 
         foreach ($data as $url) {
             $route = $router->match("/travel-diary{$this->replaceUrlParts($url)}");
@@ -88,9 +88,9 @@ class DiaryAccessTest extends AbstractFunctionalWebTestCase
     /**
      * @dataProvider dataAccess
      */
-    public function testAccess($url)
+    public function testAccess(string $url): void
     {
-        $this->client->request('GET', "/travel-diary{$this->replaceUrlParts($url)}");
+        $this->client->request(Request::METHOD_GET, "/travel-diary{$this->replaceUrlParts($url)}");
         assertEquals(404, $this->client->getResponse()->getStatusCode());
     }
 
@@ -115,12 +115,5 @@ class DiaryAccessTest extends AbstractFunctionalWebTestCase
             [$patsyJourney->getId(), $patsyJourney->getStages()->first()->getId(), $this->patsyDiaryKeeper->getPrimaryDriverVehicles()->first()->getId()],
             $url
         );
-    }
-
-    protected function getDiaryKeeper($ref): DiaryKeeper
-    {
-        /** @var DiaryKeeper $dk */
-        $dk = $this->getFixtureByReference($ref);
-        return $dk;
     }
 }

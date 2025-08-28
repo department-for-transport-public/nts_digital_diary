@@ -21,9 +21,9 @@ class ChangeProxiesType extends AbstractType
         private readonly DiaryKeeperRepository $diaryKeeperRepository,
     ) {}
 
-    public function buildForm(FormBuilderInterface $builder, array $options)
+    public function buildForm(FormBuilderInterface $builder, array $options): void
     {
-        $builder->addEventListener(FormEvents::PRE_SET_DATA, function(FormEvent $event) use ($options) {
+        $builder->addEventListener(FormEvents::PRE_SET_DATA, function(FormEvent $event) use ($options): void {
             /** @var DiaryKeeper $data */
             $data = $event->getData();
             $form = $event->getForm();
@@ -42,15 +42,11 @@ class ChangeProxiesType extends AbstractType
                     'class' => DiaryKeeper::class,
                     'multiple' => true,
                     'expanded' => true,
-                    'choice_label' => function () {
-                        return "diary-keeper.change-proxies.proxies.choice.label";
-                    },
-                    'choice_translation_parameters' => function (DiaryKeeper $choice) {
-                        return [
-                            'name' => $choice->getName(),
-                            'hasEmail' => $choice->hasIdentifierForLogin() ? 1 : 0,
-                        ];
-                    },
+                    'choice_label' => fn(): string => "diary-keeper.change-proxies.proxies.choice.label",
+                    'choice_translation_parameters' => fn(DiaryKeeper $choice): array => [
+                        'name' => $choice->getName(),
+                        'hasEmail' => $choice->hasIdentifierForLogin() ? 1 : 0,
+                    ],
                     'choices' => $choices,
                     'choice_options' => $choiceOpts,
                 ])
@@ -74,16 +70,14 @@ class ChangeProxiesType extends AbstractType
         });
     }
 
-    public function configureOptions(OptionsResolver $resolver)
+    public function configureOptions(OptionsResolver $resolver): void
     {
         $resolver->setDefaults([
             'translation_domain' => 'interviewer',
             'data_class' => DiaryKeeper::class,
-            'validation_groups' => function(FormInterface $form) {
-                return $form->getData()->getMediaType() === DiaryKeeper::MEDIA_TYPE_DIGITAL
-                    ? ['interviewer.diary-keeper.change-proxies']
-                    : [];
-            },
+            'validation_groups' => fn(FormInterface $form): array => $form->getData()->getMediaType() === DiaryKeeper::MEDIA_TYPE_DIGITAL
+                ? ['interviewer.diary-keeper.change-proxies']
+                : [],
         ]);
         $resolver->setRequired(['cancel_link_href']);
     }

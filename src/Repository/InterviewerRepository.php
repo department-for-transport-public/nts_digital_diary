@@ -36,12 +36,10 @@ class InterviewerRepository extends ServiceEntityRepository
                 ->addOrderBy('hh.householdNumber', 'ASC');
 
             return $qb
-                ->setParameters([
-                    'id' => $user->getInterviewer()->getId(),
-                ])
+                ->setParameter('id', $user->getInterviewer()->getId())
                 ->getQuery()
                 ->getOneOrNullResult();
-        } catch (NonUniqueResultException $e) {
+        } catch (NonUniqueResultException) {
             return null;
         }
     }

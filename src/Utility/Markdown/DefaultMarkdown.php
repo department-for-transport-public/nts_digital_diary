@@ -11,7 +11,7 @@ use Twig\Extra\Markdown\MarkdownInterface;
 class DefaultMarkdown
 {
     protected MarkdownInterface $converter;
-    const FORM_CONFIG = [
+    public const FORM_CONFIG = [
 
     ];
 

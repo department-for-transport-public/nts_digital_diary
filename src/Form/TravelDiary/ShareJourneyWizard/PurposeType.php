@@ -13,10 +13,10 @@ use Symfony\Component\OptionsResolver\OptionsResolver;
 class PurposeType extends AbstractType
 {
 
-    public function buildForm(FormBuilderInterface $builder, array $options)
+    public function buildForm(FormBuilderInterface $builder, array $options): void
     {
         $builder
-            ->addEventListener(FormEvents::PRE_SET_DATA, function(PreSetDataEvent $event) {
+            ->addEventListener(FormEvents::PRE_SET_DATA, function(PreSetDataEvent $event): void {
                 /** @var Journey $journey */
                 $journey = $event->getData();
                 $diaryKeeper = $journey->getDiaryDay()->getDiaryKeeper();
@@ -31,7 +31,7 @@ class PurposeType extends AbstractType
             ;
     }
 
-    public function configureOptions(OptionsResolver $resolver)
+    public function configureOptions(OptionsResolver $resolver): void
     {
         $resolver->setDefaults([
             'data_class' => Journey::class,

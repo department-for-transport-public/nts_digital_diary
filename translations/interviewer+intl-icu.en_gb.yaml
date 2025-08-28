@@ -1,18 +1,57 @@
 breadcrumbs:
   dashboard: Dashboard
-  training: Training dashboard
+  training: Training
 
-diary-keeper.states:
-  new: New
-  in-progress: In progress
-  completed: Completed
-  approved: Approved
-  submitted: Submitted
-  discarded: Discarded
+diary-keeper.state:
+    label: >-
+      {state, select,
+        new          {New}
+        in_progress  {In progress}
+        completed    {Completed}
+        approved     {Approved}
+        discarded    {Discarded}
+        other        {}
+      }
+    color: >-
+      {state, select,
+        new         {grey}
+        in_progress {blue}
+        completed   {yellow}
+        discarded   {purple}
+        approved    {green}
+        other       {}
+      }
 
+household.state:
+  label: >-
+    {state, select,
+      new          {New}
+      in_progress  {In progress}
+      completed    {Completed}
+      approved     {Approved}
+      overdue      {Overdue}
+      submitted    {Submitted}
+      other        {}
+    }
+  color: >-
+    {state, select,
+      new         {grey}
+      in_progress {blue}
+      completed   {orange}
+      approved    {yellow}
+      overdue     {orange}
+      submitted   {green}
+      other       {}
+    }
 
 diary-keeper:
   page-title: Details for {name}
+
+  media-type:
+    label: Diary mode
+    digital: Digital diary
+    transcribe: Interviewer transcribed
+    paper: Paper
 
   back: Back to household
   mark-as-in-progress: Mark diary as in progress (re-open)
@@ -90,11 +129,20 @@ household:
   impersonate: Impersonate
   impersonate-sr-hidden-suffix: "{name}"
   no-diary-keepers: No diary keepers
-  proxied-by: Proxied by {proxyNames}
 
+  overdue:
+    title: Overdue household
+    content: >-
+      This household is overdue for submission.
+
+      Each diary must be approved or rejected before the household can be submitted.
+
+  proxied-by: Proxied by {proxyNames}
   submitted-for-processing: Submitted for processing
 
   table:
+    has-journeys: Journeys?
+    media-type: Diary mode
     has-login: Login?
     number: '#'
     name: Name
@@ -125,14 +173,12 @@ diary-state:
     confirm: Mark diary as approved
     empty-journeys-copy: The following days have no journeys
     confirm-empty-journeys: I have verified with the diary keeper ({name}) that there were no qualifying journeys on these days
-    also-verify.label: I confirm that I have also
-    confirm-return-journeys: Checked that every outgoing trip has a return journey
-    split-round-trips: Split any round trip journeys (e.g. home-to-home) into two separate journeys
-    corrected-no-stages: Corrected or deleted any journeys with no stages
-    checked-vehicles: Checked that milometer readings have been entered for all household vehicles
     confirmed-notification:
       heading: Diary approved for {name}
       content: The diary for {name} has been marked as approved
+    failed-notification:
+      heading: There was a problem approving the diary for {name}
+      content: The diary could not be approved. Review the diary status before trying again.
   un-approve:
     page-title: Un-approve diary?
     breadcrumb: Un-approve diary
@@ -141,6 +187,9 @@ diary-state:
     confirmed-notification:
       heading: Diary un-approved for {name}
       content: The diary for {name} has been un-approved
+    failed-notification:
+      heading: There was a problem un-approving the diary for {name}
+      content: The diary could not be un-approved. Review the diary status before trying again.
   re-open:
     page-title: Mark diary and in progress (re-open)?
     breadcrumb: Re-open diary
@@ -149,6 +198,9 @@ diary-state:
     confirmed-notification:
       heading: Diary re-opened for {name}
       content: The diary for {name} has been re-opened
+    failed-notification:
+      heading: There was a problem re-opening the diary for {name}
+      content: The diary was could not be re-opened. Review the diary status before trying again.
   discard:
     page-title: Discard diary?
     breadcrumb: Discard diary
@@ -157,6 +209,9 @@ diary-state:
     confirmed-notification:
       heading: Diary discarded for {name}
       content: The diary for {name} has been marked for discard
+    failed-notification:
+      heading: There was a problem discarding the diary for {name}
+      content: The diary could not be discarded. Review the diary status before trying again.
   un-discard:
     page-title: Un-discard diary?
     breadcrumb: Un-discard diary
@@ -165,9 +220,12 @@ diary-state:
     confirmed-notification:
       heading: Diary un-discarded for {name}
       content: The diary for {name} has been un-discarded
+    failed-notification:
+      heading: There was a problem un-discarding the diary for {name}
+      content: The diary could not be un-discarded. Review the diary status before trying again.
 
 onboarding-codes:
-  page-title: Onboarding codes for {serial}
+  page-title: Set-up codes for {serial}
 
   back: Back to survey area
   codes: Codes
@@ -177,18 +235,37 @@ onboarding-codes:
   household: Used by incomplete household
   passcode-1: Passcode 1
   passcode-2: Passcode 2
-  title: NTS Onboarding code — Area {area}
+  title: NTS set-up code — Area {area}
 
 survey-area:
   page-title: "Area: {area}"
 
   back: Back to dashboard
   diary-keepers: Diary keepers
-  households: Households
-  no-households: No households in this area
-  onboarding-codes: View Onboarding Codes
+  households: Households (set-up complete)
+  diary-keeper-state-tag:
+    new: grey
+    in-progress: blue
+    completed: purple
+    discarded: yellow
+    approved: green
+  no-households: No households have been onboarded in this area
+  onboarding-codes: View Set-up Codes
   view: View
   view-sr-hidden-suffix: Address number {address}, household {household}
+
+  overdue-households:
+    title: Overdue households
+    content: >-
+      There {number, plural,
+        =1    {is 1 household}
+        other {are # households}
+      } in this area that {number, plural,
+        =1    {is}
+        other {are}
+      } overdue for submission.
+
+      Each household diary must be approved or rejected before a household can be submitted.
 
   table:
     diary-keepers: Diary keepers
@@ -199,14 +276,24 @@ survey-area:
 survey-areas:
   page-title: Interviewer dashboard ({name})
 
-  current:
-    title: Currently active areas
-    no-areas: No currently active areas
-
   archived:
     breadcrumb: Archived areas
     page-title: Archived areas
     no-areas: No archived areas
+
+  current:
+    title: Currently active areas
+    no-areas: No currently active areas
+
+  overdue-households:
+    title: Overdue households
+    content: >-
+      There {numberOfAreas, plural,
+        =1    {is 1 area}
+        other {are # areas}
+      } with households that are overdue for submission.
+
+      Each household diary must be approved or rejected before a household can be submitted.
 
   view: View
   view-archived: View archived areas
@@ -224,20 +311,22 @@ training:
   module:
     number: module {number}
     title:
-      introduction: introduction
-      personal-diary: personal travel diary
-      interviewer-dashboard: the interviewer dashboard
-      onboarding-introduction: introduction to onboarding
-      onboarding-practice: onboarding practice
-      editing-diaries: editing diaries
-      diary-correction: correcting a travel diary
-      diary-correction-answers: diary correction answers
+      introduction: Introduction
+      personal-diary: Personal travel diary
+      manual-onboarding-practice: Manual diary set-up (exercise)
+      diary-correction: Correcting, approving and submitting a travel diary
+      interviewer-dashboard: The interviewer dashboard
+      direct-onboarding-introduction: QR code diary set-up
+      manual-onboarding-introduction: Manual diary set-up (video)
+      editing-diaries: Editing diaries
+      diary-correction-answers: Diary correction answers
+      approve-and-submit: Approving and submitting diaries
     completed: Completed
     created: Created
-    history:
-      caption: Training history
     started: Started
     status: Status
+    back: Back to training dashboard
+    next: "Next training module:"
   state:
     label: >-
       {state, select,
@@ -258,7 +347,7 @@ training:
     page-title: Interviewer Training Dashboard for {name}
     introduction: "Welcome to the National Travel Survey Project.\n 
       \n
-      Your NatCen manager will have provided training materials for you to review ahead of starting your digital training. As you work through the modules, you will be required to:\n
+      You will be provided with training materials to review as you work through the digital training. You are required to:\n
       \n
       - Read the instructions on each module carefully\n
       - Watch the videos all the way through\n
@@ -271,11 +360,12 @@ training:
       section:
         pre-briefing: Pre-briefing
         in-briefing: In-briefing
+        post-briefing: Post-briefing
       introduction: 'interviewer'
   retake:
     page-title: "Retake {moduleNumber}: {moduleName}"
     copy: 'Do you wish to retake the {moduleName} training module?'
-    warning: This will prevent you from working on previous instances of this module
+    warning: This will reset the data for this module. Any progress you have made so far will be lost.
     confirm-label: Retake {moduleName}
     confirmed-notification:
       heading: Retaking {moduleName}
@@ -283,6 +373,12 @@ training:
 
 compare-household:
   breadcrumb: 'Compare household'
+  tab-heading: >-
+    {name}{mediaType, select,
+      transcribe    { (Interviewer transcribed)}
+      paper         { (Paper)}
+      other         {}
+    }
   method-descriptions:
     walk: Walk
     bicycle: Bicycle

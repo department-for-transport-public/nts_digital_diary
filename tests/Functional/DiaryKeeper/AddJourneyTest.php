@@ -12,8 +12,8 @@ use App\Tests\Functional\Wizard\Action\FormTestAction;
 
 class AddJourneyTest extends AbstractJourneyTest
 {
-    const TEST_DAY = 2;
-    const TEST_USERNAME = 'diary-keeper-adult@example.com';
+    public const TEST_DAY = 2;
+    public const TEST_USERNAME = 'diary-keeper-adult@example.com';
 
     public function wizardData(): array
     {
@@ -75,7 +75,7 @@ class AddJourneyTest extends AbstractJourneyTest
                 new PathTestAction("#/travel-diary/journey/[0-9A-Z]+/add-stage/intermediary#", [
                     PathTestAction::OPTION_EXPECTED_PATH_REGEX => true,
                 ]),
-                new CallbackAction(function (Context $context) use ($isDestinationHome) {
+                new CallbackAction(function (Context $context) use ($isDestinationHome): void {
                     $dk = $context->getEntityManager()->getRepository(User::class)->getDiaryKeeperJourneysAndStagesForTests(self::TEST_USERNAME);
                     $journeys = $dk->getDiaryDayByNumber(self::TEST_DAY)->getJourneys();
 
@@ -110,7 +110,7 @@ class AddJourneyTest extends AbstractJourneyTest
     /**
      * @dataProvider wizardData
      */
-    public function testAddJourneyWizard($wizardData)
+    public function testAddJourneyWizard(array $wizardData): void
     {
         $this->initialiseClientAndLoadFixtures([StageFixtures::class]);
         $this->loginUser(self::TEST_USERNAME);

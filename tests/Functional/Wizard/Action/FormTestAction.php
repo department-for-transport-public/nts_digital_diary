@@ -6,15 +6,12 @@ use App\Tests\Functional\Wizard\Form\AbstractFormTestCase;
 
 class FormTestAction extends AbstractFormTestAction
 {
-    protected ?string $submitButtonId;
+    protected ?string $submitButtonId = null;
 
-    /** @var AbstractFormTestCase[]|array */
-    protected array $formTestCases;
-
-    public function __construct(string $expectedPath, string $submitButtonId = null, array $formTestCases = [], array $options = [])
+    public function __construct(string $expectedPath, string $submitButtonId = null, /** @var AbstractFormTestCase[]|array */
+    protected array $formTestCases = [], array $options = [])
     {
         parent::__construct($expectedPath, $submitButtonId, $options);
-        $this->formTestCases = $formTestCases;
     }
 
     public function getSubmitButtonId(): ?string

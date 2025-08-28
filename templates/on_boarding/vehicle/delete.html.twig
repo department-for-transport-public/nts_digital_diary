@@ -4,8 +4,10 @@
 
 {% block content %}
     {%- import "@GhostGovUkFrontend/components/macros.html.twig" as m -%}
-    {{ m.warningText("vehicle.delete.warning" | trans({
-        name: subject.friendlyName,
-    })) }}
+    {{ m.warningText({
+        text: "vehicle.delete.warning" | trans({
+            name: subject.friendlyName,
+        })
+    }) }}
     {{ form(form) }}
 {% endblock %}

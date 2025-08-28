@@ -4,9 +4,9 @@ namespace App\Form\OnBoarding\HouseholdWizard;
 
 use App\Entity\Household;
 use App\Features;
+use App\Form\OldGhostBundle\NumberType;
 use Ghost\GovUkFrontendBundle\Form\Type\DateType;
 use Ghost\GovUkFrontendBundle\Form\Type\InputType;
-use Ghost\GovUkFrontendBundle\Form\Type\NumberType;
 use Symfony\Component\Form\AbstractType;
 use Symfony\Component\Form\FormBuilderInterface;
 use Symfony\Component\Form\FormEvent;
@@ -42,28 +42,32 @@ class HouseholdType extends AbstractType
                 ]);
         }
 
-        $builder->addEventListener(FormEvents::PRE_SET_DATA, function(FormEvent $event) {
-            $data = $event->getData();
-            assert($data instanceof Household);
+        $builder->addEventListener(FormEvents::PRE_SET_DATA, $this->preSetDataListener(...));
+    }
 
-            $areaPeriod = $data->getAreaPeriod();
+    public static function preSetDataListener(FormEvent $event): void
+    {
+        $data = $event->getData();
+        assert($data instanceof Household);
 
-            $event->getForm()
-                ->add('diaryWeekStartDate', DateType::class, [
-                    'label' => "household.details.diary-start.label",
-                    'label_attr' => ['class' => 'govuk-label--s'],
-                    'help' => "household.details.diary-start.help",
-                    'help_translation_parameters' => [
-                        'start_date' => $areaPeriod->getFirstValidDiaryStartDate(),
-                        'end_date' => $areaPeriod->getLastValidDiaryStartDate(),
-                    ],
-                ]);
-        });
+        $areaPeriod = $data->getAreaPeriod();
+
+        $event->getForm()
+            ->add('diaryWeekStartDate', DateType::class, [
+                'label' => "household.details.diary-start.label",
+                'label_attr' => ['class' => 'govuk-label--s'],
+                'help' => "household.details.diary-start.help",
+                'help_translation_parameters' => [
+                    'start_date' => $areaPeriod->getFirstValidDiaryStartDate(),
+                    'end_date' => $areaPeriod->getLastValidDiaryStartDate(),
+                ],
+                'translation_domain' => 'on-boarding',
+            ]);
     }
 
     public function configureOptions(OptionsResolver $resolver): void
     {
-        $validationGroups = function (FormInterface $form) {
+        $validationGroups = function (FormInterface $form): array {
             /** @var Household $formData */
             $formData = $form->getData();
             $groups = ['wizard.on-boarding.household'];

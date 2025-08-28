@@ -19,6 +19,9 @@ class PurposeType extends AbstractType
                 'label_attr' => ['class' => 'govuk-label--l'],
                 'help' => "journey.purpose.help",
                 'help_html' => 'markdown',
+                'attr' => [
+                    'autocomplete' => 'on',
+                ],
             ]);
     }
 

@@ -32,7 +32,7 @@ class RecaptchaType extends AbstractType
                 // Add g-recaptcha to classes
                 $classes = array_filter(
                     array_map('trim', explode(' ', $value['class'] ?? '')),
-                    fn($x) => $x !== ''
+                    fn($x): bool => $x !== ''
                 );
 
                 if (!in_array('g-recaptcha', $classes)) {

@@ -2,7 +2,7 @@
 
 namespace App\Tests\Functional\Utility;
 
-use App\Tests\DataFixtures\SurveysFixtures;
+use App\Tests\DataFixtures\TestSpecific\PurgeTestSurveysFixtures;
 use App\Tests\Functional\AbstractFunctionalWebTestCase;
 use App\Utility\Cleanup\EmailAddressPurgeUtility;
 use App\Utility\Cleanup\SurveyPurgeUtility;
@@ -17,7 +17,7 @@ abstract class AbstractPurgeTest extends AbstractFunctionalWebTestCase
     public function setUp(): void
     {
         $this->initialiseClientAndLoadFixtures([
-            SurveysFixtures::class
+            PurgeTestSurveysFixtures::class
         ]);
 
         $container = static::getContainer();

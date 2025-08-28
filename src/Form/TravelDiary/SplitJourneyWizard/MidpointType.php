@@ -5,19 +5,19 @@ namespace App\Form\TravelDiary\SplitJourneyWizard;
 use App\Form\TravelDiary\AbstractLocationType;
 use App\FormWizard\TravelDiary\SplitJourneySubject;
 use App\Repository\DiaryKeeperRepository;
+use Symfony\Bundle\SecurityBundle\Security;
 use Symfony\Component\Form\Event\PreSetDataEvent;
 use Symfony\Component\Form\FormBuilderInterface;
 use Symfony\Component\Form\FormEvents;
 use Symfony\Component\Form\FormInterface;
 use Symfony\Component\OptionsResolver\OptionsResolver;
-use Symfony\Component\Security\Core\Security;
 use Symfony\Component\Validator\Constraints\NotNull;
 
 class MidpointType extends AbstractLocationType
 {
     public function __construct(
-        DiaryKeeperRepository $diaryKeeperRepository,
-        Security $security,
+        DiaryKeeperRepository        $diaryKeeperRepository,
+        Security                     $security,
         protected MidpointDataMapper $midpointDataMapper
     ) {
         parent::__construct($diaryKeeperRepository, $security);
@@ -27,7 +27,7 @@ class MidpointType extends AbstractLocationType
     {
         $builder->setDataMapper($this->midpointDataMapper);
 
-        $builder->addEventListener(FormEvents::PRE_SET_DATA, function(PreSetDataEvent $event) use ($options) {
+        $builder->addEventListener(FormEvents::PRE_SET_DATA, function (PreSetDataEvent $event) use ($options): void {
             /** @var SplitJourneySubject $data */
             $data = $event->getData();
 
@@ -68,7 +68,7 @@ class MidpointType extends AbstractLocationType
                 '.' => 'midpointLocation'
             ],
             'translation_domain' => 'travel-diary',
-            'validation_groups' => function(FormInterface $form) {
+            'validation_groups' => function (FormInterface $form): array {
                 // Methodology copied from LocationsType
 
                 // Examines the data and chooses the validation_groups based upon it, to enable validation of the

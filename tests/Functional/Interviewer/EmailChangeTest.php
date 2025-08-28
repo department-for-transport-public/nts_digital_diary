@@ -10,6 +10,7 @@ use Doctrine\Common\DataFixtures\ReferenceRepository;
 use Doctrine\ORM\EntityManagerInterface;
 use Liip\TestFixturesBundle\Services\DatabaseToolCollection;
 use Symfony\Bundle\FrameworkBundle\KernelBrowser;
+use Symfony\Component\HttpFoundation\Request;
 
 class EmailChangeTest extends AbstractInterviewerDiaryKeeperTest
 {
@@ -30,10 +31,11 @@ class EmailChangeTest extends AbstractInterviewerDiaryKeeperTest
     {
         $newEmailAddress = "new-email-address@example.com";
 
-        /** @var DiaryKeeper $dk */
-        $dk = $this->repository->getReference('diary-keeper:no-password');
+        $dk = $this->repository->getReference('diary-keeper:no-password', DiaryKeeper::class);
+
         $this->logInAsInterviewerAndDrillDownToUsersHouseholdPage($dk->getUser()->getUserIdentifier());
-        $this->client->clickLink("Details / actions: for {$dk->getName()}");
+
+        $this->client->clickLink("Details / actions for {$dk->getName()}");
         $this->client->clickLink('Change email');
 
         $this->client->submitForm('Change email address', [
@@ -47,7 +49,7 @@ class EmailChangeTest extends AbstractInterviewerDiaryKeeperTest
         $this->client->clickLink('Logout');
 
         $passwordResetUrl = MessageUrlRetriever::getUrlFromMessage(self::getContainer(), $this);
-        $this->client->request('GET', $passwordResetUrl);
+        $this->client->request(Request::METHOD_GET, $passwordResetUrl);
 
         // Set a new password
         $this->client->submitForm('Create account', [
@@ -71,7 +73,7 @@ class EmailChangeTest extends AbstractInterviewerDiaryKeeperTest
         // Log back in as interviewer to confirm "pending change" flag has gone
         $this->client->clickLink('Logout');
         $this->logInAsInterviewerAndDrillDownToUsersHouseholdPage($newEmailAddress);
-        $this->client->clickLink("Details / actions: for {$dk->getName()}");
+        $this->client->clickLink("Details / actions for {$dk->getName()}");
         $this->assertStringNotContainsString('change pending', $this->client->getCrawler()->text());
     }
 

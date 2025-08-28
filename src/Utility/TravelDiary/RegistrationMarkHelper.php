@@ -6,8 +6,8 @@ namespace App\Utility\TravelDiary;
 
 class RegistrationMarkHelper
 {
-    protected ?string $registrationMark;
-    protected ?string $formattedRegistrationMark;
+    protected ?string $registrationMark = null;
+    protected ?string $formattedRegistrationMark = null;
     protected bool $valid;
     protected bool $current;
 

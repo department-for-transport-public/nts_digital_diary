@@ -9,11 +9,15 @@
 {%- endmacro -%}
 
 {% macro trainingVideo(id, title, trainingRecord) %}
-    {% from 'macros/vimeo-container.html.twig' import videoContainer %}
-    {% if trainingRecord.id ?? false %}
-        {{ videoContainer(id, title, {attributes: {'data-training-record': trainingRecord.id}}) }}
+    {% if id ?? false %}
+        {% from 'macros/vimeo-container.html.twig' import videoContainer %}
+        {% if trainingRecord.id ?? false %}
+            {{ videoContainer(id, title, {attributes: {'data-training-record': trainingRecord.id}}) }}
+        {% else %}
+            {{ videoContainer(id, title) }}
+        {% endif %}
     {% else %}
-        {{ videoContainer(id, title) }}
+        <p class="govuk-body-l">Available soon - This video is in production.</p>
     {% endif %}
 {% endmacro %}
 
@@ -22,6 +26,7 @@
     {% set trainingSections = {
         1: 'pre-briefing',
         3: 'in-briefing',
+        5: 'post-briefing',
     } %}
 
 <table class="govuk-table">
@@ -46,16 +51,16 @@
         {% endif %}
         <tr class="govuk-table__tr">
             <th scope="row" class="govuk-table__header govuk-!-padding-left-2">
-                {%- set name = ("training.module.number" | trans({number: trainingRecord.moduleNumber}) | capitalize) ~ ": " ~ ("training.module.title.#{trainingRecord.moduleName}" | trans | capitalize) -%}
+                {%- set name = ("training.module.number" | trans({number: trainingRecord.moduleNumber}) | capitalize) ~ ": " ~ ("training.module.title.#{trainingRecord.moduleName}" | trans) -%}
                 {%- if not (options.disableLinks ?? false) -%}
                     <a class="govuk-link" href="{{ path('interviewer_training_module_index', {moduleName: trainingRecord.moduleName}) }}">{{ name }}</a>
                 {%- else -%}
                     {{ name }}
                 {%- endif -%}
             </th>
-            <td class="govuk-table__cell">{{ _self.dateOrHyphen(trainingRecord.startedAt) }}</td>
-            <td class="govuk-table__cell">{{ _self.dateOrHyphen(trainingRecord.completedAt) }}</td>
-            <td class="govuk-table__cell">{{ _self.statusTag(trainingRecord) }}</td>
+            <td class="govuk-table__cell nowrap">{{ _self.dateOrHyphen(trainingRecord.startedAt) }}</td>
+            <td class="govuk-table__cell nowrap">{{ _self.dateOrHyphen(trainingRecord.completedAt) }}</td>
+            <td class="govuk-table__cell nowrap">{{ _self.statusTag(trainingRecord) }}</td>
         </tr>
     {% else %}
         <tr>
@@ -67,5 +72,5 @@
 {% endmacro %}
 
 {%- macro dateOrHyphen(dateVar) -%}
-    {{ dateVar ? (dateVar | date(format_date_default)) : '-' }}
+    {{ dateVar ? (dateVar | date(date_time_format.date('default'))) : '-' }}
 {%- endmacro -%}

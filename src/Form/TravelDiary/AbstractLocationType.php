@@ -6,21 +6,21 @@ use App\Entity\User;
 use App\Repository\DiaryKeeperRepository;
 use Ghost\GovUkFrontendBundle\Form\Type\ChoiceType;
 use Ghost\GovUkFrontendBundle\Form\Type\InputType;
+use Symfony\Bundle\SecurityBundle\Security;
 use Symfony\Component\Form\AbstractType;
 use Symfony\Component\Form\FormBuilderInterface;
 use Symfony\Component\Form\FormInterface;
-use Symfony\Component\Security\Core\Security;
 use Symfony\Component\Validator\Constraints\NotNull;
 
 abstract class AbstractLocationType extends AbstractType
 {
-    const CHOICE_HOME = 'home';
-    const CHOICE_OTHER = 'other';
+    public const CHOICE_HOME = 'home';
+    public const CHOICE_OTHER = 'other';
 
     /**
      * @var array<string>
      */
-    private array $choices;
+    protected readonly array $choices;
 
     public function __construct(DiaryKeeperRepository $diaryKeeperRepository, Security $security)
     {
@@ -65,7 +65,7 @@ abstract class AbstractLocationType extends AbstractType
             ->add("{$locationType}_choice", ChoiceType::class, array_merge([
                 'label' => "$prefix.$locationType-choice.label",
                 'help' => "$prefix.$locationType-choice.help",
-                'label_attr' => ['class' => 'govuk-label--m'],
+                'label_attr' => ['class' => 'govuk-fieldset__legend--m'],
                 'choices' => $this->choices,
                 'choice_translation_domain' => false,
                 'mapped' => false,

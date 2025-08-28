@@ -11,12 +11,9 @@ use Doctrine\ORM\Mapping as ORM;
 use Symfony\Bridge\Doctrine\Validator\Constraints\UniqueEntity;
 use Symfony\Component\Validator\Constraints as Assert;
 
-/**
- * @ORM\Entity(repositoryClass=VehicleRepository::class)
- *
- * @UniqueEntity(groups={"wizard.on-boarding.vehicle"}, message="wizard.on-boarding.vehicle.name.unique", fields={"friendlyName", "household"})
- * @UniqueEntity(groups={"wizard.on-boarding.vehicle"}, message="wizard.on-boarding.vehicle.capi-number.unique", fields={"capiNumber", "household"})
- */
+#[UniqueEntity(fields: ['friendlyName', 'household'], message: 'wizard.on-boarding.vehicle.name.unique', groups: ['wizard.on-boarding.vehicle'])]
+#[UniqueEntity(fields: ['capiNumber', 'household'], message: 'wizard.on-boarding.vehicle.capi-number.unique', groups: ['wizard.on-boarding.vehicle'])]
+#[ORM\Entity(repositoryClass: VehicleRepository::class)]
 class Vehicle implements \JsonSerializable
 {
     public const VALID_METHOD_KEYS = [
@@ -32,74 +29,50 @@ class Vehicle implements \JsonSerializable
 
     use IdTrait;
 
-    /**
-     * @ORM\ManyToOne(targetEntity=Household::class, inversedBy="vehicles")
-     * @ORM\JoinColumn(nullable=false)
-     */
-    private ?Household $household;
+    #[ORM\ManyToOne(targetEntity: Household::class, inversedBy: 'vehicles')]
+    #[ORM\JoinColumn(nullable: false)]
+    private ?Household $household = null;
 
-    /**
-     * @ORM\Column(type="string", length=255)
-     * @Assert\NotBlank(groups={"wizard.on-boarding.vehicle"}, message="wizard.on-boarding.vehicle.name.not-blank")
-     * @Assert\Length(groups={"wizard.on-boarding.vehicle"}, maxMessage="common.string.max-length", max=255)
-     */
-    private ?string $friendlyName;
+    #[Assert\NotBlank(message: 'wizard.on-boarding.vehicle.name.not-blank', groups: ['wizard.on-boarding.vehicle', 'direct-onboarding.ingress'])]
+    #[Assert\Length(max: 255, maxMessage: 'common.string.max-length', groups: ['wizard.on-boarding.vehicle', 'direct-onboarding.ingress'])]
+    #[ORM\Column(type: 'string', length: 255)]
+    private ?string $friendlyName = null;
 
-    /**
-     * @ORM\ManyToOne(targetEntity=DiaryKeeper::class, inversedBy="primaryDriverVehicles")
-     * @Assert\NotBlank(groups={"wizard.on-boarding.vehicle"}, message="wizard.on-boarding.vehicle.primary-driver.not-blank")
-     */
-    private ?DiaryKeeper $primaryDriver;
+    #[Assert\NotBlank(message: 'wizard.on-boarding.vehicle.primary-driver.not-blank', groups: ['wizard.on-boarding.vehicle', 'direct-onboarding.ingress'])]
+    #[ORM\ManyToOne(targetEntity: DiaryKeeper::class, inversedBy: 'primaryDriverVehicles')]
+    private ?DiaryKeeper $primaryDriver = null;
 
-    /**
-     * @ORM\ManyToOne(targetEntity=Method::class)
-     * @ORM\JoinColumn(nullable=false)
-     * @Assert\Expression("this.getMethod() && (this.getMethod().getCode() in constant('App\\Entity\\Vehicle::VALID_METHOD_CODES'))")
-     * @Assert\NotBlank(groups={"wizard.on-boarding.vehicle"}, message="wizard.on-boarding.vehicle.method.not-blank")
-     */
-    private ?Method $method;
+    #[Assert\Expression("!this.getMethod() or (this.getMethod().getDescriptionTranslationKey() in constant('App\\\\Entity\\\\Vehicle::VALID_METHOD_KEYS'))", groups: ['direct-onboarding.ingress'])]
+    #[Assert\NotBlank(message: 'wizard.on-boarding.vehicle.method.not-blank', groups: ['wizard.on-boarding.vehicle', 'direct-onboarding.ingress'])]
+    #[ORM\ManyToOne(targetEntity: Method::class)]
+    #[ORM\JoinColumn(nullable: false)]
+    private ?Method $method = null;
 
     /**
      * @var Collection<Stage>
-     * @ORM\OneToMany(targetEntity=Stage::class, mappedBy="vehicle")
      */
+    #[ORM\OneToMany(mappedBy: 'vehicle', targetEntity: Stage::class)]
     private Collection $stages;
 
-    /**
-     * @ORM\Column(type="integer")
-     * @Assert\Range(min=1, max=99, groups={"wizard.on-boarding.vehicle"}, notInRangeMessage="wizard.on-boarding.vehicle.capi-number.not-in-range")
-     * @Assert\NotBlank(groups={"wizard.on-boarding.vehicle"}, message="wizard.on-boarding.vehicle.capi-number.not-blank")
-     */
-    private ?int $capiNumber;
+    #[Assert\Range(notInRangeMessage: 'wizard.on-boarding.vehicle.capi-number.not-in-range', min: 1, max: 99, groups: ['wizard.on-boarding.vehicle', 'direct-onboarding.ingress'])]
+    #[Assert\NotBlank(message: 'wizard.on-boarding.vehicle.capi-number.not-blank', groups: ['wizard.on-boarding.vehicle', 'direct-onboarding.ingress'])]
+    #[ORM\Column(type: 'integer')]
+    private ?int $capiNumber = null;
 
-    /**
-     * @ORM\Column(type="integer", nullable=true)
-     * @Assert\Positive(groups="vehicle.odometer-readings")
-     * @Assert\Range(
-     *     groups="vehicle.odometer-readings",
-     *     maxMessage="common.number.max",
-     *     max=10000000
-     * )
-     */
-    private ?int $weekStartOdometerReading;
+    #[Assert\Positive(groups: ['vehicle.odometer-readings'])]
+    #[Assert\Range(maxMessage: 'common.number.max', max: 10000000, groups: ['vehicle.odometer-readings'])]
+    #[ORM\Column(type: 'integer', nullable: true)]
+    private ?int $weekStartOdometerReading = null;
 
-    /**
-     * @ORM\Column(type="integer", nullable=true)
-     * @Assert\Positive(groups="vehicle.odometer-readings")
-     * @Assert\Expression("isNull(value) || value < 0 || value >= this.getWeekStartOdometerReading()", groups={"vehicle.odometer-readings"}, message="vehicle.odometer-readings.end-not-less-than-start")
-     * @Assert\Range(
-     *     groups="vehicle.odometer-readings",
-     *     maxMessage="common.number.max",
-     *     max=10000000
-     * )
-     */
-    private ?int $weekEndOdometerReading;
+    #[Assert\Positive(groups: ['vehicle.odometer-readings'])]
+    #[Assert\Expression('isNull(value) || value < 0 || value >= this.getWeekStartOdometerReading()', message: 'vehicle.odometer-readings.end-not-less-than-start', groups: ['vehicle.odometer-readings'])]
+    #[Assert\Range(maxMessage: 'common.number.max', max: 10000000, groups: ['vehicle.odometer-readings'])]
+    #[ORM\Column(type: 'integer', nullable: true)]
+    private ?int $weekEndOdometerReading = null;
 
-    /**
-     * @ORM\Column(type="string", length=12, nullable=true)
-     * @Assert\Expression("!isNull(value) || (isNull(this.getWeekStartOdometerReading()) && isNull(this.getWeekEndOdometerReading()))", groups={"vehicle.odometer-readings"}, message="vehicle.odometer-readings.units-required")
-     */
-    private ?string $odometerUnit;
+    #[Assert\Expression('!isNull(value) || (isNull(this.getWeekStartOdometerReading()) && isNull(this.getWeekEndOdometerReading()))', message: 'vehicle.odometer-readings.units-required', groups: ['vehicle.odometer-readings'])]
+    #[ORM\Column(type: 'string', length: 12, nullable: true)]
+    private ?string $odometerUnit = null;
 
 
     public function __construct()
@@ -109,7 +82,7 @@ class Vehicle implements \JsonSerializable
 
     public function getId(): ?string
     {
-        return $this->id;
+        return $this->id ?? null;
     }
 
     public function getHousehold(): ?Household
@@ -182,7 +155,6 @@ class Vehicle implements \JsonSerializable
     public function setCapiNumber(?int $capiNumber): self
     {
         $this->capiNumber = $capiNumber;
-
         return $this;
     }
 
@@ -194,7 +166,6 @@ class Vehicle implements \JsonSerializable
     public function setWeekStartOdometerReading(?int $weekStartOdometerReading): self
     {
         $this->weekStartOdometerReading = $weekStartOdometerReading;
-
         return $this;
     }
 
@@ -206,7 +177,6 @@ class Vehicle implements \JsonSerializable
     public function setWeekEndOdometerReading(?int $weekEndOdometerReading): self
     {
         $this->weekEndOdometerReading = $weekEndOdometerReading;
-
         return $this;
     }
 
@@ -218,7 +188,6 @@ class Vehicle implements \JsonSerializable
     public function setOdometerUnit(?string $odometerUnit): self
     {
         $this->odometerUnit = $odometerUnit;
-
         return $this;
     }
 }

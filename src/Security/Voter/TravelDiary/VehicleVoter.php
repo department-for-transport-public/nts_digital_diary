@@ -31,7 +31,7 @@ class VehicleVoter extends Voter
         /** @var User $user */
         $user = $token->getUser();
         return $user->getDiaryKeeper()->getPrimaryDriverVehicles()->exists(
-            fn($k, Vehicle $v) => $v->getId() === $subject->getId()
+            fn($k, Vehicle $v): bool => $v->getId() === $subject->getId()
         );
     }
 }

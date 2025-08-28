@@ -3,40 +3,31 @@
 namespace App\Command\MaintenanceMode;
 
 use App\Repository\Utility\MaintenanceLockRepository;
+use Symfony\Component\Console\Attribute\AsCommand;
 use Symfony\Component\Console\Command\Command;
 use Symfony\Component\Console\Input\InputInterface;
 use Symfony\Component\Console\Output\OutputInterface;
 use Symfony\Component\Console\Style\SymfonyStyle;
 
+#[AsCommand(name: 'nts:maintenance-mode:status', description: 'check the maintenance status')]
 class StatusCommand extends Command
 {
-    protected static $defaultName = 'nts:maintenance-mode:status';
     private SymfonyStyle $io;
-    private MaintenanceLockRepository $maintenanceLockRepository;
 
-    public function __construct(MaintenanceLockRepository $maintenanceLockRepository)
+    public function __construct(protected readonly MaintenanceLockRepository $maintenanceLockRepository)
     {
         parent::__construct();
-        $this->maintenanceLockRepository = $maintenanceLockRepository;
-    }
-
-    protected function configure()
-    {
-        $this
-            ->setDescription('check the maintenance status')
-        ;
     }
 
     protected function execute(InputInterface $input, OutputInterface $output): int
     {
         $this->io = new SymfonyStyle($input, $output);
-
         $this->status();
 
-        return 0;
+        return Command::SUCCESS;
     }
 
-    protected function status()
+    protected function status(): void
     {
         $whiteListedIPs = $this->maintenanceLockRepository->isLocked();
         if ($whiteListedIPs === false) {
@@ -46,7 +37,7 @@ class StatusCommand extends Command
         }
     }
 
-    protected function validateIps(array $ips)
+    protected function validateIps(array $ips): bool
     {
         $result = array_diff($ips, filter_var_array($ips, FILTER_VALIDATE_IP));
         if (empty($result)) {

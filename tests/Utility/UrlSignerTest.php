@@ -44,25 +44,15 @@ class UrlSignerTest extends TestCase
     {
         $url = 'https://example.com/wibble?wobble=12&wubble=toast';
 
-        $modifyPair = function(string $key, string $value): callable {
-            return fn(string $url) => (new Url($url))->setQueryParam($key, $value)->__toString();
-        };
+        $modifyPair = fn(string $key, string $value): callable => fn(string $url): string => (new Url($url))->setQueryParam($key, $value)->__toString();
 
-        $removePair = function(string $key): callable {
-            return fn(string $url) => (new Url($url))->removeQueryParam($key)->__toString();
-        };
+        $removePair = fn(string $key): callable => fn(string $url): string => (new Url($url))->removeQueryParam($key)->__toString();
 
-        $modifyHost = function($host): callable {
-            return fn(string $url) => (new Url($url))->setHost($host)->__toString();
-        };
+        $modifyHost = fn($host): callable => fn(string $url): string => (new Url($url))->setHost($host)->__toString();
 
-        $modifyScheme = function($protocol): callable {
-            return fn(string $url) => (new Url($url))->setScheme($protocol)->__toString();
-        };
+        $modifyScheme = fn($protocol): callable => fn(string $url): string => (new Url($url))->setScheme($protocol)->__toString();
 
-        $modifyFragment = function($fragment): callable {
-            return fn(string $url) => (new Url($url))->setFragment($fragment)->__toString();
-        };
+        $modifyFragment = fn($fragment): callable => fn(string $url): string => (new Url($url))->setFragment($fragment)->__toString();
 
         return [
             'Add key/value' => [$url, $modifyPair('wabble', 5), false],

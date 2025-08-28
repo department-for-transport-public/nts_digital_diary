@@ -3,10 +3,19 @@
 {%- set bodyClasses = 'nts-admin' %}
 
 {%- set navigation = [] -%}
+
+{%- if is_granted('ROLE_SUPER_ADMIN') -%}
+    {%- set navigation = navigation | merge([
+        {
+            href: path('admin_tools_index'),
+            text: 'admin.menu.tools' | trans
+        }
+    ]) -%}
+{%- endif -%}
 {%- if is_granted('ROLE_MAINTENANCE') -%}
     {%- set navigation = navigation | merge([
         {
-            href: path('admin_household_maintenance_choose_household'),
+            href: path('admin_household_maintenance_list'),
             text: 'admin.menu.household-maintenance' | trans
         }
     ]) -%}
@@ -35,11 +44,46 @@
         }
     ]) -%}
 {%- endif -%}
+{%- if is_granted('ADMIN_DATA_EXPORT') -%}
+    {%- set navigation = navigation | merge([
+        {
+            href: path('admin_data_export_index'),
+            text: 'admin.menu.data-export' | trans
+        }
+    ]) -%}
+{%- endif -%}
+{%- if is_granted('ADMIN_LOGOUT') -%}
+    {%- set navigation = navigation | merge([
+        {
+            href: "https://www.google.com/accounts/Logout?continue=https://google.com",
+            text: 'admin.menu.logout' | trans
+        }
+    ]) -%}
+{%- endif -%}
+
+{% block navigation %}
+    {%- from '@GhostGovUkFrontend/components/macros.html.twig' import serviceNavigation -%}
+    {{ serviceNavigation({
+        homepageUrl: 'https://www.gov.uk/',
+        serviceName: 'service.name' | trans,
+        serviceUrl: '/',
+        navigation: navigation,
+    }) }}
+{% endblock %}
 
 {%- block head -%}
     {{ parent() }}
-    {{ encore_entry_link_tags('admin') }}
+    {{- encore_entry_link_tags('admin', attributes={
+        nonce: csp_nonce('style')
+    }) -}}
 {%- endblock -%}
+
+{% block bodyEnd %}
+    {{ parent() }}
+    {{- encore_entry_script_tags('admin', attributes={
+        nonce: csp_nonce('style')
+    }) -}}
+{% endblock %}
 
 {%- block sessionExpired -%}
     Your session has expired. Any unsaved data will be lost. Refresh the page or <a href="{{ path('admin_dashboard') }}" class="govuk-link">go to the dashboard.</a>

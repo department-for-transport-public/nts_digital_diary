@@ -7,28 +7,28 @@ use PHPUnit\Framework\TestCase;
 
 class XPathTest extends TestCase
 {
-    public function testButtonWithText()
+    public function testButtonWithText(): void
     {
         $expected = '//button' . $this->predicate(['text' => 'Banana']);
         $actual = XPath::create()->withTag('button')->withText('Banana');
         $this->assertEquals($expected, "".$actual);
     }
 
-    public function testButtonWithTextThatStartsWith()
+    public function testButtonWithTextThatStartsWith(): void
     {
         $expected = '//button' . $this->predicate(['text-starts-with' => 'Banana']);
         $actual = XPath::create()->withTag('button')->withTextStartsWith('Banana');
         $this->assertEquals($expected, "".$actual);
     }
 
-    public function testClass()
+    public function testClass(): void
     {
         $expected = '//div' . $this->predicate(['class' => 'onboarding-codes__code-pair']);
         $actual = XPath::create()->withTag('div')->withClass('onboarding-codes__code-pair');
         $this->assertEquals($expected, "".$actual);
     }
 
-    public function testClassAndTextStartsWith()
+    public function testClassAndTextStartsWith(): void
     {
         $expected = '//label' . $this->predicate(['class' => 'onboarding-codes__code-pair', 'text-starts-with' => 'Toast']);
         $actual = XPath::create()->withTag('label')->withClass('onboarding-codes__code-pair')->withTextStartsWith('Toast');

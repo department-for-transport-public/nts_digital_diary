@@ -1,22 +1,28 @@
 {% trans_default_domain "travel-diary" %}
 {%- import "@GhostGovUkFrontend/components/macros.html.twig" as m -%}
+{% from "interviewer/dashboard/macros.html.twig" import diaryKeeperState %}
 {%- set household = diaryKeeper.household -%}
 {%- set areaPeriod = household.areaPeriod -%}
 <dl class="govuk-summary-list">
     {%- if showName ?? true -%}
-        {{- m.actionlessSummaryListRow(
-            "days.list.name" | trans,
-            diaryKeeper.name
-        ) -}}
+        {{- m.summaryListRow({
+            key: "days.list.name" | trans,
+            value: diaryKeeper.name
+        }, false) -}}
     {%- endif -%}
-    {{- m.actionlessSummaryListRow(
-        "days.list.serial" | trans,
-        household.serialNumber(diaryKeeper.number)
-    ) -}}
-    {{- m.actionlessSummaryListRow(
-        "days.list.state" | trans,
-        ("diary-keeper.states." ~ (diaryKeeper.diaryState ?? 'new')) | trans({},
-            (is_impersonator_granted('ROLE_INTERVIEWER') or is_granted('ROLE_INTERVIEWER')) ? 'interviewer' : 'travel-diary'
-        )
-    ) -}}
+    {{- m.summaryListRow({
+        key: "days.list.serial" | trans,
+        value: household.serialNumber(diaryKeeper.number)
+    }, false) -}}
+    {% if (is_impersonator_granted('ROLE_INTERVIEWER') or is_granted('ROLE_INTERVIEWER')) %}
+        {{- m.summaryListRow({
+            key: "days.list.state" | trans,
+            value: {html: diaryKeeperState(diaryKeeper.diaryState ?? 'new')}
+        }, false) -}}
+    {% else %}
+        {{- m.summaryListRow({
+            key: "days.list.state" | trans,
+            value: ("diary-keeper.states." ~ (diaryKeeper.diaryState ?? 'new')) | trans({}, 'travel-diary')
+        }, false) -}}
+    {% endif %}
 </dl>

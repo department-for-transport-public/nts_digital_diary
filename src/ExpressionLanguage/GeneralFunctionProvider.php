@@ -16,12 +16,12 @@ class GeneralFunctionProvider implements ExpressionFunctionProviderInterface
     {
         return [
             new ExpressionFunction('isEmpty',
-                function($str) {return "isEmpty($str)";},
-                function($arguments, $str) {return empty($str);}
+                fn($str): string => "isEmpty($str)",
+                fn($arguments, $str): bool => empty($str)
             ),
             new ExpressionFunction('isNull',
-                function($str) {return "isNull($str)";},
-                function($arguments, $str) {return is_null($str);}
+                fn($str): string => "isNull($str)",
+                fn($arguments, $str): bool => is_null($str)
             ),
         ];
     }

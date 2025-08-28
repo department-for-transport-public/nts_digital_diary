@@ -2,8 +2,96 @@
 
 # Change log
 
-## Upcoming release
+## Upcoming
 - 
+
+## 2025-08-21
+- **Fix**: include rebrand assets in webpack file copy list
+- **Update**: remove gov.uk rebrand warning notification 
+- **Update**: use latest ghost bundles
+- **Fix**: make feedback > page a text column to cater for really long URLs
+- **Fix**: Interviewer household details page shows DK having journeys when only practice day
+- **Update**: Add two new diary keepers to interviewer training module 2 (personal travel diary)
+
+## 2025-07-07
+- **Update**: Add feedback stats to admin, with metadata export
+- **Update**: Add satisfaction survey data export
+- **Update**: Add survey paradata export
+
+## 2025-06-11
+- **Update**: bring everything inline with most recent ghost bundles
+- **Update**: enable new gov.uk redesign, and show warning banner before switch over
+- **Update**: Allow feedback/support messages to be re-opened
+
+## 2025-02-25
+- **Update**: privacy statement
+- **Update**: add google logout link for NatCen users
+- **Update**: Give help text advising to include all walks/runs on practice day
+- **Fix**: ensure all interviewer training onboarding users are logged out before login
+- **Update**: add direct/manual onboarding training type specific roles to `InMemoryOtpUser` and block wizards for wrong training user role
+
+## 2024-12-11
+- **Update**: changes to feedback admin roles/behaviours
+- **Fix**: Typo on interviewer support page
+- **Update**: Add vimeo IDs for the new interviewer training video
+
+## 2024-12-04
+- **Update**: Relabel "onboarding" as "set-up" and "CAPI number" as "Vehicle CAPI number"
+- **Update**: Add new 'interviewer transcribed' media type / diary mode option for diary keepers (during onboarding)
+- **Fix**: Redirect expired direct onboarding training session to prevent 500 error
+- **Fix**: Prevent duplicate email addresses from being entered during direct onboarding training
+- **Fix**: Onboarding screenshots was not correctly dealing with php/js differences in month numbers
+- **Update**: fix regression for locks to use dbal connection, and rename cache pool namespaces
+- **Update**: don't show future `AreaPeriods` until 3 weeks before the field work start date 
+
+## 2024-10-04
+- **Feature**: Interviewer household compare screen - keep the current DK tab when navigating to a different day.  
+- **Feature**: Direct onboarding
+- **Feature**: User preferences - 12/24 hour time entry/display
+- **Feature**: Provide warnings for interviewers who have unsubmitted households
+- **Feature**: Admin: link area codes in interviewer allocated areas list to filtered household maintenance list page
+- **Feature**: API: new endpoint for household statuses
+- **Feature**: Journey stage alternative layout
+- **Update**: Onboarding: Limit household number to be between 1 and 22 inclusive
+- **Update**: Show household journey sharing status on onboarding completed screen
+- **Update**: Add test for PasswordGenerator class
+- **Update**: Change media-type wording during onboarding (digital/interviewer completing -> digital/paper)
+- **Update**: Change support form copy and add referral text for interviewers (i.e. call support team for urgent matters)
+- **Update**: Remove review checkboxes for interviewers when approving diaries (excluding empty days check)
+- **Update**: Change direct onboarding "other vehicle type" code  
+- **Update**: Add help text to support page
+- **Update**: New journey view - enable as default, and remove related AB testing code
+- **Update**: Turn autocomplete off for all forms, turning on only in limited cases
+- **Fix**: Exclude Ajax controller from wizard cleanup
+- **Fix**: Add missing "Compare household" breadcrumb in interviewer training module
+- **Fix**: Incorrect page title when setting initial interviewer password
+- **Update**: Boarding count help text is now specific to context of stage method
+- **View**: Add space between times and am/pm
+- **Update**: add intermediate pre-auth page for direct onboarding
+- **Fix**: Fix error where practise-diary locations were suggested as journey start/end locations
+
+## 2024-03-26
+- **Fix**: JS regex causing issues on older Safari
+- **Update**: Cron user/diary cleanup
+- **Update**: Update govuk-frontend package to utilise tudor crown (previously deployed)
+- **Update**: dashboard and next module links on interviewer training
+- **Update**: show household and diary keeper states as tags for interviewers
+- **Update**: add retake button to practical interviewer training modules
+- **Update**: handle unique constraint violations in form wizard (show customisable flash message) 
+
+## 2024-01-30
+- **Fix**: Fix crash error during onboarding
+- **Feature**: Admin: User lookup functionality
+- **Feature**: Admin: feedback dashboard - messages can now be marked as rejected
+- **Feature**: Admin: feedback dashboard - accounts.google.com prefix in usernames now hidden
+- **Feature**: Feedback: add more message validation to reduce attack vectors
+- **Feature**: Admin: feedback dashboard - message lookup (by ID) functionality
+- **Fix**: Regression exiting DK impersonation caused by passive metrics
+- **Update**: Handle repeated diary status change better (show message box, rather than 500)
+- **Update**: Composer updates, including the related ShareToDataMapper for journey sharing form
+- **Fix**: Update copy shown to diary keepers before completing diary
+- **Feature**: Admin: view (and edit some) household and diary keeper details
+- **Update**: Resend account activation email if link is expired but otherwise valid
 
 ## 2024-01-05
 - **Update**: Admin: Add training status to interviewer view pages
@@ -16,7 +104,7 @@
 - **Update**: Allow interviewers to edit proxy configuration after on-boarding
 - **Update**: Move change email link, and add some guidance about how changing a user's email works
 - **Feature**: Move milometer functionality to be a toggleable feature
-- **Updatee**: Disable CSRF on logout links
+- **Update**: Disable CSRF on logout links
 - **Fix**: Update dbrekelmans/bdi to fix broken Selenium driver updates for Chrome
 - **Update**: Make onboarding household serial form clearer, with image showing paper diary serial boxes
 - **Update**: Extend AreaPeriod valid dates

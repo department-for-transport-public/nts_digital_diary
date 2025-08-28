@@ -6,11 +6,12 @@ use App\Entity\DiaryKeeper;
 use App\Utility\Metrics\Events\AdminAddDiaryKeeperEvent;
 use App\Utility\Metrics\MetricsHelper;
 use App\Utility\Security\AccountCreationHelper;
-use Doctrine\Bundle\DoctrineBundle\EventSubscriber\EventSubscriberInterface;
+use Doctrine\Bundle\DoctrineBundle\Attribute\AsDoctrineListener;
 use Doctrine\ORM\Event\PostPersistEventArgs;
 use Doctrine\ORM\Events;
 
-class AddDiaryKeeperSubscriber implements EventSubscriberInterface
+#[AsDoctrineListener(event: Events::postPersist)]
+class AddDiaryKeeperSubscriber
 {
     public function __construct(
         protected AccountCreationHelper $accountCreationHelper,
@@ -38,12 +39,5 @@ class AddDiaryKeeperSubscriber implements EventSubscriberInterface
                 $this->metrics->log(new AdminAddDiaryKeeperEvent($object));
             }
         }
-    }
-
-    public function getSubscribedEvents(): array
-    {
-        return [
-            Events::postPersist,
-        ];
     }
 }

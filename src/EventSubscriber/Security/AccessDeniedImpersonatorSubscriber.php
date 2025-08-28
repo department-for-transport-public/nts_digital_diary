@@ -12,7 +12,6 @@ use Symfony\Component\HttpKernel\Exception\AccessDeniedHttpException;
 use Symfony\Component\HttpKernel\KernelEvents;
 use Symfony\Component\Security\Core\Authentication\Token\Storage\TokenStorageInterface;
 use Symfony\Component\Security\Core\Authentication\Token\SwitchUserToken;
-use Symfony\Component\Security\Http\Firewall;
 use Symfony\Component\Security\Http\Firewall\SwitchUserListener;
 
 class AccessDeniedImpersonatorSubscriber implements EventSubscriberInterface
@@ -33,7 +32,7 @@ class AccessDeniedImpersonatorSubscriber implements EventSubscriberInterface
     /**
      * @throws ReflectionException
      */
-    public function onKernelException(ExceptionEvent $event)
+    public function onKernelException(ExceptionEvent $event): void
     {
         $request = $event->getRequest();
 
@@ -47,7 +46,6 @@ class AccessDeniedImpersonatorSubscriber implements EventSubscriberInterface
         }
 
         $reflectionMethod = new ReflectionMethod($this->switchUserListener, 'attemptExitUser');
-        $reflectionMethod->setAccessible(true);
         $token = $reflectionMethod->invoke($this->switchUserListener, $event->getRequest());
         $this->tokenStorage->setToken($token);
 

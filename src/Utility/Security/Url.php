@@ -2,7 +2,7 @@
 
 namespace App\Utility\Security;
 
-class Url
+class Url implements \Stringable
 {
     protected ?string $scheme;
     protected ?string $host;
@@ -17,7 +17,7 @@ class Url
 
     public function __construct($url)
     {
-        $parts = parse_url($url);
+        $parts = parse_url((string) $url);
 
         $this->scheme = $parts['scheme'] ?? null;
         $this->host = $parts['host'] ?? null;

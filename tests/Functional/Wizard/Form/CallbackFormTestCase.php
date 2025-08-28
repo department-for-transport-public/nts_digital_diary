@@ -8,7 +8,7 @@ class CallbackFormTestCase extends AbstractFormTestCase
 {
     protected $formDataCallback;
 
-    public function __construct(callable $formDataCallback, array $expectedErrorIds = [], string $submitButtonId = null, $skipPageUrlChangeCheck = false)
+    public function __construct(callable $formDataCallback, array $expectedErrorIds = [], string $submitButtonId = null, bool $skipPageUrlChangeCheck = false)
     {
         $this->formDataCallback = $formDataCallback;
         parent::__construct($expectedErrorIds, $submitButtonId, $skipPageUrlChangeCheck);

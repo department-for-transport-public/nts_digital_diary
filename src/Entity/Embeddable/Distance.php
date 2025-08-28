@@ -8,31 +8,25 @@ use Doctrine\ORM\Mapping as ORM;
 use Ghost\GovUkFrontendBundle\Model\ValueUnitInterface;
 use InvalidArgumentException;
 
-/**
- * @ORM\Embeddable()
- */
-class Distance implements ValueUnitInterface
+#[ORM\Embeddable]
+class Distance implements ValueUnitInterface, \Stringable
 {
-    const UNIT_METRES = 'metres';
-    const UNIT_MILES = 'miles';
+    public const UNIT_METRES = 'metres';
+    public const UNIT_MILES = 'miles';
 
-    const UNIT_CONVERSION_FACTOR = 1609.344;
+    public const UNIT_CONVERSION_FACTOR = 1609.344;
 
-    const UNIT_TRANSLATION_PREFIX = 'unit.distance.';
+    public const UNIT_TRANSLATION_PREFIX = 'unit.distance.';
 
-    const UNIT_CHOICES = [
+    public const UNIT_CHOICES = [
         self::UNIT_TRANSLATION_PREFIX . self::UNIT_MILES => self::UNIT_MILES,
         self::UNIT_TRANSLATION_PREFIX . self::UNIT_METRES => self::UNIT_METRES,
     ];
 
-    /**
-     * @ORM\Column(type="decimal_brick", precision=8, scale=2, nullable=true)
-     */
+    #[ORM\Column(type: 'decimal_brick', precision: 8, scale: 2, nullable: true)]
     private ?BigDecimal $value;
 
-    /**
-     * @ORM\Column(type="string", length=12, nullable=true)
-     */
+    #[ORM\Column(type: 'string', length: 12, nullable: true)]
     private ?string $unit;
 
     public function __construct()
@@ -57,7 +51,7 @@ class Distance implements ValueUnitInterface
         return (new Distance())->setUnit(self::UNIT_METRES)->setValue(BigDecimal::of($distance)->toScale(2));
     }
 
-    public function __toString()
+    public function __toString(): string
     {
         return "{$this->value} {$this->unit}";
     }
@@ -82,8 +76,12 @@ class Distance implements ValueUnitInterface
         };
     }
 
-    public function setValue(?BigDecimal $value): self
+    public function setValue(mixed $value): static
     {
+        if ($value !== null && !$value instanceof BigDecimal) {
+            throw new \RuntimeException('value must either be null or a BigDecimal object');
+        }
+
         if ($this->value === null || $value === null || !$this->value->isEqualTo($value)) {
             $this->value = $value;
         }
@@ -95,7 +93,7 @@ class Distance implements ValueUnitInterface
         return $this->unit;
     }
 
-    public function setUnit(?string $unit): self
+    public function setUnit(?string $unit): static
     {
         $this->unit = $unit;
         return $this;

@@ -2,7 +2,6 @@
 
 namespace App\Tests\DataFixtures;
 
-use App\DataFixtures\NtsFixtures;
 use App\Entity\AreaPeriod;
 use App\Entity\DiaryKeeper;
 use App\Entity\Household;
@@ -26,8 +25,7 @@ class LoginTestFixtures extends AbstractFixture implements DependentFixtureInter
             ->populateMonthAndYearFromArea();
         $manager->persist($areaPeriod);
 
-        /** @var Interviewer $interviewer */
-        $interviewer = $this->getReference('interviewer');
+        $interviewer = $this->getReference('interviewer', Interviewer::class);
         $interviewer->addTrainingAreaPeriod($areaPeriod);
 
         $householdOnboardedOther = (new Household())

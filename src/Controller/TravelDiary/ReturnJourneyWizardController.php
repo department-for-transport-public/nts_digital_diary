@@ -2,29 +2,27 @@
 
 namespace App\Controller\TravelDiary;
 
-use App\Annotation\Redirect;
-use App\Controller\FormWizard\AbstractSessionStateFormWizardController;
+use App\Attribute\Redirect;
 use App\Entity\Journey\Journey;
 use App\Entity\Journey\Stage;
-use App\FormWizard\FormWizardStateInterface;
-use App\FormWizard\Place;
 use App\FormWizard\TravelDiary\RepeatJourneyState;
 use App\FormWizard\TravelDiary\ReturnJourneyState;
 use App\Security\Voter\TravelDiary\DiaryAccessVoter;
-use Sensio\Bundle\FrameworkExtraBundle\Configuration\Entity;
-use Sensio\Bundle\FrameworkExtraBundle\Configuration\IsGranted;
+use Ghost\GovUkCoreBundle\Controller\FormWizard\AbstractSessionStateFormWizardController;
+use Ghost\GovUkCoreBundle\FormWizard\FormWizardStateInterface;
+use Ghost\GovUkCoreBundle\FormWizard\Metadata\PlaceMetadata;
+use Ghost\GovUkCoreBundle\FormWizard\Place;
+use Symfony\Bridge\Doctrine\Attribute\MapEntity;
 use Symfony\Component\HttpFoundation\RedirectResponse;
 use Symfony\Component\HttpFoundation\Request;
 use Symfony\Component\HttpFoundation\Response;
-use Symfony\Component\Routing\Annotation\Route;
+use Symfony\Component\Routing\Attribute\Route;
+use Symfony\Component\Security\Http\Attribute\IsGranted;
 use Symfony\Component\Serializer\Exception\ExceptionInterface;
 
-/**
- * @Route("/journey/{journeyId}/return-journey", name="return_journey_wizard_")
- * @Entity("sourceJourney", expr="repository.findByJourneyId(journeyId)")
- * @IsGranted(DiaryAccessVoter::ACCESS, subject="sourceJourney", statusCode=404)
- * @Redirect("!is_granted('EDIT_DIARY')", route="traveldiary_dashboard")
- */
+#[Redirect("!is_granted('EDIT_DIARY')", route: "traveldiary_dashboard")]
+#[Route(path: '/journey/{journeyId}/return-journey', name: 'return_journey_wizard_')]
+#[IsGranted(DiaryAccessVoter::ACCESS, subject: 'sourceJourney', statusCode: 404)]
 class ReturnJourneyWizardController extends AbstractSessionStateFormWizardController
 {
     private Journey $sourceJourney;
@@ -34,16 +32,32 @@ class ReturnJourneyWizardController extends AbstractSessionStateFormWizardContro
     ];
 
     /**
-     * @Route("/{place}/{stageNumber}", name="place")
-     * @Route("", name="start")
      * @throws ExceptionInterface
      */
-    public function index(Request $request, Journey $sourceJourney, ?string $place = null, $stageNumber = 0): Response
+    #[Route(path: '/{place}/{stageNumber}', name: 'place')]
+    #[Route(path: '', name: 'start')]
+    public function index(
+        Request $request,
+        #[MapEntity(expr: "repository.findByJourneyId(journeyId)")]
+        Journey $sourceJourney,
+        ?string $place = null,
+        $stageNumber = 0
+    ): Response
     {
         $this->sourceJourney = $sourceJourney;
         if ($place !== null) $place = new Place($place, $stageNumber > 0 ? ['stageNumber' => intval($stageNumber)] : []);
 
-        return $this->doWorkflow($request, $place, ['sourceJourney' => $sourceJourney]);
+        $getAdditionalViewData = function(ReturnJourneyState $state, PlaceMetadata $placeMetadata): array {
+            $data = ['sourceJourney' => $this->sourceJourney];
+
+            if ($placeMetadata->hasContextEntry('set_translation_key_from_state')) {
+                $data['title_translation_key'] = $state->getStageDetailsTitle();
+            }
+
+            return $data;
+        };
+
+        return $this->doWorkflow($request, $place, $getAdditionalViewData);
     }
 
     protected function getState(): FormWizardStateInterface

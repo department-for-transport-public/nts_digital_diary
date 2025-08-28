@@ -14,36 +14,53 @@ use Symfony\Component\Form\FormEvent;
 use Symfony\Component\Form\FormEvents;
 use Symfony\Component\Form\FormInterface;
 use Symfony\Component\OptionsResolver\OptionsResolver;
+use Symfony\Component\Validator\Constraints\NotBlank;
 
 class UserIdentifierType extends AbstractType
 {
-    const INJECT_TRANSLATION_PARAMETERS = [
+    public const array INJECT_TRANSLATION_PARAMETERS = [
         'onlyDiaryKeeper' => 'isTheOnlyDiaryKeeper',
     ];
 
-    protected DiaryKeeperRepository $diaryKeeperRepository;
-
-    public function __construct(DiaryKeeperRepository $diaryKeeperRepository)
+    public function __construct(protected DiaryKeeperRepository $diaryKeeperRepository)
     {
-        $this->diaryKeeperRepository = $diaryKeeperRepository;
     }
 
-    public function buildForm(FormBuilderInterface $builder, array $options)
+    public function buildForm(FormBuilderInterface $builder, array $options): void
     {
         $builder->setDataMapper(new UserIdentityDataMapper());
 
         $builder->add('mediaType', ChoiceType::class, [
             'label' => "diary-keeper.user-identifier.media-type.label",
             'help' => "diary-keeper.user-identifier.media-type.help",
-            'label_attr' => ['class' => 'govuk-label--m'],
+            'label_attr' => ['class' => 'govuk-fieldset__legend--m'],
             'choices' => [
                 'diary-keeper.user-identifier.media-type.choices.digital.label' => DiaryKeeper::MEDIA_TYPE_DIGITAL,
-                'diary-keeper.user-identifier.media-type.choices.paper.label' => DiaryKeeper::MEDIA_TYPE_PAPER,
+                'diary-keeper.user-identifier.media-type.choices.not-digital.label' => 'other',
             ],
             'choice_options' => [
                 'diary-keeper.user-identifier.media-type.choices.digital.label' => [
                     'conditional_form_name' => 'user',
                     'help' => 'diary-keeper.user-identifier.media-type.choices.digital.help',
+                ],
+                'diary-keeper.user-identifier.media-type.choices.not-digital.label' => [
+                    'conditional_form_name' => 'interviewerMediaType',
+                    'help' => 'diary-keeper.user-identifier.media-type.choices.not-digital.help',
+                ],
+            ],
+        ]);
+
+        $builder->add('interviewerMediaType', ChoiceType::class, [
+            'mapped' => false,
+            'label' => false,
+            'constraints' => [new NotBlank(message: 'common.choice.invalid', groups: ['wizard.on-boarding.diary-keeper.media-type.other'])],
+            'choices' => [
+                'diary-keeper.user-identifier.media-type.choices.transcribe.label' => DiaryKeeper::MEDIA_TYPE_INTERVIEWER_TRANSCRIBED,
+                'diary-keeper.user-identifier.media-type.choices.paper.label' => DiaryKeeper::MEDIA_TYPE_PAPER,
+            ],
+            'choice_options' => [
+                'diary-keeper.user-identifier.media-type.choices.transcribe.label' => [
+                    'help' => 'diary-keeper.user-identifier.media-type.choices.transcribe.help',
                 ],
                 'diary-keeper.user-identifier.media-type.choices.paper.label' => [
                     'help' => 'diary-keeper.user-identifier.media-type.choices.paper.help',
@@ -56,7 +73,7 @@ class UserIdentifierType extends AbstractType
             'error_bubbling' => false,
         ]);
 
-        $builder->addEventListener(FormEvents::PRE_SET_DATA, function(FormEvent $event) {
+        $builder->addEventListener(FormEvents::PRE_SET_DATA, function(FormEvent $event): void {
             /** @var DiaryKeeper $data */
             $data = $event->getData();
             $form = $event->getForm();
@@ -97,17 +114,13 @@ class UserIdentifierType extends AbstractType
                             'class' => DiaryKeeper::class,
                             'multiple' => true,
                             'expanded' => true,
-                            'choice_label' => function () {
-                                return "diary-keeper.label";
-                            },
+                            'choice_label' => fn(): string => "diary-keeper.label",
                             'choice_translation_domain' => 'on-boarding',
-                            'choice_translation_parameters' => function (DiaryKeeper $choice) {
-                                return [
-                                    'name' => $choice->getName(),
-                                    'username' => $choice->getUser() ? $choice->getUser()->getUsername() : 'none',
-                                    'hasEmail' => $choice->hasIdentifierForLogin() ? 1 : 0,
-                                ];
-                            },
+                            'choice_translation_parameters' => fn(DiaryKeeper $choice): array => [
+                                'name' => $choice->getName(),
+                                'username' => $choice->getUser() ? $choice->getUser()->getUserIdentifier() : 'none',
+                                'hasEmail' => $choice->hasIdentifierForLogin() ? 1 : 0,
+                            ],
                             'choices' => $choices,
                             'choice_options' => $choiceOpts,
                             'property_path' => 'diaryKeeper.proxies',
@@ -118,15 +131,24 @@ class UserIdentifierType extends AbstractType
         });
     }
 
-    public function configureOptions(OptionsResolver $resolver)
+    public function configureOptions(OptionsResolver $resolver): void
     {
         $resolver->setDefaults([
             'data_class' => DiaryKeeper::class,
             'translation_domain' => 'on-boarding',
-            'validation_groups' => function(FormInterface $form) {
+            'validation_groups' => function(FormInterface $form): array {
                 $groups = ['wizard.on-boarding.diary-keeper.media-type'];
-                if ($form->getData()->getMediaType() === DiaryKeeper::MEDIA_TYPE_DIGITAL) {
+                /** @var DiaryKeeper $formData */
+                $formData = $form->getData();
+                if ($formData->getMediaType() === DiaryKeeper::MEDIA_TYPE_DIGITAL) {
                     $groups[] = 'wizard.on-boarding.diary-keeper.user-identifier';
+                }
+                // this is intentionally requesting the media type data, and not the DiaryKeeper mediaType
+                if ($form->get('mediaType')->getData() === 'other') {
+                    $groups[] = 'wizard.on-boarding.diary-keeper.media-type.other';
+                }
+                if ($formData->getHousehold()->getAreaPeriod()->getTrainingInterviewer()) {
+                    $groups[] = 'wizard.on-boarding.direct.interviewer-training';
                 }
 
                 return $groups;

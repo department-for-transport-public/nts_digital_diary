@@ -24,10 +24,10 @@ class EaseOfUseType extends AbstractType
             'label' => 'satisfaction.ease-of-use.label',
             'help' => 'satisfaction.ease-of-use.help',
             'choices' => array_combine(
-                array_map(fn(string $choice) => "satisfaction.ease-of-use.choices.{$choice}", $easeOfUseChoices),
+                array_map(fn(string $choice): string => "satisfaction.ease-of-use.choices.{$choice}", $easeOfUseChoices),
                 $easeOfUseChoices,
             ),
-            'label_attr' => ['class' => 'govuk-label--m']
+            'label_attr' => ['class' => 'govuk-fieldset__legend--m']
         ]);
     }
 

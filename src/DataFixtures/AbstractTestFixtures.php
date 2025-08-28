@@ -53,7 +53,7 @@ abstract class AbstractTestFixtures extends Fixture implements FixtureGroupInter
     /** @var Method[] */
     protected array $methods = [];
 
-    protected function createTestDiary(int $areaSerial, int $householdNo, string $startDate, $dkEmail, $dkName)
+    protected function createTestDiary(int $areaSerial, int $householdNo, string $startDate, string $dkEmail, string $dkName)
     {
         $entities = [];
         $entities[] = $area = $this->areaPeriods[$areaSerial] ?? $this->createAreaPeriod($areaSerial);
@@ -79,7 +79,7 @@ abstract class AbstractTestFixtures extends Fixture implements FixtureGroupInter
         return $area;
     }
 
-    protected function createInterviewer($name, $email, $serial, ?array $areas = null): Interviewer {
+    protected function createInterviewer(?string $name, ?string $email, ?string $serial, ?array $areas = null): Interviewer {
         $interviewer = (new Interviewer())
             ->setName($name)
             ->setSerialId($serial)
@@ -110,6 +110,7 @@ abstract class AbstractTestFixtures extends Fixture implements FixtureGroupInter
     protected function createVehicle(Household $household, string $name, string $methodKey): Vehicle {
         $method = $this->getMethodByKey($methodKey);
         assertSame(Method::TYPE_PRIVATE, $method->getType());
+
         $vehicle = (new Vehicle())
             ->setHousehold($household)
             ->setFriendlyName($name)
@@ -138,7 +139,6 @@ abstract class AbstractTestFixtures extends Fixture implements FixtureGroupInter
         $isStartHome = $startLocation === 'Home';
         $isEndHome = $endLocation === 'Home';
         return (new Journey())
-            ->setIsPartial(false)
             ->setPurpose($purpose)
             ->setDiaryDay($diaryKeeper->getDiaryDayByNumber($day))
             ->setIsStartHome($isStartHome)
@@ -151,7 +151,7 @@ abstract class AbstractTestFixtures extends Fixture implements FixtureGroupInter
 
     protected function getMethodByKey(string $methodKey): ?Method
     {
-        return current(array_filter($this->methods, fn(Method $m) => $m->getDescriptionTranslationKey() === $methodKey));
+        return current(array_filter($this->methods, fn(Method $m): bool => $m->getDescriptionTranslationKey() === $methodKey));
     }
 
     protected function createBaseStage(string $methodKey, ?string $methodOther, string $distance, int $adultCount, int $travelTime): Stage {
@@ -189,13 +189,11 @@ abstract class AbstractTestFixtures extends Fixture implements FixtureGroupInter
         return $stage;
     }
 
-    protected function createPrivateStage(Journey $journey, string $methodKey, ?string $methodOther, $vehicle, string $distance, int $adultCount, int $travelTime, ?string $parkingCost = null, bool $isDriver = true): Stage {
+    protected function createPrivateStage(Journey $journey, string $methodKey, ?string $methodOther, Vehicle $vehicle, string $distance, int $adultCount, int $travelTime, ?string $parkingCost = null, bool $isDriver = true): Stage {
         $stage = $this->createBaseStage($methodKey, $methodOther, $distance, $adultCount, $travelTime);
         assertSame(Method::TYPE_PRIVATE, $stage->getMethod()->getType());
 
-        $vehicle instanceof Vehicle
-            ? $stage->setVehicle($vehicle)
-            : $stage->setVehicleOther($vehicleName);
+        $stage->setVehicle($vehicle);
 
         if ($journey->getDiaryDay()->getDiaryKeeper()->getIsAdult()) {
             $stage

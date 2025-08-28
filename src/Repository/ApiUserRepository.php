@@ -60,10 +60,8 @@ class ApiUserRepository extends ServiceEntityRepository implements UserLoaderInt
         $qb =  $this->createQueryBuilder('u');
         $qb
             ->where('u.key = :identifier')
-            ->setParameters([
-                'identifier' => $identifier,
-            ])
-        ;
+            ->setParameter('identifier', $identifier);
+
         return $qb
             ->getQuery()
             ->getOneOrNullResult();

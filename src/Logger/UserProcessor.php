@@ -3,7 +3,9 @@
 namespace App\Logger;
 
 use Monolog\Attribute\AsMonologProcessor;
+use Monolog\LogRecord;
 use Symfony\Component\Security\Core\Authentication\Token\Storage\TokenStorageInterface;
+use Symfony\Component\Security\Core\Authentication\Token\SwitchUserToken;
 
 #[AsMonologProcessor]
 class UserProcessor
@@ -12,11 +14,15 @@ class UserProcessor
         protected TokenStorageInterface $tokenStorage,
     ) {}
 
-    public function __invoke(array $context): array
+    public function __invoke(LogRecord $record): LogRecord
     {
         $token = $this->tokenStorage->getToken();
-        $context['context']['_ghost_meta']['user_identifier'] = $token?->getUser()?->getUserIdentifier();
+        $record->extra['_ghost_meta']['user_identifier'] = $token?->getUser()?->getUserIdentifier();
+        $record->extra['_ghost_meta']['original_user_identifier'] =
+            $token instanceof SwitchUserToken
+                ? $token?->getOriginalToken()?->getUser()?->getUserIdentifier()
+                : null;
 
-        return $context;
+        return $record;
     }
 }

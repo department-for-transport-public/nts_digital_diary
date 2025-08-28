@@ -2,14 +2,13 @@
 
 namespace App\Repository;
 
-use App\Entity\AreaPeriod;
 use App\Entity\Interviewer;
 use App\Entity\InterviewerTrainingRecord;
 use App\Entity\User;
 use Doctrine\Bundle\DoctrineBundle\Repository\ServiceEntityRepository;
 use Doctrine\ORM\Query\Expr;
 use Doctrine\Persistence\ManagerRegistry;
-use Symfony\Component\Security\Core\Security;
+use Symfony\Bundle\SecurityBundle\Security;
 
 /**
  * @method InterviewerTrainingRecord|null find($id, $lockMode = null, $lockVersion = null)
@@ -19,12 +18,11 @@ use Symfony\Component\Security\Core\Security;
  */
 class InterviewerTrainingRecordRepository extends ServiceEntityRepository
 {
-    private Security $security;
-
-    public function __construct(ManagerRegistry $registry, Security $security)
-    {
+    public function __construct(
+        ManagerRegistry             $registry,
+        protected readonly Security $security,
+    ) {
         parent::__construct($registry, InterviewerTrainingRecord::class);
-        $this->security = $security;
     }
 
     /**
@@ -42,11 +40,10 @@ class InterviewerTrainingRecordRepository extends ServiceEntityRepository
             ->where('itr.interviewer = :interviewer')->setParameter('interviewer', $interviewer)
             ->andWhere('itr2.createdAt IS NULL')
             ->getQuery()
-            ->execute()
-            ;
+            ->execute();
         usort(
             $results,
-            fn(InterviewerTrainingRecord $a, InterviewerTrainingRecord $b) => $a->getModuleNumber() <=> $b->getModuleNumber()
+            fn(InterviewerTrainingRecord $a, InterviewerTrainingRecord $b): int => $a->getModuleNumber() <=> $b->getModuleNumber()
         );
         return $results;
     }

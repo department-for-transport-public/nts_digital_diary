@@ -39,7 +39,7 @@ class BurdenOfUseType extends AbstractType
                 'label' => 'satisfaction.burden-of-use.label',
                 'help' => 'satisfaction.burden-of-use.help',
                 'choices' => array_combine(
-                    array_map(fn(string $choice) => "satisfaction.burden-of-use.choices.{$choice}", $burdenOfUseChoices),
+                    array_map(fn(string $choice): string => "satisfaction.burden-of-use.choices.{$choice}", $burdenOfUseChoices),
                     $burdenOfUseChoices,
                 ),
                 'choice_options' => [
@@ -49,13 +49,13 @@ class BurdenOfUseType extends AbstractType
                         ],
                     ],
                 ],
-                'label_attr' => ['class' => 'govuk-label--m'],
+                'label_attr' => ['class' => 'govuk-fieldset__legend--m'],
             ])
             ->add('burdenReason', ChoiceType::class, [
                 'label' => 'satisfaction.burden-reason.label',
                 'help' => 'satisfaction.burden-reason.help',
                 'choices' => array_combine(
-                    array_map(fn(string $choice) => "satisfaction.burden-reason.choices.{$choice}", $burdenReasonChoices),
+                    array_map(fn(string $choice): string => "satisfaction.burden-reason.choices.{$choice}", $burdenReasonChoices),
                     $burdenReasonChoices,
                 ),
                 'choice_options' => [
@@ -63,7 +63,7 @@ class BurdenOfUseType extends AbstractType
                         'conditional_form_name' => "burdenReasonOther",
                     ],
                 ],
-                'label_attr' => ['class' => 'govuk-label--m'],
+                'label_attr' => ['class' => 'govuk-fieldset__legend--m'],
                 'multiple' => true,
                 'fieldset_attr' => ['data-hidden-by-default' => true, 'class' => 'govuk-!-margin-top-8'],
             ])
@@ -72,7 +72,7 @@ class BurdenOfUseType extends AbstractType
                 'help' => 'satisfaction.burden-reason-other.help',
                 'label_attr' => ['class' => 'govuk-label--s'],
             ])
-            ->addEventListener(FormEvents::POST_SUBMIT, function(PostSubmitEvent $event) {
+            ->addEventListener(FormEvents::POST_SUBMIT, function(PostSubmitEvent $event): void {
                 /** @var SatisfactionSurvey $data */
                 $data = $event->getData();
 

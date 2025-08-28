@@ -3,23 +3,20 @@
 namespace App\Tests\Functional\Wizard\Action;
 
 use App\Tests\Functional\Wizard\Form\AbstractFormTestCase;
+use Facebook\WebDriver\Exception\NoSuchElementException;
 use Facebook\WebDriver\WebDriverBy;
+use Facebook\WebDriver\WebDriverElement;
 use Symfony\Component\Panther\Client;
 use Symfony\Component\Panther\ServerExtension;
-use function PHPUnit\Framework\assertCount;
-use function PHPUnit\Framework\assertEmpty;
-use function PHPUnit\Framework\assertEquals;
-use function PHPUnit\Framework\assertNotContains;
-use function PHPUnit\Framework\assertStringNotContainsStringIgnoringCase;
 
 abstract class AbstractFormTestAction extends PathTestAction
 {
-    protected ?string $submitButtonId;
-
-    public function __construct(string $expectedPath, string $submitButtonId = null, array $options = [])
-    {
+    public function __construct(
+        string            $expectedPath,
+        protected ?string $submitButtonId = null,
+        array             $options = []
+    ) {
         parent::__construct($expectedPath, $options);
-        $this->submitButtonId = $submitButtonId;
     }
 
     public function getSubmitButtonId(): ?string
@@ -27,7 +24,7 @@ abstract class AbstractFormTestAction extends PathTestAction
         return $this->submitButtonId;
     }
 
-    protected function checkErrors(Context $context, int $testCaseIdx, array $expectedErrors)
+    protected function checkErrors(Context $context, int $testCaseIdx, array $expectedErrors): void
     {
         if (empty($expectedErrors)) {
             return;
@@ -39,13 +36,13 @@ abstract class AbstractFormTestAction extends PathTestAction
         $actualErrors = $this->getErrors($context->getClient());
         $missingErrors = [];
         $excessErrors = [];
-        foreach ($expectedErrors as $k => $v) {
+        foreach($expectedErrors as $k => $v) {
             if (!isset($actualErrors[$k])) {
                 $missingErrors[] = $k;
             }
         }
 
-        foreach ($actualErrors as $k => $v) {
+        foreach($actualErrors as $k => $v) {
             $testCase->assertDoesNotMatchRegularExpression('/^[\w\-]+(\.[\w\-]+)+$/', $v, "Action[$actionIndex]/Form[$testCaseIdx]: Error message appears to be un-translated");
             if (!isset($expectedErrors[$k])) {
                 $excessErrors[] = $k;
@@ -70,7 +67,7 @@ abstract class AbstractFormTestAction extends PathTestAction
         $nodes = $client->findElements(WebDriverBy::xpath("//ul[contains(concat(' ',normalize-space(@class),' '),' govuk-error-summary__list ')]/li/a"));
 
         $errors = [];
-        foreach ($nodes as $node) {
+        foreach($nodes as $node) {
             $errors[$node->getAttribute('href')] = $node->getText();
         }
         return $errors;
@@ -117,10 +114,10 @@ abstract class AbstractFormTestAction extends PathTestAction
 
         $this->outputPathDebug($context, $expectedPath, $expectedPathIsRegex, 'a.');
 
-        $context->getTestCase()->assertPathMatches($expectedPath, $expectedPathIsRegex);
+        $testCase->assertPathMatches($expectedPath, $expectedPathIsRegex);
         $savedFormData = $this->getBrowserSideSavedFormData($client);
 
-        foreach ($formTestCases as $testCaseIdx => $formTestCase) {
+        foreach($formTestCases as $testCaseIdx => $formTestCase) {
             $submitButtonId = $formTestCase->getSubmitButtonId() ?? $wizardSubmitButtonId;
 
             try {
@@ -134,10 +131,58 @@ abstract class AbstractFormTestAction extends PathTestAction
                 }
 
                 $submitButtonNode = $client->getCrawler()->selectButton($submitButtonId);
-                $formSubmissionData = PantherBugWorkaround::clearMentionedMultiSelections($submitButtonNode, $formSubmissionData, $client);
 
-                // Fill form and submit as per Client->submitForm(), but with a screenshot taken in the middle...
-                $form = $submitButtonNode->form($formSubmissionData, 'POST');
+                try {
+                    $formSubmissionData = PantherBugWorkaround::clearMentionedMultiSelections($submitButtonNode, $formSubmissionData, $client);
+
+                    // Fill form and submit as per Client->submitForm(), but with a screenshot taken in the middle...
+                    $form = $submitButtonNode->form($formSubmissionData, 'POST');
+                } catch (NoSuchElementException $e) {
+                    $formElements = $client->findElements(WebDriverBy::xpath('//input|//select|//textarea'));
+
+                    $formElementNames = [];
+
+                    foreach($formElements as $element) {
+                        $tagName = strtolower($element->getTagName());
+                        $name = $element->getAttribute('name');
+                        $value = $element->getAttribute('value');
+
+                        if ($tagName === 'select') {
+                            $options = $element->findElements(WebDriverBy::xpath('option'));
+                            $formElementNames[$name] ??= [];
+
+                            foreach($options as $option) {
+                                $optionValue = $option->getAttribute('value');
+                                $optionName = $option->getText();
+
+                                $formElementNames[$name][] = "{$optionValue}: '{$optionName}'";
+                            }
+                        } else {
+                            $type = $element->getAttribute('type');
+
+                            if (!str_contains((string) $name, '_token')) {
+                                if (in_array($type, ['radio', 'checkbox'])) {
+                                    $formElementNames[$name] ??= [];
+                                    $formElementNames[$name][] = $value;
+                                } else {
+                                    $formElementNames[$name] ??= true;
+                                }
+                            }
+                        }
+                    }
+
+                    $message = "NoSuchElement\nAvailable form elements:\n";
+                    foreach($formElementNames as $name => $values) {
+                        $message .= "  - $name";
+                        if (is_array($values)) {
+                            $possibilities = join(', ', $values);
+                            $message .= " (Choices: $possibilities)";
+                        }
+                        $message .= "\n";
+                    }
+
+                    throw new \Exception($message, 0, $e);
+                }
 
                 $this->outputPostFormFillDebug($context, $testCaseIdx);
 
@@ -145,13 +190,20 @@ abstract class AbstractFormTestAction extends PathTestAction
 
                 $this->outputPostFormSubmitDebug($context, $testCaseIdx);
             } catch (\InvalidArgumentException $e) {
-                throw new \InvalidArgumentException("Unable to fetch button with ID #$submitButtonId");
+                $buttons = $client->findElements(WebDriverBy::cssSelector('button'));
+                $buttonsWithIds = array_filter(array_map(fn(WebDriverElement $e) => $e->getAttribute('ID'), $buttons), fn($x): bool => $x !== null);
+
+                $hints = empty($buttonsWithIds) ?
+                    "(None available)" :
+                    "(Available buttons: " . join(', ', $buttonsWithIds) . ")";
+
+                throw new \InvalidArgumentException("Unable to fetch button with ID #{$submitButtonId} {$hints}");
             }
 
             // we can't test response code, so we search for an exception heading
             $nodeCount = $client->getCrawler()->filter('h1.exception-message')->count();
             $message = $nodeCount > 0 ? "Symfony exception: {$client->getCrawler()->filter('h1.exception-message')->getText()}" : "";
-            assertEmpty($message, $message);
+            $testCase->assertEmpty($message, $message);
 
             $this->checkErrors($context, $testCaseIdx, array_flip($expectedErrorIds));
 
@@ -172,8 +224,8 @@ abstract class AbstractFormTestAction extends PathTestAction
         if ($this->isAtLeastDebugLevel($context, 2)) {
 
             $data = [];
-            foreach ($formSubmissionData as $field => $value) {
-                $wrap = fn($s) => '"'.$s.'"';
+            foreach($formSubmissionData as $field => $value) {
+                $wrap = fn($s): string => '"' . $s . '"';
                 $value = is_array($value) ? ('[' . join(', ', array_map($wrap, $value)) . ']') : $wrap($value);
                 $data[] = "$field=$value";
             }
@@ -208,10 +260,16 @@ abstract class AbstractFormTestAction extends PathTestAction
         $actionIdx = intval($context->get('_actionIndex')) + 1;
 
         // Remove filename unsafe characters
-        $dataSetName = str_replace(array_merge(
-            array_map('chr', range(0, 31)),
-            array('<', '>', ':', '"', '/', '\\', '|', '?', '*')
-        ), '', $context->getTestCase()->getDataSetName());
+        $dataSetName = $context->getTestCase()->getDataSetName();
+
+        if ($dataSetName) {
+            $dataSetName = str_replace(array_merge(
+                array_map('chr', range(0, 31)),
+                ['<', '>', ':', '"', '/', '\\', '|', '?', '*']
+            ), '', $dataSetName);
+        } else {
+            $dataSetName = '';
+        }
 
         $context->getOutput()
             ->writeln("     <comment>Screenshot data   :</comment> {$actionIdx}{$testCaseLetter}-{$typeSuffix}, {$dataSetName}\n");

@@ -2,33 +2,29 @@
 
 namespace App\Controller\TravelDiary;
 
-use App\Annotation\Redirect;
-use App\Controller\FormWizard\AbstractSessionStateFormWizardController;
+use App\Attribute\Redirect;
 use App\Entity\Journey\Journey;
 use App\Entity\Journey\Stage;
-use App\FormWizard\FormWizardManager;
-use App\FormWizard\FormWizardStateInterface;
-use App\FormWizard\Place;
-use App\FormWizard\PropertyMerger;
 use App\FormWizard\TravelDiary\SplitJourneyState;
 use App\FormWizard\TravelDiary\SplitJourneySubject;
 use App\Repository\DiaryDayRepository;
 use App\Utility\TravelDiary\SplitJourneyHelper;
 use Brick\Math\RoundingMode;
-use Sensio\Bundle\FrameworkExtraBundle\Configuration\Entity;
+use Ghost\GovUkCoreBundle\Controller\FormWizard\AbstractSessionStateFormWizardController;
+use Ghost\GovUkCoreBundle\FormWizard\FormWizardManager;
+use Ghost\GovUkCoreBundle\FormWizard\FormWizardStateInterface;
+use Ghost\GovUkCoreBundle\FormWizard\Place;
+use Ghost\GovUkCoreBundle\FormWizard\PropertyMerger;
+use Symfony\Bridge\Doctrine\Attribute\MapEntity;
 use Symfony\Component\HttpFoundation\RedirectResponse;
 use Symfony\Component\HttpFoundation\Request;
 use Symfony\Component\HttpFoundation\RequestStack;
 use Symfony\Component\HttpFoundation\Response;
-use Symfony\Component\Routing\Annotation\Route;
+use Symfony\Component\Routing\Attribute\Route;
 use Symfony\Component\Serializer\Exception\ExceptionInterface;
 
-/**
- * @Route("/journey/{journeyId}/split-journey", name="split_journey_wizard_")
- * @Entity("sourceJourney", expr="repository.findByJourneyId(journeyId)")
- *
- * @Redirect("!impersonator_is_granted('CAN_SPLIT_JOURNEY', sourceJourney)", route="traveldiary_dashboard")
- */
+#[Redirect("!impersonator_is_granted('CAN_SPLIT_JOURNEY', args['sourceJourney'])", route: "traveldiary_dashboard")]
+#[Route(path: '/journey/{journeyId}/split-journey', name: 'split_journey_wizard_')]
 class SplitJourneyWizardController extends AbstractSessionStateFormWizardController
 {
     private Journey $sourceJourney;
@@ -60,19 +56,24 @@ class SplitJourneyWizardController extends AbstractSessionStateFormWizardControl
     public function __construct(
         protected DiaryDayRepository $diaryDayRepository,
         protected SplitJourneyHelper $splitJourneyHelper,
-        FormWizardManager $formWizardManager,
-        RequestStack $requestStack,
-        PropertyMerger $propertyMerger,
+        FormWizardManager            $formWizardManager,
+        RequestStack                 $requestStack,
+        PropertyMerger               $propertyMerger,
     ) {
         parent::__construct($formWizardManager, $requestStack, $propertyMerger);
     }
 
     /**
-     * @Route("/{place}", name="place")
-     * @Route("", name="start")
      * @throws ExceptionInterface
      */
-    public function index(Request $request, Journey $sourceJourney, ?string $place = null): Response
+    #[Route(path: '/{place}', name: 'place')]
+    #[Route(path: '', name: 'start')]
+    public function index(
+        Request $request,
+        #[MapEntity(expr: "repository.findByJourneyId(journeyId)")]
+        Journey $sourceJourney,
+        ?string $place = null
+    ): Response
     {
         $this->sourceJourney = $sourceJourney;
 
@@ -171,7 +172,7 @@ class SplitJourneyWizardController extends AbstractSessionStateFormWizardControl
 
             // Reload diaryDay from DB
             $destinationJourney = $subject->getDestinationJourney();
-            $destinationJourney = $this->propertyMerger->merge($destinationJourney, $destinationJourney,self::DESTINATION_MERGE_PROPERTIES);
+            $destinationJourney = $this->propertyMerger->merge($destinationJourney, $destinationJourney, self::DESTINATION_MERGE_PROPERTIES);
 
             $destinationJourney->getStages()->first()->setMethod($this->sourceJourney->getStages()->first()->getMethod());
 

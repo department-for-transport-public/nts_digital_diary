@@ -5,21 +5,20 @@ namespace App\Controller\OnBoarding;
 use App\Controller\AbstractController;
 use App\Entity\OtpUser;
 use App\Event\CompleteOnboardingEvent;
+use App\EventSubscriber\Onboarding\OnboardingType;
 use App\Form\OnBoarding\ConfirmHouseholdType;
 use Psr\EventDispatcher\EventDispatcherInterface;
-use Sensio\Bundle\FrameworkExtraBundle\Configuration\IsGranted;
 use Symfony\Component\HttpFoundation\Request;
 use Symfony\Component\HttpFoundation\Response;
-use Symfony\Component\Routing\Annotation\Route;
+use Symfony\Component\Routing\Attribute\Route;
+use Symfony\Component\Security\Http\Attribute\IsGranted;
 
 class SubmitController extends AbstractController
 {
     public function __construct(private readonly EventDispatcherInterface $eventDispatcher) {}
 
-    /**
-     * @Route("/submit", name="submit")
-     * @IsGranted("ONBOARDING_EDIT")
-     */
+    #[Route(path: '/submit', name: 'submit')]
+    #[IsGranted('ONBOARDING_EDIT')]
     public function showSummary(Request $request): Response
     {
         /** @var OtpUser $user */
@@ -38,12 +37,12 @@ class SubmitController extends AbstractController
 
         $form->handleRequest($request);
         if ($form->isSubmitted() && $form->isValid()) {
-            $this->eventDispatcher->dispatch(new CompleteOnboardingEvent($household));
+            $this->eventDispatcher->dispatch(new CompleteOnboardingEvent($household, OnboardingType::LEGACY));
             return $this->redirectToRoute('onboarding_dashboard');
         }
 
         return $this->render('on_boarding/submit/index.html.twig', [
-            'form' => $form->createView(),
+            'form' => $form,
         ]);
     }
 }

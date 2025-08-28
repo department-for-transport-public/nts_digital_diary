@@ -2,22 +2,22 @@
 
 namespace App\ListPage\Admin;
 
-use App\ListPage\AbstractListPage;
-use App\ListPage\Field\Simple;
-use App\ListPage\Field\TextFilter;
 use App\Repository\InterviewerRepository;
 use Doctrine\ORM\QueryBuilder;
+use Ghost\GovUkCoreBundle\ListPage\AbstractListPage;
+use Ghost\GovUkCoreBundle\ListPage\Field\Simple;
+use Ghost\GovUkCoreBundle\ListPage\Field\TextFilter;
 use Symfony\Component\Form\FormFactoryInterface;
 use Symfony\Component\Routing\RouterInterface;
 
 class InterviewerListPage extends AbstractListPage
 {
-    private InterviewerRepository $repository;
-
-    public function __construct(InterviewerRepository $repository, FormFactoryInterface $formFactory, RouterInterface $router)
-    {
+    public function __construct(
+        protected readonly InterviewerRepository $repository,
+        FormFactoryInterface                     $formFactory,
+        RouterInterface                          $router,
+    ) {
         parent::__construct($formFactory, $router);
-        $this->repository = $repository;
     }
 
     protected function getFieldsDefinition(): array
@@ -43,5 +43,4 @@ class InterviewerListPage extends AbstractListPage
             Simple::generateId('name') => 'ASC',
         ];
     }
-
 }

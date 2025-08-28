@@ -2,18 +2,11 @@
 
 namespace App\Form\TravelDiary\ShareJourneyWizard;
 
-use App\Entity\DiaryKeeper;
-use App\Entity\Journey\Journey;
 use App\Entity\Journey\Method;
 use App\Entity\Journey\Stage;
-use Ghost\GovUkFrontendBundle\Form\Type\InputType;
 use Symfony\Component\Form\AbstractType;
-use Symfony\Component\Form\Event\PreSetDataEvent;
 use Symfony\Component\Form\Extension\Core\Type\CollectionType;
 use Symfony\Component\Form\Form;
-use Symfony\Component\Form\FormBuilderInterface;
-use Symfony\Component\Form\FormEvents;
-use Symfony\Component\Form\Test\FormInterface;
 use Symfony\Component\OptionsResolver\OptionsResolver;
 
 class StageDetailsCollectionType extends AbstractType
@@ -23,12 +16,12 @@ class StageDetailsCollectionType extends AbstractType
         return CollectionType::class;
     }
 
-    public function configureOptions(OptionsResolver $resolver)
+    public function configureOptions(OptionsResolver $resolver): void
     {
         $resolver->setDefaults([
             'allow_add' => false,
             'allow_delete' => false,
-            'validation_groups' => function(Form $form) {
+            'validation_groups' => function(Form $form): array {
                 /** @var Stage $firstStage */
                 $firstStage = $form->getData()->first();
                 return match($firstStage->getMethod()->getType()) {

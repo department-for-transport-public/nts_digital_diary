@@ -6,8 +6,8 @@ namespace App\FormWizard\TravelDiary;
 
 use App\Entity\Journey\Journey;
 use App\Entity\Journey\Stage;
-use App\FormWizard\AbstractFormWizardState;
-use App\FormWizard\Place;
+use Ghost\GovUkCoreBundle\FormWizard\AbstractFormWizardState;
+use Ghost\GovUkCoreBundle\FormWizard\Place;
 
 abstract class AbstractDuplicateJourneyState extends AbstractFormWizardState
 {
@@ -51,16 +51,10 @@ abstract class AbstractDuplicateJourneyState extends AbstractFormWizardState
 
     public function getPlaceRouteParameters($place = null): array
     {
-        $place = $place ?? $this->place;
+        $place ??= $this->place;
         return [
             'place' => $place,
             'stageNumber' => $place instanceof Place ? $place->getContextValue('stageNumber') : null,
         ];
     }
-
-    public function getPreviousHistoryPlaceRouteParameters(): array
-    {
-        return $this->getPlaceRouteParameters($this->getPreviousHistoryPlace());
-    }
-
 }

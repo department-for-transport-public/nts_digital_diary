@@ -13,7 +13,7 @@ use Doctrine\ORM\NonUniqueResultException;
 use Doctrine\ORM\Query\Expr\OrderBy;
 use Doctrine\ORM\QueryBuilder;
 use Doctrine\Persistence\ManagerRegistry;
-use Symfony\Component\Security\Core\Security;
+use Symfony\Bundle\SecurityBundle\Security;
 
 /**
  * @method DiaryKeeper|null findOneBy(array $criteria, array $orderBy = null)
@@ -22,12 +22,9 @@ use Symfony\Component\Security\Core\Security;
  */
 class DiaryKeeperRepository extends ServiceEntityRepository
 {
-    private Security $security;
-
-    public function __construct(ManagerRegistry $registry, Security $security)
+    public function __construct(ManagerRegistry $registry, protected Security $security)
     {
         parent::__construct($registry, DiaryKeeper::class);
-        $this->security = $security;
     }
 
     public function getQueryBuilderForShareJourneyWhoWith(): QueryBuilder
@@ -38,10 +35,8 @@ class DiaryKeeperRepository extends ServiceEntityRepository
             ->leftJoin('diary_keeper.household', 'household')
             ->where('household = :household')
             ->andWhere('diary_keeper <> :diaryKeeper')
-            ->setParameters([
-                'household' => $user->getDiaryKeeper()->getHousehold(),
-                'diaryKeeper' => $user->getDiaryKeeper(),
-            ]);
+            ->setParameter('household', $user->getDiaryKeeper()->getHousehold())
+            ->setParameter('diaryKeeper', $user->getDiaryKeeper());
     }
 
     public function findByInterviewer(Interviewer $interviewer)
@@ -71,12 +66,10 @@ class DiaryKeeperRepository extends ServiceEntityRepository
             }
 
             return $qb
-                ->setParameters([
-                    'id' => $user->getDiaryKeeper()->getId(),
-                ])
+                ->setParameter('id', $user->getDiaryKeeper()->getId())
                 ->getQuery()
                 ->getOneOrNullResult();
-        } catch (NonUniqueResultException $e) {
+        } catch (NonUniqueResultException) {
             return null;
         }
     }
@@ -112,9 +105,7 @@ class DiaryKeeperRepository extends ServiceEntityRepository
         $qb = $this->createQueryBuilder('dk')
             ->leftJoin('dk.user', 'u')
             ->where('dk.household = :household')
-            ->setParameters([
-                'household' => $household,
-            ])
+            ->setParameter('household', $household)
             ->orderBy('dk.number', 'ASC');
 
         if ($diaryKeeperForExclusion->getId()) {
@@ -127,14 +118,17 @@ class DiaryKeeperRepository extends ServiceEntityRepository
 
     public function getCommonLocations(DiaryKeeper $diaryKeeper): array
     {
+        $entityManager = $this->getEntityManager();
+        
         // N.B. min(j.id) is used as an orderBy parameter to enforce a consistent result order whilst appearing random
         //      (i.e. avoids picking the results alphabetically)
-        $starts = $this->_em->createQueryBuilder()
+        $starts = $entityManager->createQueryBuilder()
             ->select('j.startLocation, count(j.startLocation) as locCount, min(j.id) as minId')
             ->from(Journey::class, 'j')
             ->join('j.diaryDay', 'dd')
             ->where('dd.diaryKeeper = :dk')
             ->andWhere('j.startLocation is not null')
+            ->andWhere('dd.number > 0')
             ->groupBy('j.startLocation')
             ->orderBy(new OrderBy('count(j.startLocation)', 'DESC'))
             ->addOrderBy('minId')
@@ -142,12 +136,13 @@ class DiaryKeeperRepository extends ServiceEntityRepository
             ->getQuery()
             ->execute();
 
-        $ends = $this->_em->createQueryBuilder()
+        $ends = $entityManager->createQueryBuilder()
             ->select('j.endLocation, count(j.endLocation) as locCount, min(j.id) as minId')
             ->from(Journey::class, 'j')
             ->join('j.diaryDay', 'dd')
             ->where('dd.diaryKeeper = :dk')
             ->andWhere('j.endLocation is not null')
+            ->andWhere('dd.number > 0')
             ->groupBy('j.endLocation')
             ->orderBy(new OrderBy('count(j.endLocation)', 'DESC'))
             ->addOrderBy('minId')
@@ -155,11 +150,12 @@ class DiaryKeeperRepository extends ServiceEntityRepository
             ->getQuery()
             ->execute();
 
-        $mostRecent = $this->_em->createQueryBuilder()
+        $mostRecent = $entityManager->createQueryBuilder()
             ->select('j.endLocation')
             ->from(Journey::class, 'j')
             ->join('j.diaryDay', 'dd')
             ->where('dd.diaryKeeper = :dk')
+            ->andWhere('dd.number > 0')
             ->orderBy('j.id', 'DESC')
             ->setParameter('dk', $diaryKeeper)
             ->getQuery()

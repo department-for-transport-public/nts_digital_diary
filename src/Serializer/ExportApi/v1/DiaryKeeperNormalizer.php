@@ -3,15 +3,16 @@
 namespace App\Serializer\ExportApi\v1;
 
 use App\Entity\DiaryKeeper;
+use App\Entity\Journey\Journey;
 use Symfony\Component\Serializer\Exception\ExceptionInterface;
-use Symfony\Component\Serializer\Normalizer\ContextAwareNormalizerInterface;
 use Symfony\Component\Serializer\Normalizer\NormalizerAwareInterface;
 use Symfony\Component\Serializer\Normalizer\NormalizerAwareTrait;
+use Symfony\Component\Serializer\Normalizer\NormalizerInterface;
 
-class DiaryKeeperNormalizer implements ContextAwareNormalizerInterface, NormalizerAwareInterface
+class DiaryKeeperNormalizer implements NormalizerInterface, NormalizerAwareInterface
 {
-    const CHANGELOG_KEY = 'change-log';
-    const DATE_FORMAT_KEY = 'diary-keeper-date-format';
+    public const CHANGELOG_KEY = 'change-log';
+    public const DATE_FORMAT_KEY = 'diary-keeper-date-format';
 
     use NormalizerAwareTrait;
 
@@ -20,6 +21,13 @@ class DiaryKeeperNormalizer implements ContextAwareNormalizerInterface, Normaliz
         return
             ($context['apiVersion'] ?? 0) === 1
             && $data instanceof DiaryKeeper;
+    }
+
+    public function getSupportedTypes(?string $format): array
+    {
+        return [
+            DiaryKeeper::class => false, // false/not-cacheable because it depends upon the $context
+        ];
     }
 
     /**
@@ -40,7 +48,8 @@ class DiaryKeeperNormalizer implements ContextAwareNormalizerInterface, Normaliz
             'isAdult' => $object->getIsAdult(),
             'mediaType' => $object->getMediaType(),
             'state' => $object->getDiaryState(),
-            'hasUsedPracticeDay' => $object->getPracticeDay()->getJourneys()?->count() > 0,
+            // is the flag is null (older DK), fallback to simple check on number of journeys
+            'hasUsedPracticeDay' => $object->getHasUsedPracticeDay() ?? $object->getPracticeDay()->getJourneys()?->count() !== 2,
             'approvalChecklistVerifiedBy' => $object->getApprovalChecklistVerifiedBy(),
             'approvalChecklistVerifiedAt' => $this->normalizer->normalize($object->getApprovalChecklistVerifiedAt(), $format, $context),
             'days' => $this->normalizer->normalize($object->getDiaryDays()->getValues(), $format, $dayContext),

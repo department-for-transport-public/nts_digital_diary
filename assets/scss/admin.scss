@@ -1,7 +1,30 @@
-@import "govuk-frontend/list-page-table";
+@import "common";
 
 body.nts-admin {
-  * {
-    overflow-wrap: normal;
+  .govuk-width-container {
+    max-width: 1100px;
+  }
+}
+
+/* Household maintenance filter */
+#serialid {
+  .govuk-form-group {
+    display: inline-block;
+    margin-bottom: 0;
+
+    + .govuk-form-group {
+      margin-left: 5px;
+    }
+  }
+}
+
+.break-word {
+  word-break: break-word;
+}
+
+
+.govuk-table.list-table.feedback-message-list {
+  .govuk-select.filter {
+    min-width: 0;
   }
 }

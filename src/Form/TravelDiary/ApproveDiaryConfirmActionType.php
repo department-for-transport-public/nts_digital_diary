@@ -9,7 +9,6 @@ use Ghost\GovUkFrontendBundle\Form\Type as Gds;
 use Symfony\Component\Form\AbstractType;
 use Symfony\Component\Form\FormBuilderInterface;
 use Symfony\Component\OptionsResolver\OptionsResolver;
-use Symfony\Component\Validator\Constraints\Count;
 use Symfony\Component\Validator\Constraints\NotBlank;
 
 class ApproveDiaryConfirmActionType extends AbstractType
@@ -37,27 +36,6 @@ class ApproveDiaryConfirmActionType extends AbstractType
                 ])
             ;
         }
-
-        $choices = [
-            'diary-state.approve.confirm-return-journeys' => 'confirm-return-journeys',
-            'diary-state.approve.split-round-trips' => 'split-round-trips',
-            'diary-state.approve.corrected-no-stages' => 'corrected-no-stages',
-        ];
-
-        if ($this->features->isEnabled(Features::MILOMETER)) {
-            $choices['diary-state.approve.checked-vehicles'] = 'checked-vehicles';
-        }
-
-        $builder
-            ->add('alsoVerified', Gds\ChoiceType::class, [
-                'label' => 'diary-state.approve.also-verify.label',
-                'label_attr' => ['class' => 'govuk-label--s'],
-                'constraints' => [new Count(min: count($choices), minMessage: 'All items must be confirmed')],
-                'priority' => 10,
-                'multiple' => true,
-                'choices' => $choices,
-            ])
-            ;
     }
 
     public function configureOptions(OptionsResolver $resolver): void

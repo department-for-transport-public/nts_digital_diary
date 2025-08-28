@@ -1,0 +1,8 @@
+<div class="prose-scope">
+{%- apply markdown_to_html -%}
+Once you have checked the diaries, you need to approve each one individually, and finally submit the household for processing. The video below will show you how to do this. You can watch this video as many times as you need.
+{%- endapply -%}
+</div>
+
+{% from 'interviewer/training/macros.html.twig' import trainingVideo %}
+{{ trainingVideo('1037781244/d473a28b6b', 'Approve and submit', trainingRecord) }}

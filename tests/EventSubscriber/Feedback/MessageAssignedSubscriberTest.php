@@ -10,6 +10,7 @@ class MessageAssignedSubscriberTest extends AbstractFeedbackSubscriberTest
 {
     public function setUp(): void
     {
+        parent::setUp();
         parent::loadFixturesAndDoSetUp([FeedbackAssignedSubscriberTestFixtures::class]);
     }
 
@@ -42,7 +43,7 @@ class MessageAssignedSubscriberTest extends AbstractFeedbackSubscriberTest
      */
     public function testMessageChange(bool $expectedToDispatch, bool $exceptionExpected, string $messageReference, string $assignTo): void
     {
-        $message = $this->referenceRepository->getReference($messageReference);
+        $message = $this->referenceRepository->getReference($messageReference, Message::class);
         $this->assertInstanceOf(Message::class, $message);
 
         $invocationRule = $expectedToDispatch ?

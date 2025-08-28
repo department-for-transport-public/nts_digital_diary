@@ -3,11 +3,11 @@
 namespace App\Form\TravelDiary;
 
 use App\Entity\Vehicle;
+use App\Form\OldGhostBundle\NumberType;
 use Ghost\GovUkFrontendBundle\Form\Type\ButtonGroupType;
 use Ghost\GovUkFrontendBundle\Form\Type\ButtonType;
 use Ghost\GovUkFrontendBundle\Form\Type\ChoiceType;
 use Ghost\GovUkFrontendBundle\Form\Type\LinkType;
-use Ghost\GovUkFrontendBundle\Form\Type\NumberType;
 use Symfony\Component\Form\AbstractType;
 use Symfony\Component\Form\FormBuilderInterface;
 use Symfony\Component\OptionsResolver\OptionsResolver;
@@ -15,12 +15,8 @@ use Symfony\Component\Routing\RouterInterface;
 
 class VehicleType extends AbstractType
 {
-    private RouterInterface $router;
-
-    public function __construct(RouterInterface $router)
-    {
-        $this->router = $router;
-    }
+    public function __construct(protected readonly RouterInterface $router)
+    {}
 
     public function buildForm(FormBuilderInterface $builder, array $options): void
     {

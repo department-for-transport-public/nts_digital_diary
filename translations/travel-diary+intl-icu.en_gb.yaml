@@ -2,6 +2,9 @@ common:
   cost:
     nil: Nil
 
+time:
+  format-toggle.label: Input format
+
 descriptions:
   day: &dayDescription >-
     {dayNumber, select,
@@ -114,15 +117,19 @@ day:
 
   day-1-walk-details: As this is day 1, include **all** walks and runs.
   introduction-markdown:
-    text: >-
+    text: |-
       {dayNumber, select,
-        0     {Enter some practice journeys and stages in the practice day. Anything you enter here will not be used as part of your travel diary.}
+        0     {Enter some practice journeys and stages in the practice day. Anything you enter here will not be used as part of your travel diary.
+      
+      The practice day already has some example journeys to help get you started.}
         1     {As this is day 1, include **all** walks and runs.}
         other {}
       }
-    text-milometer: >-
+    text-milometer: |-
       {dayNumber, select,
-        0     {Enter some practice journeys and stages in the practice day. Anything you enter here will not be used as part of your travel diary.}
+        0     {Enter some practice journeys and stages in the practice day. Anything you enter here will not be used as part of your travel diary.
+      
+      The practice day already has some example journeys to help get you started.}
         1     {As this is day 1, include **all** walks and runs{vehicleCount, plural, 
                   =0 {}
                   one {, and remember to record the start of week milometer readings for your [vehicle]({vehicleUrl}) at the beginning of the day}
@@ -138,6 +145,7 @@ day:
   notes:
     heading: Notes
     guidance: If there’s anything you’d like to tell us about the journeys you made on this day, please add a note below.
+    guidance-interviewer: Interviewer's notes are not visible to the diary keeper
     heading-diary-keeper: My Notes
 
     add-notes: Add notes
@@ -228,14 +236,8 @@ journey.times:
   page-title: Tell us about the travel times
   start:
     label: What time did you start the journey?
-    help: |-
-      Use 12-hour format. 12pm is midday.  
-      For example, 7:30am or 10:15pm.
   end:
     label: What time did you finish the journey?
-    help: |-
-      Use 12-hour format. 12pm is midday.  
-      For example, 7:30am or 10:15pm. 
 
 journey.view:
   page-title: "{startLocation} to {endLocation} (Day {day}, {time})"
@@ -255,13 +257,14 @@ journey.view:
   return-journey: Make a return of this journey ({endLocation} to {startLocation})
   repeat-journey: Make this journey again
   delete-stage: Delete this stage
-  delete-stage-sr-hidden-suffix: >-
+  delete-stage-sr-hidden-suffix: &stage-sr-hidden-suffix >-
     : {stageNumber, selectordinal,
       one   {#st}
       two   {#nd}
       few   {#rd}
       other {#th}
     } stage ({method}, {travelTime} mins)
+  show-stage-sr-hidden-suffix: *stage-sr-hidden-suffix
   end-location-time:
     change-sr-hidden-suffix: end location and time
     key: End Location / Time
@@ -273,11 +276,12 @@ journey.view:
   shared-from: Journey shared by {name}
   shared-to: Journey shared with {names}
   share-journey: Share this journey
+
   split-journey: Split journey (Interviewer only)
   start-location-time:
     change-sr-hidden-suffix: start location and time
     key: Start Location / Time
-  stage-x: Stage {number}
+  stage-x: "{number}: {method}"
   tabs.title: Journey stages
 
   next-steps:
@@ -293,9 +297,7 @@ mark-as-complete:
   copy: |-
     This allows you to notify the interviewer that your travel diary is complete.
     
-    You will still be able to edit your travel diary after doing this. 
-
-    If you do so, your diary will again be marked as "in progress".
+    You will not be able to edit your travel diary after doing this.
   form:
     mark-as-complete: Mark travel diary as complete
 
@@ -448,7 +450,7 @@ stage.method:
     walk: Walk or run
     walk.help: >-
       {dayNumber, select,
-          0       {}
+          0       {Include all walks and runs}
           1       {This journey is on day 1. Include all walks and runs}
           other   {This journey is on day {dayNumber}. Only include walks and runs of 1 mile or more}
       }
@@ -527,8 +529,15 @@ stage.ticket-cost-and-boardings:
   page-title: Ticket cost and boardings in stage {stage_number}
   boarding-count:
     label: How many times did you board?
-    help: |-
-        Enter the number of different trains or buses you used on this stage of your journey.
+    help: >-
+      Enter the number of {stage_method_key, select,
+        train {different trains you used}
+        bus_or_coach {different buses/coaches you used}
+        light_rail {different trams/trains you used}
+        london_underground {different trains you used}
+        ferry {different ferries you used}
+        other {different vehicles of this type ({stage_method}) you used}  
+      } on this stage of your journey.
   ticket-cost: &ticketCost
     boolean:
       label: Did your ticket cost anything?

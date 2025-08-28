@@ -1,0 +1,21 @@
+{% extends 'admin/base.html.twig' %}
+{% trans_default_domain 'admin' %}
+{% set title_translation_prefix = 'tools.direct-onboarding-urls' %}
+{% set title_translation_domain = 'admin' %}
+
+{% block content %}
+    {% from '@GhostGovUkFrontend/components/macros.html.twig' import tableHead %}
+    <table class="govuk-table">
+        {{ tableHead(['Passcode #1', 'Started?', 'Complete?', 'Serial in use?', '']) }}
+        {% for url in directOnboardingUrls %}
+            <tr class="govuk-table__row">
+                <td class="govuk-table__cell">{{ url.passcode1 }}</td>
+                <td class="govuk-table__cell">{{ url.in_progress | format_bool | trans }}</td>
+                <td class="govuk-table__cell">{{ url.complete | format_bool | trans }}</td>
+                <td class="govuk-table__cell">{{ url.serialExists | format_bool | trans }}</td>
+                <td class="govuk-table__cell"><a href="{{ url.url }}" target="_blank">direct onboarding link</a></td>
+            </tr>
+        {% endfor %}
+    </table>
+{% endblock %}
+

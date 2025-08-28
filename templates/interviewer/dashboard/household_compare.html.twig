@@ -17,7 +17,7 @@
     <ul class="govuk-list govuk-list--inline" id="day-links">
         {% for day in 1..7 %}
             <li>
-                {% set dayText %}{{ 'diary-keeper.day' | trans({dayNumber: day, date: household.diaryKeepers.first.diaryDayByNumber(day).date | date(format_date_short_with_dow)}) }}{% endset %}
+                {% set dayText %}{{ 'diary-keeper.day' | trans({dayNumber: day, date: household.diaryKeepers.first.diaryDayByNumber(day).date | date(date_time_format.date('short-with-dow'))}) }}{% endset %}
                 {% if day == currentDay %}
                     <span>{{ dayText }}</span>
                 {% else %}
@@ -34,7 +34,10 @@
         {% from '@GhostGovUkFrontend/components/macros.html.twig' import tabsHead %}
         {%- set tabs = {} -%}
         {%- for dk in household.diaryKeepers -%}
-            {%- set tabs = tabs | merge({(dk.name): "tab-diary-keeper-#{dk.number}"}) -%}
+            {%- set tabs = tabs | merge({
+                ('compare-household.tab-heading' | trans({name: dk.name, mediaType: dk.mediaType})):
+                "tab-diary-keeper-#{dk.number}"
+            }) -%}
         {%- endfor -%}
         {{ tabsHead(tabs) }}
         {% from 'interviewer/dashboard/macros.html.twig' import dayView %}

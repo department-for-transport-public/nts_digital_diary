@@ -5,49 +5,30 @@ namespace App\Entity;
 use App\Repository\PropertyChangeLogRepository;
 use Doctrine\ORM\Mapping as ORM;
 
-/**
- * @ORM\Entity(repositoryClass=PropertyChangeLogRepository::class)
- * @ORM\Table(
- *     indexes={
- *         @ORM\Index(
- *             name="property_change_idx",
- *             fields={"entityId", "entityClass"}
- *         )
- *     })
- */
+#[ORM\Entity(repositoryClass: PropertyChangeLogRepository::class)]
+#[ORM\Table]
+#[ORM\Index(fields: ['entityId', 'entityClass'], name: 'property_change_idx')]
 class PropertyChangeLog
 {
     use IdTrait;
 
-    /**
-     * @ORM\Column(type="string", length=26)
-     */
-    private ?string $entityId;
+    #[ORM\Column(type: 'string', length: 26)]
+    private ?string $entityId = null;
 
-    /**
-     * @ORM\Column(type="string", length=255)
-     */
-    private ?string $entityClass;
+    #[ORM\Column(type: 'string', length: 255)]
+    private ?string $entityClass = null;
 
-    /**
-     * @ORM\Column(type="string", length=255)
-     */
-    private ?string $propertyName;
+    #[ORM\Column(type: 'string', length: 255)]
+    private ?string $propertyName = null;
 
-    /**
-     * @ORM\Column(type="json", nullable=true)
-     */
+    #[ORM\Column(type: 'json', nullable: true)]
     private $propertyValue;
 
-    /**
-     * @ORM\Column(type="string", nullable=true)
-     */
-    private ?string $interviewerSerialId;
+    #[ORM\Column(type: 'string', nullable: true)]
+    private ?string $interviewerSerialId = null;
 
-    /**
-     * @ORM\Column(type="datetimemicrosecond")
-     */
-    private ?\DateTime $timestamp;
+    #[ORM\Column(type: 'datetimemicrosecond')]
+    private ?\DateTime $timestamp = null;
 
     public function getEntityId(): ?string
     {
@@ -117,7 +98,7 @@ class PropertyChangeLog
         return $this->timestamp;
     }
 
-    public function setTimestamp($timestamp): self
+    public function setTimestamp(?\DateTime $timestamp): self
     {
         $this->timestamp = $timestamp;
         return $this;

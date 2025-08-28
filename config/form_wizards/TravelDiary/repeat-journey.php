@@ -8,7 +8,7 @@ use App\Form\TravelDiary\RepeatJourneyWizard\SourceJourneyType;
 use App\Form\TravelDiary\RepeatJourneyWizard\StageDetailsType;
 use App\FormWizard\TravelDiary\RepeatJourneyState as State;
 
-return static function (ContainerConfigurator $container) {
+return static function (ContainerConfigurator $container): void {
     $editFinishMetadata =  [
         'persist' => true,
         'redirect_route' => [
@@ -45,8 +45,8 @@ return static function (ContainerConfigurator $container) {
                     td_place(State::STATE_ADJUST_TIMES,TimesType::class, 'repeat-journey.adjust-times', [], $defaultTemplate),
                     td_place(State::STATE_ADJUST_STAGE_DETAILS,StageDetailsType::class, 'repeat-journey.stage-details', [
                         'form_data_property' => 'contextStage',
-                        'view_data' => [
-                            'title_translatable_message' => 'stageDetailsTitle',
+                        'context' => [
+                            'set_translation_key_from_state' => true,
                         ],
                     ], $defaultTemplate),
                     ['name' => State::STATE_FINISH],
@@ -85,7 +85,7 @@ return static function (ContainerConfigurator $container) {
                         State::STATE_ADJUST_TIMES,
                         State::STATE_ADJUST_STAGE_DETAILS,
                         'subject.getStageCount() > 0',
-                        ['context' => [
+                        ['transition_context' => [
                             'stageNumber' => 1
                         ]]
                     ),
@@ -94,7 +94,7 @@ return static function (ContainerConfigurator $container) {
                         State::STATE_ADJUST_STAGE_DETAILS,
                         State::STATE_ADJUST_STAGE_DETAILS,
                         'subject.getStageCount() > subject.getStageNumber()',
-                        ['context' => [
+                        ['transition_context' => [
                             'stageNumber' => 'nextStageNumber'
                         ]]
                     ),

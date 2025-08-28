@@ -72,26 +72,28 @@ class UserRepository extends ServiceEntityRepository implements UserLoaderInterf
         return count($results) > 0;
     }
 
-    public function loadUserByIdentifier(string $identifier): ?User
+    public function loadUserByUsername(string $username): ?User
     {
-        return $this->loadUserByUsername($identifier);
+        return $this->loadUserByIdentifier($username);
     }
 
-    public function loadUserByUsername(string $username): ?User
+    public function loadUserByIdentifier(string $identifier): ?User
     {
         $noLoginPlaceholder = User::NO_LOGIN_PLACEHOLDER;
         try {
             return $this->createQueryBuilder('u')
+                ->select(['u', 'p'])
+                ->leftJoin('u.preferences', 'p')
                 ->where('u.username = :username')
                 ->andWhere(new Expr\Orx([
                     'u.trainingInterviewer is null',
                     // this will exclude users created using onboarding training (which are the ones that might clash)
                     new Expr\Andx(['u.trainingInterviewer is not null', "u.username LIKE '{$noLoginPlaceholder}:%'"])
                 ]))
-                ->setParameter('username', $username)
+                ->setParameter('username', $identifier)
                 ->getQuery()
                 ->getOneOrNullResult();
-        } catch (NonUniqueResultException $e) {
+        } catch (NonUniqueResultException) {
             return null;
         }
     }
@@ -126,17 +128,50 @@ class UserRepository extends ServiceEntityRepository implements UserLoaderInterf
      *
      * @return array<User>
      */
-    public function getUsersForEmailPurge(\DateTime $before): array
+    public function getUsersForEmailPurge(\DateTime $diaryWeekEndsBefore): array
     {
         return $this->createQueryBuilder('user')
             ->select('user, dk, household')
             ->join('user.diaryKeeper', 'dk')
             ->join('dk.household', 'household')
-            ->where('household.submittedAt IS NOT NULL')
-            ->andWhere('household.submittedAt < :before')
+            ->andWhere('household.diaryWeekStartDate < :before')
             ->andWhere('user.emailPurgeDate IS NULL')
+            ->andWhere('user.trainingInterviewer IS NULL')
             ->getQuery()
-            ->setParameter('before', $before)
+            ->setParameter('before', $diaryWeekEndsBefore->modify('-1 week'))
+            ->getResult();
+    }
+
+
+    /**
+     * During direct onboarding we edit multiple diarykeepers at the same time. It's possible that one DK
+     * is getting the email address that was removed from one of the others, so the usual Unique constraint won't work
+     * Excluding the other members of the household from the check, in combination with ensuring uniqueness within
+     * the household (see callback constraint on household) should ensure overall uniqueness
+     * @return User[]
+     */
+    public function findByForDirectOnboarding(array $criteria): array
+    {
+        /** @var DiaryKeeper $diaryKeeper */
+        $diaryKeeper = $criteria['diaryKeeper'];
+        $householdId = $diaryKeeper->getHousehold()?->getId();
+
+        $qb = $this->createQueryBuilder('u')
+            ->where('u.username = :username')
+            ->andWhere('u.virtualColumnTrainingInterviewerId = :training_id')
+            ->setParameter('username', $criteria['username'])
+            ->setParameter('training_id', 'no-interviewer');
+
+        if ($householdId) {
+            $qb
+                ->leftJoin('u.diaryKeeper', 'dk')
+                ->leftJoin('dk.household', 'h')
+                ->andWhere('h.id IS NULL OR h.id != :household_id')
+                ->setParameter('household_id', $householdId);
+        }
+
+        return $qb
+            ->getQuery()
             ->getResult();
     }
 }

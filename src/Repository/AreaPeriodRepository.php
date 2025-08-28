@@ -21,7 +21,6 @@ class AreaPeriodRepository extends ServiceEntityRepository
 
     /**
      * @param iterable<AreaPeriod> $areaPeriods
-     * @return array
      */
     public static function groupAreaPeriodsByYear(iterable $areaPeriods): array
     {
@@ -41,7 +40,7 @@ class AreaPeriodRepository extends ServiceEntityRepository
         foreach($areaPeriodsByYear as $year => $areas) {
             // We decided to order by AreaID ASC, as that would encourage interviewers to unsubscribe from areas
             // that they had finished with.
-            usort($areaPeriodsByYear[$year], fn(AreaPeriod $a, AreaPeriod $b) => $a->getArea() <=> $b->getArea());
+            usort($areaPeriodsByYear[$year], fn(AreaPeriod $a, AreaPeriod $b): int => $a->getArea() <=> $b->getArea());
         }
 
         return $areaPeriodsByYear;

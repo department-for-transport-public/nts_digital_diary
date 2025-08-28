@@ -7,7 +7,7 @@ trait UserDomainTrait
     public function getDomain(): ?string
     {
         $emailAddress = $this->getUserIdentifier();
-        $emailParts = explode('@', $emailAddress);
+        $emailParts = explode('@', (string) $emailAddress);
 
         if (count($emailParts) !== 2) {
             return null;

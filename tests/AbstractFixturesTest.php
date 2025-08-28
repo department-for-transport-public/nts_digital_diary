@@ -18,9 +18,4 @@ class AbstractFixturesTest extends KernelTestCase
         $fixtures = $databaseTool->loadFixtures($fixtureClassNames);
         $this->fixtureReferenceRepository = $fixtures->getReferenceRepository();
     }
-
-    protected function getFixtureByReference($reference): object
-    {
-        return $this->fixtureReferenceRepository->getReference($reference);
-    }
 }

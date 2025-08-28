@@ -8,61 +8,69 @@
         {{ _self.journey_row(journey, "start-location-time",
             "journey.view.location-and-time" | trans({
                 location: journey.startLocationForDisplay,
-                time: journey.startTime | date(format_time_short),
+                time: journey.startTime | date(date_time_format.time('user-pref')),
             }),
             options | merge({place: "locations"})
         ) }}
         {{ _self.journey_row(journey, "end-location-time",
             "journey.view.location-and-time" | trans({
                 location: journey.endLocationForDisplay,
-                time: journey.endTime | date(format_time_short),
+                time: journey.endTime | date(date_time_format.time('user-pref')),
             }),
             options | merge({place: "locations"})
         ) }}
     </dl>
 {% endmacro %}
 
-{% macro showStages(stages, options) %}
-    {%- set options = options ?? {} %}
-
-    {%- if stages is not empty -%}
-        <div class="govuk-tabs" data-module="govuk-tabs">
-            <h2 class="govuk-tabs__title">
-                {{ "journey.view.tabs.title" | trans }}
-            </h2>
-            <ul class="govuk-tabs__list">
-                {%- for stage in stages -%}
-                    <li class="govuk-tabs__list-item{% if loop.first %} govuk-tabs__list-item--selected{% endif %}">
-                        <a class="govuk-tabs__tab" href="#stage-{{ stage.number }}">
-                            {{ "journey.view.stage-x" | trans({number: stage.number}) }}
-                        </a>
-                    </li>
-                {%- endfor -%}
-            </ul>
-            {%- for stage in stages -%}
-                {# @var stage \App\Entity\Journey\Stage #}
-                <section class="govuk-tabs__panel" id="stage-{{ stage.number }}">
-                    {%- set journey = stage.journey -%}
-                    {%- set day = journey.diaryDay -%}
-                    {{ _self.showStage(stage, options) }}
-
-                    <p class="govuk-body">
-                        <a class="govuk-link" href="{{ path('traveldiary_stage_delete', {stageId: stage.id}) }}">
-                            {{- "journey.view.delete-stage" | trans -}}<span class="govuk-visually-hidden">
-                                {{- ' ' ~ ("journey.view.delete-stage-sr-hidden-suffix" | trans({
-                                    stageNumber: stage.number,
-                                    travelTime: stage.travelTime,
-                                    method: stage.methodForDisplay | trans
-                                })) -}}</span>
-                        </a>
-                    </p>
-                </section>
-            {%- endfor -%}
-        </div>
-    {%- endif -%}
+{#
+    show stages (as steps)
+#}
+{%- macro showStages(stages, options) -%}
+<div data-module="appstepnav" id="step-by-step-navigation" class="app-step-nav app-step-nav--large" data-show-text="Show" data-hide-text="Hide" data-show-all-text="Show all steps" data-hide-all-text="Hide all steps">
+    <ol class="app-step-nav__steps">
+        {% for stage in stages %}
+            {{ _self.showStageStep(stage, options) }}
+        {% endfor %}
+    </ol>
+</div>
 {% endmacro %}
 
-{% macro showStage(stage, options) %}
+{% macro showStageStep(stage, options) %}
+    {% from 'macros/step-by-step.html.twig' import stepNavTitle %}
+    {% set panelId %}step-panel-stage-{{ stage.number }}{% endset %}
+    {% set subTitle %}
+        {{- stage.distanceTravelled.isBlank ? '' : ("distance.#{stage.distanceTravelled.unit}" | trans({value: stage.distanceTravelled.value.toFloat}, 'messages')) -}}
+        {{- (stage.travelTime ?? false and not stage.distanceTravelled.isBlank) ? ', ' -}}
+        {{- stage.travelTime is null ? '' : ("stage.view.travel-time.value" | trans({minutes: stage.travelTime})) -}}
+    {% endset %}
+    {# @var stage \App\Entity\Journey\Stage #}
+    <li class="app-step-nav__step js-step journey-view--step-nav" id="step-nav-stage-{{ stage.number }}">
+        <div class="app-step-nav__header js-toggle-panel" data-position="{{ stage.number }}">
+            {{ stepNavTitle(panelId, stage.number, stage.methodForDisplay | trans, subTitle, {
+                stepDescription: 'journey.view.show-stage-sr-hidden-suffix' | trans({
+                    stageNumber: stage.number,
+                    travelTime: stage.travelTime,
+                    method: stage.methodForDisplay | trans
+                }),
+            }) -}}
+
+            <span class="govuk-summary-card__actions">
+                <span class="govuk-summary-card__action">
+                    {{ _self.showStageDeleteLink(stage, options) }}
+                </span>
+            </span>
+        </div>
+        <div class="app-step-nav__panel js-panel" id="{{ panelId }}">
+            {{ _self.showStageDetails(stage, {showHeading: false}) }}
+        </div>
+    </li>
+{% endmacro %}
+
+
+{#
+    Common Stage macros
+#}
+{% macro showStageDetails(stage, options) %}
     {# @var stage \App\Entity\Journey\Stage #}
     {%- set diaryKeeper = stage.journey.diaryDay.diaryKeeper -%}
     {%- set options = options ?? {} %}
@@ -123,6 +131,22 @@
     </dl>
 {% endmacro %}
 
+{% macro showStageDeleteLink(stage, options) %}
+    <a class="govuk-link" href="{{ path('traveldiary_stage_delete', {stageId: stage.id}) }}">
+        {{- "journey.view.delete-stage" | trans -}}<span class="govuk-visually-hidden">
+                            {{- ' ' ~ ("journey.view.delete-stage-sr-hidden-suffix" | trans({
+                                stageNumber: stage.number,
+                                travelTime: stage.travelTime,
+                                method: stage.methodForDisplay | trans
+                            })) -}}</span>
+    </a>
+{% endmacro %}
+
+
+{#
+    summary list row macros
+#}
+
 {% macro journey_row(journey, translation_key, value, options) -%}
     {%- set url = path('traveldiary_journey_wizard_edit', {journeyId: journey.id, place: options.place ?? translation_key}) -%}
     {{- _self.row(url, "journey.view", translation_key, value, options) -}}
@@ -143,18 +167,22 @@
 
 {% macro row(url, translation_prefix, translation_key, value, options) %}
     {%- import "@GhostGovUkFrontend/components/macros.html.twig" as m -%}
-    {%- set label = "#{translation_prefix}.#{translation_key}.key" | trans -%}
     {%- set place = options.place ?? translation_key -%}
     {%- set options = options ?? {} %}
-    {%- set srHiddenSuffix = "#{translation_prefix}.#{translation_key}.change-sr-hidden-suffix" -%}
-    {%- set actions = url == null ? {} : {
-        (url): {
-            label: "actions.change",
-            srHiddenSuffix: srHiddenSuffix,
-            srHiddenSuffixDomain: 'travel-diary',
-            srHiddenSuffixParams: options.srHiddenSuffixParams ?? {},
-            srHiddenSuffixSplitContext: options.srHiddenSuffixSplitContext ?? true,
+    {%- set actions = url is null ? [] : [
+        {
+            href: url,
+            text: "actions.change" | trans({}, 'messages'),
+            visuallyHiddenText: "#{translation_prefix}.#{translation_key}.change-sr-hidden-suffix" | trans(
+                options.srHiddenSuffixParams ?? {},
+                'travel-diary'
+            )
         },
-    } -%}
-    {{- m.summaryListRow(label, value, actions, options) -}}
+    ] -%}
+    {{- m.summaryListRow({
+            key: "#{translation_prefix}.#{translation_key}.key" | trans,
+            value: value,
+            actions: actions,
+        } | merge(options))
+    -}}
 {% endmacro %}

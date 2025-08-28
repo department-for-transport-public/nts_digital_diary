@@ -2,9 +2,9 @@
 
 namespace App\EventSubscriber\InterviewerTraining;
 
-use App\Entity\OtpUser;
 use App\Exception\RedirectResponseException;
-use App\Security\OneTimePassword\TrainingUserProvider;
+use App\Security\OneTimePassword\InterviewerLinkedTrainingUserProvider;
+use App\Security\OneTimePassword\OtpUserInterface;
 use Symfony\Component\EventDispatcher\EventSubscriberInterface;
 use Symfony\Component\HttpFoundation\RedirectResponse;
 use Symfony\Component\HttpFoundation\Request;
@@ -29,8 +29,8 @@ class OnboardingLogoutBeforeLogin implements EventSubscriberInterface
     {
         $request = $event->getRequest();
         if ($request->getMethod() === Request::METHOD_GET
-            && $request->query->has(TrainingUserProvider::INTERVIEWER_ID_QUERY_PARAM)
-            && $this->tokenStorage->getToken()?->getUser() instanceof OtpUser
+            && $request->query->has(InterviewerLinkedTrainingUserProvider::INTERVIEWER_ID_QUERY_PARAM)
+            && $this->tokenStorage->getToken()?->getUser() instanceof OtpUserInterface
         ) {
             $this->tokenStorage->setToken();
             throw new RedirectResponseException(new RedirectResponse($request->getRequestUri()));

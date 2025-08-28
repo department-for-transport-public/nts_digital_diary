@@ -7,22 +7,18 @@ use App\Form\Admin\SampleImportForm;
 use App\Security\OneTimePassword\PasscodeGenerator;
 use App\Utility\TravelDiary\AreaPeriodHelper;
 use Doctrine\ORM\EntityManagerInterface;
-use Sensio\Bundle\FrameworkExtraBundle\Configuration\Security;
-use Sensio\Bundle\FrameworkExtraBundle\Configuration\Template;
+use Symfony\Bridge\Twig\Attribute\Template;
 use Symfony\Component\Form\FormInterface;
 use Symfony\Component\HttpFoundation\Request;
-use Symfony\Component\Routing\Annotation\Route;
+use Symfony\Component\Routing\Attribute\Route;
+use Symfony\Component\Security\Http\Attribute\IsGranted;
 
-/**
- * @Route("/sample-import", name="sampleimport_")
- * @Security("is_granted('ROLE_SAMPLE_IMPORTER')")
- */
+#[IsGranted("ROLE_SAMPLE_IMPORTER")]
+#[Route(path: '/sample-import', name: 'sampleimport_')]
 class SampleImportController extends AbstractController
 {
-    /**
-     * @Route(name="index", methods={"GET", "POST"})
-     * @Template("admin/sample_import/index.html.twig")
-     */
+    #[Route(name: 'index', methods: ['GET', 'POST'])]
+    #[Template('admin/sample_import/index.html.twig')]
     public function index(Request $request, PasscodeGenerator $passcodeGenerator, EntityManagerInterface $entityManager, AreaPeriodHelper $areaPeriodHelper): array
     {
         $form = $this->getImportForm();

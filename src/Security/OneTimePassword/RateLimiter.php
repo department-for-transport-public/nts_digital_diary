@@ -5,7 +5,7 @@ namespace App\Security\OneTimePassword;
 use Symfony\Component\HttpFoundation\RateLimiter\AbstractRequestRateLimiter;
 use Symfony\Component\HttpFoundation\Request;
 use Symfony\Component\RateLimiter\RateLimiterFactory;
-use Symfony\Component\Security\Core\Security;
+use Symfony\Component\Security\Http\SecurityRequestAttributes;
 
 class RateLimiter extends AbstractRequestRateLimiter
 {
@@ -20,8 +20,8 @@ class RateLimiter extends AbstractRequestRateLimiter
             return [];
         }
 
-        $username = $request->attributes->get(Security::LAST_USERNAME);
-        $username = preg_match('//u', $username) ? mb_strtolower($username, 'UTF-8') : strtolower($username);
+        $username = $request->attributes->get(SecurityRequestAttributes::LAST_USERNAME);
+        $username = preg_match('//u', (string) $username) ? mb_strtolower((string) $username, 'UTF-8') : strtolower((string) $username);
 
         return [
             $this->globalFactory->create($request->getClientIp()),

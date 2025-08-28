@@ -6,16 +6,17 @@ use App\Entity\Feedback\Message;
 use App\Form\Admin\Feedback\NoteType;
 use App\Utility\ConfirmAction\Admin\FeedbackMessageStateTransitionConfirmAction;
 use Doctrine\ORM\EntityManagerInterface;
-use Sensio\Bundle\FrameworkExtraBundle\Configuration\Security;
-use Sensio\Bundle\FrameworkExtraBundle\Configuration\Template;
+use Symfony\Bridge\Twig\Attribute\Template;
 use Symfony\Bundle\FrameworkBundle\Controller\AbstractController;
 use Symfony\Component\HttpFoundation\RedirectResponse;
 use Symfony\Component\HttpFoundation\Request;
 use Symfony\Component\HttpFoundation\Response;
-use Symfony\Component\Routing\Annotation\Route;
+use Symfony\Component\Routing\Attribute\Route;
+use Symfony\Component\Security\Http\Attribute\IsGranted;
+use Symfony\Component\ExpressionLanguage\Expression;
 
 #[Route("/feedback/message/{message}", name: "feedback_message_")]
-#[Security("is_granted('ADMIN_FEEDBACK_VIEW_MESSAGE', message)")]
+#[IsGranted(attribute: 'ADMIN_FEEDBACK_VIEW_MESSAGE', subject: 'message')]
 class MessageController extends AbstractController
 {
     #[Route(name: "view")]
@@ -40,7 +41,10 @@ class MessageController extends AbstractController
 
     #[Route("/transition/{transition}", name: "transition")]
     #[Template("admin/feedback/transition_message.html.twig")]
-    #[Security("workflow_can(transition, message)")]
+    #[IsGranted(
+        attribute: new Expression("workflow_can(subject['message'], subject['transition'])"),
+        subject: ['transition', 'message']
+    )]
     public function transition(FeedbackMessageStateTransitionConfirmAction $stateTransitionConfirmAction, Request $request, Message $message, string $transition): array | Response
     {
         return $stateTransitionConfirmAction

@@ -1,7 +1,10 @@
 {% trans_default_domain 'travel-diary' %}
 
 {% set filteredProxies = diaryKeeper.actingAsProxyFor | filter(d => is_granted('CAN_IMPERSONATE_USER', d.user)) %}
-{% if not is_granted('IS_IMPERSONATOR') and filteredProxies is not empty %}
+{% if
+    filteredProxies is not empty
+    and ((not is_granted('IS_IMPERSONATOR')) or (diaryKeeper.household.areaPeriod.area == constant('App\\Entity\\AreaPeriod::TRAINING_PERSONAL_DIARY_AREA_SERIAL')))
+%}
     <h2 class="govuk-heading-m govuk-!-padding-top-4">{{ 'days.other-members-of-my-household' | trans }}</h2>
     <ul class="govuk-list">
         {% for proxy in filteredProxies %}

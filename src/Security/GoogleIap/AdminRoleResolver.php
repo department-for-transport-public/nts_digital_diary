@@ -27,7 +27,8 @@ class AdminRoleResolver
     public function getAssigners(): array
     {
         return [
-            new Group('DfT', 'dft.gov.uk', ['national.travelsurvey@dft.gov.uk']),
+            new Group('NatCen', 'natcen.ac.uk', ['nts@natcen.ac.uk']),
+            new Group('DfT', 'dft.gov.uk', []),
             new Group('Ghost', 'ghostlimited.com', []),
         ];
     }
@@ -36,7 +37,7 @@ class AdminRoleResolver
     public function getAssignees(): array
     {
         return [
-            new Group('DfT', 'dft.gov.uk', []),
+            new Group('DfT', 'dft.gov.uk', ['national.travelsurvey@dft.gov.uk']),
             new Group('Ghost', 'ghostlimited.com', ['feedback@ghostlimited.com ']),
             new Group('NatCen', 'natcen.ac.uk', ['nts@natcen.ac.uk']),
         ];
@@ -61,6 +62,24 @@ class AdminRoleResolver
         ];
     }
 
+    /** @return array<string> */
+    public function getCanLogoutDomains(): array
+    {
+        return [
+            'natcen.ac.uk',
+        ];
+    }
+
+    /** @return array<string> */
+    public function getDataExporterDomains(): array
+    {
+        return [
+            'natcen.ac.uk',
+            'ghostlimited.com',
+            'dft.gov.uk',
+        ];
+    }
+
     public function getAssignee(string $name): ?Group
     {
         foreach ($this->getAssignees() as $assignee) {
@@ -75,43 +94,22 @@ class AdminRoleResolver
     public function getRolesForEmailAddress(string $emailAddress): array
     {
         $emailParts = explode('@', $emailAddress);
-
         if (count($emailParts) !== 2) {
             return [];
         }
-
-        $roles = [];
-
         $domain = strtolower($emailParts[1]);
 
-        foreach($this->getAssigners() as $assignerGroup) {
-            if ($assignerGroup->getDomain() === $domain) {
-                $roles[] = 'ROLE_FEEDBACK_ASSIGNER';
-            }
-        }
+        $roleDomainsMap = [
+            'ROLE_FEEDBACK_ASSIGNEE' => array_map(fn(Group $g) => $g->getDomain(), $this->getAssignees()),
+            'ROLE_FEEDBACK_ASSIGNER' => array_map(fn(Group $g) => $g->getDomain(), $this->getAssigners()),
+            'ROLE_INTERVIEWER_ADMIN' => $this->getInterviewerAdminDomains(),
+            'ROLE_SAMPLE_IMPORTER' => $this->getSampleImporterDomains(),
+            'ROLE_SUPER_ADMIN' => $this->getSuperAdminDomains(),
+            'ROLE_CAN_LOGOUT' => $this->getCanLogoutDomains(),
+            'ROLE_DATA_EXPORTER' => $this->getDataExporterDomains(),
+        ];
 
-        foreach($this->getAssignees() as $assigneeGroup) {
-            if ($assigneeGroup->getDomain() === $domain) {
-                $roles[] = 'ROLE_FEEDBACK_VIEWER';
-            }
-        }
+        return array_keys(array_filter($roleDomainsMap, fn ($domains) => in_array($domain, $domains)));
 
-        foreach($this->getInterviewerAdminDomains() as $adminDomain) {
-            if ($adminDomain === $domain) {
-                $roles[] = 'ROLE_INTERVIEWER_ADMIN';
-            }
-        }
-
-        foreach($this->getSampleImporterDomains() as $sampleImporterDomain) {
-            if ($sampleImporterDomain === $domain) {
-                $roles[] = 'ROLE_SAMPLE_IMPORTER';
-            }
-        }
-
-        if (in_array($domain, $this->getSuperAdminDomains())) {
-            $roles[] = 'ROLE_SUPER_ADMIN';
-        }
-
-        return $roles;
     }
 }

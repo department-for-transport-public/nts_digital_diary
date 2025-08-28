@@ -4,25 +4,15 @@ namespace App\Controller;
 
 use App\Event\VideoJsEvent;
 use App\Utility\Metrics\MetricsHelper;
-use App\Utility\SessionTimeoutHelper;
 use Psr\EventDispatcher\EventDispatcherInterface;
 use Symfony\Bundle\FrameworkBundle\Controller\AbstractController;
 use Symfony\Component\HttpFoundation\JsonResponse;
 use Symfony\Component\HttpFoundation\Request;
-use Symfony\Component\Routing\Annotation\Route;
+use Symfony\Component\Routing\Attribute\Route;
 
 #[Route("/ajax", name: "app_remote_")]
 class AjaxController extends AbstractController
 {
-    #[Route("/refresh-session", name: "refresh_session")]
-    public function refreshSession(SessionTimeoutHelper $timeoutHelper): JsonResponse
-    {
-        return new JsonResponse([
-            'warning' => $timeoutHelper->getWarningTime(),
-            'expiry' => $timeoutHelper->getExpiryTime(),
-        ]);
-    }
-
     #[Route('/viewport-size', name: "viewport_size_monitor", methods: ["POST"])]
     public function reportViewportSize(Request $request): JsonResponse
     {

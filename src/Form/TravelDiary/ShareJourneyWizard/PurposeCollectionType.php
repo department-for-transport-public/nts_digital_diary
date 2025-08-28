@@ -2,14 +2,8 @@
 
 namespace App\Form\TravelDiary\ShareJourneyWizard;
 
-use App\Entity\DiaryKeeper;
-use App\Entity\Journey\Journey;
-use Ghost\GovUkFrontendBundle\Form\Type\InputType;
 use Symfony\Component\Form\AbstractType;
-use Symfony\Component\Form\Event\PreSetDataEvent;
 use Symfony\Component\Form\Extension\Core\Type\CollectionType;
-use Symfony\Component\Form\FormBuilderInterface;
-use Symfony\Component\Form\FormEvents;
 use Symfony\Component\OptionsResolver\OptionsResolver;
 
 class PurposeCollectionType extends AbstractType
@@ -19,7 +13,7 @@ class PurposeCollectionType extends AbstractType
         return CollectionType::class;
     }
 
-    public function configureOptions(OptionsResolver $resolver)
+    public function configureOptions(OptionsResolver $resolver): void
     {
         $resolver->setDefaults([
             'validation_groups' => 'wizard.share-journey.purpose',

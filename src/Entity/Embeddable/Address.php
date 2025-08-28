@@ -5,9 +5,7 @@ namespace App\Entity\Embeddable;
 use Doctrine\ORM\Mapping as ORM;
 use Symfony\Component\Validator\Constraints as Assert;
 
-/**
- * @ORM\Embeddable()
- */
+#[ORM\Embeddable]
 class Address
 {
     public function toArray(): array
@@ -21,35 +19,25 @@ class Address
         ];
     }
 
-    /**
-     * @ORM\Column(type="string", length=255, nullable=true)
-     * @Assert\Regex(groups={"notify_api"}, message="Address lines must not start with a symbol (@ ( ) = [ ] "" , < > \ /)", pattern="/^[@()=\[\]"",<>\\\/]/", match=false)
-     */
-    protected ?string $line1;
+    #[Assert\Regex("#^[@()=\[\]\",<>\\\/]#", message: 'Address lines must not start with a symbol (@ ( ) = [ ] "" , < > \ /)', match: false, groups: ['notify_api'])]
+    #[ORM\Column(type: 'string', length: 255, nullable: true)]
+    protected ?string $line1 = null;
 
-    /**
-     * @ORM\Column(type="string", length=255, nullable=true)
-     * @Assert\Regex(groups={"notify_api"}, message="Address lines must not start with a symbol (@ ( ) = [ ] "" , < > \ /)", pattern="/^[@()=\[\]"",<>\\\/]/", match=false)
-     */
-    protected ?string $line2;
+    #[Assert\Regex("#^[@()=\[\]\",<>\\\/]#", message: 'Address lines must not start with a symbol (@ ( ) = [ ] "" , < > \ /)', match: false, groups: ['notify_api'])]
+    #[ORM\Column(type: 'string', length: 255, nullable: true)]
+    protected ?string $line2 = null;
 
-    /**
-     * @ORM\Column(type="string", length=255, nullable=true)
-     * @Assert\Regex(groups={"notify_api"}, message="Address lines must not start with a symbol (@ ( ) = [ ] "" , < > \ /)", pattern="/^[@()=\[\]"",<>\\\/]/", match=false)
-     */
-    protected ?string $line3;
+    #[Assert\Regex("#^[@()=\[\]\",<>\\\/]#", message: 'Address lines must not start with a symbol (@ ( ) = [ ] "" , < > \ /)', match: false, groups: ['notify_api'])]
+    #[ORM\Column(type: 'string', length: 255, nullable: true)]
+    protected ?string $line3 = null;
 
-    /**
-     * @ORM\Column(type="string", length=255, nullable=true)
-     * @Assert\Regex(groups={"notify_api"}, message="Address lines must not start with a symbol (@ ( ) = [ ] "" , < > \ /)", pattern="/^[@()=\[\]"",<>\\\/]/", match=false)
-     */
-    protected ?string $line4;
+    #[Assert\Regex("#^[@()=\[\]\",<>\\\/]#", message: 'Address lines must not start with a symbol (@ ( ) = [ ] "" , < > \ /)', match: false, groups: ['notify_api'])]
+    #[ORM\Column(type: 'string', length: 255, nullable: true)]
+    protected ?string $line4 = null;
 
-    /**
-     * @ORM\Column(type="string", length=10, nullable=true)
-     * @Assert\Regex(groups={"notify_api"}, message="Address lines must not start with a symbol (@ ( ) = [ ] "" , < > \ /)", pattern="/^[@()=\[\]"",<>\\\/]/", match=false)
-     */
-    protected ?string $postcode;
+    #[Assert\Regex("#^[@()=\[\]\",<>\\\/]#", message: 'Address lines must not start with a symbol (@ ( ) = [ ] "" , < > \ /)', match: false, groups: ['notify_api'])]
+    #[ORM\Column(type: 'string', length: 10, nullable: true)]
+    protected ?string $postcode = null;
 
     public function getLine1(): ?string
     {

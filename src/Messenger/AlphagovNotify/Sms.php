@@ -4,15 +4,17 @@ namespace App\Messenger\AlphagovNotify;
 
 class Sms extends AbstractMessage
 {
-    protected string $phoneNumber;
-
-    protected string $senderId;
-
-    public function __construct(string $eventName, string $originatingEntityClass, string $originatingEntityId, string $emailAddress, string $templateId, $personalisation = [], ?string $reference = null, ?string $senderId = null)
-    {
+    public function __construct(
+        string            $eventName,
+        string            $originatingEntityClass,
+        string            $originatingEntityId,
+        protected string  $phoneNumber,
+        string            $templateId,
+        ?array            $personalisation = [],
+        ?string           $reference = null,
+        protected ?string $senderId = null
+    ) {
         parent::__construct($eventName, $originatingEntityClass, $originatingEntityId, $templateId, $personalisation, $reference);
-        $this->phoneNumber = $emailAddress;
-        $this->senderId = $senderId;
     }
 
     public function getSendMethodParameters(): array

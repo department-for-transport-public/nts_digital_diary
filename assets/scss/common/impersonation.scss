@@ -1,0 +1,9 @@
+@import "govuk-frontend/dist/govuk/helpers/colour";
+
+.govuk-notification-banner--impersonation,
+.govuk-notification-banner--interviewer-training {
+  margin-bottom: 0;
+
+  border-color: govuk-colour("orange");
+  background-color: govuk-colour("orange");
+}

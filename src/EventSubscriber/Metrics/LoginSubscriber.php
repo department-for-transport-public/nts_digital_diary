@@ -35,8 +35,6 @@ class LoginSubscriber implements EventSubscriberInterface
         }
 
         $this->metrics->log(new LoginEvent(
-//            $this->getUserSerial($event->getUser(), $token->getUserIdentifier()),
-//            true,
             $this->getDiarySerial($event->getUser()),
             $firewallName
         ));

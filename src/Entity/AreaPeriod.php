@@ -23,11 +23,6 @@ use Symfony\Component\Serializer\Annotation\Ignore;
 use Symfony\Component\Validator\Constraints as Assert;
 use UnexpectedValueException;
 
-/**
- * @ORM\Entity(repositoryClass=AreaPeriodRepository::class)
- * @ORM\Table(uniqueConstraints={@UniqueConstraint(columns={"area", "year", "training_interviewer_id"})})
- * @UniqueEntity(errorPath="area", fields={"area","year"}, groups={"area.import", "api.area-period"}, message="admin.area.unique")
- */
 #[ApiResource(
     operations: [
         new Get(
@@ -38,67 +33,65 @@ use UnexpectedValueException;
         new Post(),
         new Delete(
             uriTemplate: '/area_periods/{year}/{area}.{_format}',
+            // using security to prevent deleting area with households, as couldn't get validation to work in delete context
             security: 'is_granted("DELETE", object)',
             provider: AreaPeriodProvider::class,
         ),
     ],
     validationContext: ['groups' => ['api.area-period']],
 )]
+#[UniqueEntity(fields: ['area', 'year'], message: 'admin.area.unique', errorPath: 'area', groups: ['area.import', 'api.area-period'])]
+#[ORM\Entity(repositoryClass: AreaPeriodRepository::class)]
+#[ORM\Table]
+#[UniqueConstraint(columns: ['area', 'year', 'training_interviewer_id'])]
 class AreaPeriod implements ApiIdInterface
 {
     use ApiIdTrait;
 
-    const TRAINING_PERSONAL_DIARY_AREA_SERIAL = "000000";
-    const TRAINING_ONBOARDING_AREA_SERIAL = "000100";
-    const TRAINING_CORRECTION_AREA_SERIAL = "000200";
+    public const int VALID_FIELDWORK_PERIOD_MONTHS = 3;
 
-    /**
-     * @ORM\Column(type="string", length=6, nullable=false)
-     * @Assert\NotBlank(groups={"interviewer.allocate-area", "api.area-period"}, message="api.area-period.area.not-blank")
-     * @Assert\Regex("/^\d{1}((0[1-9])|(1[0-2]))\d{3}$/", groups={"interviewer.allocate-area", "api.area-period"}, message="api.area-period.area.valid")
-     */
+    public const TRAINING_PERSONAL_DIARY_AREA_SERIAL = "000000";
+    public const TRAINING_ONBOARDING_AREA_SERIAL = "000100";
+    public const TRAINING_CORRECTION_AREA_SERIAL = "000200";
+
+    public const AREA_PATTERN = "\d{1}((0[1-9])|(1[0-2]))\d{3}";
+    public const AREA_REGEX = "/^" . self::AREA_PATTERN . "$/";
+
     #[ApiProperty(identifier: true)]
+    #[Assert\NotBlank(message: 'api.area-period.area.not-blank', groups: ['interviewer.allocate-area', 'api.area-period', 'cli.add-area-period'])]
+    #[Assert\Regex(self::AREA_REGEX, message: 'api.area-period.area.valid', groups: ['interviewer.allocate-area', 'api.area-period', 'cli.add-area-period'])]
+    #[ORM\Column(type: 'string', length: 6, nullable: false)]
     private ?string $area = null;
 
-    /**
-     * @ORM\Column(type="integer", nullable=false)
-     * @Assert\NotBlank(groups={"api.area-period"}, message="api.area-period.year.not-blank")
-     * @Assert\Expression("(value % 10) == this.getYearDigitFromArea()", groups={"api.area-period"}, message="api.area-period.year.expression")
-     */
     #[ApiProperty(identifier: true)]
-    private ?int $year;
+    #[Assert\NotBlank(message: 'api.area-period.year.not-blank', groups: ['api.area-period', 'cli.add-area-period'])]
+    #[Assert\Expression('(value % 10) == this.getYearDigitFromArea()', message: 'api.area-period.year.expression', groups: ['api.area-period', 'cli.add-area-period'])]
+    #[ORM\Column(type: 'integer', nullable: false)]
+    private ?int $year = null;
+
+    #[Assert\NotBlank(message: 'api.area-period.month.not-blank', groups: ['api.area-period', 'cli.add-area-period'])]
+    #[Assert\Expression('value == this.getMonthDigitsFromArea()', message: 'api.area-period.month.expression', groups: ['api.area-period', 'cli.add-area-period'])]
+    #[ORM\Column(type: 'integer', nullable: false)]
+    private ?int $month = null;
 
     /**
-     * @ORM\Column(type="integer", nullable=false)
-     * @Assert\NotBlank(groups={"api.area-period"}, message="api.area-period.month.not-blank")
-     * @Assert\Expression("value == this.getMonthDigitsFromArea()", groups={"api.area-period"}, message="api.area-period.month.expression")
-     */
-    private ?int $month;
-
-    /**
-     * @ORM\OneToMany(targetEntity=Household::class, mappedBy="areaPeriod", orphanRemoval=true)
-     * @Ignore
      * @var Collection<Household>
      */
+    #[Ignore]
+    #[ORM\OneToMany(targetEntity: Household::class, mappedBy: 'areaPeriod')]
     private Collection $households;
 
-    /**
-     * @ORM\ManyToMany(targetEntity=Interviewer::class, inversedBy="areaPeriods")
-     * @Ignore
-     */
+    #[Ignore]
+    #[ORM\ManyToMany(targetEntity: Interviewer::class, inversedBy: 'areaPeriods')]
     private Collection $interviewers;
 
-    /**
-     * @ORM\OneToMany(targetEntity=OtpUser::class, mappedBy="areaPeriod", cascade={"remove"})
-     * @Ignore
-     */
+    #[Ignore]
+    #[ORM\OneToMany(targetEntity: OtpUser::class, mappedBy: 'areaPeriod', cascade: ['remove'])]
     private Collection $otpUsers;
 
-    /**
-     * @ORM\ManyToOne(targetEntity=Interviewer::class, inversedBy="trainingAreaPeriods")
-     * @Ignore
-     */
-    private ?Interviewer $trainingInterviewer;
+    #[Ignore]
+    #[ORM\ManyToOne(targetEntity: Interviewer::class, inversedBy: 'trainingAreaPeriods')]
+    private ?Interviewer $trainingInterviewer = null;
 
     public function __construct()
     {
@@ -231,7 +224,7 @@ class AreaPeriod implements ApiIdInterface
 
     public function populateMonthAndYearFromArea(): self
     {
-        if (preg_match('/^(?<year>\d)(?<month>\d{2})(?<sample>\d{3})$/', $this->area, $matches)) {
+        if (preg_match('/^(?<year>\d)(?<month>\d{2})(?<sample>\d{3})$/', (string) $this->area, $matches)) {
             $this->year = AreaPeriodHelper::guessYearFromArea($this->area);
             $this->month = $matches['month'];
         }
@@ -252,14 +245,14 @@ class AreaPeriod implements ApiIdInterface
     public function getFirstValidDiaryStartDate(): DateTime
     {
         return $this->getTrainingInterviewer()
-            ? (new DateTime())->modify("midnight, first day of last month")
+            ? new DateTime("midnight, first day of last month")
             : new DateTime("{$this->year}/{$this->month}/01 midnight");
     }
 
     public function getLastValidDiaryStartDate(): DateTime
     {
         return $this->getFirstValidDiaryStartDate()
-            ->add(DateInterval::createFromDateString('3 months'))
+            ->add(DateInterval::createFromDateString(self::VALID_FIELDWORK_PERIOD_MONTHS . ' months'))
             ->sub(DateInterval::createFromDateString('1 second'));
     }
 

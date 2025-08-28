@@ -11,14 +11,13 @@ use Symfony\Component\OptionsResolver\OptionsResolver;
 
 class DriverAndParkingType extends AbstractType
 {
-    public function buildForm(FormBuilderInterface $builder, array $options)
+    public function buildForm(FormBuilderInterface $builder, array $options): void
     {
         $builder
             ->add('isDriver', BooleanChoiceType::class, [
                 'label' => "stage.driver-and-parking.driver-or-passenger.label",
-                'label_attr' => ['class' => 'govuk-label--m'],
+                'label_attr' => ['class' => 'govuk-fieldset__legend--m'],
                 'help' => "stage.driver-and-parking.driver-or-passenger.help",
-                'attr' => [],
                 'choices' => [
                     "stage.driver-and-parking.driver-or-passenger.choices.driver" => "true",
                     "stage.driver-and-parking.driver-or-passenger.choices.passenger" => "false",
@@ -30,7 +29,7 @@ class DriverAndParkingType extends AbstractType
             ]);
     }
 
-    public function configureOptions(OptionsResolver $resolver)
+    public function configureOptions(OptionsResolver $resolver): void
     {
         $resolver->setDefaults([
             'data_class' => Stage::class,

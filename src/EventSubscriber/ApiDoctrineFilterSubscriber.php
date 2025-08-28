@@ -14,17 +14,13 @@ use Symfony\Component\HttpKernel\KernelEvents;
 
 class ApiDoctrineFilterSubscriber implements EventSubscriberInterface
 {
-    private EntityManagerInterface $entityManager;
-
-    public function __construct(EntityManagerInterface $entityManager)
-    {
-        $this->entityManager = $entityManager;
-    }
+    public function __construct(protected readonly EntityManagerInterface $entityManager)
+    {}
 
     /**
      * @throws ReflectionException
      */
-    public function preRead(RequestEvent $event)
+    public function preRead(RequestEvent $event): void
     {
         $attributes = $event->getRequest()->attributes;
         // Only enable the filter for API requests

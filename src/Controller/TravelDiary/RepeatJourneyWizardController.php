@@ -2,29 +2,28 @@
 
 namespace App\Controller\TravelDiary;
 
-use App\Annotation\Redirect;
-use App\Controller\FormWizard\AbstractSessionStateFormWizardController;
+use App\Attribute\Redirect;
 use App\Entity\DiaryKeeper;
 use App\Entity\Journey\Journey;
 use App\Entity\Journey\Stage;
 use App\Entity\User;
-use App\FormWizard\FormWizardManager;
-use App\FormWizard\FormWizardStateInterface;
-use App\FormWizard\Place;
-use App\FormWizard\PropertyMerger;
 use App\FormWizard\TravelDiary\RepeatJourneyState;
 use Doctrine\ORM\EntityManagerInterface;
+use Ghost\GovUkCoreBundle\Controller\FormWizard\AbstractSessionStateFormWizardController;
+use Ghost\GovUkCoreBundle\FormWizard\FormWizardManager;
+use Ghost\GovUkCoreBundle\FormWizard\FormWizardStateInterface;
+use Ghost\GovUkCoreBundle\FormWizard\Metadata\PlaceMetadata;
+use Ghost\GovUkCoreBundle\FormWizard\Place;
+use Ghost\GovUkCoreBundle\FormWizard\PropertyMerger;
 use Symfony\Component\HttpFoundation\RedirectResponse;
 use Symfony\Component\HttpFoundation\Request;
 use Symfony\Component\HttpFoundation\RequestStack;
 use Symfony\Component\HttpFoundation\Response;
-use Symfony\Component\Routing\Annotation\Route;
+use Symfony\Component\Routing\Attribute\Route;
 use Symfony\Component\Serializer\Exception\ExceptionInterface;
 
-/**
- * @Route("/day-{dayNumber}/repeat-journey", name="repeat_journey_v2_wizard_")
- * @Redirect("!is_granted('EDIT_DIARY')", route="traveldiary_dashboard")
- */
+#[Redirect("!is_granted('EDIT_DIARY')", route: "traveldiary_dashboard")]
+#[Route(path: '/day-{dayNumber}/repeat-journey', name: 'repeat_journey_v2_wizard_')]
 class RepeatJourneyWizardController extends AbstractSessionStateFormWizardController
 {
     private int $targetDayNumber;
@@ -40,21 +39,27 @@ class RepeatJourneyWizardController extends AbstractSessionStateFormWizardContro
 
 
     /**
-     * @Route(name="start")
-     * @Route("/{place}/{stageNumber}", name="place")
      * @throws ExceptionInterface
      */
+    #[Route(name: 'start')]
+    #[Route(path: '/{place}/{stageNumber}', name: 'place')]
     public function index(Request $request, int $dayNumber, ?string $place = null, $stageNumber = 0): Response
     {
         $this->targetDayNumber = $dayNumber;
         if ($place !== null) $place = new Place($place, $stageNumber > 0 ? ['stageNumber' => intval($stageNumber)] : []);
 
-        $getAdditionalViewData = function(RepeatJourneyState $state) {
+        $getAdditionalViewData = function(RepeatJourneyState $state, PlaceMetadata $placeMetadata): array {
             $sourceJourney = $state->sourceJourneyId !== null ?
                 $this->entityManager->find(Journey::class, $state->sourceJourneyId) :
                 null;
 
-            return ['sourceJourney' => $sourceJourney];
+            $data = ['sourceJourney' => $sourceJourney];
+
+            if ($placeMetadata->hasContextEntry('set_translation_key_from_state')) {
+                $data['title_translation_key'] = $state->getStageDetailsTitle();
+            }
+
+            return $data;
         };
 
         return $this->doWorkflow($request, $place, $getAdditionalViewData);

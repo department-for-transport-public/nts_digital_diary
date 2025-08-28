@@ -9,6 +9,7 @@ class MessageArrivedSubscriberTest extends AbstractFeedbackSubscriberTest
 {
     public function setUp(): void
     {
+        parent::setUp();
         parent::loadFixturesAndDoSetUp([]);
     }
 

@@ -2,6 +2,10 @@
 
 # API Change Log
 
+## Changes in v2024.10.17
+
+- **Added**: new value option for diary keeper media type - `transcribed` (survey export)
+
 ## Changes in v2023.10.25
 
 - **Fix**: Output method description as part of `methodOther` property (when `methodOther` field is used)

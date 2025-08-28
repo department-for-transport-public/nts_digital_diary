@@ -10,7 +10,7 @@ use Symfony\Component\HttpFoundation\JsonResponse;
 use Symfony\Component\HttpFoundation\Request;
 use Symfony\Component\HttpFoundation\Response;
 use Symfony\Component\HttpKernel\Exception\BadRequestHttpException;
-use Symfony\Component\Routing\Annotation\Route;
+use Symfony\Component\Routing\Attribute\Route;
 use Symfony\Component\Serializer\Exception\ExceptionInterface;
 use Symfony\Component\Serializer\Normalizer\DateTimeNormalizer;
 use Symfony\Component\Serializer\Normalizer\NormalizerInterface;
@@ -18,9 +18,9 @@ use Symfony\Component\Serializer\Normalizer\NormalizerInterface;
 class SurveyDataController extends AbstractController
 {
     /**
-     * @Route("/survey-data")
      * @throws ExceptionInterface
      */
+    #[Route(path: '/survey-data')]
     public function index(Request $request, HouseholdRepository $householdRepository, NormalizerInterface $normalizer, int $version): Response
     {
         $startTime = $this->getQueryTimestampAsDate($request, 'startTime');
@@ -61,7 +61,7 @@ class SurveyDataController extends AbstractController
         return $queryParamValue ? explode(',', $queryParamValue) : null;
     }
 
-    protected function getQueryTimestampAsDate(Request $request, $queryParamKey): ?DateTime
+    protected function getQueryTimestampAsDate(Request $request, string $queryParamKey): ?DateTime
     {
         $queryParamValue = $request->query->get($queryParamKey, null);
         if (is_null($queryParamValue)) {

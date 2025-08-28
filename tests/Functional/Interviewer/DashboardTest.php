@@ -43,12 +43,12 @@ class DashboardTest extends AbstractFunctionalTestCase
         $this->assertCount(count($expectedSerials), $tableData, 'Expected table to have two rows');
 
         for($idx = 0; $idx < count($expectedSerials); $idx++) {
-            $this->assertEquals($expectedSerials[$idx], $tableData[$idx][0], "Expected serial on row #{$idx} to be ${expectedSerials[$idx]}");
-            $this->assertEquals($expectedDiaryKeepers[$idx], $tableData[$idx][1], "Expected diary keeper count on row #{$idx} to be ${expectedDiaryKeepers[$idx]}");
+            $this->assertEquals($expectedSerials[$idx], $tableData[$idx][0], "Expected serial on row #{$idx} to be {$expectedSerials[$idx]}");
+            $this->assertEquals("$expectedDiaryKeepers[$idx] New", $tableData[$idx][1], "Expected diary keeper count on row #{$idx} to be {$expectedDiaryKeepers[$idx]}");
             $this->assertEquals(
                 \DateTime::createFromFormat('Y/m/d', $expectedStartDate[$idx]),
                 \DateTime::createFromFormat('d/m/Y', $tableData[$idx][2]),
-                "Expected start date on row #{$idx} to be ${expectedStartDate[$idx]}"
+                "Expected start date on row #{$idx} to be {$expectedStartDate[$idx]}"
             );
         }
     }
@@ -84,12 +84,12 @@ class DashboardTest extends AbstractFunctionalTestCase
     protected function expectHouseholdDiaryWeekStartDate(string $expectedStartDate): void
     {
         $summaryListData = $this->getSummaryListData();
-        $this->assertDataSize($summaryListData, 2, 2);
+        $this->assertDataSize($summaryListData, 3, 2);
 
         $this->assertEquals(
             \DateTime::createFromFormat('Y/m/d', $expectedStartDate),
             \DateTime::createFromFormat('d/m/Y', $summaryListData[0][1]),
-            "Expected start date to be ${expectedStartDate}"
+            "Expected start date to be {$expectedStartDate}"
         );
     }
 }

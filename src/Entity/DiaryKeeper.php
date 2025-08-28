@@ -7,137 +7,110 @@ use DateTimeImmutable;
 use Doctrine\Common\Collections\ArrayCollection;
 use Doctrine\Common\Collections\Collection;
 use Doctrine\ORM\Mapping as ORM;
+use phpDocumentor\Reflection\Types\Boolean;
 use Symfony\Bridge\Doctrine\Validator\Constraints\UniqueEntity;
 use Symfony\Component\Validator\Constraints as Assert;
 
-/**
- * @ORM\Entity(repositoryClass=DiaryKeeperRepository::class)
- * @ORM\HasLifecycleCallbacks()
- * @ORM\Table(uniqueConstraints={
- *     @ORM\UniqueConstraint(columns={"name", "household_id"}),
- *     @ORM\UniqueConstraint(columns={"number", "household_id"})
- * })
- * @UniqueEntity(groups={"wizard.on-boarding.diary-keeper.details"}, message="wizard.diary-keeper.name.unique", fields={"name", "household"})
- * @UniqueEntity(groups={"wizard.on-boarding.diary-keeper.details"}, message="wizard.diary-keeper.number.unique", fields={"number", "household"})
- */
+#[UniqueEntity(fields: ['name', 'household'], message: 'wizard.diary-keeper.name.unique', groups: ['wizard.on-boarding.diary-keeper.details'])]
+#[UniqueEntity(fields: ['number', 'household'], message: 'wizard.diary-keeper.number.unique', groups: ['wizard.on-boarding.diary-keeper.details'])]
+#[ORM\Entity(repositoryClass: DiaryKeeperRepository::class)]
+#[ORM\HasLifecycleCallbacks]
+#[ORM\Table]
+#[ORM\UniqueConstraint(columns: ['name', 'household_id'])]
+#[ORM\UniqueConstraint(columns: ['number', 'household_id'])]
 class DiaryKeeper implements UserPersonInterface
 {
-    const STATE_NEW = 'new';
-    const STATE_IN_PROGRESS = 'in-progress';
-    const STATE_COMPLETED = 'completed';
-    const STATE_APPROVED = 'approved';
-    const STATE_DISCARDED = 'discarded';
+    public const string STATE_NEW = 'new';
+    public const string STATE_IN_PROGRESS = 'in-progress';
+    public const string STATE_COMPLETED = 'completed';
+    public const string STATE_APPROVED = 'approved';
+    public const string STATE_DISCARDED = 'discarded';
 
-    const TRANSITION_DISCARD = 'discard';
-    const TRANSITION_APPROVE = 'approve';
-    const TRANSITION_COMPLETE = 'complete';
-    const TRANSITION_START = 'start';
-    const TRANSITION_UNDO_APPROVAL = 'undo-approve';
-    const TRANSITION_UNDO_DISCARD = 'undo-discard';
-    const TRANSITION_UNDO_COMPLETE = 'undo-complete';
+    public const string TRANSITION_DISCARD = 'discard';
+    public const string TRANSITION_APPROVE = 'approve';
+    public const string TRANSITION_COMPLETE = 'complete';
+    public const string TRANSITION_START = 'start';
+    public const string TRANSITION_UNDO_APPROVAL = 'undo-approve';
+    public const string TRANSITION_UNDO_DISCARD = 'undo-discard';
+    public const string TRANSITION_UNDO_COMPLETE = 'undo-complete';
 
-    const MEDIA_TYPE_DIGITAL = 'digital';
-    const MEDIA_TYPE_PAPER = 'paper';
+    public const string MEDIA_TYPE_DIGITAL = 'digital';
+    public const string MEDIA_TYPE_PAPER = 'paper';
+    public const string MEDIA_TYPE_INTERVIEWER_TRANSCRIBED = 'transcribe';
     use IdTrait;
 
-    /**
-     * @ORM\ManyToOne(targetEntity=Household::class, inversedBy="diaryKeepers")
-     * @ORM\JoinColumn(nullable=false)
-     */
-    private ?Household $household;
+    #[ORM\ManyToOne(targetEntity: Household::class, inversedBy: 'diaryKeepers')]
+    #[ORM\JoinColumn(nullable: false)]
+    private ?Household $household = null;
 
-    /**
-     * @ORM\Column(type="boolean")
-     * @Assert\NotNull(groups={"wizard.on-boarding.diary-keeper.details"}, message="wizard.diary-keeper.is-adult.not-null")
-     * @Assert\Expression("(value === true) || this.getPrimaryDriverVehicles().isEmpty()", groups={"wizard.on-boarding.diary-keeper.details"}, message="wizard.diary-keeper.is-adult.has-vehicles")
-     */
-    private ?bool $isAdult;
+    #[Assert\NotNull(message: 'wizard.diary-keeper.is-adult.not-null', groups: ['wizard.on-boarding.diary-keeper.details', 'direct-onboarding.ingress'])]
+    #[Assert\Expression('(value === true) || this.getPrimaryDriverVehicles().isEmpty()', groups: ['wizard.on-boarding.diary-keeper.details'], message: 'wizard.diary-keeper.is-adult.has-vehicles')]
+    #[ORM\Column(type: 'boolean')]
+    private ?bool $isAdult = null;
 
-    /**
-     * @ORM\Column(type="string", length=255)
-     * @Assert\NotBlank(groups={"wizard.on-boarding.diary-keeper.details"}, message="wizard.diary-keeper.name.not-null")
-     * @Assert\Length(groups={"wizard.on-boarding.diary-keeper.details"}, maxMessage="common.string.max-length", max=255)
-     */
-    private ?string $name;
+    #[ORM\Column(type: 'boolean', nullable: true)]
+    private ?bool $hasUsedPracticeDay = null;
 
-    /**
-     * @ORM\Column(type="integer")
-     * @Assert\Range(min=1, max=99, groups={"wizard.on-boarding.diary-keeper.details"}, notInRangeMessage="wizard.diary-keeper.number.not-in-range")
-     * @Assert\NotBlank(groups={"wizard.on-boarding.diary-keeper.details"}, message="wizard.diary-keeper.number.not-null")
-     */
-    private ?int $number;
+    #[Assert\NotBlank(message: 'wizard.diary-keeper.name.not-null', groups: ['wizard.on-boarding.diary-keeper.details', 'direct-onboarding.ingress'])]
+    #[Assert\Length(max: 255, maxMessage: 'common.string.max-length', groups: ['wizard.on-boarding.diary-keeper.details', 'direct-onboarding.ingress'])]
+    #[ORM\Column(type: 'string', length: 255)]
+    private ?string $name = null;
+
+    #[Assert\Range(notInRangeMessage: 'wizard.diary-keeper.number.not-in-range', min: 1, max: 99, groups: ['wizard.on-boarding.diary-keeper.details', 'direct-onboarding.ingress'])]
+    #[Assert\NotBlank(message: 'wizard.diary-keeper.number.not-null', groups: ['wizard.on-boarding.diary-keeper.details', 'direct-onboarding.ingress'])]
+    #[ORM\Column(type: 'integer')]
+    private ?int $number = null;
 
     /**
      * @var Collection<int, DiaryDay>
-     * @ORM\OneToMany(targetEntity=DiaryDay::class, mappedBy="diaryKeeper", cascade={"persist"}, indexBy="number", orphanRemoval=true)
-     * @ORM\OrderBy({"number" = "ASC"})
      */
+    #[ORM\OneToMany(mappedBy: 'diaryKeeper', targetEntity: DiaryDay::class, cascade: ['persist'], orphanRemoval: true, indexBy: 'number')]
+    #[ORM\OrderBy(['number' => 'ASC'])]
     private Collection $diaryDays;
 
     /**
      * @var Collection<int, Vehicle>
-     * @ORM\OneToMany(targetEntity=Vehicle::class, mappedBy="primaryDriver")
-     * @ORM\OrderBy({"friendlyName" = "ASC"})
      */
+    #[ORM\OneToMany(mappedBy: 'primaryDriver', targetEntity: Vehicle::class)]
+    #[ORM\OrderBy(['friendlyName' => 'ASC'])]
     private Collection $primaryDriverVehicles;
 
     private ?array $frequentLocations = [];
 
     /**
      * Orphan removal is required here, as part of on-boarding.
-     * @ORM\OneToOne(targetEntity=User::class, mappedBy="diaryKeeper", cascade={"persist"}, orphanRemoval=true)
-     * @Assert\Valid(groups={"wizard.on-boarding.diary-keeper.user-identifier"})
      */
-    private ?User $user;
+    #[Assert\Valid(groups: ['wizard.on-boarding.diary-keeper.user-identifier', 'direct-onboarding.logins', 'wizard.on-boarding.direct.interviewer-training'])]
+    #[ORM\OneToOne(mappedBy: 'diaryKeeper', targetEntity: User::class, cascade: ['persist'], orphanRemoval: true)]
+    private ?User $user = null;
 
-    /**
-     * @ORM\Column(type="string", length=20, nullable=true)
-     */
+    #[ORM\Column(type: 'string', length: 20, nullable: true)]
     private ?string $diaryState;
 
     public const PROXY_VALIDATOR_EXPRESSION = "this.getUser().hasIdentifierForLogin() or this.hasProxies() or this.getHousehold().getDiaryKeepers().count() <= 1";
 
-    /**
-     * @ORM\ManyToMany(targetEntity=DiaryKeeper::class, inversedBy="actingAsProxyFor")
-     * @ORM\JoinTable(name="diary_keeper_proxies")
-     * @Assert\Expression(
-     *     expression=self::PROXY_VALIDATOR_EXPRESSION,
-     *     groups={"wizard.on-boarding.diary-keeper.user-identifier"},
-     *     message="wizard.on-boarding.diary-keeper.identity.at-least-one"
-     * )
-     * @Assert\Expression(
-     *     expression=self::PROXY_VALIDATOR_EXPRESSION,
-     *     groups={"interviewer.diary-keeper.change-proxies"},
-     *     message="change-proxies.at-least-one"
-     * )
-     */
+    #[Assert\Expression(expression: self::PROXY_VALIDATOR_EXPRESSION, message: 'wizard.on-boarding.diary-keeper.identity.at-least-one', groups: ['wizard.on-boarding.diary-keeper.user-identifier'])]
+    #[Assert\Expression(expression: self::PROXY_VALIDATOR_EXPRESSION, message: 'change-proxies.at-least-one', groups: ['interviewer.diary-keeper.change-proxies'])]
+    #[ORM\ManyToMany(targetEntity: DiaryKeeper::class, inversedBy: 'actingAsProxyFor')]
+    #[ORM\JoinTable(name: 'diary_keeper_proxies')]
     private Collection $proxies;
 
-    /**
-     * @ORM\ManyToMany(targetEntity=DiaryKeeper::class, mappedBy="proxies")
-     */
+    #[ORM\ManyToMany(targetEntity: DiaryKeeper::class, mappedBy: 'proxies')]
     private Collection $actingAsProxyFor;
 
-    /**
-     * @ORM\Column(type="string", length=10)
-     * @Assert\NotNull(groups={"wizard.on-boarding.diary-keeper.media-type"}, message="common.choice.invalid")
-     */
-    private ?string $mediaType;
+    #[Assert\NotNull(message: 'common.choice.invalid', groups: ['wizard.on-boarding.diary-keeper.media-type'])]
+//    #[Assert\Expression(expression: 'this.isValidMediaType()', message: 'common.choice.invalid', groups: ['wizard.on-boarding.diary-keeper.media-type'])]
+    #[ORM\Column(type: 'string', length: 10)]
+    private ?string $mediaType = null;
 
-    /**
-     * @ORM\Column(type="string", length=255, nullable=true)
-     */
-    private ?string $approvalChecklistVerifiedBy;
+    #[ORM\Column(type: 'string', length: 255, nullable: true)]
+    private ?string $approvalChecklistVerifiedBy = null;
 
-    /**
-     * @ORM\Column(type="datetime_immutable", nullable=true)
-     */
-    private ?DateTimeImmutable $approvalChecklistVerifiedAt;
+    #[ORM\Column(type: 'datetime_immutable', nullable: true)]
+    private ?DateTimeImmutable $approvalChecklistVerifiedAt = null;
 
-    /**
-     * @ORM\OneToOne(targetEntity=SatisfactionSurvey::class, mappedBy="diaryKeeper", cascade={"persist", "remove"})
-     */
-    private ?SatisfactionSurvey $satisfactionSurvey;
+    #[ORM\OneToOne(targetEntity: SatisfactionSurvey::class, inversedBy: 'diaryKeeper', cascade: ['persist', 'remove'])]
+    private ?SatisfactionSurvey $satisfactionSurvey = null;
 
     public function __construct()
     {
@@ -159,10 +132,8 @@ class DiaryKeeper implements UserPersonInterface
         $this->actingAsProxyFor = new ArrayCollection();
     }
 
-    /**
-     * @ORM\PrePersist()
-     */
-    public function checkNumber()
+    #[ORM\PrePersist]
+    public function checkNumber(): void
     {
         if (is_null($this->number)) {
             $highestNumber = 0;
@@ -197,6 +168,17 @@ class DiaryKeeper implements UserPersonInterface
         return $this;
     }
 
+    public function getHasUsedPracticeDay(): ?bool
+    {
+        return $this->hasUsedPracticeDay;
+    }
+
+    public function setHasUsedPracticeDay(?bool $hasUsedPracticeDay): static
+    {
+        $this->hasUsedPracticeDay = $hasUsedPracticeDay;
+        return $this;
+    }
+
     public function getName(): ?string
     {
         return $this->name ?? null;
@@ -225,7 +207,7 @@ class DiaryKeeper implements UserPersonInterface
     public function getDiaryDays(): Collection
     {
         // don't include the practice day
-        return $this->diaryDays->filter(fn(DiaryDay $d, $k) => $d->getNumber() !== 0);
+        return $this->diaryDays->filter(fn(DiaryDay $d, $k): bool => $d->getNumber() !== 0);
     }
 
     public function getPracticeDay(): ?DiaryDay
@@ -357,7 +339,7 @@ class DiaryKeeper implements UserPersonInterface
 
     public function getActingAsAProxyForNames(): array
     {
-        return $this->actingAsProxyFor->map(fn(DiaryKeeper $dk) => $dk->getName())->toArray();
+        return $this->actingAsProxyFor->map(fn(DiaryKeeper $dk): ?string => $dk->getName())->toArray();
     }
 
     public function isActingAsAProxyForOthers(): bool
@@ -385,7 +367,7 @@ class DiaryKeeper implements UserPersonInterface
     public function isTheOnlyDiaryKeeper(): bool
     {
         $allDiaryKeepers = $this->getHousehold()->getDiaryKeepers();
-        return $allDiaryKeepers->filter(fn(DiaryKeeper $d) => $d !== $this)->count() === 0;
+        return $allDiaryKeepers->filter(fn(DiaryKeeper $d): bool => $d !== $this)->count() === 0;
     }
 
     public function getDiaryState(): ?string
@@ -403,7 +385,7 @@ class DiaryKeeper implements UserPersonInterface
     // -----
 
     public function getProxyNames(): array {
-        return $this->proxies->map(fn(DiaryKeeper $dk) => $dk->getName())->toArray();
+        return $this->proxies->map(fn(DiaryKeeper $dk): ?string => $dk->getName())->toArray();
     }
 
     public function canBeDeletedWithoutMakingAnotherDiaryKeeperInaccessible(): bool
@@ -428,6 +410,12 @@ class DiaryKeeper implements UserPersonInterface
     {
         $user = $this->getUser();
         return $user && $user->hasIdentifierForLogin();
+    }
+
+    public function hasJourneys(): bool
+    {
+        $x = array_map(fn(DiaryDay $dd) => $dd->getJourneys()->count(), $this->diaryDays->filter(fn(DiaryDay $d) => !$d->isPracticeDay())->toArray());
+        return array_sum($x) > 0;
     }
 
     public function getMediaType(): ?string
@@ -485,21 +473,16 @@ class DiaryKeeper implements UserPersonInterface
 
     public function setSatisfactionSurvey(?SatisfactionSurvey $satisfactionSurvey): self
     {
-        // unset the owning side of the relation if necessary
-        if ($satisfactionSurvey === null && $this->satisfactionSurvey !== null) {
-            $this->satisfactionSurvey->setDiaryKeeper(null);
-        }
-
-        // set the owning side of the relation if necessary
-        if ($satisfactionSurvey !== null && $satisfactionSurvey->getDiaryKeeper() !== $this) {
-            $satisfactionSurvey->setDiaryKeeper($this);
-        }
-
         $this->satisfactionSurvey = $satisfactionSurvey;
         return $this;
     }
     public function getSerialNumber(bool $padAddressPart=true, bool $spacesBetweenParts=true): string
     {
         return $this->household->getSerialNumber($this->getNumber(), $padAddressPart, $spacesBetweenParts);
+    }
+
+    public function isValidMediaType(): bool
+    {
+        return in_array($this->getMediaType(), [self::MEDIA_TYPE_DIGITAL, self::MEDIA_TYPE_INTERVIEWER_TRANSCRIBED, self::MEDIA_TYPE_PAPER]);
     }
 }

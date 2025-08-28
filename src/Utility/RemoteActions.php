@@ -9,20 +9,11 @@ use Throwable;
 
 class RemoteActions
 {
-    const HMAC_TIMEOUT = 30;
+    public const HMAC_TIMEOUT = 30;
 
     public static function run(?string $path): void
     {
         switch($path) {
-            case '/_ah/warmup':
-                if (!array_key_exists('HTTP_X_GOOG_IAP_JWT_ASSERTION', $_SERVER)
-                    && ($_SERVER['HTTP_X_GOOGLE_INTERNAL_SKIPADMINCHECK'] ?? '') === 'true'
-                ) {
-                    //self::runProcess(['../bin/console', 'cache:clear']);
-                    echo "Warmup successful";
-                }
-                exit;
-
             case '/_util/pre-install' :
                 try {
                     self::denyAccessUnlessHmacPasses($_GET['hmac'] ?? '', $_GET['timestamp'] ?? 0, 'pre-install');
@@ -46,22 +37,20 @@ class RemoteActions
     public static function preInstall($kernelDir = ''): string
     {
         // previous migration count checks have been removed (2021-08-25), check git history if reinstating
-        $output = "";
+        $output = self::runProcess(["{$kernelDir}bin/console", 'messenger:stop-workers']); // stop running messenger workers
         $lockStatus = self::runProcess(["{$kernelDir}bin/console", 'nts:maintenance-mode:status'], false);
         if (stripos($lockStatus, 'not active') !== false) {
             throw new HttpException(500, "{$output}Maintenance lock is NOT active! Activate the maintenance lock before re-deploying.\nPre-install checks have failed.\n");
         } else {
             $output .= "Maintenance mode is active\n";
         }
-        $output .= "Pre-install checks have passed.\n";
 
-        return $output;
+        return "{$output}Pre-install checks have passed.\n";
     }
 
     public static function postInstall($kernelDir = ''): string
     {
-        $output = self::runProcess(["{$kernelDir}bin/console", 'messenger:stop-workers']); // stop running messenger workers
-        $output .= self::runProcess(["{$kernelDir}bin/console", 'doctrine:migrations:status']); // check migration status (don't automatically run migrations, as we sometimes seem to hit the old version)
+        $output = self::runProcess(["{$kernelDir}bin/console", 'doctrine:migrations:status']); // check migration status (don't automatically run migrations, as we sometimes seem to hit the old version)
         $output .= "Post-install script completed successfully.\n";
         return $output;
     }
@@ -85,7 +74,7 @@ class RemoteActions
         if ($addInformationalOutput) {
             $output .= "=== running command \"" . implode(" ", $command) . "\" ===\n";
         }
-        $returnValue = $process->run(function ($type, $buffer) use (&$output) {
+        $returnValue = $process->run(function ($type, string $buffer) use (&$output): void {
             $output .= $buffer;
         });
         if ($returnValue !== 0) {

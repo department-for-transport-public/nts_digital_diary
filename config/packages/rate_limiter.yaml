@@ -8,6 +8,7 @@ services:
         arguments:
             $globalFactory: '@limiter.ip'
             $localFactory: '@limiter.ip_and_username'
+            $secret: '%env(APP_SECRET)%'
 
     limiter.onboarding_login:
         class: App\Security\OneTimePassword\RateLimiter
@@ -42,3 +43,7 @@ framework:
             policy: 'sliding_window'
             limit: 5
             interval: '10 minutes'
+        account_creation_link_expired:
+            policy: 'fixed_window'
+            limit: 1
+            interval: '1 day'

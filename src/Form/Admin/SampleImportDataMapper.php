@@ -9,18 +9,14 @@ use Symfony\Component\Serializer\SerializerInterface;
 
 class SampleImportDataMapper implements DataMapperInterface
 {
-    private SerializerInterface $serializer;
+    public function __construct(protected readonly SerializerInterface $serializer)
+    {}
 
-    public function __construct(SerializerInterface $serializer)
-    {
-        $this->serializer = $serializer;
-    }
-
-    public function mapDataToForms($viewData, \Traversable $forms)
+    public function mapDataToForms($viewData, \Traversable $forms): void
     {
     }
 
-    public function mapFormsToData(\Traversable $forms, &$viewData)
+    public function mapFormsToData(\Traversable $forms, &$viewData): void
     {
         $forms = iterator_to_array($forms);
         /** @var FormInterface[] $forms */

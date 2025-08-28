@@ -29,3 +29,26 @@
 {% block recaptcha_widget -%}
     <div {{ block('widget_attributes') }}></div>
 {%- endblock %}
+
+{%- block gds_time_widget -%}
+    {%- import _self as s -%}
+    {%- set hasError = form.vars.errors | length > 0 -%}
+    {%- set attr = attr|merge({
+        class: ((hasError ? 'govuk-time-input--error ' : '') ~
+        attr.class|default(''))|trim
+    }) -%}
+    <div {{ block('widget_container_attributes') }}>
+        {{ form_row(form.hour) }}
+        <span class="govuk-time-input__colon">:</span>
+        {{ form_row(form.minute) }}
+        {% if form.am_or_pm is defined %}{{ form_row(form.am_or_pm) }}{% endif %}
+    </div>
+{%- endblock -%}
+
+{%- block gds_toggle_widget -%}
+    {{- form_widget(form) -}}
+    <label for="{{ id }}" {% with {attr: label_attr} %}{{ block('attributes') }}{% endwith %}>
+        {%- with off %}<div {{ block('attributes') }}>{{ label | trans }}</div>{% endwith -%}
+        {%- with on %}<div {{ block('attributes') }}>{{ label | trans }}</div>{% endwith -%}
+    </label>
+{%- endblock -%}

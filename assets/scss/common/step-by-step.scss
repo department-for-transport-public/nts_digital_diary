@@ -1,0 +1,42 @@
+@import "../step-by-step-navigation/step-by-step-navigation";
+@import "../step-by-step-navigation/step-by-step-navigation-header";
+@import "../step-by-step-navigation/step-by-step-navigation-related";
+@import "govuk-frontend/dist/govuk/helpers/typography";
+
+.app-step-nav {
+
+  .app-step-nav__subtitle {
+    display: block;
+    @include govuk-font($size: 19);
+  }
+
+  .app-step-nav__title {
+    cursor: pointer;
+  }
+
+  .app-step-nav__button {
+    //display: flex;
+    //justify-content: space-between;
+    //flex-wrap: nowrap;
+    display: inline;
+    width: auto;
+  }
+
+  .app-step-nav__header {
+    display: flex;
+    justify-content: space-between;
+    flex-wrap: nowrap;
+    background: govuk-colour("light-grey");
+    padding: govuk-spacing(1) govuk-spacing(3);
+    cursor: auto;
+  }
+
+  .app-step-nav__button--title {
+    //display: flex;
+  }
+
+  .app-step-nav__toggle-link {
+    // The 1px fixes the crooked line where the text would otherwise push the border out by 1px
+    padding: govuk-spacing(2) 0 1px;
+  }
+}

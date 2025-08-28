@@ -6,76 +6,67 @@ use App\Repository\InterviewerTrainingRecordRepository;
 use DateTimeImmutable;
 use Doctrine\ORM\Mapping as ORM;
 
-/**
- * @ORM\Entity(repositoryClass=InterviewerTrainingRecordRepository::class)
- */
+#[ORM\Entity(repositoryClass: InterviewerTrainingRecordRepository::class)]
 class InterviewerTrainingRecord
 {
-    public const STATE_NEW = 'new';
-    public const STATE_IN_PROGRESS = 'in_progress';
-    public const STATE_COMPLETE = 'complete';
+    public const string STATE_NEW = 'new';
+    public const string STATE_IN_PROGRESS = 'in_progress';
+    public const string STATE_COMPLETE = 'complete';
 
-    public const TRANSITION_START = 'start';
-    public const TRANSITION_COMPLETE = 'complete';
+    public const string TRANSITION_START = 'start';
+    public const string TRANSITION_COMPLETE = 'complete';
 
-    public const MODULE_INTRODUCTION = 'introduction';
-    public const MODULE_PERSONAL_TRAVEL_DIARY = 'personal-diary';
-    public const MODULE_INTERVIEWER_DASHBOARD = 'interviewer-dashboard';
-    public const MODULE_ONBOARDING_INTRO = 'onboarding-introduction';
-    public const MODULE_ONBOARDING_PRACTICE = 'onboarding-practice';
-    public const MODULE_EDITING_DIARIES = 'editing-diaries';
-    public const MODULE_DIARY_CORRECTION = 'diary-correction';
-    public const MODULE_DIARY_CORRECTION_ANSWERS = 'diary-correction-answers';
+    public const string MODULE_INTRODUCTION = 'introduction';
+    public const string MODULE_PERSONAL_TRAVEL_DIARY = 'personal-diary';
+    public const string MODULE_INTERVIEWER_DASHBOARD = 'interviewer-dashboard';
+    public const string MODULE_MANUAL_ONBOARDING_INTRO = 'manual-onboarding-introduction';
+    public const string MODULE_MANUAL_ONBOARDING_PRACTICE = 'manual-onboarding-practice';
+    public const string MODULE_EDITING_DIARIES = 'editing-diaries';
+    public const string MODULE_DIARY_CORRECTION = 'diary-correction';
+    public const string MODULE_DIARY_CORRECTION_ANSWERS = 'diary-correction-answers';
 
-    public const MODULES = [
+    public const string MODULE_DIRECT_ONBOARDING_INTRO = 'direct-onboarding-introduction';
+    public const string MODULE_APPROVE_AND_SUBMIT = 'approve-and-submit';
+
+    public const array MODULES = [
         self::MODULE_INTRODUCTION => 1,
         self::MODULE_PERSONAL_TRAVEL_DIARY => 2,
-        self::MODULE_INTERVIEWER_DASHBOARD => 3,
-        self::MODULE_ONBOARDING_INTRO => 4,
-        self::MODULE_ONBOARDING_PRACTICE => 5,
-        self::MODULE_EDITING_DIARIES => 6,
-        self::MODULE_DIARY_CORRECTION => 7,
-        self::MODULE_DIARY_CORRECTION_ANSWERS => 8,
+        self::MODULE_MANUAL_ONBOARDING_PRACTICE => 3,
+        self::MODULE_DIARY_CORRECTION => 4,
+        self::MODULE_INTERVIEWER_DASHBOARD => 5,
+        self::MODULE_DIRECT_ONBOARDING_INTRO => 6,
+        self::MODULE_MANUAL_ONBOARDING_INTRO => 7,
+        self::MODULE_EDITING_DIARIES => 8,
+        self::MODULE_DIARY_CORRECTION_ANSWERS => 9,
+        self::MODULE_APPROVE_AND_SUBMIT => 10,
     ];
 
-    public const MODULE_AREAS = [
+    public const array MODULE_AREAS = [
         self::MODULE_PERSONAL_TRAVEL_DIARY => AreaPeriod::TRAINING_PERSONAL_DIARY_AREA_SERIAL,
-        self::MODULE_ONBOARDING_PRACTICE => AreaPeriod::TRAINING_ONBOARDING_AREA_SERIAL,
+        self::MODULE_MANUAL_ONBOARDING_PRACTICE => AreaPeriod::TRAINING_ONBOARDING_AREA_SERIAL,
         self::MODULE_DIARY_CORRECTION => AreaPeriod::TRAINING_CORRECTION_AREA_SERIAL,
     ];
 
     use IdTrait;
 
-    /**
-     * @ORM\ManyToOne(targetEntity=Interviewer::class, inversedBy="trainingRecords")
-     * @ORM\JoinColumn(nullable=false)
-     */
-    private ?Interviewer $interviewer;
+    #[ORM\ManyToOne(targetEntity: Interviewer::class, inversedBy: 'trainingRecords')]
+    #[ORM\JoinColumn(nullable: false)]
+    private ?Interviewer $interviewer = null;
 
-    /**
-     * @ORM\Column(type="string", length=50)
-     */
-    private ?string $moduleName;
+    #[ORM\Column(type: 'string', length: 50)]
+    private ?string $moduleName = null;
 
-    /**
-     * @ORM\OneToOne(targetEntity=Household::class, cascade={"persist", "remove"})
-     */
-    private ?Household $household;
+    #[ORM\OneToOne(targetEntity: Household::class, cascade: ['persist', 'remove'])]
+    private ?Household $household = null;
 
-    /**
-     * @ORM\Column(type="datetime_immutable")
-     */
-    private ?DateTimeImmutable $createdAt;
+    #[ORM\Column(type: 'datetime_immutable')]
+    private ?DateTimeImmutable $createdAt = null;
 
-    /**
-     * @ORM\Column(type="datetime_immutable", nullable=true)
-     */
-    private ?DateTimeImmutable $startedAt;
+    #[ORM\Column(type: 'datetime_immutable', nullable: true)]
+    private ?DateTimeImmutable $startedAt = null;
 
-    /**
-     * @ORM\Column(type="datetime_immutable", nullable=true)
-     */
-    private ?DateTimeImmutable $completedAt;
+    #[ORM\Column(type: 'datetime_immutable', nullable: true)]
+    private ?DateTimeImmutable $completedAt = null;
 
     public function getHousehold(): ?Household
     {
@@ -141,14 +132,11 @@ class InterviewerTrainingRecord
 
     public function setState(string $state): self
     {
-        switch($state) {
-            case self::STATE_IN_PROGRESS :
-                $this->startedAt = $this->startedAt ?? new DateTimeImmutable();
-                break;
-            case self::STATE_COMPLETE :
-                $this->completedAt = $this->completedAt ?? new DateTimeImmutable();
-                break;
-        }
+        match ($state) {
+            self::STATE_IN_PROGRESS => $this->startedAt ??= new DateTimeImmutable(),
+            self::STATE_COMPLETE => $this->completedAt ??= new DateTimeImmutable(),
+            default => $this,
+        };
         return $this;
     }
 

@@ -12,7 +12,7 @@ use Doctrine\Common\DataFixtures\ReferenceRepository;
 use Doctrine\ORM\EntityManagerInterface;
 use Liip\TestFixturesBundle\Services\DatabaseToolCollection;
 use PHPUnit\Framework\MockObject\MockObject;
-use Symfony\Component\Workflow\StateMachine;
+use Symfony\Component\Workflow\WorkflowInterface;
 
 abstract class AbstractFeedbackSubscriberTest extends AbstractWebTestCase
 {
@@ -21,12 +21,10 @@ abstract class AbstractFeedbackSubscriberTest extends AbstractWebTestCase
     protected ReferenceRepository $referenceRepository;
 
     protected NotifyHelper|MockObject $notifyHelperMock;
-    protected StateMachine $stateMachine;
+    protected WorkflowInterface $stateMachine;
 
     public function loadFixturesAndDoSetUp(array $fixtures): void
     {
-        parent::setUp();
-
         $container = static::getContainer();
 
         $this->notifyHelperMock = $this

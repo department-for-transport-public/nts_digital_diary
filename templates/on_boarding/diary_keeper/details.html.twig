@@ -19,11 +19,16 @@
 
 {%- macro listRow(key, value, name, path) -%}
     {%- from '@GhostGovUkFrontend/components/macros.html.twig' import summaryListRow -%}
-    {{- summaryListRow(
-        "diary-keeper.view.summary.#{key}" | trans,
-        value,
-        path
-            ? {(path): {label: 'actions.change', srHiddenSuffix: "diary-keeper.view.change-action-suffix.#{key}", srHiddenSuffixParameters: {name: name}, srHiddenSuffixDomain: 'on-boarding'}}
-        : {}
-    ) -}}
+    {{- summaryListRow({
+        key: "diary-keeper.view.summary.#{key}" | trans,
+        value: value,
+        actions: path
+            ? [
+                {
+                    href: path,
+                    text: 'actions.change' | trans({}, 'messages'),
+                    visuallyHiddenText: "diary-keeper.view.change-action-suffix.#{key}" | trans({name: name}, 'on-boarding')
+                }
+            ] : []
+    }) -}}
 {%- endmacro -%}

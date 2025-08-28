@@ -7,14 +7,10 @@ use ApiPlatform\State\ProviderInterface;
 use App\Entity\Interviewer;
 use App\Repository\InterviewerRepository;
 
-final class InterviewerProvider implements ProviderInterface
+final readonly class InterviewerProvider implements ProviderInterface
 {
-    private InterviewerRepository $interviewerRepository;
-
-    public function __construct(InterviewerRepository $interviewerRepository)
-    {
-        $this->interviewerRepository = $interviewerRepository;
-    }
+    public function __construct(protected InterviewerRepository $interviewerRepository)
+    {}
 
     public function provide(Operation $operation, array $uriVariables = [], array $context = []): ?Interviewer
     {

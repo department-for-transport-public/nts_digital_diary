@@ -9,7 +9,7 @@ use Symfony\Component\Validator\Exception\UnexpectedTypeException;
 
 class PasswordComplexityValidator extends ConstraintValidator
 {
-    public function validate($value, Constraint $constraint)
+    public function validate($value, Constraint $constraint): void
     {
         if (!$constraint instanceof PasswordComplexity) {
             throw new UnexpectedTypeException($constraint, PasswordComplexity::class);
@@ -21,7 +21,7 @@ class PasswordComplexityValidator extends ConstraintValidator
 
         $types = CharacterTypeCounter::getCharacterTypeCounts($value);
 
-        if ($types['upper'] < 1 || $types['lower'] < 1 || $types['number'] < 1 || mb_strlen($value) < 8) {
+        if ($types['upper'] < 1 || $types['lower'] < 1 || $types['number'] < 1 || mb_strlen((string) $value) < 8) {
             $this->context->buildViolation($constraint->message)
                 ->addViolation();
         }

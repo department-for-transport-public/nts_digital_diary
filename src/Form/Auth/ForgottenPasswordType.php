@@ -19,18 +19,11 @@ use Symfony\Component\Validator\Context\ExecutionContextInterface;
 
 class ForgottenPasswordType extends AbstractType
 {
-    public RateLimiterFactory $forgottenPasswordEmailLimiter;
-    public RateLimiterFactory $forgottenPasswordIpLimiter;
-    public RequestStack $requestStack;
-
-    public function __construct(RateLimiterFactory $forgottenPasswordEmailLimiter, RateLimiterFactory $forgottenPasswordIpLimiter, RequestStack $requestStack)
+    public function __construct(public RateLimiterFactory $forgottenPasswordEmailLimiter, public RateLimiterFactory $forgottenPasswordIpLimiter, public RequestStack $requestStack)
     {
-        $this->forgottenPasswordEmailLimiter = $forgottenPasswordEmailLimiter;
-        $this->forgottenPasswordIpLimiter = $forgottenPasswordIpLimiter;
-        $this->requestStack = $requestStack;
     }
 
-    public function checkRateLimit(?string $emailAddress, ExecutionContextInterface $context)
+    public function checkRateLimit(?string $emailAddress, ExecutionContextInterface $context): void
     {
         if (!$emailAddress || $context->getViolations()->count() > 0) {
             return;
@@ -41,7 +34,7 @@ class ForgottenPasswordType extends AbstractType
             $this->forgottenPasswordEmailLimiter->create($emailAddress),
         ];
 
-        array_map(function (LimiterInterface $limiter) use ($context) {
+        array_map(function (LimiterInterface $limiter) use ($context): void {
             $rateLimit = $limiter->consume(1);
 
             if ($rateLimit->isAccepted() || $context->getViolations()->count() > 0) {
@@ -55,7 +48,7 @@ class ForgottenPasswordType extends AbstractType
         }, $limiters);
     }
 
-    public function buildForm(FormBuilderInterface $builder, array $options)
+    public function buildForm(FormBuilderInterface $builder, array $options): void
     {
         $builder
             ->add('emailAddress', EmailType::class, [
@@ -69,7 +62,7 @@ class ForgottenPasswordType extends AbstractType
                         'message' => 'forgotten-password.email.not-blank',
                     ]),
                     new Email(),
-                    new Callback([$this, 'checkRateLimit']),
+                    new Callback($this->checkRateLimit(...)),
                 ],
             ])
             ->add('button_group', ButtonGroupType::class);
@@ -86,7 +79,7 @@ class ForgottenPasswordType extends AbstractType
             ]);
     }
 
-    public function configureOptions(OptionsResolver $resolver)
+    public function configureOptions(OptionsResolver $resolver): void
     {
         $resolver->setDefault('translation_domain', 'auth');
         $resolver->setRequired('cancel_link_href');

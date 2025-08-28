@@ -3,57 +3,71 @@
 namespace App\Controller\Interviewer\Training;
 
 use App\Entity\InterviewerTrainingRecord;
+use App\Repository\InterviewerTrainingRecordRepository;
 use App\Security\OneTimePassword\PasscodeGenerator;
-use App\Security\OneTimePassword\TrainingUserProvider;
+use App\Security\OneTimePassword\InterviewerLinkedTrainingUserProvider;
 use App\Utility\ConfirmAction\Interviewer\RetakeTrainingModuleConfirmAction;
 use App\Utility\InterviewerTraining\InterviewerTrainingHelper;
 use App\Utility\Security\UrlSigner;
 use Doctrine\ORM\EntityManagerInterface;
-use Sensio\Bundle\FrameworkExtraBundle\Configuration\Entity;
-use Sensio\Bundle\FrameworkExtraBundle\Configuration\Template;
+use Symfony\Bridge\Doctrine\Attribute\MapEntity;
+use Symfony\Bridge\Twig\Attribute\Template;
+use Symfony\Bundle\SecurityBundle\Security;
 use Symfony\Component\HttpFoundation\JsonResponse;
 use Symfony\Component\HttpFoundation\RedirectResponse;
 use Symfony\Component\HttpFoundation\Request;
 use Symfony\Component\HttpFoundation\Response;
 use Symfony\Component\HttpKernel\Exception\NotFoundHttpException;
-use Symfony\Component\Routing\Annotation\Route;
-use Symfony\Component\Security\Core\Security;
+use Symfony\Component\Routing\Attribute\Route;
 use Symfony\Component\Workflow\Registry;
 use Symfony\Contracts\Translation\TranslatorInterface;
 
 #[Route('/training/module/{moduleName}', name: 'training_module_')]
-#[Entity('trainingRecord', expr: 'repository.findLatestByModuleName(moduleName)')]
 class ModuleController extends AbstractController
 {
-    public  const ONBOARDING_TRAINING_LINK_TIMEOUT = 60 * 60;
+    public const ONBOARDING_TRAINING_LINK_TIMEOUT = 60 * 60;
 
     public function __construct(
-        EntityManagerInterface $entityManager, InterviewerTrainingHelper $trainingHelper, Security $security,
-        protected UrlSigner $urlSigner,
-        protected PasscodeGenerator $passcodeGenerator,
-        protected Registry $workflowRegistry,
+        EntityManagerInterface        $entityManager,
+        InterviewerTrainingHelper     $trainingHelper,
+        Security                      $security,
+        protected UrlSigner           $urlSigner,
+        protected PasscodeGenerator   $passcodeGenerator,
+        protected Registry            $workflowRegistry,
         protected TranslatorInterface $translator,
     ) {
         parent::__construct($entityManager, $trainingHelper, $security);
     }
 
     #[Route(name: 'index')]
-    public function index(InterviewerTrainingRecord $trainingRecord): Response
+    public function index(
+        InterviewerTrainingRecordRepository $trainingRecordRepository,
+        #[MapEntity(expr: 'repository.findLatestByModuleName(moduleName)')]
+        InterviewerTrainingRecord $trainingRecord
+    ): Response
     {
         $interviewer = $this->getInterviewer();
+        $trainingRecords = $trainingRecordRepository->findLatestForInterviewer($interviewer);
+        $nextTrainingRecord = $trainingRecords[array_search($trainingRecord, $trainingRecords) + 1] ?? null;
+
         return $this->render(
             "interviewer/training/module.html.twig",
             array_merge($this->getViewDataForModule($trainingRecord), [
                 'interviewer' => $interviewer,
-                'trainingHistory' => $interviewer->getTrainingRecordsForModule($trainingRecord->getModuleName()),
                 'trainingRecord' => $trainingRecord,
+                'nextTrainingRecord' => $nextTrainingRecord,
             ])
         );
     }
 
     #[Route('/retake', name: 'retake')]
     #[Template('interviewer/training/confirm-retake.html.twig')]
-    public function retakeModule(RetakeTrainingModuleConfirmAction $confirmAction, Request $request, InterviewerTrainingRecord $trainingRecord): RedirectResponse|array
+    public function retakeModule(
+        RetakeTrainingModuleConfirmAction $confirmAction,
+        Request $request,
+        #[MapEntity(expr: 'repository.findLatestByModuleName(moduleName)')]
+        InterviewerTrainingRecord $trainingRecord
+    ): RedirectResponse|array
     {
         return $confirmAction
             ->setSubject($trainingRecord)
@@ -64,29 +78,38 @@ class ModuleController extends AbstractController
     }
 
     #[Route('/start', name: 'start', methods: ["POST"])]
-    public function startModule(InterviewerTrainingRecord $trainingRecord): Response
+    public function startModule(
+        #[MapEntity(expr: 'repository.findLatestByModuleName(moduleName)')]
+        InterviewerTrainingRecord $trainingRecord
+    ): Response
     {
         return $this->attemptWorkflowTransition($trainingRecord, InterviewerTrainingRecord::TRANSITION_START);
     }
 
     #[Route('/complete', name: 'complete', methods: ["POST"])]
-    public function completeModule(InterviewerTrainingRecord $trainingRecord): Response
+    public function completeModule(
+        #[MapEntity(expr: 'repository.findLatestByModuleName(moduleName)')]
+        InterviewerTrainingRecord $trainingRecord
+    ): Response
     {
         return $this->attemptWorkflowTransition($trainingRecord, InterviewerTrainingRecord::TRANSITION_COMPLETE);
     }
 
     #[Route('/access', name: 'access')]
-    public function accessModuleRedirect(InterviewerTrainingRecord $trainingRecord): Response
+    public function accessModuleRedirect(
+        #[MapEntity(expr: 'repository.findLatestByModuleName(moduleName)')]
+        InterviewerTrainingRecord $trainingRecord
+    ): Response
     {
-        $url = match($trainingRecord->getModuleName()) {
+        $url = match ($trainingRecord->getModuleName()) {
             InterviewerTrainingRecord::MODULE_PERSONAL_TRAVEL_DIARY => $this->generateUrl('app_home', [
                 "_switch_user" => $trainingRecord->getInterviewer()->getTrainingPersonalDiaryKeeper()->getUser()->getUserIdentifier(),
             ]),
 
-            InterviewerTrainingRecord::MODULE_ONBOARDING_PRACTICE => $this->urlSigner->sign(
+            InterviewerTrainingRecord::MODULE_MANUAL_ONBOARDING_PRACTICE => $this->urlSigner->sign(
                 $this->generateUrl(
                     'onboarding_login',
-                    [TrainingUserProvider::INTERVIEWER_ID_QUERY_PARAM => $trainingRecord->getInterviewer()->getId()]
+                    [InterviewerLinkedTrainingUserProvider::INTERVIEWER_ID_QUERY_PARAM => $trainingRecord->getInterviewer()->getId()]
                 ),
                 self::ONBOARDING_TRAINING_LINK_TIMEOUT
             ),
@@ -120,19 +143,19 @@ class ModuleController extends AbstractController
         ]);
     }
 
-    public function getViewDataForModule(InterviewerTrainingRecord $trainingRecord): array
+    protected function getViewDataForModule(InterviewerTrainingRecord $trainingRecord): array
     {
         $practicalUrl = $this->generateUrl('interviewer_training_module_access', ['moduleName' => $trainingRecord->getModuleName()]);
-        return match($trainingRecord->getModuleName()) {
+        return match ($trainingRecord->getModuleName()) {
             InterviewerTrainingRecord::MODULE_PERSONAL_TRAVEL_DIARY,
             InterviewerTrainingRecord::MODULE_DIARY_CORRECTION => [
                 'practicalUrl' => $practicalUrl,
             ],
 
-            InterviewerTrainingRecord::MODULE_ONBOARDING_PRACTICE => [
+            InterviewerTrainingRecord::MODULE_MANUAL_ONBOARDING_PRACTICE => [
                 'practicalUrl' => $practicalUrl,
-                'passcode1' => TrainingUserProvider::USER_IDENTIFIER,
-                'passcode2' => $this->passcodeGenerator->getPasswordForUserIdentifier(TrainingUserProvider::USER_IDENTIFIER),
+                'passcode1' => InterviewerLinkedTrainingUserProvider::USER_IDENTIFIER,
+                'passcode2' => $this->passcodeGenerator->getPasswordForUserIdentifier(InterviewerLinkedTrainingUserProvider::USER_IDENTIFIER),
             ],
 
             default => []

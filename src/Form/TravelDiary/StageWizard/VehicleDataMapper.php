@@ -7,13 +7,12 @@ use App\Entity\Vehicle;
 use Symfony\Component\Form\Exception\UnexpectedTypeException;
 use Symfony\Component\Form\Extension\Core\DataMapper\DataMapper;
 use Symfony\Component\Form\FormInterface;
-use Traversable;
 
 class VehicleDataMapper extends DataMapper
 {
     public const OTHER_KEY = '-_-_-other-_-_-';
 
-    public function mapDataToForms($data, $forms): void
+    public function mapDataToForms($data, \Traversable $forms): void
     {
         if (!$data instanceof Stage) {
             throw new UnexpectedTypeException($data, Stage::class);
@@ -28,12 +27,12 @@ class VehicleDataMapper extends DataMapper
 
         $vehiclesInForm = isset($forms['vehicle']) ?
             array_map(
-                fn(FormInterface $f) => $f->getConfig()->getOption('label'),
+                fn(FormInterface $f): mixed => $f->getConfig()->getOption('label'),
                 iterator_to_array($forms['vehicle'])
             ) :
             [];
 
-        $vehiclesInForm = array_flip(array_filter($vehiclesInForm, fn(string $x) => $x !== 'stage.vehicle.vehicle.other'));
+        $vehiclesInForm = array_flip(array_filter($vehiclesInForm, fn(string $x): bool => $x !== 'stage.vehicle.vehicle.other'));
 
         if ($data->getVehicle() === null) {
             if ($data->getVehicleOther() !== null) {
@@ -58,10 +57,9 @@ class VehicleDataMapper extends DataMapper
     }
 
     /**
-     * @param Traversable|iterable $forms
      * @param Stage $data
      */
-    public function mapFormsToData(iterable $forms, &$data): void
+    public function mapFormsToData(\Traversable $forms, &$data): void
     {
         $forms = iterator_to_array($forms);
         /** @var FormInterface[] $forms */

@@ -1,0 +1,46 @@
+{% extends 'admin/household-maintenance/base.html.twig' %}
+
+{% trans_default_domain 'admin' %}
+{% set title_translation_prefix = 'household-maintenance.list' %}
+{% set title_translation_domain = 'admin' %}
+{% set heading_class = 'govuk-heading-l govuk-!-margin-bottom-1' %}
+
+{% block content %}
+    {% from '@GhostGovUkFrontend/components/macros.html.twig' import summaryListActionsList, tableHead, tableCell, tableRow, tag %}
+    {%- from '@GhostGovUkCore/list-page.html.twig' import listTableStart, listTableEnd -%}
+    {%- from 'interviewer/dashboard/macros.html.twig' import householdState -%}
+
+    {% form_theme form _self %}
+
+    <p class="govuk-body govuk-!-margin-bottom-6">
+        <a class="govuk-link" href="{{ path('admin_user_lookup') }}">User lookup</a>
+    </p>
+
+    {{ listTableStart(data, form) }}
+    {% for household in data.entities %}
+        {# @var household \App\Entity\Household #}
+        <tr class="govuk-table__row">
+            {{ tableCell({text: household.serialNumber}) }}
+            {{ tableCell({text: household.diaryWeekStartDate | date(date_time_format.date('default'))}) }}
+            {{ tableCell({text: householdState(household.state)}) }}
+            {{ tableCell({text: household.diaryKeepers | filter(dk => dk.diaryState != 'new') | length ~ " / " ~ household.diaryKeepers | length}) }}
+            {{ tableCell({
+                html: summaryListActionsList([
+                    {
+                        href: path('admin_household_maintenance_details', {id: household.id}),
+                        text: 'view',
+                        visuallyHiddenText: "household #{household.serialNumber}"
+                    }
+                ]),
+                format: 'numeric',
+            }) }}
+        </tr>
+    {% else %}
+        {{ tableRow([{
+            text: "No results",
+            colspan: data.fields|length + 1
+        }]) }}
+    {% endfor %}
+    {{ listTableEnd(data, form) }}
+{% endblock %}
+

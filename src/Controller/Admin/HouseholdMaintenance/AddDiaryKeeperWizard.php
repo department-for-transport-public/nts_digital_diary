@@ -2,27 +2,28 @@
 
 namespace App\Controller\Admin\HouseholdMaintenance;
 
-use App\Controller\FormWizard\AbstractSessionStateFormWizardController;
 use App\Entity\DiaryKeeper;
 use App\Entity\Household;
-use App\FormWizard\FormWizardManager;
-use App\FormWizard\FormWizardStateInterface;
 use App\FormWizard\OnBoarding\DiaryKeeperState;
-use App\FormWizard\Place;
-use App\FormWizard\PropertyMerger;
 use App\Repository\DiaryKeeperRepository;
-use Sensio\Bundle\FrameworkExtraBundle\Configuration\Security;
+use Ghost\GovUkCoreBundle\Controller\FormWizard\AbstractSessionStateFormWizardController;
+use Ghost\GovUkCoreBundle\FormWizard\FormWizardManager;
+use Ghost\GovUkCoreBundle\FormWizard\FormWizardStateInterface;
+use Ghost\GovUkCoreBundle\FormWizard\Place;
+use Ghost\GovUkCoreBundle\FormWizard\PropertyMerger;
 use Symfony\Component\HttpFoundation\RedirectResponse;
 use Symfony\Component\HttpFoundation\Request;
 use Symfony\Component\HttpFoundation\RequestStack;
 use Symfony\Component\HttpFoundation\Response;
-use Symfony\Component\Routing\Annotation\Route;
+use Symfony\Component\Routing\Attribute\Route;
+use Symfony\Component\Security\Http\Attribute\IsGranted;
 use Symfony\Component\Serializer\Exception\ExceptionInterface;
 
-#[Route("/household-maintenance", name: "household_maintenance_add_diary_keeper_")]
+#[Route("/household-maintenance/{id}/add-diary-keeper", name: "household_maintenance_add_diary_keeper_")]
+#[IsGranted(attribute: 'HOUSEHOLD_MAINTENANCE_ADD_DIARY_KEEPER', subject: 'household')]
 class AddDiaryKeeperWizard extends AbstractSessionStateFormWizardController
 {
-    protected ?Household $household;
+    protected ?Household $household = null;
 
     public function __construct(
         protected DiaryKeeperRepository $diaryKeeperRepository,
@@ -36,8 +37,7 @@ class AddDiaryKeeperWizard extends AbstractSessionStateFormWizardController
     /**
      * @throws ExceptionInterface
      */
-    #[Route("/{id}/add-diary-keeper/{place}", name: "place")]
-    #[Security("is_granted('HOUSEHOLD_MAINTENANCE_ADD_DIARY_KEEPER', household)")]
+    #[Route("/{place}", name: "place")]
     public function index(Household $household, Request $request, ?string $place = null): Response
     {
         $this->household = $household;
@@ -46,7 +46,6 @@ class AddDiaryKeeperWizard extends AbstractSessionStateFormWizardController
 
     protected function getState(): FormWizardStateInterface
     {
-        /** @var DiaryKeeperState $state */
         $default = (new DiaryKeeperState())->setAddAnotherDisabled(true);
         $state = $this->session->get($this->getSessionKey(), $default);
 

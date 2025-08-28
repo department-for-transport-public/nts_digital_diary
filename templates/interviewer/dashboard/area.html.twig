@@ -5,8 +5,27 @@
 {% set title_translation_key = "survey-area.page-title" %}
 {% set translation_parameters = {area: areaPeriod.area} %}
 
+{%- block beforePageHeading -%}
+    {{- parent() -}}
+
+    {%- from '@GhostGovUkFrontend/components/macros.html.twig' import notificationBanner -%}
+
+    {%- if (overdueHouseholds ?? []) | length > 0 -%}
+        {{- notificationBanner({
+            title: 'survey-area.overdue-households.title',
+            content: 'survey-area.overdue-households.content',
+            options: {style: 'warning', nl2br: true},
+            translation_parameters: {
+                number: overdueHouseholds | length
+            },
+            translation_domain: 'interviewer'
+        }) -}}
+    {%- endif -%}
+{%- endblock -%}
+
 {% block content %}
     {%- import "@GhostGovUkFrontend/components/macros.html.twig" as m -%}
+    {% from "interviewer/dashboard/macros.html.twig" import diaryKeeperState, householdState %}
     <table class="govuk-table">
         <caption class="govuk-table__caption govuk-table__caption--m">{{ "survey-area.households" | trans }}</caption>
         <thead class="govuk-table__head">
@@ -22,20 +41,28 @@
         {%- for household in areaPeriod.households | filter(h => h.isOnboardingComplete) -%}
             {# @var household \App\Entity\Household #}
             <tr class="govuk-table__row">
-                <th scope="row" class="govuk-table__cell">{{ household.serialNumber }}</th>
-                <td class="govuk-table__cell">{{ household.diaryKeepers.count }}</td>
-                <td class="govuk-table__cell">{{ household.diaryWeekStartDate | date(format_date_default) }}</td>
-                <td class="govuk-table__cell">{{ "diary-keeper.states.#{household.state}" | trans }}</td>
-                <td class="govuk-table__cell govuk-table__cell--numeric">
-                    {{ m.actionLinks({
-                        (path('interviewer_dashboard_household', {household: household.id})): {
-                            label: 'survey-area.view',
-                            labelDomain: 'interviewer',
-                            srHiddenSuffix: 'survey-area.view-sr-hidden-suffix',
-                            srHiddenSuffixParams: {household: household.householdNumber, address: household.addressNumber},
-                            srHiddenSuffixDomain: 'interviewer',
+                <th scope="row" class="govuk-table__cell nowrap">{{ household.serialNumber }}</th>
+                <td class="govuk-table__cell">
+                    {{ household.diaryKeeperStateCounts | filter(c => c > 0)
+                        | map((c, s) => "#{c} " ~ ( "diary-keeper.state.label" | trans({state: s | diaryKeeperStateToTranslationChoice})))
+                        | join('<br>') | raw
+                    }}
+                </td>
+                <td class="govuk-table__cell nowrap">{{ household.diaryWeekStartDate | date(date_time_format.date('default')) }}</td>
+                <td class="govuk-table__cell nowrap">{{ householdState(household.state) }}
+                    {%- if household in overdueHouseholds %} {{ householdState('overdue') -}}{%- endif -%}
+                </td>
+                <td class="govuk-table__cell govuk-table__cell--numeric nowrap">
+                    {{ m.summaryListActionsList([
+                        {
+                            href: path('interviewer_dashboard_household', {household: household.id}),
+                            text: 'survey-area.view' | trans({}, 'interviewer'),
+                            visuallyHiddenText: 'survey-area.view-sr-hidden-suffix' | trans({
+                                household: household.householdNumber,
+                                address: household.addressNumber
+                            }, 'interviewer'),
                         }
-                    }) }}
+                    ]) }}
                 </td>
             </tr>
         {%- else -%}

@@ -2,13 +2,16 @@
 
 namespace App\Tests\Functional\Auth;
 
+use App\Utility\AlphagovNotify\Reference;
+use Symfony\Component\HttpFoundation\Request;
+
 class ResetPasswordTest extends AbstractAuthTestCase
 {
     public function testPasswordReset(): void
     {
         $emailAddress = 'diary-keeper-adult@example.com';
 
-        $this->client->request('GET', '/');
+        $this->client->request(Request::METHOD_GET, '/');
 
         // Check that we can log in with the known password...
         $this->submitLoginForm($emailAddress, 'password');
@@ -21,7 +24,7 @@ class ResetPasswordTest extends AbstractAuthTestCase
         $this->submitPasswordResetForm($emailAddress);
 
         // Follow the link and reset the password...
-        $this->client->request('GET', $this->getPasswordResetUrlFromMessage());
+        $this->client->request(Request::METHOD_GET, $this->getUrlFromMessage(Reference::FORGOTTEN_PASSWORD_EVENT));
         $newPassword = 'Banana1234';
         $this->client->submitForm('Reset password', [
             'change_password[password1]' => $newPassword,
@@ -62,7 +65,7 @@ class ResetPasswordTest extends AbstractAuthTestCase
         $this->submitPasswordResetForm('diary-keeper-adult@example.com');
 
         // Follow the link and reset the password...
-        $this->client->request('GET', $this->getPasswordResetUrlFromMessage());
+        $this->client->request(Request::METHOD_GET, $this->getUrlFromMessage(Reference::FORGOTTEN_PASSWORD_EVENT));
         $this->client->submitForm('Reset password', [
             'change_password[password1]' => $password1,
             'change_password[password2]' => $password2,

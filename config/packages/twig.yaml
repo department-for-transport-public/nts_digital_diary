@@ -8,15 +8,10 @@ twig:
         env_label_background: '%env(string:APP_ENV_LABEL_BACKGROUND)%'
         env_google_site_verification: '%env(default:false:APP_GOOGLE_SITE_VERIFICATION)%'
 
-        format_date_default: !php/const App\Utility\DateTimeFormats::DATE_DEFAULT
-        format_date_reverse: !php/const App\Utility\DateTimeFormats::DATE_REVERSE
-        format_date_short_with_dow: !php/const App\Utility\DateTimeFormats::DATE_SHORT_WITH_DOW
-        format_date_with_dow: !php/const App\Utility\DateTimeFormats::DATE_WITH_DOW
-        format_date_time: !php/const App\Utility\DateTimeFormats::DATE_TIME
+        date_time_format: '@App\Utility\DateTimeFormats'
 
-        format_time_short: !php/const App\Utility\DateTimeFormats::TIME_SHORT
+        user_preferences: '@App\Utility\TravelDiary\UserPreferencesHelper'
 
-        csp_inline_script_helper: '@App\Utility\Security\CspInlineScriptHelper'
         url_signer: '@App\Utility\Security\UrlSigner'
 
         hostnames:

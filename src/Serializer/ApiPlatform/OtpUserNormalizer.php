@@ -2,30 +2,34 @@
 
 namespace App\Serializer\ApiPlatform;
 
-use ApiPlatform\Core\Bridge\Doctrine\Orm\Paginator;
+use ApiPlatform\Metadata\Get;
 use App\Entity\AreaPeriod;
 use App\Entity\OtpUser;
 use App\Security\OneTimePassword\PasscodeGenerator;
-use Symfony\Component\Serializer\Normalizer\ContextAwareNormalizerInterface;
 use Symfony\Component\Serializer\Normalizer\NormalizerAwareInterface;
 use Symfony\Component\Serializer\Normalizer\NormalizerAwareTrait;
+use Symfony\Component\Serializer\Normalizer\NormalizerInterface;
 
-class OtpUserNormalizer implements ContextAwareNormalizerInterface, NormalizerAwareInterface
+class OtpUserNormalizer implements NormalizerInterface, NormalizerAwareInterface
 {
     use NormalizerAwareTrait;
 
-    private PasscodeGenerator $passcodeGenerator;
-
-    public function __construct(PasscodeGenerator $passcodeGenerator)
+    public function __construct(protected readonly PasscodeGenerator $passcodeGenerator)
     {
-        $this->passcodeGenerator = $passcodeGenerator;
     }
 
     public function supportsNormalization($data, string $format = null, array $context = []): bool
     {
         return ($context['resource_class'] ?? null) === AreaPeriod::class
-            && ($context['operation_type'] ?? null) === 'item'
-            && ($data instanceof OtpUser);
+            && ($context['operation'] ?? null) instanceof Get
+            && $data instanceof OtpUser;
+    }
+
+    public function getSupportedTypes(?string $format): array
+    {
+        return [
+            OtpUser::class => false, // false/not-cacheable because it depends upon the $context
+        ];
     }
 
     /**

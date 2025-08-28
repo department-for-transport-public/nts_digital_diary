@@ -5,19 +5,44 @@
     {%- from '@GhostGovUkFrontend/components/macros.html.twig' import summaryListRow -%}
     <div class="govuk-summary-list" id="household-details">
         {%- set actions = (options.showActions ?? true)
-            ? {(path('onboarding_household_index', {place: constant('App\\FormWizard\\OnBoarding\\HouseholdState::STATE_DETAILS')})): {label: 'actions.change', srHiddenSuffix: 'household.details.change-action-suffix', srHiddenSuffixDomain: 'on-boarding'}}
-            : {}
+            ? [
+                {
+                    href: path('onboarding_household_index', {
+                        place: constant('App\\FormWizard\\OnBoarding\\HouseholdState::STATE_DETAILS')
+                    }),
+                    text: 'actions.change' | trans({}, 'messages'),
+                    visuallyHiddenText: 'household.details.change-action-suffix' | trans({}, 'on-boarding'),
+                }
+            ] : []
         -%}
-        {{- summaryListRow('household.details.household-serial.label' | trans, app.user.household.serialNumber, actions) -}}
-        {{- summaryListRow('household.details.diary-start.label' | trans, app.user.household.diaryWeekStartDate | date(format_date_default), actions) -}}
+        {{- summaryListRow({
+            key: 'household.details.household-serial.label' | trans,
+            value: app.user.household.serialNumber,
+            actions: actions,
+        }) -}}
+        {{- summaryListRow({
+            key: 'household.details.diary-start.label' | trans,
+            value: app.user.household.diaryWeekStartDate | date(date_time_format.date('default')),
+            actions: actions,
+        }) -}}
+        {%- if options.showSharingState ?? false -%}
+            {%- set sharingState = app.user.household.isJourneySharingEnabled ? 'household.details.sharing-state.enabled' : 'household.details.sharing-state.disabled' -%}
+            {{- summaryListRow({
+                key: 'household.details.sharing-state.label' | trans,
+                value: sharingState | trans,
+            }) -}}
+        {%- endif -%}
     </div>
 {% endmacro %}
 
 {% macro showHouseholdVehicles() %}
-    {%- from '@GhostGovUkFrontend/components/macros.html.twig' import summaryListRow, actionlessSummaryListRow, tabsHead -%}
+    {%- from '@GhostGovUkFrontend/components/macros.html.twig' import summaryListRow, summaryListRow, tabsHead -%}
     {%- if app.user.household.vehicles.empty -%}
         <div class="govuk-summary-list">
-            {{- actionlessSummaryListRow("dashboard.no-vehicles" | trans) -}}
+            {{- summaryListRow({
+                key: "dashboard.no-vehicles" | trans,
+                value: '',
+            }, false) -}}
         </div>
     {%- else -%}
         <div class="govuk-tabs" data-module="govuk-tabs" id="household-vehicles">
@@ -29,16 +54,36 @@
             {{- tabsHead(tabs) -}}
             {% for vehicle in app.user.household.vehicles %}
                 <div class="govuk-tabs__panel{% if not loop.first %} govuk-tabs__panel--hidden{% endif %}" id="tab-vehicle-{{ vehicle.capiNumber }}">
-                    {%- set actions = {
-                        (path('onboarding_vehicle_edit', {id: vehicle.id})): {label: 'Change', srHiddenSuffix: 'vehicle'},
-                    } -%}
+                    {%- set actions = [
+                        {
+                            href: path('onboarding_vehicle_edit', {id: vehicle.id}),
+                            text: 'actions.change' | trans({}, 'messages'),
+                            visuallyHiddenText: 'vehicle',
+                        }
+                    ] -%}
                     <div class="govuk-summary-list">
-                        {{- summaryListRow('vehicle.form.capi-number.label' | trans, vehicle.capiNumber, actions) -}}
-                        {{- summaryListRow('vehicle.form.name.label' | trans, vehicle.friendlyName, actions) -}}
+                        {{- summaryListRow({
+                            key: 'vehicle.form.capi-number.label' | trans,
+                            value: vehicle.capiNumber,
+                            actions: actions
+                        }) -}}
+                        {{- summaryListRow({
+                            key: 'vehicle.form.name.label' | trans,
+                            value: vehicle.friendlyName,
+                            actions: actions
+                        }) -}}
 
                         {%- set methodTranslationKey = vehicle.method.prefixedDescriptionTranslationKey('stage.method.choices.', true) -%}
-                        {{- summaryListRow('vehicle.form.method.label' | trans, methodTranslationKey | trans([], 'travel-diary'), actions) -}}
-                        {{- summaryListRow('vehicle.form.primary-driver.label' | trans, vehicle.primaryDriver ? vehicle.primaryDriver.name : '-', actions) -}}
+                        {{- summaryListRow({
+                            key: 'vehicle.form.method.label' | trans,
+                            value: methodTranslationKey | trans([], 'travel-diary'),
+                            actions: actions
+                        }) -}}
+                        {{- summaryListRow({
+                            key: 'vehicle.form.primary-driver.label' | trans,
+                            value: vehicle.primaryDriver ? vehicle.primaryDriver.name : '-',
+                            actions: actions
+                        }) -}}
                     </div>
 
                     <div class="govuk-button-group">

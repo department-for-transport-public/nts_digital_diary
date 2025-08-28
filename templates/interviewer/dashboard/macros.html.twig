@@ -1,7 +1,8 @@
 {%- trans_default_domain "interviewer" -%}
 
-{%- macro areaPeriodList(areaPeriods, title, noAreasTitle) -%}
+{%- macro areaPeriodList(areaPeriods, title, noAreasTitle, areasWithOverdueHouseholds) -%}
     {%- import "@GhostGovUkFrontend/components/macros.html.twig" as m -%}
+    {%- set areasWithOverdueHouseholds = areasWithOverdueHouseholds ?? [] -%}
     <table class="govuk-table">
         <caption class="govuk-table__caption govuk-table__caption--m">{{ title }}</caption>
         <thead class="govuk-table__head">
@@ -15,20 +16,18 @@
         <tbody class="govuk-table__body">
         {%- for areaPeriod in areaPeriods -%}
             {%- set counts = areaPeriod.getHouseholdSubmittedCounts() -%}
-            <tr class="govuk-table__row">
-                <td class="govuk-table__cell">{{ areaPeriod.area }}</td>
+            <tr class="govuk-table__row{% if areaPeriod.area in areasWithOverdueHouseholds %} highlight-light-orange{% endif %}">
+                <td class="govuk-table__cell govuk-!-padding-left-2">{{ areaPeriod.area }}</td>
                 <td class="govuk-table__cell">{{ counts.onboarded }}</td>
                 <td class="govuk-table__cell">{{ counts.submitted }}</td>
-                <td class="govuk-table__cell govuk-table__cell--numeric">
-                    {{ m.actionLinks({
-                        (path('interviewer_dashboard_area', {areaPeriod: areaPeriod.id})): {
-                            label: 'survey-areas.view',
-                            labelDomain: 'interviewer',
-                            srHiddenSuffix: 'survey-areas.view-sr-hidden-suffix',
-                            srHiddenSuffixParams: {area: areaPeriod.area},
-                            srHiddenSuffixDomain: 'interviewer',
+                <td class="govuk-table__cell govuk-!-padding-right-2 govuk-table__cell--numeric">
+                    {{ m.summaryListActionsList([
+                        {
+                            href: path('interviewer_dashboard_area', {areaPeriod: areaPeriod.id}),
+                            text: 'survey-areas.view' | trans({}, 'interviewer'),
+                            visuallyHiddenText: 'survey-areas.view-sr-hidden-suffix' | trans({area: areaPeriod.area}, 'interviewer')
                         }
-                    }) }}
+                    ]) }}
                 </td>
             </tr>
         {%- else -%}
@@ -47,7 +46,7 @@
 {% macro dayView(day, options) %}
     {% set diaryKeeper = day.diaryKeeper %}
     <table class="govuk-table diary-keeper-view">
-        {% if options.showCaptions ?? true %}<caption class="govuk-table__caption govuk-table__caption--l">{{ "diary-keeper.day" | trans({dayNumber: day.number, date: day.date | date(format_date_with_dow)}) }}</caption>{% endif %}
+        {% if options.showCaptions ?? true %}<caption class="govuk-table__caption govuk-table__caption--l">{{ "diary-keeper.day" | trans({dayNumber: day.number, date: day.date | date(date_time_format.date('with-dow'))}) }}</caption>{% endif %}
         <thead class="govuk-table__head">
         <tr class="govuk-table__row">
             <th scope="col" colspan="4" class="compare-cell-journeys govuk-table__header govuk-hidden-from-wide">{{ 'diary-keeper.journeys' | trans }}</th>
@@ -165,7 +164,7 @@
 {% endmacro %}
 
 {% macro journeyDetails(diaryKeeper, journeyNumber, journey) %}
-    {%- from "@GhostGovUkFrontend/components/macros.html.twig" import actionlessSummaryListRow, tag -%}
+    {%- from "@GhostGovUkFrontend/components/macros.html.twig" import tag -%}
     {# @var journey \App\Entity\Journey\Journey #}
     {% set rowSpan = max(1, journey.stages.count) %}
     {% set cellClass = false and (journey.shared or journey.wasCreatedBySharing) ? ' govuk-table__cell-no-bottom-border' : '' %}
@@ -186,26 +185,43 @@
     </td>
     {# smaller widths #}
     <td class="govuk-table__cell {{ cellClass }} govuk-hidden-from-wide" rowspan="{{ rowSpan }}">
-        <span class="nowrap">{{ journey.startTime | date(format_time_short) }}</span>
+        <span class="nowrap">{{ journey.startTime | date(date_time_format.time('user-pref')) }}</span>
         <br>
         {{- journey.startLocationForDisplay -}}
     </td>
     <td class="govuk-table__cell {{ cellClass }} govuk-hidden-from-wide" rowspan="{{ rowSpan }}">
-        <span class="nowrap">{{ journey.endTime | date(format_time_short) }}</span>
+        <span class="nowrap">{{ journey.endTime | date(date_time_format.time('user-pref')) }}</span>
         <br>
         {{- journey.endLocationForDisplay -}}
     </td>
     {# larger widths #}
     <td class="govuk-table__cell {{ cellClass }} govuk-visible-from-wide" rowspan="{{ rowSpan }}">
-        <span class="nowrap">{{- journey.startTime | date(format_time_short) -}}</span>
+        <span class="nowrap">{{- journey.startTime | date(date_time_format.time('user-pref')) -}}</span>
     </td>
     <td class="govuk-table__cell {{ cellClass }} govuk-visible-from-wide" rowspan="{{ rowSpan }}">
         {{- journey.startLocationForDisplay -}}
     </td>
     <td class="govuk-table__cell {{ cellClass }} govuk-visible-from-wide" rowspan="{{ rowSpan }}">
-        <span class="nowrap">{{- journey.endTime | date(format_time_short) -}}</span>
+        <span class="nowrap">{{- journey.endTime | date(date_time_format.time('user-pref')) -}}</span>
     </td>
     <td class="govuk-table__cell {{ cellClass }} govuk-visible-from-wide" rowspan="{{ rowSpan }}">
         {{- journey.endLocationForDisplay -}}
     </td>
+{% endmacro %}
+
+{% macro diaryKeeperState(state, count) %}
+    {% set state = state | diaryKeeperStateToTranslationChoice %}
+    {% from "@GhostGovUkFrontend/components/macros.html.twig" import tag %}
+    {{ tag({
+        text: ((count ?? false) ? "#{count} " : "") ~ ( "diary-keeper.state.label" | trans({state: state})),
+        classes: "govuk-tag--" ~ ("diary-keeper.state.color" | trans({state: state}))
+    }) }}
+{% endmacro %}
+
+{% macro householdState(state) %}
+    {% from "@GhostGovUkFrontend/components/macros.html.twig" import tag %}
+    {{ tag({
+        text: "household.state.label" | trans({state: state}),
+        classes: "govuk-tag--" ~ ("household.state.color" | trans({state: state}))
+    }) }}
 {% endmacro %}

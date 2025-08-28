@@ -6,14 +6,14 @@ namespace App\Serializer\ExportApi\v1;
 
 use App\Entity\DiaryDay;
 use Symfony\Component\Serializer\Exception\ExceptionInterface;
-use Symfony\Component\Serializer\Normalizer\ContextAwareNormalizerInterface;
 use Symfony\Component\Serializer\Normalizer\DateTimeNormalizer;
 use Symfony\Component\Serializer\Normalizer\NormalizerAwareInterface;
 use Symfony\Component\Serializer\Normalizer\NormalizerAwareTrait;
+use Symfony\Component\Serializer\Normalizer\NormalizerInterface;
 
-class DiaryDayNormalizer implements ContextAwareNormalizerInterface, NormalizerAwareInterface
+class DiaryDayNormalizer implements NormalizerInterface, NormalizerAwareInterface
 {
-    const DATE_FORMAT_KEY = 'diary-day-date-format';
+    public const DATE_FORMAT_KEY = 'diary-day-date-format';
 
     use NormalizerAwareTrait;
 
@@ -22,6 +22,13 @@ class DiaryDayNormalizer implements ContextAwareNormalizerInterface, NormalizerA
         return
             ($context['apiVersion'] ?? 0) === 1
             && $data instanceof DiaryDay;
+    }
+
+    public function getSupportedTypes(?string $format): array
+    {
+        return [
+            DiaryDay::class => false, // false/not-cacheable because it depends upon the $context
+        ];
     }
 
     /**

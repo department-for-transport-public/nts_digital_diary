@@ -20,12 +20,12 @@ class PersonalTravelDiaryWorkflowSubscriber implements EventSubscriberInterface
         ];
     }
 
-    public function completeModule(EnteredEvent $event)
+    public function completeModule(EnteredEvent $event): void
     {
         $this->attemptTransition($event,InterviewerTrainingRecord::TRANSITION_COMPLETE);
     }
 
-    public function startModule(EnteredEvent $event)
+    public function startModule(EnteredEvent $event): void
     {
         $this->attemptTransition($event, InterviewerTrainingRecord::TRANSITION_START);
     }

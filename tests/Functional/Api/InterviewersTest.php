@@ -29,21 +29,21 @@ class InterviewersTest extends AbstractApiWebTestCase
         self::assertEquals($user->getUserIdentifier(), $data['email']);
 
         if ($options['check_area_periods'] ?? false) {
-            $areaPeriods = array_map(fn(AreaPeriod $a) => $a->getApiId(), $interviewer->getAreaPeriods()->toArray());
+            $areaPeriods = array_map(fn(AreaPeriod $a): ?string => $a->getApiId(), $interviewer->getAreaPeriods()->toArray());
             self::assertEqualsCanonicalizing($areaPeriods, $data['area_periods']);
         }
     }
 
     protected function getInterviewerUser(): User
     {
-        $user = $this->getFixtureByReference('user:interviewer');
+        $user = $this->fixtureReferenceRepository->getReference('user:interviewer', User::class);
         self::assertInstanceOf(User::class, $user);
         self::assertNotNull($user->getInterviewer());
 
         return $user;
     }
 
-    public function testCollectionGet()
+    public function testCollectionGet(): void
     {
         $response = $this->makeSignedRequestAndGetResponse("/api/v1/interviewers");
 
@@ -62,14 +62,14 @@ class InterviewersTest extends AbstractApiWebTestCase
             "Unknown partial email" => [['email' => 'silly'], false],
             "Serial ID" => [['serialId' => '101'], true],
             "Partial serial ID" => [['serialId' => '10'], false],
-            "Area ID" => [fn(User $interviewerUser) => [
+            "Area ID" => [fn(User $interviewerUser): array => [
                 'areaPeriods' => $interviewerUser
                     ->getInterviewer()
                     ->getAreaPeriods()
                     ->first()
                     ->getId(),
             ], true],
-            "Partial Area ID" => [function(User $interviewerUser) {
+            "Partial Area ID" => [function(User $interviewerUser): array {
                 $id = $interviewerUser
                     ->getInterviewer()
                     ->getAreaPeriods()
@@ -88,7 +88,7 @@ class InterviewersTest extends AbstractApiWebTestCase
     /**
      * @dataProvider dataCollectionGetFilters
      */
-    public function testCollectionGetFilters(array|\Closure $queryParams, bool $expectSuccess)
+    public function testCollectionGetFilters(array|\Closure $queryParams, bool $expectSuccess): void
     {
         if ($queryParams instanceof \Closure) {
             $queryParams = $queryParams($this->getInterviewerUser());
@@ -106,7 +106,7 @@ class InterviewersTest extends AbstractApiWebTestCase
         }
     }
 
-    public function testItemGetSuccess()
+    public function testItemGetSuccess(): void
     {
         $user = $this->getInterviewerUser();
         $interviewerId = $user->getInterviewer()->getApiId();
@@ -115,13 +115,13 @@ class InterviewersTest extends AbstractApiWebTestCase
         $this->assertMatchesUserInterviewer($user, $response, ['check_area_periods' => true]);
     }
 
-    public function testItemGetFail()
+    public function testItemGetFail(): void
     {
         $interviewerId = $this->garbleId($this->getInterviewerUser()->getInterviewer()->getApiId());
         $this->makeSignedRequestAndGetResponse("/api/v1/interviewers/{$interviewerId}", [], ['expectedResponseCode' => 404]);
     }
 
-    public function testDeleteSuccess()
+    public function testDeleteSuccess(): void
     {
         $interviewerId = $this->getInterviewerUser()->getInterviewer()->getApiId();
         $this->makeSignedRequestAndGetResponse("/api/v1/interviewers/{$interviewerId}", [], ['method' => 'DELETE', 'expectedResponseCode' => 204]);
@@ -131,13 +131,13 @@ class InterviewersTest extends AbstractApiWebTestCase
         $this->getInterviewerUser();
     }
 
-    public function testDeleteFail()
+    public function testDeleteFail(): void
     {
         $interviewerId = $this->garbleId($this->getInterviewerUser()->getInterviewer()->getApiId());
         $this->makeSignedRequestAndGetResponse("/api/v1/interviewers/{$interviewerId}", [], ['method' => 'DELETE', 'expectedResponseCode' => 404]);
     }
 
-    public function testPostSuccess()
+    public function testPostSuccess(): void
     {
         $data = [
             'name' => 'Mark',
@@ -173,7 +173,7 @@ class InterviewersTest extends AbstractApiWebTestCase
     /**
      * @dataProvider dataPostFail
      */
-    public function testPostFail(int $expectedResponseCode, array $data)
+    public function testPostFail(int $expectedResponseCode, array $data): void
     {
         $this->makeSignedRequestAndGetResponse("/api/v1/interviewers", [], ['method' => 'POST', 'expectedResponseCode' => $expectedResponseCode], $data);
     }

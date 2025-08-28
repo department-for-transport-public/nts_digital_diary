@@ -30,12 +30,10 @@ class StageRepository extends ServiceEntityRepository
                 ->leftJoin('st.journey', 'journey')
                 ->leftJoin('journey.diaryDay', 'day')
                 ->leftJoin('st.vehicle', 'vehicle')
-                ->setParameters([
-                    'id' => $id,
-                ])
+                ->setParameter('id', $id)
                 ->getQuery()
                 ->getOneOrNullResult();
-        } catch (NonUniqueResultException $e) {
+        } catch (NonUniqueResultException) {
             return null;
         }
     }

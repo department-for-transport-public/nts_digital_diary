@@ -1,0 +1,8 @@
+<div class="prose-scope">
+{%- apply markdown_to_html -%}
+In households where it is not possible to set-up the household using the QR code, you should use the manual set-up (entering the information given in CAPI directly into the digital diary).
+{%- endapply -%}
+</div>
+
+{% from 'interviewer/training/macros.html.twig' import trainingVideo %}
+{{ trainingVideo('842537120/87f0756ee3', 'Set-up a household manually', trainingRecord) }}

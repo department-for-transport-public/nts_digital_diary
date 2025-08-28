@@ -2,7 +2,7 @@
 
 namespace App\Controller\TravelDiary;
 
-use App\Annotation\Redirect;
+use App\Attribute\Redirect;
 use App\Entity\Journey\Journey;
 use App\Entity\Journey\Stage;
 use App\Form\ConfirmActionType;
@@ -10,37 +10,33 @@ use App\Repository\DiaryKeeperRepository;
 use App\Security\Voter\TravelDiary\DiaryAccessVoter;
 use App\Utility\ReorderUtils;
 use Doctrine\ORM\EntityManagerInterface;
-use Sensio\Bundle\FrameworkExtraBundle\Configuration\Entity;
-use Sensio\Bundle\FrameworkExtraBundle\Configuration\IsGranted;
+use Symfony\Bridge\Doctrine\Attribute\MapEntity;
 use Symfony\Component\Form\SubmitButton;
 use Symfony\Component\HttpFoundation\RedirectResponse;
 use Symfony\Component\HttpFoundation\Request;
 use Symfony\Component\HttpFoundation\Response;
-use Symfony\Component\Routing\Annotation\Route;
+use Symfony\Component\Routing\Attribute\Route;
 use Symfony\Component\Security\Core\User\UserInterface;
+use Symfony\Component\Security\Http\Attribute\IsGranted;
 
-/**
- * @Route("/journey/{journeyId}", name="journey_")
- * @Entity("journey", expr="repository.find(journeyId)")
- * @IsGranted(DiaryAccessVoter::ACCESS, subject="journey", statusCode=404)
- * @Redirect("!is_granted('EDIT_DIARY')", route="traveldiary_dashboard")
- */
+#[Redirect("!is_granted('EDIT_DIARY')", route: "traveldiary_dashboard")]
+#[Route(path: '/journey/{journeyId}', name: 'journey_')]
+#[IsGranted(DiaryAccessVoter::ACCESS, subject: 'journey', statusCode: 404)]
 class StageReorderController extends AbstractController
 {
-    protected EntityManagerInterface $entityManager;
-
-    public function __construct(EntityManagerInterface $entityManager, DiaryKeeperRepository $diaryKeeperRepository)
+    public function __construct(protected EntityManagerInterface $entityManager, DiaryKeeperRepository $diaryKeeperRepository)
     {
-        $this->entityManager = $entityManager;
         parent::__construct($diaryKeeperRepository);
     }
 
-    /**
-     * @Route("/reorder-stages", name="reorder_stages")
-     */
-    public function reorder(Request $request, Journey $journey, UserInterface $user): Response
+    #[Route(path: '/reorder-stages', name: 'reorder_stages')]
+    public function reorder(
+        Request $request,
+        #[MapEntity(expr: "repository.findByJourneyId(journeyId)")]
+        Journey $journey,
+        UserInterface $user
+    ): Response
     {
-
         /** @var Stage[] $stages */
         $stages = $journey->getStages()->toArray();
 
@@ -54,7 +50,7 @@ class StageReorderController extends AbstractController
         /** @var Stage[] $sortedStages */
         $sortedStages = ReorderUtils::getSortedItems($stages, $mappingParam);
 
-        $mapping = array_map(fn(Stage $action) => $action->getNumber(), $sortedStages);
+        $mapping = array_map(fn(Stage $action): ?int => $action->getNumber(), $sortedStages);
 
         foreach($mapping as $i => $newPosition) {
             $stages[$newPosition - 1]->setNumber($i + 1);
@@ -90,7 +86,7 @@ class StageReorderController extends AbstractController
             'mapping' => $mapping,
             'journey' => $journey,
             'sortedActions' => $sortedStages,
-            'form' => $form->createView(),
+            'form' => $form,
             'diaryKeeper' => $this->getDiaryKeeper($user),
         ]);
     }

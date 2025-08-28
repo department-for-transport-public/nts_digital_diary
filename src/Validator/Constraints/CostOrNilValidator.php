@@ -49,11 +49,12 @@ class CostOrNilValidator extends ConstraintValidator
                     [] :
                     [new NotNull(['message' => "{$constraint->translationPrefix}.cost.not-null"])];
 
-                $validators[] = new Decimal([
-                    'precision' => $constraint->precision,
-                    'scale' => $constraint->scale,
-                    'translationPrefix' => "{$constraint->translationPrefix}.cost",
-                ]);
+                $validators[] = new Decimal(
+                    translationPrefix: "{$constraint->translationPrefix}.cost",
+                    precision: $constraint->precision,
+                    scale: $constraint->scale,
+                );
+
                 $validator->atPath(CostOrNilType::COST_FIELD_NAME)->validate($value->getCost(), $validators, ['Default']);
             }
         }

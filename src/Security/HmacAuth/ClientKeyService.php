@@ -11,12 +11,8 @@ use Throwable;
 
 class ClientKeyService
 {
-    private EntityManagerInterface $entityManager;
-
-    public function __construct(EntityManagerInterface $entityManager)
-    {
-        $this->entityManager = $entityManager;
-    }
+    public function __construct(protected readonly EntityManagerInterface $entityManager)
+    {}
 
     public function createClientKey(): ApiUser
     {
@@ -39,10 +35,11 @@ class ClientKeyService
     protected function generateUniqueClientKey(): string
     {
         $repo = $this->entityManager->getRepository(ApiUser::class);
-        while(
-            ($passcode = $this->generateRandomClientKey())
-            && $repo->findBy(['key' => $passcode])
-        ) {continue;};
+
+        do {
+            $passcode = $this->generateRandomClientKey();
+        } while($repo->findBy(['key' => $passcode]));
+
         return $passcode;
     }
 

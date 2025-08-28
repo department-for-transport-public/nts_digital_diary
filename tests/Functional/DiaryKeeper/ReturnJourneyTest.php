@@ -13,7 +13,7 @@ use Doctrine\Common\Collections\ArrayCollection;
 
 class ReturnJourneyTest extends AbstractJourneyTest
 {
-    const TEST_USERNAME = 'diary-keeper-adult@example.com';
+    public const TEST_USERNAME = 'diary-keeper-adult@example.com';
 
     protected function generateTest(bool $overwriteStageDetails, bool $returnToHome): array
     {
@@ -21,7 +21,7 @@ class ReturnJourneyTest extends AbstractJourneyTest
         $numberOfStages = $returnToHome ? 1 : 2; // The first journey on day 1 has one stage, but the second has two
         $stageTypes = $returnToHome ? ['private'] : ['simple', 'public']; // stages are **reversed** compared to fixtures!
 
-        $url = fn(string $pathEnd) => '#^\/travel-diary\/journey\/[0-9A-Z]+' . $pathEnd . '$#';
+        $url = fn(string $pathEnd): string => '#^\/travel-diary\/journey\/[0-9A-Z]+' . $pathEnd . '$#';
         $options = [PathTestAction::OPTION_EXPECTED_PATH_REGEX => true];
 
         $tests[] = new FormTestAction(
@@ -89,7 +89,7 @@ class ReturnJourneyTest extends AbstractJourneyTest
         $tests[] = new PathTestAction($url(''), $options);
 
         $tests[] = new CallbackAction(
-            function (Context $context) use ($returnToHome, $linkIndex, $overwriteStageDetails) {
+            function (Context $context) use ($returnToHome, $linkIndex, $overwriteStageDetails): void {
                 $dk = $context->getEntityManager()->getRepository(User::class)->getDiaryKeeperJourneysAndStagesForTests(self::TEST_USERNAME);
 
                 $dayOneJourneys = $dk->getDiaryDayByNumber(1)->getJourneys();
@@ -139,7 +139,7 @@ class ReturnJourneyTest extends AbstractJourneyTest
     /**
      * @dataProvider wizardData
      */
-    public function testReturnJourneyWizard(array $wizardData, int $journeyViewLinkIndex)
+    public function testReturnJourneyWizard(array $wizardData, int $journeyViewLinkIndex): void
     {
         $this->initialiseClientAndLoadFixtures([StageFixtures::class]);
         $this->loginUser(self::TEST_USERNAME);

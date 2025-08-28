@@ -7,12 +7,28 @@
     category: message.category.value,
 } %}
 
+{% block beforeMainWrapper -%}
+    {%- set breadcrumbItems = [
+        {
+            href: path('admin_feedback_view_dashboard'),
+            text: 'feedback.breadcrumbs.view-messages' | trans({}, 'admin'),
+        },
+        {
+            href: path('admin_feedback_message_view', {message: message.id}),
+            text: 'feedback.breadcrumbs.message' | trans({id: message.id}, 'admin'),
+        }
+    ] -%}
+
+    {%- from '@GhostGovUkFrontend/components/macros.html.twig' import breadcrumbs -%}
+    {{- breadcrumbs({items: breadcrumbItems}) -}}
+{%- endblock -%}
+
 {% block content %}
     <div class="govuk-grid-row">
         <div class="govuk-grid-column-two-thirds">
             {% include 'admin/feedback/include/message.html.twig' %}
 
-            {% set transitions = [constant('App\\Entity\\Feedback\\Message::TRANSITION_ACKNOWLEDGE'), constant('App\\Entity\\Feedback\\Message::TRANSITION_CLOSE')] %}
+            {% set transitions = [constant('App\\Entity\\Feedback\\Message::TRANSITION_ACKNOWLEDGE'), constant('App\\Entity\\Feedback\\Message::TRANSITION_CLOSE'), constant('App\\Entity\\Feedback\\Message::TRANSITION_REOPEN')] %}
             {% for transition in workflow_transitions(message) | map(t => t.name) | filter(t => t in transitions) %}
                 <a class="govuk-button" href="{{ path('admin_feedback_message_transition', {message: message.id, transition: transition}) }}">{{ "feedback.state-transition.#{transition}.label" | trans }}</a>
             {% endfor %}

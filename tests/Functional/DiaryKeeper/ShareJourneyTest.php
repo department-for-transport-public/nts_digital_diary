@@ -13,14 +13,14 @@ use Facebook\WebDriver\WebDriverBy;
 
 class ShareJourneyTest extends AbstractProceduralWizardTest
 {
-    const TEST_USERNAME = 'diary-keeper-adult@example.com';
+    public const TEST_USERNAME = 'diary-keeper-adult@example.com';
 
     protected function performTest(string $journeyFixtureRef, bool $isGoingHome): void
     {
-        $journeyFixture = $this->getFixtureByReference($journeyFixtureRef);
+        $journeyFixture = $this->fixtureReferenceRepository->getReference($journeyFixtureRef, Journey::class);
         $this->assertInstanceOf(Journey::class, $journeyFixture);
 
-        $url = fn(string $pathEnd) => '#^\/travel-diary\/journey\/[0-9A-Z]+' . $pathEnd . '$#';
+        $url = fn(string $pathEnd): string => '#^\/travel-diary\/journey\/[0-9A-Z]+' . $pathEnd . '$#';
         $options = [PathTestAction::OPTION_EXPECTED_PATH_REGEX => true];
 
         $this->formTestAction(
@@ -34,9 +34,9 @@ class ShareJourneyTest extends AbstractProceduralWizardTest
 
         $sharingDK = $journeyFixture->getDiaryDay()->getDiaryKeeper();
         $allProxiedDKs = $sharingDK->getActingAsProxyFor();
-        $allNonProxiedDKs = $sharingDK->getHousehold()->getDiaryKeepers()->filter(fn(DiaryKeeper $dk) => !$sharingDK->isActingAsProxyFor($dk) && $dk->getId() !== $sharingDK->getId());
-        $excludeDk = $this->getFixtureByReference('diary-keeper:journey-share:adult');
-        $shareToDKs = $allProxiedDKs->filter(fn($dk) => $dk->getId() !== $excludeDk->getId());
+        $allNonProxiedDKs = $sharingDK->getHousehold()->getDiaryKeepers()->filter(fn(DiaryKeeper $dk): bool => !$sharingDK->isActingAsProxyFor($dk) && $dk->getId() !== $sharingDK->getId());
+        $excludeDk = $this->fixtureReferenceRepository->getReference('diary-keeper:journey-share:adult', DiaryKeeper::class);
+        $shareToDKs = $allProxiedDKs->filter(fn($dk): bool => $dk->getId() !== $excludeDk->getId());
 
         $this->assertCount(3, $allProxiedDKs);
         $this->assertCount(2, $allNonProxiedDKs);
@@ -50,8 +50,8 @@ class ShareJourneyTest extends AbstractProceduralWizardTest
                 // try selecting someone who isn't proxied... should be disabled
                 new FormTestCase(['share_to[shareTo][]' => $allNonProxiedDKs->first()->getId()], ['#share_to']),
                 // select too many people with respect to maximum allowed by source journey
-                new FormTestCase(['share_to[shareTo][]' => $allProxiedDKs->map(fn($dk) => $dk->getId())->toArray()], ['#share_to_shareTo']),
-                new FormTestCase(['share_to[shareTo][]' => $shareToDKs->map(fn($dk) => $dk->getId())->toArray()]),
+                new FormTestCase(['share_to[shareTo][]' => $allProxiedDKs->map(fn($dk): ?string => $dk->getId())->toArray()], ['#share_to_shareTo']),
+                new FormTestCase(['share_to[shareTo][]' => $shareToDKs->map(fn($dk): ?string => $dk->getId())->toArray()]),
             ],
             $options
         );
@@ -92,8 +92,6 @@ class ShareJourneyTest extends AbstractProceduralWizardTest
                             3 => [
                                 // isDriver values should be ignored, as they are disabled
                                 new FormTestCase([
-                                    'stage_details_collection[0][isDriver]' => '',
-                                    'stage_details_collection[1][isDriver]' => '',
                                     'stage_details_collection[1][parkingCost][hasCost]' => 'true',
                                     'stage_details_collection[1][parkingCost][cost]' => '3.45',
                                 ], [
@@ -178,12 +176,12 @@ class ShareJourneyTest extends AbstractProceduralWizardTest
             PathTestAction::OPTION_EXPECTED_PATH_REGEX => true
         ]);
 
-        $dkNameList = join(', ', $shareToDKs->map(fn ($dk) => $dk->getName())->toArray());
+        $dkNameList = join(', ', $shareToDKs->map(fn ($dk): ?string => $dk->getName())->toArray());
         $tag = $this->context->getClient()->findElement(WebDriverBy::xpath('//main[@id="main-content"]/strong[contains(concat(" ",normalize-space(@class)," ")," govuk-tag ")]'));
         $this->context->getTestCase()->assertEqualsIgnoringCase("journey shared with {$dkNameList}", $tag->getText());
 
         $this->databaseTestAction([
-            new SharedJourneyDatabaseTestCase($journeyFixture->getId(), $shareToDKs->map(fn($dk) => $dk->getId())->toArray())
+            new SharedJourneyDatabaseTestCase($journeyFixture->getId(), $shareToDKs->map(fn($dk): ?string => $dk->getId())->toArray())
         ]);
 
         $this->context->getTestCase()->clickLinkContaining('Delete this journey');
@@ -217,7 +215,7 @@ class ShareJourneyTest extends AbstractProceduralWizardTest
     /**
      * @dataProvider wizardData
      */
-    public function testShareJourneyWizard(string $journeyFixtureRef, int $journeyIndex, bool $isGoingHome)
+    public function testShareJourneyWizard(string $journeyFixtureRef, int $journeyIndex, bool $isGoingHome): void
     {
         $this->loginUser(self::TEST_USERNAME);
         $this->client->request('GET', '/travel-diary/day-6');

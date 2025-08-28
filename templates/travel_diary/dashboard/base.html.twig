@@ -2,7 +2,7 @@
 
 {% trans_default_domain "travel-diary" %}
 
-{%- block beforeContent -%}
+{%- block beforeMainWrapper -%}
     {{- parent() -}}
 
     {% set breadcrumb_translation_parameters = breadcrumb_translation_parameters ?? {} %}
@@ -18,7 +18,7 @@
     {%- if day is defined %}{% set breadcrumbItems = breadcrumbItems | merge([
         {
             href: path('traveldiary_dashboard_day', {dayNumber: day.number}),
-            text: 'breadcrumbs.day' | trans({dayNumber: day.number, date: day.date | date(format_date_with_dow)} | merge(breadcrumb_translation_parameters)),
+            text: 'breadcrumbs.day' | trans({dayNumber: day.number, date: day.date | date(date_time_format.date('with-dow'))} | merge(breadcrumb_translation_parameters)),
         }
     ]) %}{% endif -%}
     {%- if journey is defined %}
@@ -28,7 +28,7 @@
                 text: 'breadcrumbs.start-to-end' | trans({
                     startLocation: journey.startLocationForDisplay,
                     endLocation: journey.endLocationForDisplay,
-                    time: journey.startTime | date(format_time_short),
+                    time: journey.startTime | date(date_time_format.time('user-pref')),
                 } | merge(breadcrumb_translation_parameters)),
             }
         ]) %}

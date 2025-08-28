@@ -9,7 +9,7 @@ imports:
 # https://symfony.com/doc/current/best_practices.html#use-parameters-for-application-configuration
 parameters:
     # see https://symfony.com/doc/current/performance.html#dump-the-service-container-into-a-single-file
-    container.dumper.inline_factories: true
+    .container.dumper.inline_factories: true
 
     empty_string: ''
     'false': false
@@ -48,14 +48,6 @@ services:
             - '../src/Tests/'
 
     _instanceof:
-        App\Controller\FormWizard\AbstractFormWizardController:
-            calls:
-                - setEventDispatcher: ['@event_dispatcher']
-        App\FormWizard\FormWizardStateInterface:
-            tags: [ 'app.form_wizard.state' ]
-        App\Utility\Comparator\ComparatorInterface:
-            tags: [ 'app.comparator' ]
-            lazy: true
         Doctrine\Common\EventSubscriber:
             tags: [ 'doctrine.event_subscriber' ]
         App\Command\GcpDatabaseTools\AbstractGcpDatabaseCommand:
@@ -65,7 +57,7 @@ services:
     App\Security\GoogleIap\AdminRoleResolver:
         public: true
 
-    App\Command\NtsScreenshotsCommand:
+    App\Command\ScreenshotsCommand:
         lazy: true
         arguments:
             $frontendHostname: '%domain_name%'
@@ -74,16 +66,6 @@ services:
     App\FormWizard\LocatorService:
         arguments:
             $workflowConfigurations: !tagged_iterator app.form_wizard.workflow
-
-    App\EventSubscriber\RedirectAnnotationSubscriber:
-        arguments:
-            $argumentNameConverter: '@framework_extra_bundle.argument_name_convertor'
-            $language: '@sensio_framework_extra.security.expression_language.default'
-            $trustResolver: '@security.authentication.trust_resolver'
-
-    App\FormWizard\FormWizardManager:
-        arguments:
-            $expressionLanguage: '@workflow.security.expression_language'
 
     App\Serializer\ExportApi\HistoryValueResolver:
         # Lazy to avoid early database calls which were upsetting cloud build deployment
@@ -107,3 +89,15 @@ services:
     App\EventSubscriber\Security\AccessDeniedImpersonatorSubscriber:
         arguments:
             $switchUserListener: '@security.authentication.switchuser_listener.main'
+
+    App\Doctrine\ORM\Decorator\DirectOnboardingTraining\EntityManagerDecorator:
+        decorates: 'doctrine.orm.entity_manager'
+
+    App\Doctrine\ORM\Decorator\DirectOnboardingTraining\UserRepositoryDecorator:
+        decorates: App\Repository\UserRepository
+
+    App\Doctrine\ORM\Decorator\DirectOnboardingTraining\DiaryKeeperRepositoryDecorator:
+        decorates: App\Repository\DiaryKeeperRepository
+
+    # https://symfony.com/doc/current/components/uid.html#generating-and-inspecting-uuids-ulids-in-the-console
+    Symfony\Component\Uid\Command\InspectUlidCommand: ~

@@ -13,10 +13,17 @@ class StageChangeSetNormalizer extends AbstractChangeSetNormalizer
             ($context[self::CHANGE_SET_ENTITY_KEY] ?? null) instanceof Stage;
     }
 
+    public function getSupportedTypes(?string $format): array
+    {
+        return [
+            'native-array' => false, // false/not-cacheable because it depends upon the $context
+        ];
+    }
+
     public function normalize($object, string $format = null, array $context = []): array|string|int|float|bool|\ArrayObject|null
     {
         // Combine vehicle fields
-        $updateVehicle = function($oldValue, $newValue) use (&$object) {
+        $updateVehicle = function($oldValue, $newValue) use (&$object): void {
             $oldValue = ($oldValue instanceof Vehicle) ? $oldValue->getFriendlyName() : $oldValue;
             $newValue = ($newValue instanceof Vehicle) ? $newValue->getFriendlyName() : $newValue;
 

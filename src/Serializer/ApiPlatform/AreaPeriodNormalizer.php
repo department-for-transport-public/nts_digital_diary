@@ -2,12 +2,13 @@
 
 namespace App\Serializer\ApiPlatform;
 
+use ApiPlatform\Metadata\Get;
 use App\Entity\AreaPeriod;
-use Symfony\Component\Serializer\Normalizer\ContextAwareNormalizerInterface;
 use Symfony\Component\Serializer\Normalizer\NormalizerAwareInterface;
 use Symfony\Component\Serializer\Normalizer\NormalizerAwareTrait;
+use Symfony\Component\Serializer\Normalizer\NormalizerInterface;
 
-class AreaPeriodNormalizer implements ContextAwareNormalizerInterface, NormalizerAwareInterface
+class AreaPeriodNormalizer implements NormalizerInterface, NormalizerAwareInterface
 {
     use NormalizerAwareTrait;
 
@@ -15,6 +16,13 @@ class AreaPeriodNormalizer implements ContextAwareNormalizerInterface, Normalize
     {
         return ($context['resource_class'] ?? null) === AreaPeriod::class
             && ($data instanceof AreaPeriod);
+    }
+
+    public function getSupportedTypes(?string $format): array
+    {
+        return [
+            AreaPeriod::class => false, // false/not-cacheable because it depends upon the $context
+        ];
     }
 
     /**
@@ -29,7 +37,7 @@ class AreaPeriodNormalizer implements ContextAwareNormalizerInterface, Normalize
             'month' => $object->getMonth(),
         ];
 
-        if ($context['operation_type'] === 'item') {
+        if ($context['operation'] instanceof Get) {
             $area['interviewers'] = $this->normalizer->normalize(
                 $object->getInterviewers(),
                 $format,

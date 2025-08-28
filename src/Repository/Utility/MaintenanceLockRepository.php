@@ -23,7 +23,7 @@ class MaintenanceLockRepository extends ServiceEntityRepository
                 ->getQuery()
                 ->getSingleScalarResult();
             return json_decode($queryResult, true);
-        } catch (NoResultException $e) {
+        } catch (NoResultException) {
             return false;
         }
     }

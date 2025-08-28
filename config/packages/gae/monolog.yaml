@@ -25,7 +25,9 @@ services:
     # Monolog wrapper
     monolog_psr_batch_logger:
         class: Monolog\Handler\PsrHandler
-        arguments: ['@google_cloud_stackdriver_psr_batch_logger']
+        arguments:
+            $logger: '@google_cloud_stackdriver_psr_batch_logger'
+            $includeExtra: true
 
     # PsrBatchLogger
     google_cloud_stackdriver_psr_batch_logger:

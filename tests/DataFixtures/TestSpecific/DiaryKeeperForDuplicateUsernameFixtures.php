@@ -14,8 +14,7 @@ class DiaryKeeperForDuplicateUsernameFixtures extends AbstractFixture implements
 {
     public function load(ObjectManager $manager): void
     {
-        /** @var Household $household */
-        $household = $this->getReference('household:not-onboarded');
+        $household = $this->getReference('household:not-onboarded', Household::class);
 
         $dk1 = (new DiaryKeeper())
             ->setName('Charlie')
