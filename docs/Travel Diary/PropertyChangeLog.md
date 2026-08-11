@@ -13,8 +13,7 @@ therefore be recorded in the change log.
 The logs are pruned according to the following rules:
 
 - if all changes have been made by either a Diary Keeper or an Interviewer; only retain the most recent log entry
-(however in this instance, to reduce export overhead, the change log will be empty on the export API - the purpose is
-to only show changes made by different users)
+- if all changes have been made by a Diary Keeper, the change log will be empty on the export API (to reduce data overhead)
 - if the most recent change was made by an interviewer; retain the most recent interviewer log entry and the most recent
 diary keeper log entry
 - if the most recent change was made by a diary keeper; retain the most recent diary keeper log entry, the most recent

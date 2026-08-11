@@ -41,6 +41,14 @@ const generateCommand = (yargs) => {
                 type: 'boolean',
             }
         })
+        .options({
+            'wizard': {
+                choices: ['legacy', 'reflow'],
+                default: 'legacy',
+                describe: 'Which travel-diary wizard family to drive (legacy = pre-reflow, reflow = combined)',
+                type: 'string',
+            }
+        })
         .strictCommands()
         .strictOptions();
 }

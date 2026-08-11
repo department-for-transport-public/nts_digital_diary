@@ -72,7 +72,7 @@ class HistoryNormalizer implements NormalizerInterface, NormalizerAwareInterface
         // Filter the history - we don't need to show history for a property if history length is only 1
         foreach ($changesById as $id => $propertyChanges) {
             foreach ($propertyChanges as $propertyName => $history) {
-                if (count($history) === 1) {
+                if (count($history) === 1 && $history[0]['interviewerId'] === null) {
                     unset($changesById[$id][$propertyName]);
                 }
             }

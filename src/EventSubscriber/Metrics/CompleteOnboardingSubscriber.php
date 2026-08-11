@@ -23,12 +23,12 @@ class CompleteOnboardingSubscriber implements EventSubscriberInterface
     {
         $areaPeriod = $event->getHousehold()->getAreaPeriod();
 
-        if (!$areaPeriod || $areaPeriod->getTrainingInterviewer()) {
+        if (!$areaPeriod || $areaPeriod->isTrainingArea()) {
             return;
         }
 
         $metricsEvent = new OnboardingCompleteMetricsEvent(
-            $event->getHousehold()->getSerialNumber(null, ...MetricsHelper::GET_SERIAL_METHOD_ARGS),
+            $event->getHousehold(),
             $event->getOnboardingType(),
         );
 

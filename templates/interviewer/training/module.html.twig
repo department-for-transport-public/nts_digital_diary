@@ -1,19 +1,19 @@
 {% extends "interviewer/training/base.html.twig" %}
 {% trans_default_domain "interviewer" %}
 
-{%- block modukeHeading -%}
+{%- block moduleHeading -%}
     {{- "training.module.number" | trans({number: trainingRecord.moduleNumber}) | capitalize }}: {{ "training.module.title.#{trainingRecord.moduleName}" | trans -}}
 {%- endblock -%}
 
 {%- block pageTitlePrefix -%}
-    {{- block('modukeHeading') -}}
+    {{- block('moduleHeading') -}}
     {{- " - " -}}
     {{ 'breadcrumbs.training' | trans }}
     {{- " - " -}}
 {%- endblock -%}
 
 {%- block pageHeading -%}
-    <h1 class="govuk-heading-l">{{- block('modukeHeading') -}}</h1>
+    <h1 class="govuk-heading-l">{{- block('moduleHeading') -}}</h1>
 {%- endblock -%}
 
 {%- block content -%}

@@ -4,5 +4,7 @@
 
 {%- block formContext -%}
     {%- import "travel_diary/journey/macros_sidebar.html.twig" as j -%}
-    {{- j.journeySidebar(sourceJourney, {header_translation_key: 'return-journey.sidebar.title'}) -}}
+    {%- if sourceJourney -%}
+        {{- j.journeySidebar(sourceJourney, {header_translation_key: 'return-journey.sidebar.title'}) -}}
+    {%- endif -%}
 {%- endblock -%}

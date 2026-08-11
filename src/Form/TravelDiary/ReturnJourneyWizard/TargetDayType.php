@@ -8,6 +8,7 @@ use App\Entity\DiaryDay;
 use App\Entity\Journey\Journey;
 use App\Repository\DiaryDayRepository;
 use App\Utility\DateTimeFormats;
+use Doctrine\ORM\QueryBuilder;
 use Ghost\GovUkFrontendBundle\Form\Type\EntityType;
 use Symfony\Component\Form\AbstractType;
 use Symfony\Component\Form\FormBuilderInterface;
@@ -29,9 +30,9 @@ class TargetDayType extends AbstractType
         $builder
             ->add('diaryDay', EntityType::class, [
                 'class' => DiaryDay::class,
-                'query_builder' => fn(DiaryDayRepository $r): \Doctrine\ORM\QueryBuilder => $r->getQueryBuilderForReturnJourneyTargetDay($sourceJourneyId),
+                'query_builder' => fn(DiaryDayRepository $r): QueryBuilder => $r->getQueryBuilderForReturnJourneyTargetDay($sourceJourneyId),
 
-                'choice_label' => fn(DiaryDay $d, $index): \Symfony\Component\Translation\TranslatableMessage => new TranslatableMessage('return-journey.select-day.choice-label', [
+                'choice_label' => fn(DiaryDay $d, $index): TranslatableMessage => new TranslatableMessage('return-journey.select-day.choice-label', [
                     'index' => $index,
                     'date' => $d->getDate()->format($this->dateTimeFormats->getDate('with-dow')),
                     'dayNumber' => $d->getNumber(),

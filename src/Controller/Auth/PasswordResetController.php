@@ -4,11 +4,12 @@ namespace App\Controller\Auth;
 
 use App\Entity\User;
 use App\Entity\UserPersonInterface;
-use App\Form\Auth\ChangePasswordType;
+use App\Form\ChangePasswordType;
 use App\Form\Auth\ForgottenPasswordType;
 use App\Messenger\AlphagovNotify\Email;
 use App\Security\Voter\UserValidForLoginVoter;
 use App\Utility\AlphagovNotify\Reference;
+use App\Utility\Security\UrlSigner;
 use Symfony\Component\HttpFoundation\RedirectResponse;
 use Symfony\Component\HttpFoundation\Request;
 use Symfony\Component\HttpFoundation\Response;
@@ -50,6 +51,7 @@ class PasswordResetController extends AbstractController
                     [
                         'userId' => $user->getId(),
                         'code' => $user->getPasswordResetCode(),
+                        UrlSigner::SOURCE_TRACKING_PARAMETER_NAME => Reference::FORGOTTEN_PASSWORD_EVENT,
                     ],
                     UrlGeneratorInterface::ABSOLUTE_URL
                 );
@@ -78,6 +80,10 @@ class PasswordResetController extends AbstractController
      #[Route("/password-reset/{userId}/{code}", name: "password_reset")]
     public function passwordReset(Request $request, ?UserInterface $currentUser, string $userId, string $code): Response
     {
+        if ($request->getMethod() === Request::METHOD_GET) {
+            return $this->handlePreAuth('pre-password-reset');
+        }
+
         $sessionKey = 'account_password_reset';
         $user = $this->fetchUserAndCacheCriteria($sessionKey, ['id' => $userId, 'passwordResetCode' => $code]);
         if ($currentUser && $currentUser->getUserIdentifier() !== $user->getUserIdentifier()) {
@@ -90,7 +96,7 @@ class PasswordResetController extends AbstractController
         $successUrl = $this->generateUrl('app_login');
 
         $form = $this->createForm(ChangePasswordType::class, $user, [
-            'save_label' => 'change-password.change-password',
+            'save_label' => 'actions.reset-password',
             'cancel_link_href' => $successUrl,
         ]);
 

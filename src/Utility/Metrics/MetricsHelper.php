@@ -2,9 +2,9 @@
 
 namespace App\Utility\Metrics;
 
+use App\Entity\Metrics\MetricsLog;
 use App\Entity\OtpUser;
 use App\Entity\User;
-use App\Entity\Utility\MetricsLog;
 use App\Security\GoogleIap\IapUser;
 use App\Security\Voter\Interviewer\InterviewerTrainingVoter;
 use App\Utility\Metrics\Events\EventInterface;

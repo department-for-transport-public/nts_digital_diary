@@ -22,6 +22,10 @@ framework:
                 dsn: 'doctrine://default?queue_name=property-change'
             async_feedback:
                 dsn: 'doctrine://default?queue_name=feedback'
+            async_job:
+                dsn: 'doctrine://default?queue_name=job'
+                retry_strategy:
+                    max_retries: 0
             failed: 'doctrine://default?queue_name=failed'
             sync: 'sync://'
 
@@ -32,3 +36,4 @@ framework:
             'App\Messenger\AlphagovNotify\AbstractMessage': async_notify
             'App\Messenger\PropertyChange\AbstractMessage': async_property_change
             'App\Messenger\Feedback\AbstractMessage': async_feedback
+            'App\Messenger\Job\Job': async_job

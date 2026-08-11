@@ -18,26 +18,12 @@ class SecurityExtension extends AbstractExtension
     {
     }
 
-    public function getFilters(): array
-    {
-        return [
-            new TwigFilter('diary_keeper_display_name', $this->getDiaryKeeperDisplayName(...))
-        ];
-    }
-
     public function getFunctions(): array
     {
         return [
             new TwigFunction('impersonator', $this->impersonator(...)),
             new TwigFunction('is_impersonator_granted', $this->isImpersonatorGranted(...)),
         ];
-    }
-
-    public function getDiaryKeeperDisplayName(DiaryKeeper $diaryKeeper): string
-    {
-        return $this->impersonator() || $this->tokenStorage->getToken()->getUser() !== $diaryKeeper->getUser()
-            ? $diaryKeeper->getName()
-            : 'My';
     }
 
     public function impersonator(): ?UserInterface {

@@ -98,7 +98,7 @@ class InterviewerTrainingVoter extends Voter
             $household = null;
         }
 
-        return ($household && $household->getAreaPeriod()->getTrainingInterviewer());
+        return ($household && $household->isTraining());
     }
 
     protected function isUsingPersonalTravelDiary(): bool

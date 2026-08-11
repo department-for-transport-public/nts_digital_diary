@@ -21,7 +21,7 @@ class DetailsType extends AbstractType
         'label' => 'unit.distance.value.label',
         'translation_domain' => 'messages',
         'number_type' => NumberType::TYPE_DECIMAL,
-        'attr' => ['class' => 'govuk-input--width-5'],
+        'attr' => ['class' => 'govuk-input--width-5', 'inputmode' => 'decimal'],
     ];
     public const array UNIT_OPTIONS = [
         'label' => 'unit.distance.unit.label',
@@ -35,6 +35,7 @@ class DetailsType extends AbstractType
         $builder
             ->add('distanceTravelled', ValueUnitType::class, [
                 'label' => "stage.details.distance-travelled.label",
+                'label_translation_parameters' => ['wizard' => $options['wizard_source']],
                 'help' => "stage.details.distance-travelled.help",
                 'help_html' => 'markdown',
                 'label_attr' => ['class' => 'govuk-fieldset__legend--m'],
@@ -81,6 +82,7 @@ class DetailsType extends AbstractType
             'data_class' => Stage::class,
             'validation_groups' => ['wizard.stage.details', 'embedded.distance'],
             'translation_domain' => 'travel-diary',
+            'wizard_source' => 'legacy',
         ]);
     }
 }

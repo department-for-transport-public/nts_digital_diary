@@ -26,6 +26,7 @@ class TicketCostAndBoardingsType extends AbstractType
                 'label' => "stage.ticket-cost-and-boardings.boarding-count.label",
                 'label_attr' => ['class' => 'govuk-label--m'],
                 'help' => "stage.ticket-cost-and-boardings.boarding-count.help",
+                'help_translation_parameters' => ['wizard' => $options['wizard_source']],
                 'attr' => ['class' => 'govuk-input--width-5'],
             ]);
     }
@@ -36,6 +37,7 @@ class TicketCostAndBoardingsType extends AbstractType
             'data_class' => Stage::class,
             'translation_domain' => 'travel-diary',
             'validation_groups' => 'wizard.ticket-cost-and-boardings',
+            'wizard_source' => 'legacy',
         ]);
     }
 }

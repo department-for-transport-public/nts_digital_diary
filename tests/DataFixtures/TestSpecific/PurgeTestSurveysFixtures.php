@@ -10,11 +10,14 @@ use App\Entity\Household;
 use App\Entity\Interviewer;
 use App\Entity\Journey\Journey;
 use App\Entity\Journey\Method;
+use App\Entity\Journey\Stage;
+use App\Entity\PropertyChangeLog;
 use App\Entity\User;
 use App\Tests\DataFixtures\HouseholdFixtures;
 use App\Tests\DataFixtures\JourneyFixtures;
 use App\Tests\DataFixtures\UserFixtures;
 use DateTime;
+use Symfony\Component\Uid\Ulid;
 use Doctrine\Common\DataFixtures\AbstractFixture;
 use Doctrine\Common\DataFixtures\DependentFixtureInterface;
 use Doctrine\Persistence\ObjectManager;
@@ -51,7 +54,8 @@ class PurgeTestSurveysFixtures extends AbstractFixture implements DependentFixtu
         $diaryKeeper = $this->createDiaryKeeper(DateTime::createFromImmutable($date), $household);
 
         $journeys = $this->createJourneys($diaryKeeper);
-        $this->createStages($journeys, $household);
+        $stages = $this->createStages($journeys, $household);
+        $this->createPropertyChangeLogs($journeys, $stages);
 
         $household
             ->setSubmittedAt(DateTime::createFromImmutable($date))
@@ -67,8 +71,26 @@ class PurgeTestSurveysFixtures extends AbstractFixture implements DependentFixtu
     protected function createInterviewerTrainingHousehold(DateTime $date): void
     {
         $area = $this->createAreaPeriod($date, isInterviewerTraining: true);
-
         $this->createHousehold($date, $area);
+
+        $savedReference = $this->reference;
+        $this->reference = "{$this->reference}:training";
+
+        $referenceNames = ['journey:1', 'journey:1/stage:1', 'journey:2', 'journey:2/stage:1', 'journey:2/stage:2'];
+        foreach ($referenceNames as $name) {
+            $isStage = str_contains($name, 'stage');
+            $log = (new PropertyChangeLog())
+                ->setEntityId((string) new Ulid())
+                ->setEntityClass($isStage ? Stage::class : Journey::class)
+                ->setPropertyName($isStage ? 'distanceTravelled' : 'startTime')
+                ->setPropertyValue($isStage ? '10.5' : '08:00')
+                ->setTimestamp(new DateTime());
+
+            $this->addReference("surveys:{$this->reference}:pcl:{$name}", $log);
+            $this->manager->persist($log);
+        }
+
+        $this->reference = $savedReference;
     }
 
     protected function createAreaPeriod(DateTime $date, ?string $area = null, bool $isInterviewerTraining = false): AreaPeriod
@@ -107,7 +129,7 @@ class PurgeTestSurveysFixtures extends AbstractFixture implements DependentFixtu
 
         HouseholdFixtures::setCheckLetter($household);
 
-        $trainingRef = $areaPeriod->getTrainingInterviewer() ? ':training' : '';
+        $trainingRef = $areaPeriod->isTrainingArea() ? ':training' : '';
         $householdRef = $householdNumber ? "-{$householdNumber}" : '';
         $this->addReference("surveys:{$this->reference}{$trainingRef}:household{$householdRef}", $household);
         $this->manager->persist($household);
@@ -117,8 +139,7 @@ class PurgeTestSurveysFixtures extends AbstractFixture implements DependentFixtu
 
     protected function createDiaryKeeper(DateTime $date, Household $household): DiaryKeeper
     {
-        $dateString = $date->format('Ymd');
-        $email = "diary-keeper-{$dateString}@example.com";
+        $email = "diary-keeper-{$this->reference}@example.com";
 
         $user = (new User())
             ->setUsername($email)
@@ -183,6 +204,33 @@ class PurgeTestSurveysFixtures extends AbstractFixture implements DependentFixtu
         }
 
         return $stages;
+    }
+
+    protected function createPropertyChangeLogs(array $journeys, array $stages): void
+    {
+        foreach ($journeys as $name => $journey) {
+            $log = (new PropertyChangeLog())
+                ->setEntityId($journey->getId())
+                ->setEntityClass(Journey::class)
+                ->setPropertyName('startTime')
+                ->setPropertyValue('08:00')
+                ->setTimestamp(new DateTime());
+
+            $this->addReference("surveys:{$this->reference}:pcl:{$name}", $log);
+            $this->manager->persist($log);
+        }
+
+        foreach ($stages as $name => $stage) {
+            $log = (new PropertyChangeLog())
+                ->setEntityId($stage->getId())
+                ->setEntityClass(Stage::class)
+                ->setPropertyName('distanceTravelled')
+                ->setPropertyValue('10.5')
+                ->setTimestamp(new DateTime());
+
+            $this->addReference("surveys:{$this->reference}:pcl:{$name}", $log);
+            $this->manager->persist($log);
+        }
     }
 
     public function getDependencies(): array

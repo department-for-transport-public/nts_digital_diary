@@ -1,25 +1,21 @@
-const {goto, submit, clickLinkWithText, getScreenshotter, fillForm, clickLinkWithTextThatStartsWith, executeCommand} = require("./common")
+const {submit, clickLinkWithText, getScreenshotter, fillForm, clickLinkWithTextThatStartsWith, executeCommand,
+    clickElementContainingText
+} = require("./common")
 
 const {fixtures} = require('./fixtures')
+const {practiceDayFlow} = require('./practice-day')
 
-module.exports.diaryFlow = async function(page, baseUrl, outputDir, userIdentifier, password, addExtraStages) {
+module.exports.diaryFlow = async function(page, outputDir, userIdentifier, password, addExtraStages) {
     const screenshot = await getScreenshotter(page, outputDir  + 'diary-keeper/')
 
-    await goto(page, baseUrl)
-    await screenshot('1-landing.png')
-
-    await goto(page, baseUrl + 'login')
-    await screenshot('2a-login.png')
-
-    await submit(page, {
-        'Email': userIdentifier,
-        'Password': password,
-        'Remember me': true,
-    }, 'Sign in')
-    await screenshot('2b-user-preferences.png')
+    // user starts by setting a password, then is automatically logged in
+    await screenshot('0-user-preferences.png')
 
     await clickLinkWithText(page, 'Logout')
+    await screenshot('1-landing.png')
+
     await clickLinkWithText(page, 'Sign in')
+    await screenshot('2-login.png')
     await submit(page, {
         'Email': userIdentifier,
         'Password': password,
@@ -27,10 +23,12 @@ module.exports.diaryFlow = async function(page, baseUrl, outputDir, userIdentifi
     }, 'Sign in')
     await screenshot('3a-dashboard-empty.png')
 
-    await clickLinkWithText(page, 'View practice diary')
-    await screenshot('4-practise-diary.png')
-
+    await clickElementContainingText(page, 'span', 'Examples and practice', 0, false)
+    await clickLinkWithText(page, 'View example day')
+    await screenshot('4a-example-journeys.png')
     await page.goBack()
+
+    await practiceDayFlow(page, screenshot)
 
     // View "Day 2"
     await clickLinkWithText(page, 'View', 1)
@@ -50,17 +48,17 @@ module.exports.diaryFlow = async function(page, baseUrl, outputDir, userIdentifi
 
     // Various different flows for adding stages
     await addCarStageFlow(page, screenshot)
-    await clickLinkWithText(page,'Add a stage')
+    await clickLinkWithText(page, 'Add a stage')
     await addWalkingStageFlow(page, screenshot)
-    await clickLinkWithText(page,'Add a stage')
+    await clickLinkWithText(page, 'Add a stage')
     await addTrainStageFlow(page, screenshot)
 
     if (addExtraStages) {
-        await clickLinkWithText(page,'Add a stage')
+        await clickLinkWithText(page, 'Add a stage')
         await addPublicOtherStageFlow(page)
-        await clickLinkWithText(page,'Add a stage')
+        await clickLinkWithText(page, 'Add a stage')
         await addCoachStageFlow(page)
-        await clickLinkWithText(page,'Add a stage')
+        await clickLinkWithText(page, 'Add a stage')
         await addPrivateOtherStageFlow(page)
     }
 
@@ -86,13 +84,13 @@ module.exports.diaryFlow = async function(page, baseUrl, outputDir, userIdentifi
     // Share journey
     await shareJourneyFlow(page, screenshot, addExtraStages)
 
-    await clickLinkWithText(page, 'My travel diary')
+    await clickLinkWithText(page, "Alice's travel diary")
     await clickLinkWithText(page, 'View', 1) // We want to repeat onto day 2
 
-    // Repeat journey
-    await repeatJourneyFlow(page, screenshot, addExtraStages)
+    // Repeat journey (we're on day 2's view here)
+    await repeatJourneyFlow(page, screenshot, addExtraStages, 2)
 
-    await clickLinkWithText(page, 'My travel diary')
+    await clickLinkWithText(page, "Alice's travel diary")
     await clickLinkWithText(page, 'View', 0) // Back to day 1
     await clickLinkWithText(page, 'View', 0) // View the first (and only) journey
 
@@ -100,7 +98,7 @@ module.exports.diaryFlow = async function(page, baseUrl, outputDir, userIdentifi
     await returnJourneyFlow(page, screenshot, addExtraStages)
 
     // Day dashboard, notes
-    await clickLinkWithTextThatStartsWith(page, 'Back to day')
+    await clickLinkWithTextThatStartsWith(page, 'back to day')
     await clickLinkWithTextThatStartsWith(page, 'Add notes')
     await screenshot('view-day/2-notes.png')
 
@@ -120,10 +118,10 @@ module.exports.diaryFlow = async function(page, baseUrl, outputDir, userIdentifi
     await addJourneyForSplitterDemonstration(page, screenshot, 6, 'Portsmouth', 'Collect a package')
 
     // Mark diary as complete
-    await clickLinkWithText(page, 'Mark travel diary as complete')
+    await clickLinkWithText(page, 'Mark my travel diary as complete')
     await screenshot('5-mark-diary-as-complete.png')
 
-    await submit(page, {}, 'Mark travel diary as complete')
+    await submit(page, {}, 'Mark my travel diary as complete')
     await screenshot('3c-dashboard-complete.png')
 
     await satisfactionSurveyFlow(page, screenshot)
@@ -178,7 +176,7 @@ async function addCarStageFlow(page, screenshot)
     await submit(page, {
         'Distance': '5',
         'Miles': true,
-        'How long did you spend travelling, in minutes': '10',
+        'How long did you spend travelling': '10',
         'Adults': '1',
         'Children': '2',
     }, 'Continue')
@@ -214,7 +212,7 @@ async function addWalkingStageFlow(page, screenshot)
     await submit(page, {
         'Distance': '1',
         'Miles': true,
-        'How long did you spend travelling, in minutes': '5',
+        'How long did you spend travelling': '5',
         'Adults': '1',
         'Children': '2',
     }, 'Save and continue')
@@ -230,7 +228,7 @@ async function addTrainStageFlow(page, screenshot)
     await submit(page, {
         'Distance': '18',
         'Miles': true,
-        'How long did you spend travelling, in minutes': '45',
+        'How long did you spend travelling': '45',
         'Adults': '1',
         'Children': '2',
     }, 'Continue')
@@ -265,7 +263,7 @@ async function addCoachStageFlow(page)
     await submit(page, {
         'Distance': '10',
         'Miles': true,
-        'How long did you spend travelling, in minutes': '15',
+        'How long did you spend travelling': '15',
         'Adults': '1',
         'Children': '2',
     }, 'Continue')
@@ -293,7 +291,7 @@ async function addPublicOtherStageFlow(page)
     await submit(page, {
         'Distance': '30',
         'Miles': true,
-        'How long did you spend travelling, in minutes': '25',
+        'How long did you spend travelling': '25',
         'Adults': '1',
         'Children': '2',
     }, 'Continue')
@@ -321,7 +319,7 @@ async function addPrivateOtherStageFlow(page)
     await submit(page, {
         'Distance': '2',
         'Miles': true,
-        'How long did you spend travelling, in minutes': '5',
+        'How long did you spend travelling': '5',
         'Adults': '1',
         'Children': '2',
     }, 'Continue')
@@ -338,7 +336,7 @@ async function addPrivateOtherStageFlow(page)
 
 async function shareJourneyFlow(page, screenshot, addExtraStages)
 {
-    await clickLinkWithText(page, 'Share this journey')
+    await clickLinkWithTextThatStartsWith(page, 'Share this journey')
     await screenshot('share-journey/1-intro.png')
 
     await submit(page, {}, 'Continue')
@@ -385,7 +383,7 @@ async function shareJourneyFlow(page, screenshot, addExtraStages)
 
 async function returnJourneyFlow(page, screenshot, addExtraStages)
 {
-    await clickLinkWithTextThatStartsWith(page,'Make a return of this journey')
+    await clickLinkWithTextThatStartsWith(page, 'Make a return of this journey')
     await screenshot('return-journey/1-intro.png')
 
     await submit(page, {}, 'Continue')
@@ -524,12 +522,12 @@ async function addJourneyForSplitterDemonstration(page, screenshot, day, sourceA
         await submit(page, {
             'Distance': '1',
             'Miles': true,
-            'How long did you spend travelling, in minutes': '20',
+            'How long did you spend travelling': '20',
             'Adults': '1',
             'Children': '0',
         }, 'Save and continue')
         
-        await clickLinkWithText(page, 'My travel diary')
+        await clickLinkWithText(page, "Alice's travel diary")
 }
 
 async function satisfactionSurveyFlow(page, screenshot)
@@ -578,4 +576,14 @@ async function satisfactionSurveyFlow(page, screenshot)
 
     await submit(page, {'Online questionnaire': true}, 'Save and continue')
     await screenshot('satisfaction-survey/6-questionnaire-complete.png')
+}
+
+module.exports = {
+    diaryFlow: module.exports.diaryFlow,
+    addCarStageFlow,
+    addWalkingStageFlow,
+    addPrivateOtherStageFlow,
+    shareJourneyFlow,
+    milometerReadingsFlow,
+    satisfactionSurveyFlow,
 }

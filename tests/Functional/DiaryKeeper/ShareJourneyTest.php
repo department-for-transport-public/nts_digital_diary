@@ -5,8 +5,10 @@ namespace App\Tests\Functional\DiaryKeeper;
 use App\Entity\DiaryKeeper;
 use App\Entity\Journey\Journey;
 use App\Entity\Journey\Method;
+use App\Tests\DataFixtures\TestSpecific\ShareJourneyAllProxiedTestFixtures;
 use App\Tests\DataFixtures\TestSpecific\ShareJourneyTestFixtures;
 use App\Tests\Functional\AbstractProceduralWizardTest;
+use App\Tests\Functional\Wizard\Action\Context;
 use App\Tests\Functional\Wizard\Form\FormTestCase;
 use App\Tests\Functional\Wizard\Action\PathTestAction;
 use Facebook\WebDriver\WebDriverBy;
@@ -31,6 +33,13 @@ class ShareJourneyTest extends AbstractProceduralWizardTest
             ],
             $options
         );
+
+        $this->callbackTestAction(function(Context $context) {
+            $helpElements = $context->getClient()->findElements(
+                WebDriverBy::xpath("//*[contains(text(), 'for whom you are acting as a proxy')]")
+            );
+            $context->getTestCase()->assertNotEmpty($helpElements, 'Expected sharing help message to be visible');
+        });
 
         $sharingDK = $journeyFixture->getDiaryDay()->getDiaryKeeper();
         $allProxiedDKs = $sharingDK->getActingAsProxyFor();
@@ -224,5 +233,35 @@ class ShareJourneyTest extends AbstractProceduralWizardTest
 
         $this->context = $this->createContext('');
         $this->performTest($journeyFixtureRef, $isGoingHome);
+    }
+
+    public function testSharingHelpHiddenWhenAllProxied(): void
+    {
+        $this->initialiseClientAndLoadFixtures([ShareJourneyAllProxiedTestFixtures::class]);
+        $this->loginUser(self::TEST_USERNAME);
+        $this->client->request('GET', '/travel-diary/day-6');
+        $this->clickLinkContaining('View');
+        $this->clickLinkContaining('Share this journey');
+
+        $this->context = $this->createContext('');
+
+        $url = fn(string $pathEnd): string => '#^\/travel-diary\/journey\/[0-9A-Z]+' . $pathEnd . '$#';
+        $options = [PathTestAction::OPTION_EXPECTED_PATH_REGEX => true];
+
+        $this->formTestAction(
+            $url('/share-journey/introduction'),
+            'form_button_group_continue',
+            [
+                new FormTestCase([]),
+            ],
+            $options
+        );
+
+        $this->callbackTestAction(function(Context $context) {
+            $helpElements = $context->getClient()->findElements(
+                WebDriverBy::xpath("//*[contains(text(), 'for whom you are acting as a proxy')]")
+            );
+            $context->getTestCase()->assertEmpty($helpElements, 'Expected sharing help message to be hidden when all DKs are proxied');
+        });
     }
 }

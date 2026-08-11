@@ -47,4 +47,11 @@ abstract class AbstractInterviewerDiaryKeeperTest extends AbstractWebTestCase
         ], false);
         $this->client->request(Request::METHOD_GET, $viewHouseholdUrl);
     }
+
+    protected function completePreAuthForm(?string $expectedUrl = null): void
+    {
+        $url = $expectedUrl ?? $this->client->getRequest()->getRequestUri();
+        $this->client->submitForm('form_continue', []);
+        $this->assertEquals($url, $this->client->getRequest()->getRequestUri());
+    }
 }

@@ -20,14 +20,17 @@ class EmptyDashboardTest extends AbstractFunctionalTestCase
     {
         $this->client->request('GET', '/travel-diary/');
 
-        $data = $this->getSummaryListData();
+        $this->getElementByTextContains('span', 'Diary keeper details', 0)->click();
+
+        $data = $this->getSummaryListData('//*[@id="main-content"]/details/div/dl/div');
 
         $this->assertDataHasKeyValuePair($data, 'Name', 'Test Diary Keeper (Adult)');
         $this->assertDataHasKeyValuePair($data, 'Serial number', '111984 / 08 / 2 / 1');
         $this->assertDataHasKeyValuePair($data, 'Diary status', 'Not yet started');
+        $this->assertDataHasKeyValuePair($data, 'Adult / child', 'Adult (16+)');
 
-        // 3 rows as per above, and 7 rows for days
-        $this->assertDataSize($data, 10);
+        // 4 rows as per above, and 7 rows for days
+        $this->assertDataSize($data, 4);
     }
 
     public function testDashboardBreadcrumbs(): void
@@ -44,15 +47,16 @@ class EmptyDashboardTest extends AbstractFunctionalTestCase
     {
         $this->client->request('GET', '/travel-diary/');
 
-        // practice day
-        $this->clickLinkContaining('View', 0);
+        // example day
+        $this->getElementByTextContains('span', 'Examples and practice')->click();
+        $this->clickLinkContaining('View example day', 0);
         $data = $this->getSummaryListData();
         $this->assertDataSize($data, 2);
         $this->clickLinkContaining('Back to diary overview');
 
         // Check that each day's page lists "No journeys"
         // (not including practice day)
-        for($idx=1; $idx<=7; $idx++) {
+        for($idx=0; $idx<=6; $idx++) {
             $this->clickLinkContaining('View', $idx);
 
             $data = $this->getSummaryListData();

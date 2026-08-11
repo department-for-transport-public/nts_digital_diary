@@ -66,6 +66,15 @@ class SecureHeadersSubscriber implements EventSubscriberInterface
             $addEntry('script-src', 'https://*.smartlook.cloud');
         }
 
+        // Per-response CSP additions, set as a request attribute (see
+        // DataExportController). Deliberately NOT a session flash: reading the
+        // flash bag would start the session on every response (incl. 404s),
+        // which is a PdoSessionHandler DB hit. Request-scoped, so it won't
+        // survive a redirect — fine for the current set-and-render flow.
+        foreach ($event->getRequest()->attributes->get('csp:add', []) as $cspRule) {
+            $addEntry($cspRule[0], $cspRule[1]);
+        }
+
         // If we want the CSP rules to comprise only authorised sources, we need to set
         // e.g. style-src: 'none'
 

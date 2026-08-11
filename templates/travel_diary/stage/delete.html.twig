@@ -3,11 +3,6 @@
 {%- trans_default_domain translation_domain -%}
 {%- set heading_class = "govuk-heading-xl" -%}
 
-{%- set breadcrumb_translation_parameters = {
-    diary_keeper_name: diaryKeeper | diary_keeper_display_name,
-} -%}
-
-
 {%- block content -%}
     {%- import "travel_diary/journey/macros.html.twig" as j -%}
     {%- set options = {hideActions: true} -%}

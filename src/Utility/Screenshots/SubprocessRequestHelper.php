@@ -16,6 +16,7 @@ use App\Features;
 use App\Repository\Journey\MethodRepository;
 use App\Security\OneTimePassword\PasscodeGenerator;
 use App\Utility\DirectOnboardingTestUrlGenerator;
+use App\Utility\Security\AccountCreationHelper;
 use App\Utility\TravelDiary\SerialHelper;
 use Doctrine\DBAL\Exception;
 use Doctrine\ORM\EntityManagerInterface;
@@ -26,12 +27,23 @@ use Symfony\Component\Workflow\WorkflowInterface;
 class SubprocessRequestHelper
 {
     public function __construct(
+        protected AccountCreationHelper            $accountCreationHelper,
         protected DirectOnboardingTestUrlGenerator $directOnboardingTestUrlGenerator,
         protected EntityManagerInterface           $entityManager,
         protected MethodRepository                 $methodRepository,
         protected PasscodeGenerator                $passcodeGenerator,
         protected WorkflowInterface                $travelDiaryStateStateMachine,
     ) {}
+
+    private array $dk1 = [
+        'name' => 'Alice',
+        'email' => 'alice@example.com',
+    ];
+    private array $dk2 = [
+        'name' => 'Bob',
+        'email' => 'bob@example.com',
+    ];
+
 
     public function process(string $buffer, InputStream $inputStream): void
     {
@@ -61,6 +73,8 @@ class SubprocessRequestHelper
             $this->getOnboardingCodes($matches, $inputStream);
         } else if (preg_match("/^getOnboardingUrlFromEmail\('(?P<username>[^']*)'\)$/", $command, $matches)) {
             $this->getOnboardingUrlFromEmail($matches, $inputStream);
+        } else if (preg_match("/^getAccountSetupUrl\('(?P<username>[^']*)',\s*'(?P<expiry>valid|expired)'\)$/", $command, $matches)) {
+            $this->getAccountSetupUrl($matches, $inputStream);
         } else if (preg_match("/^getCheckLetter\((?P<area>\d+),\s*(?P<addressNumber>\d+),\s*(?P<householdNumber>\d+)\)$/", $command, $matches)) {
             $this->getCheckLetter($matches, $inputStream);
         } else {
@@ -71,33 +85,33 @@ class SubprocessRequestHelper
 
     protected function addDocumentationFixtures(array $matches, InputStream $inputStream): void
     {
-        $generateElliotJourneyDefs = function (int $day) {
+        $generateDkOneJourneyDefs = function (int $day) {
             return [
                 new JourneyDefinition($day, 'Home', '8:00am', 'Holt', '8:15am', 'To go to work', [
-                    new PrivateStageDefinition(1, 'car', Distance::miles('3.1'), 15, 1, 0, true, null, "Elliot's Red Volvo")
+                    new PrivateStageDefinition(1, 'car', Distance::miles('3.1'), 15, 1, 0, true, null, "{$this->dk1['name']}'s White Volvo")
                 ]),
                 new JourneyDefinition($day, 'Holt', '12:00pm', 'Holt', '12:40pm', 'To go for a walk', [
                     new OtherStageDefinition(1, 'walk', Distance::miles(2), 40, 1, 0)
                 ]),
                 new JourneyDefinition($day, 'Home', '5:00pm', 'Holt', '5:15pm', 'To go home', [
-                    new PrivateStageDefinition(1, 'car', Distance::miles('3.1'), 15, 1, 0, true, null, "Elliot's Red Volvo")
+                    new PrivateStageDefinition(1, 'car', Distance::miles('3.1'), 15, 1, 0, true, null, "{$this->dk1['name']}'s White Volvo")
                 ]),
             ];
         };
 
-        $generateAnikaJourneyDefs = function (int $day, bool $onlyFirstTwo) {
+        $generateDkTwoJourneyDefs = function (int $day, bool $onlyFirstTwo) {
             $journeys = [
                 new JourneyDefinition($day, 'Home', '8:15am', 'Hilperton', '8:35am', 'To take children to school', [
-                    new PrivateStageDefinition(1, 'car', Distance::miles('2.5'), 20, 1, 2, true, null, "Anika's Red Fiat")
+                    new PrivateStageDefinition(1, 'car', Distance::miles('2.5'), 20, 1, 2, true, null, "{$this->dk2['name']}'s Red Fiat")
                 ]),
                 new JourneyDefinition($day, 'Hilperton', '8:40am', 'Home', '9:00am', 'To go home', [
-                    new PrivateStageDefinition(1, 'car', Distance::miles('2.5'), 20, 1, 0, true, null, "Anika's Red Fiat")
+                    new PrivateStageDefinition(1, 'car', Distance::miles('2.5'), 20, 1, 0, true, null, "{$this->dk2['name']}'s Red Fiat")
                 ]),
                 new JourneyDefinition($day, 'Home', '2:45pm', 'Hilperton', '3:05pm', 'To pick children up from school', [
-                    new PrivateStageDefinition(1, 'car', Distance::miles('2.5'), 20, 1, 0, true, null, "Anika's Red Fiat")
+                    new PrivateStageDefinition(1, 'car', Distance::miles('2.5'), 20, 1, 0, true, null, "{$this->dk2['name']}'s Red Fiat")
                 ]),
                 new JourneyDefinition($day, 'Hilperton', '3:10pm', 'Home', '3:30pm', 'To go home', [
-                    new PrivateStageDefinition(1, 'car', Distance::miles('2.5'), 20, 1, 2, true, null, "Anika's Red Fiat")
+                    new PrivateStageDefinition(1, 'car', Distance::miles('2.5'), 20, 1, 2, true, null, "{$this->dk2['name']}'s Red Fiat")
                 ]),
             ];
 
@@ -105,23 +119,23 @@ class SubprocessRequestHelper
         };
 
         $journeys = [
-            'elliot@example.com' => array_merge(
-                $generateElliotJourneyDefs(1),
-                $generateElliotJourneyDefs(2),
-                $generateElliotJourneyDefs(3),
-                $generateElliotJourneyDefs(4),
-                $generateElliotJourneyDefs(5),
-                $generateElliotJourneyDefs(6),
-                $generateElliotJourneyDefs(7),
+            $this->dk1['email'] => array_merge(
+                $generateDkOneJourneyDefs(1),
+                $generateDkOneJourneyDefs(2),
+                $generateDkOneJourneyDefs(3),
+                $generateDkOneJourneyDefs(4),
+                $generateDkOneJourneyDefs(5),
+                $generateDkOneJourneyDefs(6),
+                $generateDkOneJourneyDefs(7),
             ),
-            'anika@example.com' => array_merge(
-                $generateAnikaJourneyDefs(1, false),
-                $generateAnikaJourneyDefs(2, false),
-                $generateAnikaJourneyDefs(3, false),
-                $generateAnikaJourneyDefs(4, false),
-                $generateAnikaJourneyDefs(5, false),
-                $generateAnikaJourneyDefs(6, true),
-                $generateAnikaJourneyDefs(7, true),
+            $this->dk2['email'] => array_merge(
+                $generateDkTwoJourneyDefs(1, false),
+                $generateDkTwoJourneyDefs(2, false),
+                $generateDkTwoJourneyDefs(3, false),
+                $generateDkTwoJourneyDefs(4, false),
+                $generateDkTwoJourneyDefs(5, false),
+                $generateDkTwoJourneyDefs(6, true),
+                $generateDkTwoJourneyDefs(7, true),
             ),
         ];
 
@@ -225,6 +239,30 @@ SQL, [
             $message = $e->getMessage();
             $inputStream->write("FAIL: {$message}\n");
         }
+    }
+
+    protected function getAccountSetupUrl(array $matches, InputStream $inputStream): void
+    {
+        ['username' => $username, 'expiry' => $expiry] = $matches;
+
+        $user = $this->entityManager->getRepository(User::class)->loadUserByIdentifier($username);
+
+        if (!$user) {
+            $inputStream->write("FAIL: User not found\n");
+            return;
+        }
+
+        $userPerson = $user->getDiaryKeeper() ?? $user->getInterviewer();
+
+        if (!$userPerson) {
+            $inputStream->write("FAIL: User has no diary keeper or interviewer\n");
+            return;
+        }
+
+        $currentTime = $expiry === 'expired' ? time() - (8 * 24 * 3600) : null;
+        $url = $this->accountCreationHelper->generateAccountCreationUrl($userPerson, currentTime: $currentTime);
+
+        $inputStream->write("OK: {$url}\n");
     }
 
     protected function getCheckLetter(array $matches, InputStream $inputStream): void

@@ -16,10 +16,9 @@
 
     {%- if household.isOverdue() -%}
         {{- notificationBanner({
-            title: 'household.overdue.title',
-            content: 'household.overdue.content',
-            options: {style: 'warning', nl2br: true},
-            translation_domain: 'interviewer',
+            titleText: 'household.overdue.title' | trans({}, 'interviewer'),
+            html: 'household.overdue.content' | trans({}, 'interviewer') | nl2br,
+            classes: 'govuk-notification-banner--warning',
         }) -}}
     {%- endif -%}
 {%- endblock -%}

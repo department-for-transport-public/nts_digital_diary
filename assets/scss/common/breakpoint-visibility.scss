@@ -1,0 +1,17 @@
+@import "govuk-frontend/dist/govuk/helpers/media-queries";
+@import "govuk-frontend/dist/govuk/overrides/display";
+
+$breakpoints: tablet, desktop;
+
+@each $breakpoint in $breakpoints {
+  .govuk-\!-display-none-until-#{$breakpoint} {
+    @include govuk-media-query($until: $breakpoint) {
+      display: none !important;
+    }
+  }
+  .govuk-\!-display-none-from-#{$breakpoint} {
+    @include govuk-media-query($from: $breakpoint) {
+      display: none !important;
+    }
+  }
+}

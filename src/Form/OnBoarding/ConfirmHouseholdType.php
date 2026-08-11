@@ -6,6 +6,7 @@ use App\Form\ConfirmActionType;
 use Ghost\GovUkFrontendBundle\Form\Type\CheckboxType;
 use Symfony\Component\Form\AbstractType;
 use Symfony\Component\Form\FormBuilderInterface;
+use Symfony\Component\OptionsResolver\OptionsResolver;
 
 class ConfirmHouseholdType extends AbstractType
 {
@@ -14,6 +15,13 @@ class ConfirmHouseholdType extends AbstractType
         $builder->add('isJourneySharingEnabled', CheckboxType::class, [
             'priority' => 100,
             'label' => 'submit.journey-sharing',
+        ]);
+    }
+
+    public function configureOptions(OptionsResolver $resolver): void
+    {
+        $resolver->setDefaults([
+            'validation_groups' => ['Default', 'wizard.on-boarding.submit'],
         ]);
     }
 

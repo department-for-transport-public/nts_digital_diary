@@ -5,6 +5,12 @@
 
 {% block content %}
     <div class="prose-scope">
-        {{ 'setup-link-expired.intro' | trans({emailSent: emailSent, obfuscatedEmailAddress: emailAddress}) | markdown_to_html }}
+        {%- if user.password ?? false -%}
+            {{- 'setup-link-expired.password-already-set-intro' | trans | markdown_to_html -}}
+            {{- 'setup-link-expired.password-already-set-instruction' | trans | markdown_to_html -}}
+        {%- else -%}
+            {{- 'setup-link-expired.intro' | trans({emailSent: emailSent, obfuscatedEmailAddress: emailAddress}) | markdown_to_html -}}
+            {{- 'setup-link-expired.instruction' | trans | markdown_to_html -}}
+        {%- endif -%}
     </div>
 {% endblock %}

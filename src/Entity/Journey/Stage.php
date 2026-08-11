@@ -80,6 +80,7 @@ class Stage implements PropertyChangeLoggableInterface, BasicMetadataInterface
             } else if (mb_strlen((string) $this->methodOther, 'UTF-8') > 255) {
                 $context->buildViolation("common.string.max-length")
                     ->setParameter('{{ limit }}', 255)
+                    ->setParameter('{{ value_length }}', mb_strlen((string) $this->methodOther, 'UTF-8'))
                     ->atPath("other-$transKey")
                     ->addViolation();
             }
@@ -128,6 +129,7 @@ class Stage implements PropertyChangeLoggableInterface, BasicMetadataInterface
             } else if (mb_strlen((string) $this->vehicleOther, 'UTF-8') > 255) {
                 $context->buildViolation("common.string.max-length")
                     ->setParameter('{{ limit }}', 255)
+                    ->setParameter('{{ value_length }}', mb_strlen((string) $this->vehicleOther, 'UTF-8'))
                     ->atPath("vehicleOther")
                     ->addViolation();
             } else if ($this->vehicleOther === null) {

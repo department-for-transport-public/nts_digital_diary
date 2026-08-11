@@ -1,0 +1,28 @@
+<?php
+
+namespace App\Controller\Interviewer\DiaryEditing;
+
+use App\Controller\Interviewer\AbstractController;
+use App\Entity\Household;
+use App\Utility\Metrics\Events\HouseholdComparisonEvent;
+use App\Utility\Metrics\MetricsHelper;
+use Symfony\Bridge\Twig\Attribute\Template;
+use Symfony\Component\Routing\Attribute\Route;
+
+#[Route("/household/{household}/compare", name: "household_compare_")]
+class HouseholdComparisonController extends AbstractController
+{
+    #[Route("/day-{day}", name: "day")]
+    #[Template("interviewer/dashboard/diary_editing/household_compare.html.twig")]
+    public function day(MetricsHelper $metrics, Household $household, int $day = 1): array
+    {
+        $metrics->log(new HouseholdComparisonEvent(
+            $household->getSerialNumber(...MetricsHelper::GET_SERIAL_METHOD_ARGS),
+            $day
+        ));
+        return [
+            'currentDay' => $day,
+            'household' => $household,
+        ];
+    }
+}

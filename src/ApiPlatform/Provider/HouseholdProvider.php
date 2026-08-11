@@ -2,7 +2,7 @@
 
 namespace App\ApiPlatform\Provider;
 
-use ApiPlatform\Exception\OperationNotFoundException;
+use ApiPlatform\Metadata\Exception\OperationNotFoundException;
 use ApiPlatform\Metadata\GetCollection;
 use ApiPlatform\Metadata\Operation;
 use ApiPlatform\State\ProviderInterface;
@@ -17,9 +17,9 @@ class HouseholdProvider implements ProviderInterface
     {}
 
     /**
-     * @return iterable<Household>|null
+     * @return object|iterable<Household>|null
      */
-    public function provide(Operation $operation, array $uriVariables = [], array $context = []): iterable|null
+    public function provide(Operation $operation, array $uriVariables = [], array $context = []): null|array|object
     {
         if ($operation instanceof GetCollection) {
             return $this->householdRepository

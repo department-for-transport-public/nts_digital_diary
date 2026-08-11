@@ -2,3 +2,5 @@ doctrine:
     dbal:
         # "TEST_TOKEN" is typically set by ParaTest
         dbname_suffix: '_test%env(default::TEST_TOKEN)%'
+        ## This schema filter excludes views (vw_) for testing - it's the simpler way to get the tests working
+        schema_filter: ~^(?!lock_keys)~

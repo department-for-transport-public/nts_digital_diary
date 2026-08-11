@@ -2,12 +2,12 @@
 
 namespace App\EventSubscriber\Metrics;
 
-use App\Controller\TravelDiary\JourneyWizardController;
-use App\Controller\TravelDiary\RepeatJourneyWizardController;
-use App\Controller\TravelDiary\ReturnJourneyWizardController;
-use App\Controller\TravelDiary\ShareJourneyWizardController;
-use App\Controller\TravelDiary\SplitJourneyWizardController;
-use App\Controller\TravelDiary\StageWizardController;
+use App\Controller\TravelDiary\Wizards\JourneyWizardController;
+use App\Controller\TravelDiary\Wizards\RepeatJourneyWizardController;
+use App\Controller\TravelDiary\Wizards\ReturnJourneyWizardController;
+use App\Controller\TravelDiary\Wizards\ShareJourneyWizardController;
+use App\Controller\TravelDiary\Wizards\SplitJourneyWizardController;
+use App\Controller\TravelDiary\Wizards\StageWizardController;
 use App\Entity\Journey\Journey;
 use App\Entity\Journey\Stage;
 use App\Utility\Metrics\Events\Entity\JourneyEditEvent;
@@ -23,16 +23,19 @@ use Doctrine\Bundle\DoctrineBundle\Attribute\AsDoctrineListener;
 use Doctrine\ORM\Event\PreUpdateEventArgs;
 use Doctrine\ORM\Events;
 use Ghost\GovUkCoreBundle\Event\FormWizard\PostPersistEvent;
+use Ghost\GovUkCoreBundle\Event\FormWizard\PrePersistEvent;
 use Ghost\GovUkCoreBundle\FormWizard\MultipleEntityInterface;
 use Symfony\Component\EventDispatcher\Attribute\AsEventListener;
 
 // N.B. The PostPersistEvent handled by this class is *not* a Doctrine lifecycle event
 //      (But the preUpdate *is*)
 #[AsDoctrineListener(event: Events::preUpdate)]
-#[AsEventListener(event: PostPersistEvent::class, method: 'postPersist')]
+#[AsEventListener(event: PostPersistEvent::class, method: 'formWizardPostPersist')]
+#[AsEventListener(event: PrePersistEvent::class, method: 'formWizardPrePersist')]
 class FormWizardPersistSubjectListener
 {
     protected array $changeSets = [];
+    protected array $prePersistIds = [];
 
     public function __construct(protected MetricsHelper $metrics) {}
 
@@ -45,20 +48,30 @@ class FormWizardPersistSubjectListener
         $this->changeSets[$object->getId()] = $eventArgs->getEntityChangeSet();
     }
 
-    public function postPersist(PostPersistEvent $event): void
+    public function formWizardPrePersist(PrePersistEvent $event): void
     {
         $subject = $event->getSubject();
+        if (!$subject instanceof Stage && !$subject instanceof Journey) {
+            return;
+        }
+        $this->prePersistIds[spl_object_id($subject)] = $subject->getId();
+    }
+
+    public function formWizardPostPersist(PostPersistEvent $event): void
+    {
+        $subject = $event->getSubject();
+        $subjectAlreadyExists = $this->prePersistIds[spl_object_id($subject)] ?? false;
+
         $wizardControllerClass = $event->getSourceWizardController();
         if ($subject instanceof MultipleEntityInterface) {
             $subject = $subject->getEntitiesToPersist()[0];
         }
-        $changeSet = $this->changeSets[$subject->getId()] ?? null;
+        $changeSet = $this->changeSets[$subject->getId()] ?? [];
 
         switch ($wizardControllerClass) {
             case ShareJourneyWizardController::class :
                 /** @var Journey $subject */
-                $sharedToIds = array_map(fn(Journey $j): ?string => $j->getId(), $subject->getSharedTo()->toArray());
-                $this->metrics->log(new JourneySharedEvent($subject, $sharedToIds));
+                $this->metrics->log(new JourneySharedEvent($subject));
                 return;
 
             case ReturnJourneyWizardController::class :
@@ -74,13 +87,13 @@ class FormWizardPersistSubjectListener
                 return;
 
             case JourneyWizardController::class :
-                $changeSet
+                $subjectAlreadyExists
                     ? $this->metrics->log(new JourneyEditEvent($subject, $changeSet))
                     : $this->metrics->log(new JourneyPersistEvent($subject));
                 return;
 
             case StageWizardController::class :
-                $changeSet
+                $subjectAlreadyExists
                     ? $this->metrics->log(new StageEditEvent($subject, $changeSet))
                     : $this->metrics->log(new StagePersistEvent($subject));
                 return;

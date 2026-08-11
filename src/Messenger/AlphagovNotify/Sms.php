@@ -49,4 +49,9 @@ class Sms extends AbstractMessage
         $this->senderId = $senderId;
         return $this;
     }
+
+    public function getRecipient(): ?string
+    {
+        return $this->phoneNumber;
+    }
 }

@@ -2,46 +2,39 @@
 {% trans_default_domain 'travel-diary' %}
 
 {% set title_translation_key = "days.page-title" %}
-{% set heading_class = "govuk-heading-xl" %}
 
 {% set translation_parameters = {
-    diary_keeper_name: diaryKeeper | diary_keeper_display_name,
+    diary_keeper_name: diaryKeeper.name,
 } %}
-{% set breadcrumb_translation_parameters = translation_parameters %}
 
+{%- import "@GhostGovUkFrontend/components/macros.html.twig" as m -%}
 {% block content %}
     {# @var diaryKeeper \App\Entity\DiaryKeeper #}
-    <p class="govuk-body">{{ 'days.intro' | trans }}</p>
-
-    {% include 'travel_diary/dashboard/includes/diary_keeper_details.html.twig'%}
-    {% include 'travel_diary/dashboard/includes/video-help.html.twig' %}
-
-    {%- import "@GhostGovUkFrontend/components/macros.html.twig" as m -%}
-
     {%- include 'travel_diary/dashboard/includes/diary_keeper_proxies.html.twig' -%}
+    {{ _self.otherDays(translation_parameters) }}
 
-    {% if is_feature_enabled(constant('\\App\\Features::MILOMETER')) and not diaryKeeper.primaryDriverVehicles.empty %}
-        <h2 class="govuk-heading-m" id="vehicles">{{ 'days.primary-driver-vehicles' | trans }}</h2>
-        <ul class="govuk-list">
-            {% for vehicle in diaryKeeper.primaryDriverVehicles %}
-                {# @var vehicle \App\Entity\Vehicle #}
-                <li><a class="govuk-link" href="{{ path('traveldiary_vehicle_index', {vehicle: vehicle.id}) }}">{{ "days.enter-odometer-readings" | trans({vehicle: vehicle.friendlyName}) }}</a></li>
-            {% endfor %}
-        </ul>
-    {% endif %}
+    {{ _self.travelWeek(diaryKeeper, translation_parameters) }}
+    {{ _self.mileometer(diaryKeeper) }}
 
+    {%- if workflow_can(diaryKeeper, constant('App\\Entity\\DiaryKeeper::TRANSITION_COMPLETE')) -%}
+        <div class="govuk-button-group">
+            <a class="govuk-button" href="{{ path('traveldiary_mark_as_complete') }}">{{ 'mark-as-complete.form.mark-as-complete' | trans }}</a>
+        </div>
+    {%- endif -%}
 
-    {% if diaryKeeper.practiceDay %}
-        <h2 class="govuk-heading-m">{{ "days.practice-day.heading" | trans(translation_parameters) }}</h2>
-        <p class="govuk-body">
-            <a class="govuk-link" href="{{ path('traveldiary_dashboard_day', {'dayNumber': 0}) }}">{{ "days.practice-day.link" | trans(translation_parameters) }}</a>
-        </p>
-    {% endif %}
+    {%- include 'travel_diary/dashboard/includes/diary_keeper_details.html.twig' -%}
+{% endblock %}
 
+{% macro travelWeek(diaryKeeper, translation_parameters) %}
     <h2 class="govuk-heading-m">{{ "days.diary-week" | trans(translation_parameters) }}</h2>
+{#    <p class="govuk-body">{{ 'days.intro' | trans }}</p>#}
     <div class="prose-scope">{{ 'days.diary-week-intro-copy' | trans | markdown_to_html }}</div>
     <dl class="govuk-summary-list">
         {% for day in diaryKeeper.diaryDays %}
+            {% set addJourneyUrl = is_dk_feature_enabled(constant('App\\Utility\\DiaryKeeperFeaturesService::JOURNEY_WIZARD_REFLOW'))
+                ? path('traveldiary_reflow_add_journey_wizard_start', {dayNumber: day.number})
+                : path('traveldiary_journey_wizard_start', {dayNumber: day.number})
+            %}
             {{ m.summaryListRow({
                 key: "descriptions.day" | trans({
                     dayNumber: day.number,
@@ -52,7 +45,7 @@
                 }),
                 actions: [
                     {
-                        href: path('traveldiary_journey_wizard_start', {dayNumber: day.number}),
+                        href: addJourneyUrl,
                         text: "days.add-journey" | trans({}, 'travel-diary'),
                         visuallyHiddenText: "days.add-journey-sr-hidden-suffix" | trans({dayNumber: day.number}, 'travel-diary'),
                     },
@@ -65,10 +58,38 @@
             }) }}
         {% endfor %}
     </dl>
+{% endmacro %}
 
-    {%- if workflow_can(diaryKeeper, constant('App\\Entity\\DiaryKeeper::TRANSITION_COMPLETE')) -%}
-        <div class="govuk-button-group">
-            <a class="govuk-button" href="{{ path('traveldiary_mark_as_complete') }}">{{ 'mark-as-complete.form.mark-as-complete' | trans }}</a>
-        </div>
-    {%- endif -%}
-{% endblock %}
+{% macro otherBits(diaryKeeper, translation_parameters) %}
+    {%- include 'travel_diary/dashboard/includes/diary_keeper_proxies.html.twig' -%}
+    {{ _self.otherDays(translation_parameters) }}
+
+    {{ _self.mileometer(diaryKeeper) }}
+
+    {%- include 'travel_diary/dashboard/includes/diary_keeper_details.html.twig' -%}
+{% endmacro %}
+
+{% macro otherDays(translation_parameters) %}
+    {% set html -%}
+        <ul class="govuk-list">
+            <li><a class="govuk-link" href="{{ path('traveldiary_dashboard_example_day') }}">{{ "days.other-days.example-link" | trans(translation_parameters) }}</a></li>
+            <li><a class="govuk-link" href="{{ path('traveldiary_dashboard_day', {'dayNumber': 0}) }}">{{ "days.other-days.practice-link" | trans(translation_parameters) }}</a></li>
+        </ul>
+    {%- endset %}
+    {{ m.details({
+        summaryText: 'days.other-days.heading' | trans,
+        html: html
+    }) }}
+{% endmacro %}
+
+{% macro mileometer(diaryKeeper) %}
+    {% if is_feature_enabled(constant('\\App\\Features::MILOMETER')) and not diaryKeeper.primaryDriverVehicles.empty %}
+{#        <h2 class="govuk-heading-m" id="vehicles">{{ 'days.primary-driver-vehicles' | trans }}</h2>#}
+        <ul class="govuk-list" id="vehicles">
+            {% for vehicle in diaryKeeper.primaryDriverVehicles %}
+                {# @var vehicle \App\Entity\Vehicle #}
+                <li><a class="govuk-link" href="{{ path('traveldiary_vehicle_index', {vehicle: vehicle.id}) }}">{{ "days.enter-odometer-readings" | trans({vehicle: vehicle.friendlyName}) }}</a></li>
+            {% endfor %}
+        </ul>
+    {% endif %}
+{% endmacro %}

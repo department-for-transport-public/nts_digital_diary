@@ -34,7 +34,7 @@ class DiaryCorrectionWorkflowSubscriber implements EventSubscriberInterface
     public function submitHousehold(SubmitHouseholdEvent $event): void
     {
         $areaPeriod = $event->getHousehold()->getAreaPeriod();
-        if ($areaPeriod->getTrainingInterviewer()) {
+        if ($areaPeriod->isTrainingArea()) {
             $this->attemptTransition($areaPeriod->getLatestTrainingRecord(), InterviewerTrainingRecord::TRANSITION_COMPLETE);
         }
     }
@@ -48,7 +48,7 @@ class DiaryCorrectionWorkflowSubscriber implements EventSubscriberInterface
         /** @var DiaryKeeper $diaryKeeper */
         $diaryKeeper = $event->getSubject();
         $areaPeriod = $diaryKeeper->getHousehold()->getAreaPeriod();
-        if ($areaPeriod->getTrainingInterviewer()) {
+        if ($areaPeriod->isTrainingArea()) {
             $this->attemptTransition($areaPeriod->getLatestTrainingRecord(), InterviewerTrainingRecord::TRANSITION_START);
         }
     }
@@ -62,7 +62,7 @@ class DiaryCorrectionWorkflowSubscriber implements EventSubscriberInterface
         if (
             !in_array('ROLE_DIARY_KEEPER', $event->getToken()->getRoleNames())
             || !$this->security->isGranted('ROLE_INTERVIEWER')
-            || !$areaPeriod?->getTrainingInterviewer()
+            || !$areaPeriod?->isTrainingArea()
         ) {
             return;
         }

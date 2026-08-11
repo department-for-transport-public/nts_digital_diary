@@ -20,6 +20,7 @@ class VehicleType extends AbstractType
 {
     public const INJECT_TRANSLATION_PARAMETERS = [
         'stage_number' => 'number',
+        'method_type' => 'methodForDisplay',
     ];
 
     public function __construct(protected DiaryKeeperRepository $diaryKeeperRepository, protected VehicleRepository $vehicleRepository)
@@ -49,21 +50,18 @@ class VehicleType extends AbstractType
 
             usort($householdVehicles, fn($a, $b): int => $getVehicleName($a) <=> $getVehicleName($b));
 
-            $transPrefix = "stage.vehicle";
-            $otherLabel = "{$transPrefix}.vehicle.other";
-
             if (!empty($householdVehicles)) {
                 $householdVehicles[VehicleDataMapper::OTHER_KEY] = VehicleDataMapper::OTHER_KEY;
 
                 $form
                     ->add('vehicle', ChoiceType::class, [
-                        'label' => "{$transPrefix}.vehicle.label",
+                        'label' => $options['vehicle_label'],
                         'label_is_page_heading' => true,
                         'label_attr' => ['class' => 'govuk-label--l'],
-                        'help' => "{$transPrefix}.vehicle.help",
+                        'help' => "stage.vehicle.vehicle.help",
                         'choices' => $householdVehicles,
                         'choice_label' => fn($x) => $x === VehicleDataMapper::OTHER_KEY
-                            ? $otherLabel
+                            ? "stage.vehicle.vehicle.other"
                             : $getVehicleName($x),
                         'choice_options' => [
                             VehicleDataMapper::OTHER_KEY => [
@@ -78,9 +76,9 @@ class VehicleType extends AbstractType
             }
             $form
                 ->add('vehicleOther', InputType::class, [
-                    'label' => "{$transPrefix}.vehicle-other.label",
+                    'label' => "stage.vehicle.vehicle-other.label",
                     'label_attr' => ['class' => 'govuk-label--s'],
-                    'help' => "{$transPrefix}.vehicle-other.help",
+                    'help' => "stage.vehicle.vehicle-other.help",
                     'constraints' => [
                         new Callback(function(?string $value, ExecutionContextInterface $context): void {
                             if ($value === VehicleDataMapper::OTHER_KEY) {
@@ -98,6 +96,7 @@ class VehicleType extends AbstractType
             'data_class' => Stage::class,
             'translation_domain' => 'travel-diary',
             'validation_groups' => 'wizard.vehicle',
+            'vehicle_label' => 'stage.vehicle.page-title',
         ]);
     }
 }

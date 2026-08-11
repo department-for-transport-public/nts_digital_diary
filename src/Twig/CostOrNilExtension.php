@@ -3,7 +3,6 @@
 namespace App\Twig;
 
 use App\Entity\Embeddable\CostOrNil;
-use Brick\Math\BigDecimal;
 use Symfony\Contracts\Translation\TranslatorInterface;
 use Twig\Extension\AbstractExtension;
 use Twig\TwigFilter;
@@ -26,26 +25,14 @@ class CostOrNilExtension extends AbstractExtension
             return $this->translator->trans($nilTranslationKey, [], 'travel-diary');
         }
 
-        return $this->format_string($costOrNil?->getCost(), $translationKey, $emptyPlaceholder);
-    }
+        $cost = $costOrNil?->getCost();
 
-    private function format_string(?BigDecimal $decimal, string $translationKey, string $emptyPlaceHolder = ' - '): string
-    {
-        if ($decimal === null) {
-            return $emptyPlaceHolder;
-        }
-
-        return $this->format_big_decimal($decimal, $translationKey, $emptyPlaceHolder);
-    }
-
-    private function format_big_decimal(?BigDecimal $decimal, string $translationKey, string $emptyPlaceHolder = ' - '): string
-    {
-        if ($decimal === null || $decimal->isZero()) {
-            return $emptyPlaceHolder;
+        if ($cost === null || $cost->isZero()) {
+            return $emptyPlaceholder;
         }
 
         return $this->translator->trans($translationKey, [
-            'cost' => $decimal->toFloat(),
+            'cost' => $cost->toFloat(),
         ], 'travel-diary');
     }
 }

@@ -20,11 +20,13 @@ class TimesType extends AbstractType
                 'label' => "journey.times.start.label",
                 'label_attr' => ['class' => 'govuk-fieldset__legend--m'],
                 'mode' => $this->userPreferencesHelper->getOriginalUserPreferences()->getTimeFormat(),
+                'limit_input_chars' => true,
             ])
             ->add('endTime', TimeType::class, [
                 'label' => "journey.times.end.label",
                 'label_attr' => ['class' => 'govuk-fieldset__legend--m'],
                 'mode' => $this->userPreferencesHelper->getOriginalUserPreferences()->getTimeFormat(),
+                'limit_input_chars' => true,
             ])
         ;
     }

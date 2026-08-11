@@ -23,13 +23,13 @@ class SourceDayType extends AbstractType
     public function buildForm(FormBuilderInterface $builder, array $options): void
     {
         $choices = $this->diaryDayRepository
-            ->getQueryBuilderForRepeatJourneySourceDay($options['is_practice'] ? 0 : 7)
+            ->getQueryBuilderForRepeatJourneySourceDay()
             ->getQuery()
             ->execute();
-        $choiceAttr = [];
+        $choiceOptions = [];
         foreach ($choices as $key => $choice) {
             if (count($choice->getJourneys()) === 0) {
-                $choiceAttr[$key] = ['disabled' => 'disabled'];
+                $choiceOptions[$key] = ['disabled' => true];
             }
         }
 
@@ -37,7 +37,7 @@ class SourceDayType extends AbstractType
             ->add('sourceDayId', EntityType::class, [
                 'class' => DiaryDay::class,
                 'choices' => $choices,
-                'choice_attr' => $choiceAttr,
+                'choice_options' => $choiceOptions,
                 'model_property' => 'id',
 
                 'choice_label' => fn(): string => 'repeat-journey.select-source-day.choice-label',
@@ -60,8 +60,6 @@ class SourceDayType extends AbstractType
         $resolver->setDefaults([
             'validation_groups' => ["wizard.repeat-journey.source-day"],
             'translation_domain' => 'travel-diary',
-            'is_practice' => false,
         ]);
-        $resolver->setAllowedTypes('is_practice', ['bool']);
     }
 }

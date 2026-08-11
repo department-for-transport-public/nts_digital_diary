@@ -26,6 +26,7 @@ yarn-error.log
 /local/
 /public/.htaccess
 keys.json
+keys.json.*
 
 ###> phpstan/phpstan ###
 phpstan.neon
@@ -39,3 +40,4 @@ phpstan.neon
 screenshots-old
 screenshots/output
 screenshots/node_modules
+.claude/

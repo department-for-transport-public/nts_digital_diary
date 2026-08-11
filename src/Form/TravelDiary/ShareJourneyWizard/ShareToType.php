@@ -30,11 +30,24 @@ class ShareToType extends AbstractType
             ->addEventListener(FormEvents::PRE_SET_DATA, function (PreSetDataEvent $event): void {
                 /** @var Journey $journey */
                 $journey = $event->getData();
+                $diaryKeeper = $journey->getDiaryDay()->getDiaryKeeper();
+                $household = $diaryKeeper->getHousehold();
+
+                $showSharingHelp = false;
+                if (!$household->isJourneySharingEnabled()) {
+                    foreach ($household->getDiaryKeepers() as $hdk) {
+                        if ($hdk !== $diaryKeeper && !$this->canShareWith($hdk)) {
+                            $showSharingHelp = true;
+                            break;
+                        }
+                    }
+                }
+
                 $event->getForm()
                     ->add('shareTo', EntityType::class, [
                         'mapped' => false,
                         'label' => false,
-                        'help' => $journey->getDiaryDay()->getDiaryKeeper()->getHousehold()->isJourneySharingEnabled() ? null : 'share-journey.who-with.sharing-help',
+                        'help' => $showSharingHelp ? 'share-journey.who-with.sharing-help' : null,
                         'multiple' => true,
                         'class' => DiaryKeeper::class,
                         'query_builder' => fn(DiaryKeeperRepository $r): \Doctrine\ORM\QueryBuilder => $r->getQueryBuilderForShareJourneyWhoWith(),

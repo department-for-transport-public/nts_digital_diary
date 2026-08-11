@@ -48,8 +48,7 @@ class DiaryKeeperNormalizer implements NormalizerInterface, NormalizerAwareInter
             'isAdult' => $object->getIsAdult(),
             'mediaType' => $object->getMediaType(),
             'state' => $object->getDiaryState(),
-            // is the flag is null (older DK), fallback to simple check on number of journeys
-            'hasUsedPracticeDay' => $object->getHasUsedPracticeDay() ?? $object->getPracticeDay()->getJourneys()?->count() !== 2,
+            'hasUsedPracticeDay' => $object->getHasUsedPracticeDay(),
             'approvalChecklistVerifiedBy' => $object->getApprovalChecklistVerifiedBy(),
             'approvalChecklistVerifiedAt' => $this->normalizer->normalize($object->getApprovalChecklistVerifiedAt(), $format, $context),
             'days' => $this->normalizer->normalize($object->getDiaryDays()->getValues(), $format, $dayContext),

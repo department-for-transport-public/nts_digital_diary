@@ -4,7 +4,7 @@ namespace App\EventSubscriber\Test;
 
 use Doctrine\Bundle\DoctrineBundle\Attribute\AsDoctrineListener;
 use Doctrine\DBAL\Exception as DbalException;
-use Doctrine\DBAL\Platforms\SqlitePlatform;
+use Doctrine\DBAL\Platforms\SQLitePlatform;
 use Doctrine\ORM\Event\PreFlushEventArgs;
 use Doctrine\ORM\Events;
 
@@ -26,7 +26,7 @@ class PreFlushEventSubscriber
         if (!$this->isTestEnvironment) return;
         $entityManager = $eventArgs->getObjectManager();
 
-        if ($entityManager->getConnection()->getDatabasePlatform() instanceof  SqlitePlatform) {
+        if ($entityManager->getConnection()->getDatabasePlatform() instanceof SQLitePlatform) {
             return;
         }
 

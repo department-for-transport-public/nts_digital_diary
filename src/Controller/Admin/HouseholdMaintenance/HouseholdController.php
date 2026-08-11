@@ -7,6 +7,8 @@ use App\Doctrine\ORM\Filter\TrainingAreaPeriodFilter;
 use App\Entity\Household;
 use App\Form\Admin\HouseholdMaintenance\HouseholdDetailsType;
 use App\ListPage\Admin\HouseholdListPage;
+use App\ListPage\Admin\MetricsLogListPage;
+use App\Security\Voter\Admin\ViewHouseholdMetricsVoter;
 use Doctrine\ORM\EntityManagerInterface;
 use Symfony\Component\HttpFoundation\RedirectResponse;
 use Symfony\Component\HttpFoundation\Request;
@@ -43,6 +45,24 @@ class HouseholdController extends AbstractController
     {
         return $this->render("admin/household-maintenance/household-details.html.twig", [
             'household' => $household,
+        ]);
+    }
+
+    #[Route("/{id}/metrics", name: "metrics")]
+    #[IsGranted(ViewHouseholdMetricsVoter::ADMIN_VIEW_HOUSEHOLD_METRICS)]
+    public function householdMetrics(Household $household, MetricsLogListPage $listPage, Request $request): Response
+    {
+        $listPage->setHousehold($household);
+        $listPage->handleRequest($request);
+
+        if ($listPage->isClearClicked()) {
+            return new RedirectResponse($listPage->getClearUrl());
+        }
+
+        return $this->render("admin/household-maintenance/metrics.html.twig", [
+            'household' => $household,
+            'data' => $listPage->getData(),
+            'form' => $listPage->getFiltersForm(),
         ]);
     }
 

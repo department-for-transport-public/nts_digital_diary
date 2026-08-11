@@ -3,6 +3,7 @@
 namespace Symfony\Component\DependencyInjection\Loader\Configurator;
 
 use App\Entity\Feedback\Message as State;
+use App\Entity\Feedback\CategoryEnum;
 
 return static function (ContainerConfigurator $container): void {
     $container->extension('framework', [
@@ -41,8 +42,9 @@ return static function (ContainerConfigurator $container): void {
                         'to' => State::STATE_REJECTED,
                     ],
                     State::TRANSITION_CLOSE => [
-                        'from' => State::STATE_IN_PROGRESS,
+                        'from' => [State::STATE_ASSIGNED, State::STATE_IN_PROGRESS],
                         'to' => State::STATE_CLOSED,
+                        'guard' => 'subject.getState() === "' . State::STATE_IN_PROGRESS . '" or subject.getCategory().value == "' . CategoryEnum::Feedback->value . '"',
                     ],
                     State::TRANSITION_REOPEN => [
                         'from' => State::STATE_CLOSED,

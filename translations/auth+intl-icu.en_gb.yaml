@@ -22,7 +22,6 @@ change-email:
 change-password:
   page-title: Reset password
 
-  change-password: Reset password
   access-denied: Access denied
 
   logged-in-as-another-user: >-
@@ -51,15 +50,6 @@ setup:
   page-title-diary: Set password for Travel Diary account
   page-title-interviewer: Set password for Interviewer account
 
-  create-account: Create account
-  password:
-    password-1:
-      label: Choose a password
-      help: Your password must be at least 8 characters long, and must contain an uppercase letter, a lowercase letter and a number.
-    password-2:
-      label: Repeat the password
-      help: ''
-
   success-banner:
     heading: "Setup complete"
     content: "Your password was successfully set."
@@ -68,10 +58,25 @@ setup-link-expired:
   page-title: Account setup link expired
   intro: |-
     The link you followed has expired.
-    
+
     {emailSent, select,
       1     {A new link has been sent to your email address ({obfuscatedEmailAddress})}
-      other {A new link was sent to your email address ({obfuscatedEmailAddress}) within the last day}
+      other {A new link was sent to your email address ({obfuscatedEmailAddress}) recently}
     }.
-    
-    Use the new link in order to complete the account setup process.
+  instruction: |-
+    Use the new link in order to complete the account setup process and access your travel diary.
+  password-already-set-intro: |-
+    The link you followed has expired.
+  password-already-set-instruction: |-
+    You already have an account. You can [log in](/login) to access your travel diary.
+
+
+pre-auth:
+  page-title: Travel diary access
+  help: >-
+    Click the button below to access the digital diary.
+
+pre-password-reset:
+  page-title: Travel diary password reset
+  help: >-
+    Click the button below to reset your password.

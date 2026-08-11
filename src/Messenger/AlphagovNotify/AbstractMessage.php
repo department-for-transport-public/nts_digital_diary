@@ -35,7 +35,18 @@ abstract class AbstractMessage extends AbstractAsyncMessage
         }
     }
 
+    abstract public function getRecipient(): ?string;
     abstract public function getSendMethodParameters(): array;
+
+    public function getRecipientHash(): ?string
+    {
+        return $this->getRecipient() ? hash('sha256', $this->getRecipient()) : null;
+    }
+
+    public function buildReference(): string
+    {
+        return "{$this->originatingEntityClass}::{$this->originatingEntityId}::{$this->getRecipientHash()}";
+    }
 
     public function getTemplateId(): ?string
     {

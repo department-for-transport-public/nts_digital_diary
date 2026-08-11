@@ -3,6 +3,8 @@
 namespace App\EventSubscriber;
 
 use App\Features;
+use App\Utility\Metrics\Events\FormValidationErrorEvent;
+use App\Utility\Metrics\MetricsHelper;
 use Psr\Log\LoggerInterface;
 use Symfony\Bundle\SecurityBundle\Security;
 use Symfony\Component\EventDispatcher\EventSubscriberInterface;
@@ -16,7 +18,8 @@ class FormValidationLoggerSubscriber implements EventSubscriberInterface
     public function __construct(
         protected readonly Security        $security,
         protected readonly RequestStack    $requestStack,
-        protected readonly LoggerInterface $logger
+        protected readonly LoggerInterface $logger,
+        protected readonly MetricsHelper   $metrics,
     ) {}
 
     public static function getSubscribedEvents(): array
@@ -39,7 +42,7 @@ class FormValidationLoggerSubscriber implements EventSubscriberInterface
         }
     }
 
-    protected function logErrors(FormInterface $form)
+    protected function logErrors(FormInterface $form): void
     {
         if ($form->getErrors(true)->count() > 0) {
             $logData = [
@@ -58,7 +61,12 @@ class FormValidationLoggerSubscriber implements EventSubscriberInterface
                 ];
             }
 
-            $this->logger->debug(json_encode($logData));
+            $this->logger->info(json_encode($logData));
+
+            if ($diaryKeeper = $this->security->getUser()?->getDiaryKeeper())
+            {
+                $this->metrics->log(new FormValidationErrorEvent($diaryKeeper, $logData['form'], $logData['path'], $logData['errors']));
+            }
         }
     }
 }

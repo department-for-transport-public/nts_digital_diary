@@ -4,6 +4,7 @@ namespace App\Tests\Functional\Interviewer;
 
 use App\Tests\DataFixtures\UserFixtures;
 use App\Tests\Functional\AbstractFunctionalTestCase;
+use Facebook\WebDriver\WebDriverBy;
 
 class DashboardTest extends AbstractFunctionalTestCase
 {
@@ -51,6 +52,8 @@ class DashboardTest extends AbstractFunctionalTestCase
                 "Expected start date on row #{$idx} to be {$expectedStartDate[$idx]}"
             );
         }
+
+        $this->assertNotificationBanner('Overdue households');
     }
 
     public function testHouseholdWithDiaryKeepers(): void
@@ -69,6 +72,8 @@ class DashboardTest extends AbstractFunctionalTestCase
 
         $this->assertEquals('Test Diary Keeper (Adult)', $tableData[0][1]);
         $this->assertEquals('Test Diary Keeper (Child)', $tableData[1][1]);
+
+        $this->assertNotificationBanner('Overdue household');
     }
 
     public function testDashboardBreadcrumbs(): void
@@ -79,6 +84,14 @@ class DashboardTest extends AbstractFunctionalTestCase
     public function testDashboardBackLinks(): void
     {
         $this->doBackLinksTestStartingAt('/interviewer/areas-archived', 3);
+    }
+
+    protected function assertNotificationBanner(string $expectedTitleText): void
+    {
+        $titleElement = $this->client->findElement(
+            WebDriverBy::cssSelector('.govuk-notification-banner--warning .govuk-notification-banner__title')
+        );
+        $this->assertEquals($expectedTitleText, $titleElement->getText());
     }
 
     protected function expectHouseholdDiaryWeekStartDate(string $expectedStartDate): void

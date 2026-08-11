@@ -69,8 +69,8 @@ class EmailChangeVoterTest extends WebTestCase
 
             "User Int / subject DK, no proxy, {$loginStr}, no password" => [$interviewerUser, $nonProxiedDiaryKeeperUserWithoutPw, true],
             "User Int / subject DK, proxy, {$loginStr}, no password" => [$interviewerUser, $proxiedDiaryKeeperUserWithoutPw, true],
-            "User Int / subject DK, no proxy, {$loginStr}, password" => [$interviewerUser, $nonProxiedDiaryKeeperWithPasswordUser, false],
-            "User Int / subject DK, proxy, {$loginStr}, password" => [$interviewerUser, $proxiedDiaryKeeperWithPasswordUser, false],
+            "User Int / subject DK, no proxy, {$loginStr}, password" => [$interviewerUser, $nonProxiedDiaryKeeperWithPasswordUser, true],
+            "User Int / subject DK, proxy, {$loginStr}, password" => [$interviewerUser, $proxiedDiaryKeeperWithPasswordUser, true],
         ];
     }
 

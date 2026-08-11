@@ -4,6 +4,7 @@ namespace App\Controller\TravelDiary;
 
 use App\Attribute\Redirect;
 use App\Security\Voter\EditDiaryVoter;
+use App\Utility\TravelDiary\ExampleJourneyFixtures;
 use Symfony\Bridge\Twig\Attribute\Template;
 use Symfony\Component\HttpFoundation\Response;
 use Symfony\Component\Routing\Attribute\Route;
@@ -31,6 +32,19 @@ class DashboardController extends AbstractController
     {
         $diaryKeeper = $this->getDiaryKeeper($user, true);
         $day = $diaryKeeper->getDiaryDayByNumber($dayNumber);
+
+        return [
+            'diaryKeeper' => $diaryKeeper,
+            'day' => $day,
+        ];
+    }
+
+    #[Route(path: '/day-examples', name: '_example_day')]
+    #[Template('travel_diary/dashboard/day.html.twig')]
+    public function exampleDay(UserInterface $user, ExampleJourneyFixtures $journeyFixtures): array
+    {
+        $diaryKeeper = $this->getDiaryKeeper($user, true);
+        $day = $journeyFixtures->getExampleDay($diaryKeeper);
 
         return [
             'diaryKeeper' => $diaryKeeper,

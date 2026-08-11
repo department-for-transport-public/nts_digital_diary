@@ -21,6 +21,8 @@ use Symfony\Contracts\Translation\TranslatorInterface;
 
 class FeedbackViewListPage extends AbstractListPage
 {
+    protected bool $isArchive = false;
+
     public function __construct(
         protected AdminRoleResolver   $adminRoleResolver,
         protected MessageRepository   $repository,
@@ -58,11 +60,7 @@ class FeedbackViewListPage extends AbstractListPage
     {
         $isFeedbackAssigner = $this->security->isGranted('ADMIN_FEEDBACK_ASSIGN');
 
-        $queryBuilder = $this->repository->createQueryBuilder('message');
-        $queryBuilder
-            ->select('message')
-            ->andWhere('message.state != :state_new')
-            ->setParameter('state_new', Message::STATE_NEW);
+        $queryBuilder = $this->repository->getQueryBuilderForAdminViewListPage($this->isArchive);
 
         if (!$isFeedbackAssigner) {
             $user = $this->security->getUser();
@@ -90,5 +88,11 @@ class FeedbackViewListPage extends AbstractListPage
         return [
             Simple::generateId('Received') => 'DESC',
         ];
+    }
+
+    public function setIsArchive(bool $isArchive): static
+    {
+        $this->isArchive = $isArchive;
+        return $this;
     }
 }

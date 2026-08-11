@@ -8,9 +8,11 @@ use App\Entity\Journey\Journey;
 use App\Entity\Journey\Stage;
 use Ghost\GovUkCoreBundle\FormWizard\AbstractFormWizardState;
 use Ghost\GovUkCoreBundle\FormWizard\Place;
+use Symfony\Component\Validator\Constraints as Assert;
 
 abstract class AbstractDuplicateJourneyState extends AbstractFormWizardState
 {
+    #[Assert\Valid]
     protected ?Journey $subject = null;
 
     public function getSubject(): ?Journey

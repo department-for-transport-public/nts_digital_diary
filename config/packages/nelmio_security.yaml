@@ -23,11 +23,14 @@ nelmio_security:
                 - 'self'
             manifest-src:
                 - 'self'
+            frame-src:
+                - 'self'
             base-uri:
                 - 'none'
             frame-ancestors:
                 - 'none'
-            block-all-mixed-content: true # defaults to false, blocks HTTP content over HTTPS transport
+            # block-all-mixed-content is obsolete, due to mixed content display upgrading
+            # block-all-mixed-content: true # defaults to false, blocks HTTP content over HTTPS transport
             # upgrade-insecure-requests: true # defaults to false, upgrades HTTP requests to HTTPS transport
 
     # disables content type sniffing for script resources

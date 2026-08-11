@@ -21,4 +21,4 @@ templates/on_boarding/base.html.twig
         </p>
     {% endif %}
 {%- endset -%}
-{{ notificationBanner({title: 'notification.interviewer-training', content: content}, {html_content: true, class: 'govuk-notification-banner--interviewer-training'}) }}
+{{ notificationBanner({titleText: 'notification.interviewer-training' | trans, html: content, classes: 'govuk-notification-banner--interviewer-training'}) }}

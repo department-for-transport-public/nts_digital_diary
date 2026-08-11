@@ -125,12 +125,21 @@ class InterviewerTrainingHelper
             ->addActingAsProxyFor($dk3);
         $household = $this->createHousehold($this->getNextAddressNumber($area), 1, new DateTime(), [$dk, $dk2, $dk3]);
 
+        $method = $this->entityManager->getRepository(Method::class)->findOneBy(['descriptionTranslationKey' => 'car']);
+        $household->addVehicle($vehicle1 = (new Vehicle())
+            ->setPrimaryDriver($dk)
+            ->setCapiNumber(1)
+            ->setFriendlyName('Green Vauxhall')
+            ->setMethod($method)
+        );
+
         $area->addHousehold($household);
         $trainingRecord->setHousehold($household);
 
         $this->entityManager->persist($dk);
         $this->entityManager->persist($dk2);
         $this->entityManager->persist($dk3);
+        $this->entityManager->persist($vehicle1);
         $this->entityManager->persist($household);
     }
 

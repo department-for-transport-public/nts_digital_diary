@@ -38,12 +38,18 @@ class TimeType extends AbstractType
             $amOrPmOptions['attr'] = ['class' => 'govuk-time-input__select govuk-input--width-2'];
         }
 
+        $attr = ['class' => 'govuk-time-input__input govuk-input--width-2'];
+        if ($options['limit_input_chars']) {
+            $attr['maxlength'] = 2;
+        }
         $builder
             ->add('hour', TimeInputType::class, array_merge($subFieldOptions, [
                 'label' => 'time.hour.label',
+                'attr' => $attr,
             ]))
             ->add('minute', TimeInputType::class, array_merge($subFieldOptions, [
                 'label' => 'time.minute.label',
+                'attr' => $attr,
             ]))
             ->addModelTransformer(new TimeStringTransformer($options['mode']))
         ;
@@ -73,7 +79,9 @@ class TimeType extends AbstractType
             'error_bubbling' => false,
             'meridiem_choice_expanded' => true,
             'attr' => ['class' => 'govuk-time-input govuk-time-input--{mode}'],
+            'limit_input_chars' => false,
         ]);
+        $resolver->setAllowedTypes('limit_input_chars', ['bool']);
         foreach(['help', 'attr'] as $opt) {
             $resolver->setNormalizer($opt, $this->normalizeOptionWithMode(...));
         }

@@ -5,7 +5,9 @@
 {%- block beforeMainWrapper -%}
     {{- parent() -}}
 
-    {% set breadcrumb_translation_parameters = breadcrumb_translation_parameters ?? {} %}
+    {% set breadcrumb_translation_parameters = (breadcrumb_translation_parameters ?? {}) | merge({
+        diary_keeper_name: diaryKeeper.name,
+    }) %}
 
     {%- from '@GhostGovUkFrontend/components/macros.html.twig' import breadcrumbs -%}
     {%- set breadcrumbItems = [
@@ -15,16 +17,21 @@
         }
     ] -%}
     {# @var day \App\Entity\DiaryDay #}
-    {%- if day is defined %}{% set breadcrumbItems = breadcrumbItems | merge([
-        {
-            href: path('traveldiary_dashboard_day', {dayNumber: day.number}),
-            text: 'breadcrumbs.day' | trans({dayNumber: day.number, date: day.date | date(date_time_format.date('with-dow'))} | merge(breadcrumb_translation_parameters)),
-        }
-    ]) %}{% endif -%}
+    {%- if day is defined %}{% set breadcrumbItems = breadcrumbItems | merge(
+        day.isExampleDay
+            ? [{
+                href: path('traveldiary_dashboard_example_day'),
+                text: 'breadcrumbs.example-day' | trans(breadcrumb_translation_parameters),
+            }]
+            : [{
+                href: path('traveldiary_dashboard_day', {dayNumber: day.number}),
+                text: 'breadcrumbs.day' | trans({dayNumber: day.number, date: day.date | date(date_time_format.date('with-dow'))} | merge(breadcrumb_translation_parameters)),
+            }]
+    ) %}{% endif -%}
     {%- if journey is defined %}
         {% set breadcrumbItems = breadcrumbItems | merge([
             {
-                href: path('traveldiary_journey_view', {journeyId: journey.id}),
+                href: path(journey.diaryDay.isExampleDay ? 'traveldiary_journey_view_example' : 'traveldiary_journey_view', {journeyId: journey.id}),
                 text: 'breadcrumbs.start-to-end' | trans({
                     startLocation: journey.startLocationForDisplay,
                     endLocation: journey.endLocationForDisplay,

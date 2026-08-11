@@ -1,4 +1,4 @@
-const {goto, submit, clickLinkWithText, getScreenshotter, clickLinkWithTextThatStartsWith, executeCommand} = require("./common")
+const {goto, submit, clickLinkWithText, getScreenshotter, clickLinkWithTextThatStartsWith, executeCommand, VIEWPORTS} = require("./common")
 const {fixtures} = require("./fixtures")
 
 module.exports.loginAndCompleteHouseholdFlow = async function(page, baseUrl, outputDir) {
@@ -31,12 +31,12 @@ module.exports.loginAndCompleteHouseholdFlow = async function(page, baseUrl, out
     await clickLinkWithText(page, 'Exit')
 
     await clickLinkWithText(page, 'View / amend diaries')
-    await page.setViewport({width: 1920, height: 200})
+    await page.setViewport(VIEWPORTS.wide)
     await screenshot('6a-compare-household-one.png')
 
     await clickLinkWithText(page, fixtures.DK_2_NAME, 0, false)
     await screenshot('6b-compare-household-two.png')
-    await page.setViewport({width: 1003, height: 200})
+    await page.setViewport(VIEWPORTS.desktop)
 
     await page.goBack()
     await page.goBack()
@@ -86,8 +86,8 @@ async function approveSubsequentDiaryKeeper(page, diaryKeeperIndex, approvalData
 
     // Can only approve when diary is complete
     await clickLinkWithText(page, 'Impersonate')
-    await clickLinkWithText(page, 'Mark travel diary as complete')
-    await submit(page, {}, 'Mark travel diary as complete')
+    await clickLinkWithText(page, 'Mark my travel diary as complete')
+    await submit(page, {}, 'Mark my travel diary as complete')
     await clickLinkWithText(page, 'Exit')
     
     await clickLinkWithTextThatStartsWith(page, 'Mark diary as approved')

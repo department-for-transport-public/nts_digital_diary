@@ -32,10 +32,15 @@ class SignatureGranularityTest extends AbstractApiWebTestCase
         $areaPeriod1 = $this->fixtureReferenceRepository->getReference('area-period:1', AreaPeriod::class);
         $areaPeriod2 = $this->fixtureReferenceRepository->getReference('area-period:2', AreaPeriod::class);
 
+        // Auth V1 will fail if the nonce doesn't exist or is the same
         $this->pauseUntilSecondBoundary();
+        $this->makeSignedRequestAndGetResponse("/api/v1/area_periods/{$areaPeriod1->getApiId()}", [], ['expectedResponseCode' => 401], addNonce: false, authVersion: 1);
+        $this->makeSignedRequestAndGetResponse("/api/v1/area_periods/{$areaPeriod2->getApiId()}", [], ['expectedResponseCode' => 401], addNonce: false, authVersion: 1);
 
-        $this->makeSignedRequestAndGetResponse("/api/v1/area_periods/{$areaPeriod1->getApiId()}", [], ['expectedResponseCode' => 200], addNonce: false);
-        $this->makeSignedRequestAndGetResponse("/api/v1/area_periods/{$areaPeriod2->getApiId()}", [], ['expectedResponseCode' => 401], addNonce: false);
+        // Auth V2 will fail with the same request in succession
+        $this->pauseUntilSecondBoundary();
+        $this->makeSignedRequestAndGetResponse("/api/v1/area_periods/{$areaPeriod1->getApiId()}", [], ['expectedResponseCode' => 200], authVersion: 2);
+        $this->makeSignedRequestAndGetResponse("/api/v1/area_periods/{$areaPeriod1->getApiId()}", [], ['expectedResponseCode' => 401], authVersion: 2);
     }
 
     public function testGetSuccess(): void
@@ -43,10 +48,15 @@ class SignatureGranularityTest extends AbstractApiWebTestCase
         $areaPeriod1 = $this->fixtureReferenceRepository->getReference('area-period:1', AreaPeriod::class);
         $areaPeriod2 = $this->fixtureReferenceRepository->getReference('area-period:2', AreaPeriod::class);
 
+        // Auth V1 requires a nonce to differentiate subsequent requests, as the path isn't part of the signature
         $this->pauseUntilSecondBoundary();
+        $this->makeSignedRequestAndGetResponse("/api/v1/area_periods/{$areaPeriod1->getApiId()}", ['_nonce' => 1], ['expectedResponseCode' => 401], authVersion: 1);
+        $this->makeSignedRequestAndGetResponse("/api/v1/area_periods/{$areaPeriod2->getApiId()}", ['_nonce' => 2], ['expectedResponseCode' => 401], authVersion: 1);
 
-        $this->makeSignedRequestAndGetResponse("/api/v1/area_periods/{$areaPeriod1->getApiId()}", ['_nonce' => 1], ['expectedResponseCode' => 200]);
-        $this->makeSignedRequestAndGetResponse("/api/v1/area_periods/{$areaPeriod2->getApiId()}", ['_nonce' => 2], ['expectedResponseCode' => 200]);
+        // Auth V2 doesn't need a nonce as the path is part of the signature
+        $this->pauseUntilSecondBoundary();
+        $this->makeSignedRequestAndGetResponse("/api/v1/area_periods/{$areaPeriod1->getApiId()}", ['expectedResponseCode' => 200], authVersion: 2);
+        $this->makeSignedRequestAndGetResponse("/api/v1/area_periods/{$areaPeriod2->getApiId()}", ['expectedResponseCode' => 200], authVersion: 2);
     }
 
     /**

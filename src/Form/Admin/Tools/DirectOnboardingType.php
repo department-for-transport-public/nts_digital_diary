@@ -22,17 +22,12 @@ class DirectOnboardingType extends AbstractType
                 'class' => AreaPeriod::class,
                 'choice_label' => 'area',
                 'expanded' => false,
-                'placeholder' => 'Select area...',
+                'placeholder' => 'tools.index.direct-onboarding.select-area',
                 'query_builder' => fn(AreaPeriodRepository $er): QueryBuilder => $er->createQueryBuilder('ap')
-                    ->select('ap, ou, h')
-                    ->join('ap.otpUsers', 'ou')
-                    ->leftJoin('ou.household', 'h')
                     ->where('ap.trainingInterviewer is NULL')
-//                        ->andWhere(new Expr\Orx([
-//                            'h is NULL',
-//                            'h.isOnboardingComplete <> 1'
-//                        ]))
+                    ->andWhere('EXISTS (SELECT 1 FROM App\Entity\OtpUser ou WHERE ou.areaPeriod = ap)')
                     ->orderBy('ap.area', 'ASC'),
+                'choice_translation_domain' => false,
                 'constraints' => [new NotBlank()],
             ])
 /*            ->add('dkCount', ChoiceType::class, [
@@ -49,12 +44,15 @@ class DirectOnboardingType extends AbstractType
                 'expanded' => false,
                 'constraints' => [new NotBlank()],
             ])*/
-            ->add('submit', ButtonType::class);
+            ->add('submit', ButtonType::class, [
+                'label' => 'tools.index.direct-onboarding.submit',
+            ]);
     }
 
     public function configureOptions(OptionsResolver $resolver): void
     {
         $resolver->setDefaults([
+            'translation_domain' => 'admin',
             'attr' => [
                 'class' => 'govuk-fieldset--inline govuk-fieldset--inline-narrow',
             ],

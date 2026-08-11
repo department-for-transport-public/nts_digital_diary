@@ -74,7 +74,7 @@ class HouseholdType extends AbstractType
             if (Features::isEnabled(Features::CHECK_LETTER)) {
                 // ensure letter is not null / is only 1 char
                 $groups[] = 'wizard.on-boarding.check-letter-field';
-                if (!$formData->getAreaPeriod()->getTrainingInterviewer()) {
+                if (!$formData->isTraining()) {
                     // only validate the letter provided if we're not training
                     $groups[] = 'wizard.on-boarding.check-letter';
                 }

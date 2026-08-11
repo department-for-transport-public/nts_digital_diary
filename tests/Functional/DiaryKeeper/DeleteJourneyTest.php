@@ -40,7 +40,7 @@ class DeleteJourneyTest extends AbstractWebTestCase
 
         // First "View" link from the "My diary week" summary table
         $link = $this->client->getCrawler()
-            ->filterXPath('//h2[contains(text(),"My diary week")]/following-sibling::dl//a[contains(text(),"View")]')
+            ->filterXPath('//h2[contains(text(),"Test Diary Keeper (Adult)\'s diary week")]/following-sibling::dl//a[contains(text(),"View")]')
             ->eq(0)
             ->link();
 

@@ -35,6 +35,7 @@ services:
             $recaptchaSiteKey: '%env(default::APP_RECAPTCHA_SITE_KEY)%'
             $secret: '%env(APP_SECRET)%'
             $webRootDir: "%kernel.project_dir%/public"
+            $tempBucketName: "%env(string:APP_TEMP_BUCKET_NAME)%"
 
     # makes classes in src/ available to be used as services
     # this creates a service per class whose id is the fully-qualified class name

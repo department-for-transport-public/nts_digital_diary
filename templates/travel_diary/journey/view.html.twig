@@ -2,21 +2,33 @@
 {% trans_default_domain 'travel-diary' %}
 
 {% set title_translation_key = "journey.view.page-title" %}
+{% if day.isExampleDay %}{% set title_translation_key = "journey.view-example.page-title" %}{% endif %}
 {% set title_translation_parameters = {
     startLocation: journey.startLocationForDisplay,
     endLocation: journey.endLocationForDisplay,
     day: journey.diaryDay.number,
     time: journey.startTime | date(date_time_format.time('user-pref')),
 } %}
-{% set heading_class = "govuk-heading-xl" %}
-
-{% set breadcrumb_translation_parameters = {
-    diary_keeper_name: diaryKeeper | diary_keeper_display_name,
-} %}
-
 {% if sharedFromName is not null or sharedToNames is not null %}
     {% set mainClasses = 'header-with-following-tag' %}
 {% endif %}
+
+{% block pageHeading %}
+    <h1 class="govuk-heading-xl govuk-!-margin-bottom-5">
+        {{- 'journey.view.heading.route' | trans({
+            startLocation: journey.startLocationForDisplay,
+            endLocation: journey.endLocationForDisplay,
+        }, 'travel-diary') -}}
+        {%- if not day.isExampleDay -%}
+            <br><span class="govuk-!-font-size-36">
+                {{- 'journey.view.heading.day-time' | trans({
+                    day: journey.diaryDay.number,
+                    time: journey.startTime | date(date_time_format.time('user-pref')),
+                }, 'travel-diary') -}}
+            </span>
+        {%- endif -%}
+    </h1>
+{% endblock %}
 
 {% block content %}
     {%- from "travel_diary/journey/macros.html.twig" import showJourney, showStages -%}
@@ -36,9 +48,9 @@
         }) }}
     {% endif %}
 
-    {{ showJourney(journey) }}
+    {{ showJourney(journey, {disable_link: day.isExampleDay}) }}
 
-    <h2 class="govuk-heading-l">Stages</h2>
+    <h2 class="govuk-heading-l govuk-!-margin-top-7 govuk-!-margin-bottom-2">Stages</h2>
     {% if journey.stages | length == 0 %}
         {{ m.warningText({text: "journey.view.no-stages-warning" | trans}) }}
     {% else %}
@@ -53,59 +65,62 @@
 {% macro journeyButtons(journey, day) %}
     {%- set translation_prefix = "journey.view" -%}
 
-    <h2 class="govuk-heading-m">{{ 'journey.view.next-steps.title' | trans }}</h2>
-    <p class="govuk-body">{{ 'journey.view.next-steps.intro' | trans }}</p>
-    <ul class="govuk-list">
-        {%- if is_granted('CAN_SHARE_JOURNEYS') -%}
-        <li>
-            <a class="govuk-link" href="{{ path('traveldiary_share_journey_wizard_start', {journeyId: journey.id}) }}">
-                {{- "journey.view.share-journey" | trans -}}
-            </a>
-        </li>
-        {%- endif %}
-        {%- set day_parameters = { dayNumber: day.number } -%}
-        <li>
-            <a class="govuk-link" href="{{ path('traveldiary_return_journey_wizard_start', {journeyId: journey.id}) }}">
-                {{- "journey.view.return-journey" | trans({startLocation: journey.startLocationForDisplay, endLocation: journey.endLocationForDisplay}) -}}
-            </a>
-        </li>
-        <li>
-            <a class="govuk-link" href="{{ path('traveldiary_journey_delete', {journeyId: journey.id}) }}">
-                {{- "journey.view.delete-journey" | trans -}}
-            </a>
-        </li>
-        {%- if is_impersonator_granted('CAN_SPLIT_JOURNEY', journey) %}
+    {% if day.isExampleDay %}
+        <ul class="govuk-list govuk-!-margin-bottom-8">
+            <li><a class="govuk-link" href="{{ path('traveldiary_dashboard_example_day') }}">{{ "journey.view.back-to-example" | trans }}</a></li>
+        </ul>
+    {% else %}
+        <h2 class="govuk-heading-m">{{ 'journey.view.next-steps.title' | trans }}</h2>
+        <p class="govuk-body">{{ 'journey.view.next-steps.intro' | trans }}</p>
+        <ul class="govuk-list">
+            {%- if is_granted('CAN_SHARE_JOURNEYS') -%}
             <li>
-                <a class="govuk-link" href="{{ path('traveldiary_split_journey_wizard_start', {journeyId: journey.id}) }}">
-                    {{- "journey.view.split-journey" | trans -}}
+                <a class="govuk-link" href="{{ path('traveldiary_share_journey_wizard_start', {journeyId: journey.id}) }}">
+                    {{- "journey.view.share-journey" | trans -}}
                 </a>
             </li>
-        {%- endif -%}
-    </ul>
+            {%- endif %}
+            {%- set day_parameters = { dayNumber: day.number } -%}
+            <li>
+                {% set returnJourneyUrl = is_dk_feature_enabled(constant('App\\Utility\\DiaryKeeperFeaturesService::JOURNEY_WIZARD_REFLOW'))
+                    ? path('traveldiary_reflow_return_journey_wizard_start', {journeyId: journey.id})
+                    : path('traveldiary_return_journey_wizard_start', {journeyId: journey.id})
+                %}
+                <a class="govuk-link" href="{{ returnJourneyUrl }}">
+                    {{- "journey.view.return-journey" | trans({startLocation: journey.startLocationForDisplay, endLocation: journey.endLocationForDisplay}) -}}
+                </a>
+            </li>
+            <li>
+                <a class="govuk-link" href="{{ path('traveldiary_journey_delete', {journeyId: journey.id}) }}">
+                    {{- "journey.view.delete-journey" | trans -}}
+                </a>
+            </li>
+            {%- if is_impersonator_granted('CAN_SPLIT_JOURNEY', journey) %}
+                <li>
+                    <a class="govuk-link" href="{{ path('traveldiary_split_journey_wizard_start', {journeyId: journey.id}) }}">
+                        {{- "journey.view.split-journey" | trans -}}
+                    </a>
+                </li>
+            {%- endif -%}
+        </ul>
 
 
-    <hr class="govuk-section-break govuk-section-break--m govuk-section-break--visible">
-    <h2 class="govuk-heading-m">{{ 'journey.view.finally.title' | trans }}</h2>
-    <p class="govuk-body">{{ 'journey.view.finally.intro' | trans }}</p>
-
-    <ul class="govuk-list govuk-!-margin-bottom-8">
-        <li><a class="govuk-link" href="{{ path('traveldiary_dashboard_day', day_parameters) }}">{{ "journey.view.back" | trans(day_parameters) }}</a></li>
-    </ul>
+        <hr class="govuk-section-break govuk-section-break--m govuk-section-break--visible">
+        <h2 class="govuk-heading-m">{{ 'journey.view.finally.title' | trans }}</h2>
+        <div class="prose-scope">{{ 'journey.view.finally.intro' | trans ({day: day.number, url: path('traveldiary_dashboard_day', day_parameters)}) | markdown_to_html }}</div>
+    {% endif %}
 {% endmacro %}
 
 {% macro stagesButtons(journey, day) %}
-    {%- set translation_prefix = "journey.view" -%}
-
-    {% if journey.stages | length == 0 %}
-        <div class="govuk-button-group">
-            <a class="govuk-button" href="{{ path('traveldiary_stage_wizard_start', {journeyId: journey.id}) }}">
-                {{- "journey.view.add-stage" | trans -}}
-            </a>
-        </div>
-    {% else %}
+    {% if not day.isExampleDay %}
+        {%- set translation_prefix = "journey.view" -%}
+        {% set addStageUrl = is_dk_feature_enabled(constant('App\\Utility\\DiaryKeeperFeaturesService::JOURNEY_WIZARD_REFLOW'))
+            ? path('traveldiary_reflow_add_stage_wizard_start', {journeyId: journey.id})
+            : path('traveldiary_stage_wizard_start', {journeyId: journey.id})
+        %}
         <ul class="govuk-list">
             <li>
-                <a class="govuk-link" href="{{ path('traveldiary_stage_wizard_start', {journeyId: journey.id}) }}">
+                <a class="{% if journey.stages | length == 0 %}govuk-button{% else %}govuk-link{% endif %}" href="{{ addStageUrl }}">
                     {{- "journey.view.add-stage" | trans -}}
                 </a>
             </li>

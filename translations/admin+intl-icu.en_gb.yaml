@@ -1,5 +1,8 @@
 data-export:
-  page-title: Data export
+  index:
+    page-title: Data export
+  pending:
+    page-title: "Data export: {description}"
 
 feedback:
   assignment:
@@ -29,6 +32,7 @@ feedback:
 
   view:
     list.page-title: Feedback dashboard
+    list-archive.page-title: Archived feedback messages
     message.page-title: View {category} message
     details:
       id: ID
@@ -157,6 +161,14 @@ user:
 tools:
   index:
     page-title: Admin tools
+    direct-onboarding:
+      select-area: "Select area..."
+      submit: Submit
+    check-letter:
+      area: Area
+      address-number: A
+      household-number: H
+      submit: Submit
   direct-onboarding-urls:
     page-title: Direct set-up URLs
   check-letter-generator:

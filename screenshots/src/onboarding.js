@@ -1,12 +1,14 @@
 const {goto, submit, clickLinkWithText, getScreenshotter, clickButtonWithText, fillForm, executeCommand} = require("./common");
+const {retrieveOnboardingCodes} = require("./interviewer");
 const {fixtures} = require("./fixtures");
 
-module.exports.onboardingFlow = async function(page, baseUrl, outputDir, passcode1, passcode2) {
+module.exports.onboardingFlow = async function(page, baseUrl, outputDir) {
     const screenshot = await getScreenshotter(page, outputDir  + 'onboarding/')
 
     await goto(page, baseUrl + 'onboarding')
     await screenshot('1-login.png')
 
+    const [passcode1, passcode2] = await retrieveOnboardingCodes(111111)
     await submit(page, {
         'First passcode': passcode1,
         'Second passcode': passcode2,
@@ -92,6 +94,7 @@ module.exports.onboardingFlow = async function(page, baseUrl, outputDir, passcod
     // Now visit the link from the email...
     const url = await executeCommand(`getOnboardingUrlFromEmail('${dk1.email}')`)
     await goto(page, url)
+    await clickButtonWithText(page, 'Continue')
     await screenshot('7-user-password-set.png')
 
     // N.B. If you use too simple a password (e.g. "password", then tool breaks upon login, as Chrome will

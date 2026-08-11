@@ -5,5 +5,5 @@
 {%- block beforeMainWrapper -%}
     {{- parent() -}}
 
-    {{- include('interviewer/training/breadcrumbs.html.twig') -}}
+    {{ block('breadcrumbs', 'interviewer/breadcrumbs.html.twig') }}
 {%- endblock -%}

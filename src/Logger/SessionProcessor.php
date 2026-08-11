@@ -20,7 +20,9 @@ class SessionProcessor
         $request = $this->requestStack->getCurrentRequest();
 
         if ($request) {
-            $logRecord->extra['_ghost_meta']['session'] = $request->cookies->get('PHPSESSID', null);
+            // truncate session IDs to prevent hijacking
+            $sId = $request->cookies->get('PHPSESSID', null);
+            $logRecord->extra['_ghost_meta']['session'] = $sId ? substr($sId, 0, 16) : null;
         }
 
         return $logRecord;

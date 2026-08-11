@@ -28,15 +28,16 @@ use Symfony\Component\Validator\Context\ExecutionContextInterface;
 #[UniqueConstraint(columns: ['address_number', 'household_number', 'area_period_id'])]
 class Household implements MultipleEntityInterface
 {
-    public const STATE_APPROVED = 'approved';
-    public const STATE_COMPLETED = 'completed';
-    public const STATE_IN_PROGRESS = 'in_progress';
-    public const STATE_NEW = 'new';
-    public const STATE_SUBMITTED = 'submitted';
+
+    public const string STATE_APPROVED = 'approved';
+    public const string STATE_COMPLETED = 'completed';
+    public const string STATE_IN_PROGRESS = 'in_progress';
+    public const string STATE_NEW = 'new';
+    public const string STATE_SUBMITTED = 'submitted';
 
     use IdTrait;
 
-    #[Assert\Range(notInRangeMessage: 'wizard.on-boarding.household.address-number.not-in-range', min: 1, max: 22, groups: ['wizard.on-boarding.household', 'cli.add-household', 'direct-onboarding.ingress'])]
+    #[Assert\Range(notInRangeMessage: 'wizard.on-boarding.household.address-number.not-in-range', min: 1, max: AreaPeriod::HOUSEHOLDS_PER_AREA, groups: ['wizard.on-boarding.household', 'cli.add-household', 'direct-onboarding.ingress'])]
     #[Assert\NotBlank(message: 'wizard.on-boarding.household.address-number.not-blank', groups: ['wizard.on-boarding.household', 'cli.add-household', 'direct-onboarding.ingress'])]
     #[ORM\Column(type: 'smallint')]
     private ?int $addressNumber = null;
@@ -55,15 +56,21 @@ class Household implements MultipleEntityInterface
     /**
      * @var Collection<int, DiaryKeeper>
      */
-    #[Assert\Count(min: 1, groups: ['direct-onboarding.ingress'])]
+    #[Assert\Count(
+        min: 1,
+        minMessage: 'wizard.on-boarding.submit.diary-keeper-count.at-least-one',
+        groups: ['direct-onboarding.ingress', 'wizard.on-boarding.submit'],
+    )]
     #[Assert\Valid(groups: ['direct-onboarding.ingress', 'direct-onboarding.logins', 'wizard.on-boarding.diary-keeper.media-type'])]
     #[Assert\Expression('this.getDiaryKeepersWithIdentifierForLogin().count() > 0', message: 'wizard.direct-onboarding.diary-keeper-logins.at-least-one', groups: ['direct-onboarding.logins'])]
-    #[ORM\OneToMany(mappedBy: 'household', targetEntity: DiaryKeeper::class, orphanRemoval: true)]
+    #[ORM\OneToMany(targetEntity: DiaryKeeper::class, mappedBy: 'household', orphanRemoval: true)]
     #[ORM\OrderBy(['number' => 'ASC'])]
+    #[Assert\Unique(message: 'wizard.direct-onboarding.ingress.unique-diary-keeper-names', normalizer: [self::class, 'normalizeDiaryKeeperForDirectOnboardingIngressValidation'],  groups: ['direct-onboarding.ingress'], fields: ['name'])]
     private Collection $diaryKeepers;
 
     #[Assert\Valid(groups: ['direct-onboarding.ingress'])]
-    #[ORM\OneToMany(mappedBy: 'household', targetEntity: Vehicle::class, orphanRemoval: true)]
+    #[ORM\OneToMany(targetEntity: Vehicle::class, mappedBy: 'household', orphanRemoval: true)]
+    #[Assert\Unique(message: 'wizard.direct-onboarding.ingress.unique-vehicle-names', normalizer: [self::class, 'normalizeVehicleForDirectOnboardingIngressValidation'],  groups: ['direct-onboarding.ingress'], fields: ['friendlyName'])]
     private Collection $vehicles;
 
     #[Assert\NotNull(groups: ['direct-onboarding.ingress'])]
@@ -410,8 +417,30 @@ class Household implements MultipleEntityInterface
             ->modify('-8 days'); // surveys last a week, we should give them at least a day extra
 
         return
-            $this->getIsOnboardingComplete() &&
-            !$this->getIsSubmitted() &&
-            $this->getDiaryWeekStartDate() < $overdueDate;
+            !$this->isTraining()
+            && $this->getIsOnboardingComplete()
+            && !$this->getIsSubmitted()
+            && $this->getDiaryWeekStartDate() < $overdueDate;
+    }
+
+    public static function normalizeDiaryKeeperForDirectOnboardingIngressValidation(DiaryKeeper $diaryKeeper): array
+    {
+        return [
+            'name' => $diaryKeeper->getName(),
+            'number' => $diaryKeeper->getNumber(),
+        ];
+    }
+
+    public static function normalizeVehicleForDirectOnboardingIngressValidation(Vehicle $vehicle): array
+    {
+        return [
+            'friendlyName' => $vehicle->getFriendlyName(),
+            'number' => $vehicle->getCapiNumber(),
+        ];
+    }
+
+    public function isTraining(): bool
+    {
+        return $this->getAreaPeriod()->isTrainingArea();
     }
 }

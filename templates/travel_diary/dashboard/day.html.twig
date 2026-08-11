@@ -2,15 +2,16 @@
 {% trans_default_domain 'travel-diary' %}
 
 {% set translation_prefix = "day" %}
+{% if day.isExampleDay %}
+    {% set translation_prefix = "example-day" %}
+    {% set title_translation_prefix = "example-day" %}
+{% endif %}
 {% set title_translation_parameters = {
     dayNumber: day.number,
     date: day.date | date(date_time_format.date('with-dow'))
 } %}
 {% set heading_class = "govuk-heading-xl" %}
-
-{% set breadcrumb_translation_parameters = {
-    diary_keeper_name: diaryKeeper | diary_keeper_display_name,
-} %}
+{% set isReflowEnabled = is_dk_feature_enabled(constant('App\\Utility\\DiaryKeeperFeaturesService::JOURNEY_WIZARD_REFLOW')) %}
 
 {% block content %}
     {%- from "@GhostGovUkFrontend/components/macros.html.twig" import summaryListRow -%}
@@ -20,12 +21,13 @@
     {%- set milometerEnabled = is_feature_enabled(constant('\\App\\Features::MILOMETER')) -%}
     {%- set proseKey = milometerEnabled ? 'day.introduction-markdown.text-milometer' : 'day.introduction-markdown.text' %}
     <div class="prose-scope">{{ proseKey | trans({
-            dayNumber: day.number,
+            dayNumber: day.isExampleDay ? 'example' : day.number,
             vehicleCount: diaryKeeper.primaryDriverVehicles.count,
             vehicleUrl: path('traveldiary_dashboard') ~ '#vehicles',
         }) | markdown_to_html }}
     </div>
-    {% if day.isPracticeDay %}
+
+    {% if (day.isPracticeDay or day.isExampleDay) and not isReflowEnabled %}
         {% include 'travel_diary/dashboard/includes/video-help.html.twig' %}
     {% endif %}
 
@@ -47,7 +49,7 @@
                 }),
                 actions: [
                     {
-                        href: path('traveldiary_journey_view', {journeyId: journey.id}),
+                        href: path(day.isExampleDay ? 'traveldiary_journey_view_example' : 'traveldiary_journey_view', {journeyId: journey.id}),
                         text: "day.view" | trans({}, 'travel-diary'),
                         visuallyHiddenText: "day.view-sr-hidden-suffix" | trans(linkTranslationParameters, 'travel-diary'),
                     },
@@ -62,46 +64,56 @@
     </dl>
 
     <div class="govuk-button-group govuk-!-margin-bottom-8">
-        <a class="govuk-button" href="{{ path('traveldiary_journey_wizard_start', {dayNumber: day.number}) }}">
-            {{- "day.add-journey" | trans -}}<span class="govuk-visually-hidden">
-                {{- ' ' ~ ("day.add-journey-sr-hidden-suffix" | trans({
-                    dayNumber: day.number,
-                    date: day.date | date(date_time_format.date('with-dow'))
-                })) -}}</span>
-        </a>
-        <a class="govuk-link" href="{{ path('traveldiary_repeat_journey_v2_wizard_start', {dayNumber: day.number}) }}">{{ "day.repeat-a-journey" | trans }}</a>
+        {% if not day.isExampleDay %}
+            {% set addJourneyUrl = isReflowEnabled
+                ? path('traveldiary_reflow_add_journey_wizard_start', {dayNumber: day.number})
+                : path('traveldiary_journey_wizard_start', {dayNumber: day.number})
+            %}
+            <a class="govuk-button" href="{{ addJourneyUrl }}">
+                {{- "day.add-journey" | trans -}}<span class="govuk-visually-hidden">
+                    {{- ' ' ~ ("day.add-journey-sr-hidden-suffix" | trans({
+                        dayNumber: day.number,
+                        date: day.date | date(date_time_format.date('with-dow'))
+                    })) -}}</span>
+            </a>
+            {%- if not isReflowEnabled -%}
+                <a class="govuk-link" href="{{ path('traveldiary_repeat_journey_v2_wizard_start', {dayNumber: day.number}) }}">{{ "day.repeat-a-journey" | trans }}</a>
+            {%- endif -%}
+        {% endif %}
         <a class="govuk-link" href="{{ path('traveldiary_dashboard') }}">{{ "day.back" | trans }}</a>
     </div>
 
     {# Notes #}
-    <h2 class="govuk-heading-l">{{ "day.notes.heading" | trans }}</h2>
+    {% if not day.isExampleDay %}
+        <h2 class="govuk-heading-l">{{ "day.notes.heading" | trans }}</h2>
 
-    <p class="govuk-body">{{ 'day.notes.guidance' | trans | nl2br }}</p>
+        <p class="govuk-body">{{ 'day.notes.guidance' | trans | nl2br }}</p>
 
-    {%- if is_impersonator_granted('ROLE_INTERVIEWER') -%}
-        <p class="govuk-body">{{ 'day.notes.guidance-interviewer' | trans | nl2br }}</p>
-        <dl class="govuk-summary-list">
-            {{- summaryListRow({
-                key: "day.notes.diary-keepers-notes" | trans,
-                value: day.diaryKeeperNotes ?? ("day.notes.no-notes" | trans),
-            }) -}}
-            {{- summaryListRow({
-                key: "day.notes.interviewers-notes" | trans,
-                value: day.interviewerNotes ?? ("day.notes.no-notes" | trans),
-                actions: [
-                    {
-                        href: path('traveldiary_day_interviewer_notes', {dayNumber: day.number}),
-                        text: "day.notes.#{day.interviewerNotes ? 'edit-notes' : 'add-notes'}" | trans({}, 'travel-diary'),
-                    },
-                ]
-            }) -}}
-        </dl>
-    {%- else -%}
-        <p class="govuk-inset-text">{{- (day.diaryKeeperNotes ?? ("day.notes.no-notes" | trans)) | nl2br -}}</p>
-        <p class="govuk-body">
-            <a class="govuk-link" href="{{ path('traveldiary_day_diary_keeper_notes', {dayNumber: day.number}) }}">
-                {{- "day.notes.#{day.diaryKeeperNotes ? 'edit-notes' : 'add-notes'}" | trans -}}
-            </a>
-        </p>
-    {%- endif -%}
+        {%- if is_impersonator_granted('ROLE_INTERVIEWER') -%}
+            <p class="govuk-body">{{ 'day.notes.guidance-interviewer' | trans | nl2br }}</p>
+            <dl class="govuk-summary-list">
+                {{- summaryListRow({
+                    key: "day.notes.diary-keepers-notes" | trans,
+                    value: day.diaryKeeperNotes ?? ("day.notes.no-notes" | trans),
+                }) -}}
+                {{- summaryListRow({
+                    key: "day.notes.interviewers-notes" | trans,
+                    value: day.interviewerNotes ?? ("day.notes.no-notes" | trans),
+                    actions: [
+                        {
+                            href: path('traveldiary_day_interviewer_notes', {dayNumber: day.number}),
+                            text: "day.notes.#{day.interviewerNotes ? 'edit-notes' : 'add-notes'}" | trans({}, 'travel-diary'),
+                        },
+                    ]
+                }) -}}
+            </dl>
+        {%- else -%}
+            <p class="govuk-inset-text">{{- (day.diaryKeeperNotes ?? ("day.notes.no-notes" | trans)) | nl2br -}}</p>
+            <p class="govuk-body">
+                <a class="govuk-link" href="{{ path('traveldiary_day_diary_keeper_notes', {dayNumber: day.number}) }}">
+                    {{- "day.notes.#{day.diaryKeeperNotes ? 'edit-notes' : 'add-notes'}" | trans -}}
+                </a>
+            </p>
+        {%- endif -%}
+    {% endif %}
 {% endblock %}

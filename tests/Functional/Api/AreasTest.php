@@ -144,7 +144,7 @@ class AreasTest extends AbstractApiWebTestCase
             ->getQuery()
             ->getSingleScalarResult();
         self::assertEquals(
-            ($testCount * 12 * AreaPeriodHelper::CODES_PER_AREA) + $initialOtpCount,
+            ($testCount * 12 * AreaPeriod::HOUSEHOLDS_PER_AREA) + $initialOtpCount,
             $finalOtpCount
         );
     }

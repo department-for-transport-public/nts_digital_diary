@@ -6,16 +6,14 @@ use App\Entity\User;
 use App\Security\OneTimePassword\OtpUserInterface;
 use App\Utility\Metrics\Events\LoginEvent;
 use App\Utility\Metrics\MetricsHelper;
+use App\Utility\Security\UrlSigner;
 use Symfony\Component\EventDispatcher\EventSubscriberInterface;
 use Symfony\Component\HttpFoundation\RequestStack;
 use Symfony\Component\Security\Core\Authentication\Token\RememberMeToken;
 use Symfony\Component\Security\Core\Authentication\Token\TokenInterface;
 use Symfony\Component\Security\Core\Authentication\Token\UsernamePasswordToken;
-use Symfony\Component\Security\Core\Exception\UserNotFoundException;
 use Symfony\Component\Security\Core\User\UserInterface;
-use Symfony\Component\Security\Http\Authenticator\Passport\Badge\UserBadge;
 use Symfony\Component\Security\Http\Authenticator\Token\PostAuthenticationToken;
-use Symfony\Component\Security\Http\Event\LoginFailureEvent;
 use Symfony\Component\Security\Http\Event\LoginSuccessEvent;
 
 class LoginSubscriber implements EventSubscriberInterface
@@ -36,7 +34,8 @@ class LoginSubscriber implements EventSubscriberInterface
 
         $this->metrics->log(new LoginEvent(
             $this->getDiarySerial($event->getUser()),
-            $firewallName
+            $firewallName,
+            $this->requestStack->getSession()->get(UrlSigner::SOURCE_TRACKING_PARAMETER_NAME)
         ));
     }
 

@@ -1,0 +1,44 @@
+{%- extends 'admin/base.html.twig' -%}
+
+{%- set jobStatus = jobStatus ?? null -%}
+{%- set isFailed = jobStatus and jobStatus.state == constant('App\\Messenger\\Job\\State::FAILED') -%}
+{%- set isComplete = jobStatus and jobStatus.state == constant('App\\Messenger\\Job\\State::COMPLETED') -%}
+{# @var job \App\Messenger\Job\FileDownloadJob #}
+{%- set job = jobStatus.job ?? null -%}
+
+{% trans_default_domain 'admin' %}
+{% set title_translation_prefix = 'data-export.pending' %}
+{% set title_translation_domain = 'admin' %}
+{% set title_translation_parameters = {
+    description: job.description ?? ''
+} %}
+
+{% block head %}
+    {{ parent() }}
+    {%- if not (isFailed or isComplete) -%}
+        <meta http-equiv="refresh" content="5;" />
+    {%- endif -%}
+{% endblock %}
+
+{% block content %}
+    {%- from "macros/job.html.twig" import jobStatusSpinner, autoDownloadScript, fallbackDownloadLink -%}
+
+    {%- if isFailed %}
+        <p class="govuk-body">Data export failed</p>
+        <p class="govuk-body">
+            <a href="{{ path('admin_data_export_index') }}" class="govuk-button">Try again</a>
+        </p>
+    {%- else -%}
+        {{- jobStatusSpinner(
+            jobStatus,
+            'Initialising...',
+            'Preparing data for export...',
+            'Downloading...'
+        ) -}}
+
+        {%- if downloadUrl -%}
+            {{ autoDownloadScript(downloadUrl, redirectUrl) }}
+            {{ fallbackDownloadLink(downloadUrl) }}
+        {%- endif -%}
+    {%- endif -%}
+{% endblock %}

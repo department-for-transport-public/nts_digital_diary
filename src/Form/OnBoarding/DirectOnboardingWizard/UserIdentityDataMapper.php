@@ -52,8 +52,6 @@ class UserIdentityDataMapper extends DataMapper
 
         parent::mapFormsToData($traversableForms, $data);
 
-        $proxies = $data->getProxies()->toArray();
-        array_walk($proxies, fn($p) => $data->removeProxy($p));
         $user->getDiaryKeeper()->setMediaType(DiaryKeeper::MEDIA_TYPE_DIGITAL);
 
         if (!$user->getUserIdentifier()) {
@@ -63,7 +61,11 @@ class UserIdentityDataMapper extends DataMapper
 
             $user
                 ->setUserIdentifier($newUserIdentifier);
-//                ->setHasConsented(null);
+        }
+
+        if (!$user->hasIdentifierForLogin()) {
+            $proxyingFor = $user->getDiaryKeeper()->getActingAsProxyFor()->toArray();
+            array_walk($proxyingFor, fn(DiaryKeeper $p) => $user->getDiaryKeeper()->removeActingAsProxyFor($p));
         }
     }
 }

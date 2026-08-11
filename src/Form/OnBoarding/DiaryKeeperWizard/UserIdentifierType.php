@@ -147,7 +147,7 @@ class UserIdentifierType extends AbstractType
                 if ($form->get('mediaType')->getData() === 'other') {
                     $groups[] = 'wizard.on-boarding.diary-keeper.media-type.other';
                 }
-                if ($formData->getHousehold()->getAreaPeriod()->getTrainingInterviewer()) {
+                if ($formData->getHousehold()->isTraining()) {
                     $groups[] = 'wizard.on-boarding.direct.interviewer-training';
                 }
 

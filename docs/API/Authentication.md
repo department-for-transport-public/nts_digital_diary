@@ -17,12 +17,31 @@
 possible for a subsequent valid request to be rejected as a replayed signature. In this instance, adding a nonce to the
 query string would resolve the issue.
 
-Example postman script for calculating the secret (including additional query string nonce)
+Some JavaScript pseudocode for calculating the secret (including additional query string nonce)
 ```js
-let secret = CryptoJS.enc.Base64.parse(pm.variables.get("API_SECRET"));
-pm.request.url.query.add("timestamp=" + Math.round(Date.now()/1000).toString());
-pm.request.url.query.add("_nonce=" + Math.floor(Math.random()*4294967296).toString(16));
-let hmacSig = CryptoJS.HmacSHA256(pm.request.url.query.toString(), secret);
+request.url.query.add("timestamp=" + Math.round(Date.now()/1000).toString());
+request.url.query.add("_nonce=" + CryptoJS.lib.WordArray.random(16).toString());
+hmacSig = CryptoJS.HmacSHA256(request.url.query.toString(), secret);
 pm.request.addHeader({key: "X-AUTH-SIGNATURE", value: hmacSig.toString(CryptoJS.enc.Base64)});
-pm.request.addHeader({key: "X-AUTH-KEY", value: pm.variables.get("API_KEY")});
+pm.request.addHeader({key: "X-AUTH-KEY", value: apiKey});
+```
+
+## Update
+
+Version 2 of the authentication expands on using `[query string]`, to use `[method].[hash(request body)].[full url]` as
+the content for signing, and specifying the auth version (2) in the `X-AUTH-VERSION` header. Additionally, a nonce is
+no longer required, assuming that two identical requests are not made within the same second.
+
+e.g.
+```
+GET.e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855.https://access-national-travel-survey.service.gov.uk/api/v1/survey-data?householdSerials=308802/2/1&timestamp=1772016731&_nonce=af9b8890
+```
+
+```js
+request.url.query.add("timestamp=" + Math.round(Date.now()/1000).toString());
+sigBody = `${request.method}.${CryptoJS.SHA256(request.body.toString())}.${request.url.toString()}`
+hmac = CryptoJS.HmacSHA256(sigBody, secret);
+request.addHeader({key: "X-AUTH-SIGNATURE", value: hmac.toString(CryptoJS.enc.Base64)});
+request.addHeader({key: "X-AUTH-KEY", value: apiKey});
+request.addHeader({key: "X-AUTH-VERSION", value: 2});
 ```

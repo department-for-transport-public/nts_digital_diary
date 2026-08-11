@@ -1,0 +1,20 @@
+{% extends 'interviewer/dashboard/base.html.twig' %}
+
+{% trans_default_domain "interviewer" %}
+{% set household = diaryKeeper.household %}
+{% set areaPeriod = household.areaPeriod %}
+{% set action = 'edit-notes' %}
+
+{% set title_translation_prefix = 'diary-editing.day-notes' %}
+{% set title_translation_parameters = {
+    name: diaryKeeper.name,
+    dayNumber: diaryDay.number
+} %}
+
+{% block pageHeading %}
+{% endblock %}
+
+{% block content %}
+    {{ form(form) }}
+{% endblock %}
+

@@ -67,6 +67,16 @@ class ShareToDataMapper implements DataMapperInterface
     {
         $targetJourney = $this->propertyMerger->clone($sourceJourney, Journey::SHARE_JOURNEY_CLONE_PROPERTIES);
 
+        /**
+         * When sharing a journey, the purpose is not cloned (see Journey::SHARE_JOURNEY_CLONE_PROPERTIES) because
+         * each recipient may have a different purpose. For "going home" journeys, we pre-fill the purpose here so
+         * that the purposes form shows "Go home" by default — but the user can still change it.
+         *
+         * Journey::setGoHomePurposeWhenGoingHome() (a PrePersist lifecycle callback) also sets the purpose for
+         * going-home journeys, but only when the purpose is empty — so it won't overwrite a user-chosen purpose.
+         * This mapper handles the pre-fill before the form is shown in the share journey wizard; the lifecycle
+         * callback is for other relevant flows.
+         */
         if ($sourceJourney->isGoingHome()) {
             $targetJourney->setPurpose(Journey::TO_GO_HOME);
         }

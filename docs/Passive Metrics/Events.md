@@ -35,9 +35,11 @@ See [example 1](#example-1---diary-state-change)
 
 All entity creation events will also have the following metadata:
 - `id` - the ID of the new Journey or Stage entity
-- `sourceWizard` - the wizard that was used to create the entity
 
-`Journey: split`, `Journey: repeat` and `Journey: return` events have the same metadata as `Journey: create`.
+`Journey: split` has the same metadata as `Journey: create`.
+
+`Journey: repeat` and `Journey: return` events have the same metadata as `Journey: create`, but additionally contain:
+- `stages` - an array of the newly created stage IDs, keyed by the stage number
 
 
 See [example 2](#example-2---journey-create)
@@ -84,7 +86,11 @@ See [example 5](#example-5---login-success)
 
 ## Onboarding complete event
 
-- `Onboarding: complete` - no additional metadata
+- `Onboarding: complete` - additional metadata:
+  - `diaryWeekStartDate` - string representation of the diary week start date (e.g. "2026-01-28")
+  - `onboardingType` - `legacy` or `direct`, indicating how the household was onboarded
+  - `diaryKeepers` - integer representing the number of diary keepers in the household
+  - `adultDiaries` - array containing serial numbers of diary keepers who have been given adult diaries within the household 
 
 ## Interviewer actions
 

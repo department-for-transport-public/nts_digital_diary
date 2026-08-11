@@ -28,3 +28,15 @@ services:
     cache.messenger.restart_workers_signal:
         parent: 'cache.adapter.doctrine_dbal'
         tags: [{ name: 'cache.pool', namespace: 'messenger-restart-signal' }]
+
+    cache.ghost.job.status:
+        parent: 'cache.adapter.doctrine_dbal'
+        tags: [ { name: 'cache.pool', namespace: 'job-status' } ]
+        arguments:
+            $defaultLifetime: 3600 # 1 hour
+
+    cache.ghost.job.result:
+        parent: 'cache.adapter.doctrine_dbal'
+        tags: [ { name: 'cache.pool', namespace: 'job-result-data' } ]
+        arguments:
+            $defaultLifetime: 3600 # 1 hour

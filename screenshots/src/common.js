@@ -5,10 +5,19 @@ const readline = require("node:readline")
 const sharp = require("sharp")
 const {xpathHelper} = require("./xpath")
 
+const VIEWPORTS = {
+    desktop: {width: 1003, height: 200},
+    wide:    {width: 1920, height: 200},
+    mobile:  {width: 390,  height: 844},
+}
+
+module.exports.VIEWPORTS = VIEWPORTS
+
 module.exports.setupBrowserAndPage = async () => {
     const browser = await puppeteer.launch({
         args: [
             '--single-process',
+            '--no-sandbox',
             '--ignore-certificate-errors',
         ],
         // ignoreHTTPSErrors: true,
@@ -16,7 +25,7 @@ module.exports.setupBrowserAndPage = async () => {
     });
     const page = await browser.newPage();
     await page.setCacheEnabled(false);
-    await page.setViewport({width: 1003, height: 200});
+    await page.setViewport(VIEWPORTS.desktop);
 
     return [browser, page];
 }
@@ -28,9 +37,22 @@ const waitForOptions = {
 
 module.exports.waitForOptions = waitForOptions
 
+// Set a field's value via the DOM rather than synthesised keystrokes, and fire the
+// events real typing would. See clickElement for why we avoid the input pipeline.
+const setFieldValue = async function(element, value) {
+    await element.evaluate((el, val) => {
+        el.focus()
+        el.value = val
+        el.dispatchEvent(new Event('input', {bubbles: true}))
+        el.dispatchEvent(new Event('change', {bubbles: true}))
+    }, value)
+}
+
+module.exports.setFieldValue = setFieldValue
+
 async function type(page, fieldId, value) {
     const $field = await page.$(fieldId)
-    await $field.type(value)
+    await setFieldValue($field, value)
 }
 
 module.exports.type = type
@@ -39,20 +61,26 @@ module.exports.goto = async function(page, url) {
     await page.goto(url, waitForOptions)
 }
 
+const xpathLiteral = (s) => {
+    if (!s.includes("'")) return `'${s}'`
+    if (!s.includes('"')) return `"${s}"`
+    return "concat('" + s.split("'").join(`', "'", '`) + "')"
+}
+
 const predicate = function(options)
 {
     const predicates =  []
 
     if (options.text !== undefined) {
-        predicates.push(`normalize-space(text()) = '${options.text}'`)
+        predicates.push(`normalize-space(text()) = ${xpathLiteral(options.text)}`)
     }
 
     if (options.textStartsWith !== undefined) {
-        predicates.push(`starts-with(normalize-space(text()), '${options.textStartsWith}')`)
+        predicates.push(`starts-with(normalize-space(text()), ${xpathLiteral(options.textStartsWith)})`)
     }
 
     if (options.textContains !== undefined) {
-        predicates.push(`contains(text(), '${options.textContains}')`)
+        predicates.push(`contains(text(), ${xpathLiteral(options.textContains)})`)
     }
 
     if (options.class !== undefined) {
@@ -85,7 +113,7 @@ const clickElement = async function(page, element, waitForNavigation = true) {
         promises.push(page.waitForNavigation(waitForOptions))
     }
 
-    promises.push(element.click())
+    promises.push(element.evaluate(e => e.click()))
     await Promise.all(promises)
 }
 
@@ -132,7 +160,7 @@ module.exports.clickOptionValue = async function(page, option_value, context_id)
         ? `xpath///*[@id="${context_id}"]//input[@value="${option_value}"]`
         : `xpath///input[@value="${option_value}"]`;
     let element = await findElement(page, expression, 0);
-    await element.click();
+    await element.evaluate(e => e.click());
 }
 
 module.exports.idOfInputWhoseLabelContains = async function(page, textContains, index = 0) {
@@ -197,12 +225,10 @@ const fillForm = async function(page, data, xpathPrefix = 'xpath///form')
 
             const currentValue = await targetElement.evaluate(x => x.checked)
             if (currentValue !== value) {
-                await targetElement.click()
+                await targetElement.evaluate(x => x.click())
             }
         } else {
-            // See: https://stackoverflow.com/a/52633235/865429
-            await targetElement.click({clickCount: 4})
-            await targetElement.type(value)
+            await setFieldValue(targetElement, value)
         }
     }
 }
@@ -226,7 +252,7 @@ module.exports.submit = async function(page, data, buttonText) {
 
     await Promise.all([
         page.waitForNavigation(waitForOptions),
-        buttonElement.click(),
+        buttonElement.evaluate(e => e.click()),
     ])
 }
 
@@ -321,9 +347,16 @@ async function resolveCropSelector(page, options)
     })
 }
 
-module.exports.getScreenshotter = (page, outputDir) => async (path, options={}) => {
-    const takeScreenshot = async(path, options = {}) => {
-        const fullPath = getScreenshotPathHelper(outputDir)(path);
+const mobilePath = (relativePath) => {
+    const dir = path.dirname(relativePath)
+    const base = path.basename(relativePath)
+    const prefixed = `(mobile) ${base}`
+    return dir === '.' ? prefixed : `${dir}/${prefixed}`
+}
+
+module.exports.getScreenshotter = (page, outputDir) => async (relativePath, options={}) => {
+    const takeScreenshot = async(relativePath, options = {}) => {
+        const fullPath = getScreenshotPathHelper(outputDir)(relativePath);
         await page.screenshot({path: fullPath, fullPage: true})
 
         if (options.hasOwnProperty('cropSelector')) {
@@ -363,13 +396,25 @@ module.exports.getScreenshotter = (page, outputDir) => async (path, options={}) 
         }
     }
 
-    try {
-        await takeScreenshot(path, options)
+    const shootWithRetry = async (targetPath, opts) => {
+        try {
+            await takeScreenshot(targetPath, opts)
+        } catch(e) {
+            console.log(`Warning: Taking screenshot failed - waiting and retrying... (${targetPath})`);
+            await new Promise(r => setTimeout(r, 1000))
+            await takeScreenshot(targetPath, opts)
+        }
     }
-    catch(e) {
-        console.log(`Warning: Taking screenshot failed - waiting and retrying... (${path})`);
-        await new Promise(r => setTimeout(r, 1000))
-        await takeScreenshot(path, options)
+
+    const prevViewport = page.viewport()
+
+    await shootWithRetry(relativePath, options)
+
+    await page.setViewport(VIEWPORTS.mobile)
+    try {
+        await shootWithRetry(mobilePath(relativePath), options)
+    } finally {
+        await page.setViewport(prevViewport)
     }
 }
 

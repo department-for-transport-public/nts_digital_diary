@@ -1,7 +1,7 @@
 {% extends 'admin/base.html.twig' %}
 
 {% trans_default_domain 'admin' %}
-{% set title_translation_prefix = 'feedback.view.list' %}
+{% set title_translation_prefix = isArchive ? 'feedback.view.list-archive' : 'feedback.view.list' %}
 {% set title_translation_domain = 'admin' %}
 {% set heading_class = 'govuk-heading-l govuk-!-margin-bottom-1' %}
 
@@ -9,10 +9,15 @@
     {% from '@GhostGovUkFrontend/components/macros.html.twig' import summaryListActionsList, tableHead, tableCell, tableRow, tag %}
     {%- from '@GhostGovUkCore/list-page.html.twig' import listTableStart, listTableEnd -%}
 
-    <ul class="govuk-list govuk-!-margin-bottom-6">
-        <li><a class="govuk-link" href="{{ path('admin_feedback_message_lookup') }}">Message lookup</a></li>
-        <li><a class="govuk-link" href="{{ path('admin_feedback_stats_index') }}">Feedback stats</a></li>
-    </ul>
+        <ul class="govuk-list govuk-!-margin-bottom-6">
+            {% if isArchive %}
+                <li><a class="govuk-link" href="{{ path('admin_feedback_view_dashboard') }}">Active/current messages</a></li>
+            {% else %}
+                <li><a class="govuk-link" href="{{ path('admin_feedback_message_lookup') }}">Message lookup</a></li>
+                <li><a class="govuk-link" href="{{ path('admin_feedback_stats_index') }}">Feedback stats</a></li>
+                <li><a class="govuk-link" href="{{ path('admin_feedback_view_dashboard_archive') }}">Archived messages (more than 3 months old and closed or rejected)</a></li>
+            {% endif %}
+        </ul>
 
     {{ listTableStart(data, form, {tableClass: 'feedback-message-list'}) }}
     {% for message in data.entities %}

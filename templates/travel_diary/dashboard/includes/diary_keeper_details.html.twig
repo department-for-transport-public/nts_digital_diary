@@ -3,6 +3,8 @@
 {% from "interviewer/dashboard/macros.html.twig" import diaryKeeperState %}
 {%- set household = diaryKeeper.household -%}
 {%- set areaPeriod = household.areaPeriod -%}
+
+{% set htmlContent %}
 <dl class="govuk-summary-list">
     {%- if showName ?? true -%}
         {{- m.summaryListRow({
@@ -13,6 +15,10 @@
     {{- m.summaryListRow({
         key: "days.list.serial" | trans,
         value: household.serialNumber(diaryKeeper.number)
+    }, false) -}}
+    {{- m.summaryListRow({
+        key: "days.list.is-adult" | trans,
+        value: "days.list.is-adult-value" | trans({value: diaryKeeper.isAdult})
     }, false) -}}
     {% if (is_impersonator_granted('ROLE_INTERVIEWER') or is_granted('ROLE_INTERVIEWER')) %}
         {{- m.summaryListRow({
@@ -26,3 +32,9 @@
         }, false) -}}
     {% endif %}
 </dl>
+{% endset %}
+
+{{ m.details({
+    summaryText: 'dashboard.diary-keeper-details.title' | trans,
+    html: htmlContent,
+}) }}

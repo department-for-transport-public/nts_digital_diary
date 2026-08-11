@@ -7,17 +7,23 @@ class SurveyPurgeUtilityTest extends AbstractPurgeTest
     protected const REF_TYPE_ALL = 'all';
     protected const REF_TYPE_HOUSEHOLD_ONLY = 'household-only';
     protected const REF_TYPE_AREA_PERIOD_ONLY = 'area-period-only';
+    protected const REF_TYPE_CHANGE_LOGS = 'change-logs';
 
     public function dataPrePurge(): array
     {
         return [
             ['now', self::REF_TYPE_ALL, true],
+            ['now', self::REF_TYPE_CHANGE_LOGS, true],
             ['199-days-ago', self::REF_TYPE_ALL, true],
             ['199-days-ago', self::REF_TYPE_AREA_PERIOD_ONLY, true],
+            ['199-days-ago', self::REF_TYPE_CHANGE_LOGS, true],
             ['201-days-ago', self::REF_TYPE_ALL, true],
             ['201-days-ago', self::REF_TYPE_AREA_PERIOD_ONLY, true],
+            ['201-days-ago', self::REF_TYPE_CHANGE_LOGS, true],
             ['300-days-ago', self::REF_TYPE_ALL, true],
+            ['300-days-ago', self::REF_TYPE_CHANGE_LOGS, true],
             ['300-days-ago:training', self::REF_TYPE_HOUSEHOLD_ONLY, true],
+            ['300-days-ago:training', self::REF_TYPE_CHANGE_LOGS, true],
         ];
     }
 
@@ -30,12 +36,17 @@ class SurveyPurgeUtilityTest extends AbstractPurgeTest
     {
         return [
             ['now', self::REF_TYPE_ALL, true],
+            ['now', self::REF_TYPE_CHANGE_LOGS, true],
             ['199-days-ago', self::REF_TYPE_ALL, true],
             ['199-days-ago', self::REF_TYPE_AREA_PERIOD_ONLY, true],
+            ['199-days-ago', self::REF_TYPE_CHANGE_LOGS, true],
             ['201-days-ago', self::REF_TYPE_ALL, false],
             ['201-days-ago', self::REF_TYPE_AREA_PERIOD_ONLY, false],
+            ['201-days-ago', self::REF_TYPE_CHANGE_LOGS, false],
             ['300-days-ago', self::REF_TYPE_ALL, false],
+            ['300-days-ago', self::REF_TYPE_CHANGE_LOGS, false],
             ['300-days-ago:training', self::REF_TYPE_HOUSEHOLD_ONLY, true],
+            ['300-days-ago:training', self::REF_TYPE_CHANGE_LOGS, true],
         ];
     }
 
@@ -92,6 +103,13 @@ class SurveyPurgeUtilityTest extends AbstractPurgeTest
             ],
             self::REF_TYPE_HOUSEHOLD_ONLY => [
                 "surveys:{$dateString}:household",
+            ],
+            self::REF_TYPE_CHANGE_LOGS => [
+                "surveys:{$dateString}:pcl:journey:1",
+                "surveys:{$dateString}:pcl:journey:1/stage:1",
+                "surveys:{$dateString}:pcl:journey:2",
+                "surveys:{$dateString}:pcl:journey:2/stage:1",
+                "surveys:{$dateString}:pcl:journey:2/stage:2",
             ],
 };
     }

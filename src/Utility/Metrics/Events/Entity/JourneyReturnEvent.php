@@ -2,7 +2,7 @@
 
 namespace App\Utility\Metrics\Events\Entity;
 
-class JourneyReturnEvent extends JourneyPersistEvent
+class JourneyReturnEvent extends JourneyPersistWithStagesEvent
 {
     public function getName(): string
     {

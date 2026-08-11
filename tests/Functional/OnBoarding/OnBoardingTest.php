@@ -2,6 +2,7 @@
 
 namespace App\Tests\Functional\OnBoarding;
 
+use App\Entity\AreaPeriod;
 use App\Entity\OtpUser;
 use App\Tests\DataFixtures\OtpUserFixtures;
 use App\Tests\Functional\Wizard\Action\CallbackAction;
@@ -92,14 +93,14 @@ class OnBoardingTest extends AbstractOtpTest
                 "#household_checkLetter",
             ]),
             new FormTestCase($merge([
-                "household[addressNumber]" => '22',
+                "household[addressNumber]" => strval(AreaPeriod::HOUSEHOLDS_PER_AREA),
                 "household[householdNumber]" => '99',
             ]), [
                 "#household_diaryWeekStartDate",
                 "#household_checkLetter",
             ]),
             new FormTestCase($merge([
-                "household[addressNumber]" => '23',
+                "household[addressNumber]" => strval(AreaPeriod::HOUSEHOLDS_PER_AREA + 1),
                 "household[householdNumber]" => '100',
             ]), [
                 "#household_addressNumber",

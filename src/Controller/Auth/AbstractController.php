@@ -9,10 +9,14 @@ use App\Repository\UserRepository;
 use App\Security\Voter\UserValidForLoginVoter;
 use App\Utility\Security\UrlSigner;
 use Doctrine\ORM\EntityManagerInterface;
+use Ghost\GovUkFrontendBundle\Form\Type\ButtonType;
 use Ghost\GovUkFrontendBundle\Model\NotificationBanner;
 use Symfony\Component\EventDispatcher\EventDispatcherInterface;
+use Symfony\Component\Form\Extension\Core\Type\FormType;
 use Symfony\Component\HttpFoundation\RedirectResponse;
 use Symfony\Component\HttpFoundation\RequestStack;
+use Symfony\Component\HttpFoundation\Response;
+use Symfony\Component\RateLimiter\LimiterInterface;
 use Symfony\Component\Security\Core\Authentication\Token\Storage\TokenStorageInterface;
 use Symfony\Component\Security\Core\Authentication\Token\UsernamePasswordToken;
 use Symfony\Component\Security\Http\Event\InteractiveLoginEvent;
@@ -29,7 +33,13 @@ class AbstractController extends RootAbstractController
         protected EventDispatcherInterface $eventDispatcher,
     ) {}
 
-    protected function fetchUserAndCacheCriteria(string $sessionKey, array $findCriteria, array $extraData = [], bool $userMustBeValidForLogin = true): User
+    protected function fetchUserAndCacheCriteria(
+        string $sessionKey,
+        array $findCriteria,
+        array $extraData = [],
+        bool $userMustBeValidForLogin = true,
+        ?LimiterInterface $signedUrlReuseLimiter = null,
+    ): User
     {
         $cachedCriteria = $this->getCriteriaFromSession($sessionKey);
         if (!$cachedCriteria || $cachedCriteria !== $findCriteria) {
@@ -40,7 +50,7 @@ class AbstractController extends RootAbstractController
 
             $url = $this->requestStack->getCurrentRequest()->getRequestUri();
 
-            if (!$this->urlSigner->isValid($url)) {
+            if (!$this->urlSigner->isValid($url, rateLimiter: $signedUrlReuseLimiter)) {
                 $this->redirectToLoginWithInvalidLinkMessage();
             }
 
@@ -109,5 +119,22 @@ class AbstractController extends RootAbstractController
             new InteractiveLoginEvent($this->requestStack->getCurrentRequest(), $token),
             "security.interactive_login"
         );
+    }
+
+    protected function handlePreAuth(string $translationPrefix = 'pre-auth'): ?Response
+    {
+        $form = $this->createForm(FormType::class, [], [
+            'help' => "{$translationPrefix}.help",
+            'translation_domain' => 'auth',
+        ])
+            ->add('continue', ButtonType::class, [
+                'label' => 'actions.continue',
+                'translation_domain' => 'messages',
+            ]);
+
+        return $this->render("auth/pre-auth.html.twig", [
+            'form' => $form,
+            'translation_prefix' => $translationPrefix,
+        ]);
     }
 }

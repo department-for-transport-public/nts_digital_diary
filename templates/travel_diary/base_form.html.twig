@@ -61,7 +61,7 @@
     <div {{ block('widget_container_attributes') }}>
         <div class="govuk-grid-row">
             {%- for group in form.vars.choices %}
-                <div class="govuk-grid-column-one-half govuk-!-margin-top-3 govuk-!-margin-bottom-3">
+                <div class="govuk-grid-column-one-half govuk-!-margin-bottom-5">
                     {% with {elem: group.labelHeadingElement, attr: group.labelAttr ?? label_attr ?? null} %}
                         <{{ elem ?? 'h2' }}{% if attr %}{{ block('attributes') }}{% endif %}>{{ group.label | trans }}</{{ elem }}>
                     {% endwith %}

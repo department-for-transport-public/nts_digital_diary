@@ -5,7 +5,8 @@ doctrine:
             datetimemicrosecond: App\Doctrine\DBAL\Types\DateTimeMicrosecondType
             decimal_brick: App\Doctrine\DBAL\Types\DecimalBrickType
         # lock_keys table is used by lock component, which is used by rate limiter
-        schema_filter: ~^(?!lock_keys)~
+        schema_filter: ~^(?!lock_keys|vw_)~
+        wrapper_class: Ghost\GovUkCoreBundle\Doctrine\DBAL\PingBeforeUseConnection
 
     orm:
         auto_generate_proxy_classes: true
@@ -38,6 +39,6 @@ doctrine:
                 mappings:
                     Metrics:
                         type: attribute
-                        dir: '%kernel.project_dir%/src/Entity/Utility'
-                        prefix: 'App\Entity\Utility\MetricsLog'
+                        dir: '%kernel.project_dir%/src/Entity/Metrics'
+                        prefix: 'App\Entity\Metrics'
                         alias: App

@@ -31,6 +31,7 @@ class ResetPasswordBlockTest extends AbstractAuthTestCase
 
         // Follow the password reset link and verify that the reset form is now visible
         $this->client->request(Request::METHOD_GET, $passwordResetUrl);
+        $this->client->submitForm('form_continue'); // ingres form
         $this->assertTrue($this->isPasswordResetButtonPresent(), 'Password reset button should be present, now that we are logged out');
     }
 

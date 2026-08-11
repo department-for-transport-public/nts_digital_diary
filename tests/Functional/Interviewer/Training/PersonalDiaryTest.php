@@ -3,6 +3,7 @@
 namespace App\Tests\Functional\Interviewer\Training;
 
 use App\Entity\InterviewerTrainingRecord;
+use App\Entity\Metrics\MetricsLog;
 use App\Entity\User;
 use App\Tests\DataFixtures\UserFixtures;
 use App\Tests\Functional\AbstractFunctionalTestCase;
@@ -59,13 +60,16 @@ class PersonalDiaryTest extends AbstractFunctionalTestCase
 
         $this->client->get('/');
 
-        $this->client->clickLink('Mark travel diary as complete');
+        $this->client->clickLink('Mark my travel diary as complete');
         $this->assertEquals('/travel-diary/mark-as-complete', $this->getUrlPath());
 
         $this->client->submitForm('confirm_action[button_group][confirm]');
         $this->assertEquals('/travel-diary', $this->getUrlPath());
 
         $this->assertModuleHasState(InterviewerTrainingRecord::STATE_COMPLETE);
+
+        // 1 interviewer login, 1 impersonation
+        $this->assertCount(2, $this->entityManager->getRepository(MetricsLog::class)->findAll());
     }
 
     protected function assertModuleHasState($expectedState)

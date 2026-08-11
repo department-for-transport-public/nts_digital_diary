@@ -199,10 +199,12 @@ abstract class AbstractFormTestAction extends PathTestAction
 
                 throw new \InvalidArgumentException("Unable to fetch button with ID #{$submitButtonId} {$hints}");
             }
+            $client->waitFor('body');
 
             // we can't test response code, so we search for an exception heading
-            $nodeCount = $client->getCrawler()->filter('h1.exception-message')->count();
-            $message = $nodeCount > 0 ? "Symfony exception: {$client->getCrawler()->filter('h1.exception-message')->getText()}" : "";
+            $nodes = $client->getCrawler()->filter('h1.exception-message');
+            $nodeCount = $nodes->count();
+            $message = $nodeCount > 0 ? "Symfony exception: {$nodes->getText()}" : "";
             $testCase->assertEmpty($message, $message);
 
             $this->checkErrors($context, $testCaseIdx, array_flip($expectedErrorIds));

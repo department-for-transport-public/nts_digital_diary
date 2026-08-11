@@ -1,6 +1,7 @@
 breadcrumbs:
   dashboard: Dashboard
   training: Training
+  change-password: Change password
 
 diary-keeper.state:
     label: >-
@@ -90,7 +91,11 @@ diary-keeper:
     sharee: Sharee
 
   boardings: Boardings
-  day: Day {dayNumber} — {date}
+  day: >-
+    {dayNumber, select,
+      0     {Practice day — {date}}
+      other {Day {dayNumber} — {date}}
+    }
   destination : Destination
   distance: Distance
   driver: Driver?
@@ -191,7 +196,7 @@ diary-state:
       heading: There was a problem un-approving the diary for {name}
       content: The diary could not be un-approved. Review the diary status before trying again.
   re-open:
-    page-title: Mark diary and in progress (re-open)?
+    page-title: Mark diary as in progress (re-open)?
     breadcrumb: Re-open diary
     copy: Re-opening this diary will allow {name} (and authorised proxies) to edit the diary again.
     confirm: Re-open diary
@@ -200,7 +205,7 @@ diary-state:
       content: The diary for {name} has been re-opened
     failed-notification:
       heading: There was a problem re-opening the diary for {name}
-      content: The diary was could not be re-opened. Review the diary status before trying again.
+      content: The diary could not be re-opened. Review the diary status before trying again.
   discard:
     page-title: Discard diary?
     breadcrumb: Discard diary
@@ -396,3 +401,26 @@ compare-household:
     taxi: Taxi
     train: Train
     other-public-other: "Other public: {other}"
+  day-1-journeys-without-short-walks: >-
+    There are journeys on day 1, but no short walks. Add a note to indicate that you have confirmed with the respondent that this is correct. 
+
+
+change-password:
+  page-title: Change password
+  success-banner:
+    heading: Password changed
+    content: Your password has been successfully changed.
+
+diary-editing:
+  day-notes:
+    page-title: >-
+      {dayNumber, select,
+        0     {Edit interviewer notes for {name} on practice day}
+        other {Edit interviewer notes for {name} on day {dayNumber}}
+      }
+    save: "Save"
+    breadcrumb: >-
+      {dayNumber, select,
+        0     {Notes on practice day}
+        other {Notes on day {dayNumber}}
+      }

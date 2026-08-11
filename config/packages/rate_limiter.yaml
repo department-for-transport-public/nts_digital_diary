@@ -44,6 +44,10 @@ framework:
             limit: 5
             interval: '10 minutes'
         account_creation_link_expired:
-            policy: 'fixed_window'
+            policy: 'sliding_window'
             limit: 1
-            interval: '1 day'
+            interval: '3 days'
+        account_activation_link_reuse:
+            policy: 'sliding_window'
+            limit: 10
+            interval: '1 month' # signed account activation urls last a couple of weeks at most. One token is spent per fresh session, so this limits a URL to 10 uses.

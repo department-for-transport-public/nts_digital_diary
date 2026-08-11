@@ -50,6 +50,7 @@ class EmailChangeTest extends AbstractInterviewerDiaryKeeperTest
 
         $passwordResetUrl = MessageUrlRetriever::getUrlFromMessage(self::getContainer(), $this);
         $this->client->request(Request::METHOD_GET, $passwordResetUrl);
+        $this->completePreAuthForm();
 
         // Set a new password
         $this->client->submitForm('Create account', [
@@ -57,7 +58,9 @@ class EmailChangeTest extends AbstractInterviewerDiaryKeeperTest
             'change_password[password2]' => 'Banana1234',
         ]);
 
-        $this->assertEquals('/login', $this->client->getRequest()->getRequestUri());
+        $this->assertEquals('/travel-diary', $this->client->getRequest()->getRequestUri());
+        $this->client->clickLink('Logout');
+        $this->client->request(Request::METHOD_GET, '/login');
 
         // Verify that old email + old password, old email + new password do not work
         $this->submitLoginForm('diary-keeper-no-password@example.com', 'password');
@@ -67,6 +70,61 @@ class EmailChangeTest extends AbstractInterviewerDiaryKeeperTest
         $this->assertEquals('/login', $this->client->getRequest()->getRequestUri());
 
         // Verify that new email + new password works...
+        $this->submitLoginForm($newEmailAddress, 'Banana1234');
+        $this->assertEquals('/travel-diary', $this->client->getRequest()->getRequestUri());
+
+        // Log back in as interviewer to confirm "pending change" flag has gone
+        $this->client->clickLink('Logout');
+        $this->logInAsInterviewerAndDrillDownToUsersHouseholdPage($newEmailAddress);
+        $this->client->clickLink("Details / actions for {$dk->getName()}");
+        $this->assertStringNotContainsString('change pending', $this->client->getCrawler()->text());
+    }
+
+    public function testPasswordResetForConfirmedDiaryKeeper(): void
+    {
+        $newEmailAddress = "new-confirmed-dk-email@example.com";
+
+        $dk = $this->repository->getReference('diary-keeper:adult', DiaryKeeper::class);
+        $oldEmail = $dk->getUser()->getUserIdentifier();
+
+        $this->logInAsInterviewerAndDrillDownToUsersHouseholdPage($oldEmail);
+
+        $this->client->clickLink("Details / actions for {$dk->getName()}");
+        $this->client->clickLink('Change email');
+
+        $this->client->submitForm('Change email address', [
+            'change_email[emailAddress]' => $newEmailAddress,
+        ]);
+
+        // ensure "pending change" flag is present
+        $this->assertStringContainsString('change pending', $this->client->getCrawler()->text());
+
+        // Logout, and then visit the reset URL that can be retrieved from messenger
+        $this->client->clickLink('Logout');
+
+        $passwordResetUrl = MessageUrlRetriever::getUrlFromMessage(self::getContainer(), $this);
+        $this->client->request(Request::METHOD_GET, $passwordResetUrl);
+        $this->completePreAuthForm();
+
+        // Set a new password
+        $this->client->submitForm('Create account', [
+            'change_password[password1]' => 'Banana1234',
+            'change_password[password2]' => 'Banana1234',
+        ]);
+
+        $this->assertEquals('/travel-diary', $this->client->getRequest()->getRequestUri());
+        $this->client->clickLink('Logout');
+        $this->client->request(Request::METHOD_GET, '/login');
+
+        // Verify that old email + old password does not work
+        $this->submitLoginForm($oldEmail, 'password');
+        $this->assertEquals('/login', $this->client->getRequest()->getRequestUri());
+
+        // Verify that old email + new password does not work
+        $this->submitLoginForm($oldEmail, 'Banana1234');
+        $this->assertEquals('/login', $this->client->getRequest()->getRequestUri());
+
+        // Verify that new email + new password works
         $this->submitLoginForm($newEmailAddress, 'Banana1234');
         $this->assertEquals('/travel-diary', $this->client->getRequest()->getRequestUri());
 

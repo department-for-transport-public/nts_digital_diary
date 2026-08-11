@@ -15,7 +15,6 @@ use Symfony\Component\Security\Core\Authorization\AuthorizationCheckerInterface;
 use Symfony\Component\Workflow\WorkflowInterface;
 
 #[AsDoctrineListener(event: Events::onFlush)]
-#[AsDoctrineListener(event: Events::prePersist)]
 class DiaryKeeperStateSubscriber
 {
     public function __construct(
@@ -23,25 +22,6 @@ class DiaryKeeperStateSubscriber
         protected AuthorizationCheckerInterface $authorizationChecker,
         protected Security                      $security,
     ) {}
-
-    public function prePersist(PrePersistEventArgs $eventArgs): void
-    {
-        $entity = $eventArgs->getObject();
-
-        // Set diary to "started" (if not already in that state) when creating a Journey
-        if ($entity instanceof Journey) {
-            $diaryDay = $entity->getDiaryDay();
-            if ($diaryDay && $diaryDay->isPracticeDay()) {
-                // Practice day - don't change state
-                return;
-            }
-            $diaryKeeper = $diaryDay ? $diaryDay->getDiaryKeeper() : null;
-
-            if ($this->travelDiaryStateStateMachine->can($diaryKeeper, DiaryKeeper::TRANSITION_START)) {
-                $this->travelDiaryStateStateMachine->apply($diaryKeeper, DiaryKeeper::TRANSITION_START);
-            }
-        }
-    }
 
     public function onFlush(OnFlushEventArgs $eventArgs): void
     {

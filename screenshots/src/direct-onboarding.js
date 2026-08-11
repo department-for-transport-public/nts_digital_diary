@@ -1,6 +1,6 @@
 const {getScreenshotter, clickButtonWithText, submit, clickLinkContainingText} = require("./common")
 const {fixtures} = require("./fixtures");
-module.exports.directOnboardingFlow = async function(page, baseUrl, outputDir, directOnboardingUrl) {
+module.exports.directOnboardingFlow = async function(page, outputDir, directOnboardingUrl) {
     const screenshot = await getScreenshotter(page, outputDir + 'direct/')
 
     await page.goto(directOnboardingUrl)

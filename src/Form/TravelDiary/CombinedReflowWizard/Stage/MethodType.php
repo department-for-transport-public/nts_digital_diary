@@ -1,0 +1,81 @@
+<?php
+
+namespace App\Form\TravelDiary\CombinedReflowWizard\Stage;
+
+use App\Entity\Journey\Method;
+use App\Entity\Journey\Stage;
+use App\Form\TravelDiary\StageWizard\MethodDataMapper;
+use Doctrine\Common\Collections\ArrayCollection;
+use Doctrine\ORM\EntityManagerInterface;
+use Ghost\GovUkFrontendBundle\Form\Type\EntityType;
+use Ghost\GovUkFrontendBundle\Form\Type\InputType;
+use Symfony\Component\Form\AbstractType;
+use Symfony\Component\Form\FormBuilderInterface;
+use Symfony\Component\OptionsResolver\OptionsResolver;
+
+class MethodType extends AbstractType
+{
+    public const array INJECT_TRANSLATION_PARAMETERS = [
+        'dayNumber' => 'journey.diaryDay.number',
+    ];
+
+    public function __construct(protected readonly EntityManagerInterface $entityManager)
+    {}
+
+    public function buildForm(FormBuilderInterface $builder, array $options): void
+    {
+        $builder->setDataMapper(new MethodDataMapper());
+
+        /** @var Method[]|ArrayCollection<Method> $choices */
+        $choices = $this->entityManager->getRepository(Method::class)->findBy([], ['sort' => 'ASC']);
+        $choices = array_combine(array_map(fn(Method $m): ?string => $m->getDescriptionTranslationKey(), $choices), $choices);
+
+        $choiceOptions = [
+            'walk' => ['help' => "stage.method.choices.walk.help"],
+        ];
+
+        $otherFormConfig = [];
+        foreach ($choices as $key=>$choice) {
+            if ($choice->isOtherRequired()) {
+                $transKey = $choice->getDescriptionTranslationKey();
+                $formName = "other-$transKey";
+                $choiceOptions[$key] = ['conditional_form_name' => $formName];
+                $otherFormConfig[$formName] = [
+                    'label' => "stage.method.other.$transKey.label",
+                    'label_attr' => ['class' => 'govuk-hint'],
+                    'help' => "stage.method.other.$transKey.help",
+                ];
+            }
+        }
+
+        $builder
+            ->add('method', EntityType::class, [
+                'label' => false,
+                'help' => 'add-journey.stage-method.help',
+                'class' => Method::class,
+                'choices' => $choices,
+                'choice_label' => fn(Method $choice): string => "stage.method.choices.{$choice->getDescriptionTranslationKey()}",
+                'choice_options' => $choiceOptions,
+                'group_by' => fn(Method $method): string => Method::TYPE_PRIVATE === $method->getDisplayGroup() ?
+                    "stage.method.groups.private" :
+                    "stage.method.groups.public",
+                'group_label_attr' => ['class' => 'govuk-fieldset__legend--m'],
+                'group_label_heading_element' => 'h2',
+            ]);
+
+        foreach ($otherFormConfig as $name => $config) {
+            $builder->add($name, InputType::class, array_merge_recursive([
+                'mapped' => false,
+            ], $config));
+        }
+    }
+
+    public function configureOptions(OptionsResolver $resolver): void
+    {
+        $resolver->setDefaults([
+            'data_class' => Stage::class,
+            'validation_groups' => 'wizard.stage.method',
+            'translation_domain' => 'travel-diary',
+        ]);
+    }
+}

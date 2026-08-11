@@ -1,0 +1,5 @@
+framework:
+    session:
+        ## Pentest recommended limiting session lifetime
+        # using gc_maxlifetime looks at idle time, not just a finite cookie lifetime
+        gc_probability: 5

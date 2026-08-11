@@ -5,11 +5,14 @@ actions:
   cancel: Cancel
   back: Back
   change: Change
+  change-password: Change password
   confirm: Confirm
   continue: Continue
+  create-account: Create account
   delete: Delete
   move-up: Move up
   move-down: Move down
+  reset-password: Reset password
   save-and-continue: Save and continue
   save: Save
   view: View
@@ -165,7 +168,7 @@ login:
     help: ''
   remember-me:
     label: Remember me
-    help: Selecting this will allow you to remain logged in for 2 weeks. You shouldn't enable this if you are using a shared computer or device.
+    help: Selecting this will allow you to remain logged in for up to a week. You shouldn't enable this if you are using a shared computer or device.
   sign-in:
     label: Sign in
 
@@ -193,16 +196,12 @@ time:
   12-hour:
     label: 12 hour
     help: |-
-      Use 12-hour format.  
-      For example, 7:30 am or 10:15 pm.
-      Midday is 12pm.
+      Use 12-hour format. For example, 7:30 am or 10:15 pm. Midday is 12pm.
     short-help: For example, 7:30 am or 10:15 pm.
   24-hour:
     label: 24 hour
     help: |-
-      Use 24-hour format.
-      For example, 7:30 or 22:15
-      Midnight is 0:00.
+      Use 24-hour format. For example, 7:30 or 22:15. Midnight is 0:00.
     short-help: For example, 7:30 or 22:15
 unit.distance:
   miles: Miles
@@ -220,6 +219,17 @@ wizard.unique-constraint-violation.notification:
   content: The information you were trying to add has not been saved, as an existing record with matching information was
     found. Check the record details to ensure they are correct before proceeding.
 
+
+password:
+  choose:
+    label: Choose a password
+    help: "Your password must be at least 8 characters long, and must contain an uppercase letter, a lowercase letter and a number."
+  repeat:
+    label: Repeat the password
+    help: ''
+  current:
+    label: Current password
+    help: ''
 
 user-preferences:
   page-title: "User preferences for {name}"

@@ -43,6 +43,7 @@ steps:
           - 'APP_FEEDBACK_RECIPIENTS=${_APP_FEEDBACK_RECIPIENTS}'
           - 'APP_RECAPTCHA_SECRET_KEY=${_APP_RECAPTCHA_SECRET_KEY}'
           - 'APP_RECAPTCHA_SITE_KEY=${_APP_RECAPTCHA_SITE_KEY}'
+          - 'APP_TEMP_BUCKET_NAME=${_APP_TEMP_BUCKET_NAME}'
       waitFor: ['install-ghost-bundle']
 
     ## The app deployment will not run `composer install` if the composer.lock file has not changed

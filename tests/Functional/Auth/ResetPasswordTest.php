@@ -26,6 +26,7 @@ class ResetPasswordTest extends AbstractAuthTestCase
         // Follow the link and reset the password...
         $this->client->request(Request::METHOD_GET, $this->getUrlFromMessage(Reference::FORGOTTEN_PASSWORD_EVENT));
         $newPassword = 'Banana1234';
+        $this->client->submitForm('form_continue'); // ingres form
         $this->client->submitForm('Reset password', [
             'change_password[password1]' => $newPassword,
             'change_password[password2]' => $newPassword,
@@ -66,6 +67,7 @@ class ResetPasswordTest extends AbstractAuthTestCase
 
         // Follow the link and reset the password...
         $this->client->request(Request::METHOD_GET, $this->getUrlFromMessage(Reference::FORGOTTEN_PASSWORD_EVENT));
+        $this->client->submitForm('form_continue'); // ingres form
         $this->client->submitForm('Reset password', [
             'change_password[password1]' => $password1,
             'change_password[password2]' => $password2,

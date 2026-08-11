@@ -9,10 +9,9 @@ use Doctrine\ORM\Query\Expr;
 
 class FeedbackMetadataDataExport extends AbstractDataExport
 {
-    public function getExportDataResponse(string $description = 'Feedback and support metadata', string $filenamePrefix = 'nts-feedback-metadata'): Response
+    public function getExportData(): string
     {
-        $csv = $this->serializer->serialize($this->getMetadata(), 'csv', [DateTimeNormalizer::FORMAT_KEY => 'Y-m-d H:i:s']);
-        return $this->getFileDownloadResponse($csv, 'Feedback and support metadata', 'nts-feedback-metadata');
+        return $this->serializer->serialize($this->getMetadata(), 'csv', [DateTimeNormalizer::FORMAT_KEY => 'Y-m-d H:i:s']);
     }
 
     protected function getMetadata(): array

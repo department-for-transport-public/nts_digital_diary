@@ -7,12 +7,15 @@ use App\Entity\AreaPeriod;
 use App\Entity\DiaryKeeper;
 use App\Entity\Household;
 use App\Entity\User;
+use App\Tests\DataFixtures\AreaPeriodFixtures;
 use Doctrine\Common\DataFixtures\AbstractFixture;
 use Doctrine\Common\DataFixtures\DependentFixtureInterface;
 use Doctrine\Persistence\ObjectManager;
 
 class DiaryKeeperForDiaryAccessFixtures extends AbstractFixture implements DependentFixtureInterface
 {
+    use CreateUserTrait;
+
     public function load(ObjectManager $manager): void
     {
         $areaPeriod = $this->getReference('area-period:2', AreaPeriod::class);
@@ -52,21 +55,8 @@ class DiaryKeeperForDiaryAccessFixtures extends AbstractFixture implements Depen
         $manager->flush();
     }
 
-    protected function createUser(ObjectManager $manager, string $email, ?string $password='password'): User
-    {
-        $user = (new User())
-            ->setUsername($email);
-
-        if ($password) {
-            $user->setPlainPassword($password);
-        }
-
-        $manager->persist($user);
-        return $user;
-    }
-
     public function getDependencies(): array
     {
-        return [NtsFixtures::class];
+        return [NtsFixtures::class, AreaPeriodFixtures::class];
     }
 }

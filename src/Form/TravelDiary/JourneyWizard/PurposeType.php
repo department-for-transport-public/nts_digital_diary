@@ -12,11 +12,12 @@ class PurposeType extends AbstractType
 {
     public function buildForm(FormBuilderInterface $builder, array $options): void
     {
+        $isSubForm = $options['is_sub_form'];
         $builder
             ->add('purpose', InputType::class, [
-                'label_is_page_heading' => true,
+                'label_is_page_heading' => !$isSubForm,
                 'label' => $options['purpose_label'],
-                'label_attr' => ['class' => 'govuk-label--l'],
+                'label_attr' => ['class' => $isSubForm ? 'govuk-label--m' : 'govuk-label--l'],
                 'help' => "journey.purpose.help",
                 'help_html' => 'markdown',
                 'attr' => [
@@ -34,6 +35,7 @@ class PurposeType extends AbstractType
             'data_class' => Journey::class,
             'translation_domain' => 'travel-diary',
             'validation_groups' => 'wizard.journey.purpose',
+            'is_sub_form' => false,
         ]);
     }
 }

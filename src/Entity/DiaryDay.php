@@ -12,6 +12,9 @@ use Symfony\Component\Validator\Constraints as Assert;
 #[ORM\Entity(repositoryClass: DiaryDayRepository::class)]
 class DiaryDay
 {
+    public const int PRACTICE_DAY_NUMBER = 0;
+    public const int EXAMPLE_DAY_NUMBER = -1;
+
     use IdTrait;
 
     #[ORM\Column(type: 'integer')]
@@ -86,6 +89,11 @@ class DiaryDay
         return $this->journeys;
     }
 
+    public function getNonEmptyJourneys(): Collection
+    {
+        return $this->journeys->filter(fn(Journey $journey) => $journey->getStages()->count() > 0);
+    }
+
     public function addJourney(Journey $journey): self
     {
         if (!$this->journeys->contains($journey)) {
@@ -146,6 +154,21 @@ class DiaryDay
 
     public function isPracticeDay(): bool
     {
-        return $this->number === 0;
+        return $this->number === self::PRACTICE_DAY_NUMBER;
+    }
+
+    public function hasShortWalks(): bool
+    {
+        foreach ($this->journeys as $journey) {
+            if ($journey->hasShortWalkStage()) {
+                return true;
+            }
+        }
+        return false;
+    }
+
+    public function isExampleDay(): bool
+    {
+        return $this->number === self::EXAMPLE_DAY_NUMBER;
     }
 }

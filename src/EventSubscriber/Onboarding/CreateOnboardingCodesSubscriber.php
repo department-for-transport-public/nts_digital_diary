@@ -24,7 +24,7 @@ class CreateOnboardingCodesSubscriber
         }
 
         // Do not create codes for training areas
-        if ($entity->getTrainingInterviewer()) {
+        if ($entity->isTrainingArea()) {
             return;
         }
 

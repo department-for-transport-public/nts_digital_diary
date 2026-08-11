@@ -40,40 +40,60 @@ abstract class AbstractApiWebTestCase extends AbstractFunctionalWebTestCase
         return strtr($interviewerId, "ABCDEFGHIJKLMNOPQRSTUVWXYZ0123456789", "BCDEFGHIJKLMNOPQRSTUVWXYZ0123456789A");
     }
 
-    protected function makeSignedRequest(string $endpoint, array $queryParams = [], array $options = [], array $content = []): ?Crawler
+    protected function makeSignedRequest(string $endpoint, array $queryParams = [], array $options = [], array $content = [], int $authVersion = 2): ?Crawler
     {
         if (!($options['noDefaultQueryParams'] ?? null)) {
             $queryParams['timestamp'] ??= time();
         }
 
+        $options['method'] ??= 'GET';
+
         $apiUser = $this->getApiUserFixture();
         $queryString = $this->queryParamsToQueryString($queryParams);
+        $jsonContent = empty($content) ? "" : json_encode($content);
 
-        $server = [
-            'HTTP_X_AUTH_KEY' => $apiUser->getKey(),
-            'HTTP_X_AUTH_SIGNATURE' => $options['signature'] ?? $this->signString($queryString, $apiUser),
-        ];
+        switch ($authVersion) {
+            case 1:
+                $server = [
+                    'HTTP_X_AUTH_KEY' => $apiUser->getKey(),
+                    'HTTP_X_AUTH_SIGNATURE' => $options['signature'] ?? $this->signString($queryString, $apiUser),
+                ];
+                break;
 
-        $jsonContent = empty($content) ? null : json_encode($content);
+            case 2:
+                $hashContent = hash('sha256', $jsonContent);
+                $sigBody = "{$options['method']}.{$hashContent}.http://localhost{$endpoint}?{$queryString}";
+                $server = [
+                    'HTTP_X_AUTH_VERSION' => 2,
+                    'HTTP_X_AUTH_KEY' => $apiUser->getKey(),
+                    'HTTP_X_AUTH_SIGNATURE' => $options['signature'] ?? $this->signString($sigBody, $apiUser),
+                ];
+                break;
+
+            default: throw new RuntimeException("Unknown auth version: {$authVersion}");
+        }
+
         if ($jsonContent) {
             $server['HTTP_ACCEPT'] = $server['CONTENT_TYPE'] = 'application/json';
         }
 
-        return $this->client->request($options['method'] ?? 'GET', "{$endpoint}?{$queryString}", [], [], $server, $jsonContent);
+        return $this->client->request($options['method'], "{$endpoint}?{$queryString}", [], [], $server, $jsonContent);
     }
 
-    protected function makeSignedRequestAndGetResponse(string $endPoint, array $queryParams = [], array $options = [], array $data = [], bool $addNonce = true): ?array
+    protected function makeSignedRequestAndGetResponse(string $endPoint, array $queryParams = [], array $options = [], array $data = [], ?bool $addNonce = null, int $authVersion = 2): ?array
     {
         $expectedResponseCode = $options['expectedResponseCode'] ?? 200;
         $expectBody = in_array($expectedResponseCode, [200, 201]);
 
-        if ($addNonce && !isset($queryParams['_nonce'])) {
+        if (($authVersion === 1 && $addNonce !== false) || $addNonce) {
             try {
-                $queryParams['_nonce'] = bin2hex(random_bytes(4));
+                if (!isset($queryParams['_nonce'])) {
+                    $queryParams['_nonce'] = bin2hex(random_bytes(4));
+                }
             } catch (\Throwable) {
             }
         }
-        $this->makeSignedRequest($endPoint, $queryParams, $options, $data);
+        $this->makeSignedRequest($endPoint, $queryParams, $options, $data, $authVersion);
         self::assertResponseStatusCodeSame($expectedResponseCode);
 
         if (!$expectBody) {

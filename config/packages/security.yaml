@@ -52,7 +52,8 @@ security:
             provider: hmac
             stateless: true
             custom_authenticators:
-                - App\Security\HmacAuth\HmacAuthenticator
+                - App\Security\HmacAuth\HmacAuthenticatorV2
+                - App\Security\HmacAuth\HmacAuthenticatorV1
             login_throttling:
                 limiter: 'limiter.api'
 
@@ -74,7 +75,7 @@ security:
                 limiter: 'limiter.login'
             remember_me:
                 secret: '%kernel.secret%'
-                lifetime: 1209600 # 2 weeks
+                lifetime: 604800 # 1 week
                 remember_me_parameter: user_login[remember_me]
                 signature_properties: ['password']
             form_login:

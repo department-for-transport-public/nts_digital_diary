@@ -11,6 +11,6 @@
                 <p class="govuk-body">Acting as {{ app.user.diaryKeeper.name }} - <a class="govuk-link" href="{{ impersonation_exit_path(path('app_home')) }}">Exit / Go back to my own diary</a></p>
             {%- endif -%}
         {%- endset -%}
-        {{ notificationBanner({title: 'notification.user-impersonation', content: content}, {html_content: true, class: 'govuk-notification-banner--impersonation'}) }}
+        {{ notificationBanner({titleText: 'notification.user-impersonation' | trans, html: content, classes: 'govuk-notification-banner--impersonation'}) }}
     {% endif %}
 {%- endif -%}

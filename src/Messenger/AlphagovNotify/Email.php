@@ -20,6 +20,11 @@ class Email extends AbstractMessage
         ];
     }
 
+    public function getRecipient(): ?string
+    {
+        return $this->emailAddress;
+    }
+
     public function getPersonalisation(): ?array
     {
         return array_merge(parent::getPersonalisation(), ['email address' => $this->getEmailAddress()]);

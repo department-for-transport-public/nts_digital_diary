@@ -8,7 +8,7 @@ use Doctrine\DBAL\Exception;
 use Doctrine\DBAL\Platforms\AbstractPlatform;
 use Doctrine\DBAL\Platforms\Exception\NotSupported;
 use Doctrine\DBAL\Platforms\MySQLPlatform;
-use Doctrine\DBAL\Platforms\SqlitePlatform;
+use Doctrine\DBAL\Platforms\SQLitePlatform;
 use Doctrine\DBAL\Types\Exception\InvalidFormat;
 use Doctrine\DBAL\Types\Exception\InvalidType;
 use Doctrine\DBAL\Types\Type;
@@ -41,7 +41,7 @@ class DateTimeMicrosecondType extends Type
             return "DATETIME(6)";
         }
 
-        if ($platform instanceof SqlitePlatform) {
+        if ($platform instanceof SQLitePlatform) {
             return "VARCHAR(24)";
         }
 

@@ -4,8 +4,8 @@ namespace App\Tests\Utility\Metrics;
 
 use App\Entity\Journey\Journey;
 use App\Entity\Journey\Stage;
-use App\Entity\Utility\MetricsLog;
-use App\Repository\Utility\MetricsLogRepository;
+use App\Entity\Metrics\MetricsLog;
+use App\Repository\Metrics\MetricsLogRepository;
 use App\Tests\AbstractFixturesTest;
 use App\Tests\DataFixtures\StageFixtures;
 use Doctrine\ORM\EntityManagerInterface;

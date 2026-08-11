@@ -15,7 +15,7 @@ use Symfony\Component\Routing\Attribute\Route;
 use Symfony\Component\Security\Http\Attribute\IsGranted;
 
 #[Redirect("!is_granted('EDIT_DIARY')", route: "traveldiary_dashboard")]
-#[Route(path: '/journey/{journeyId}', name: 'journey')]
+#[Route(path: '/journey/{journeyId}', name: 'journey', requirements: ['journeyId' => '\w{26}'])]
 #[IsGranted(DiaryAccessVoter::ACCESS, subject: 'journey', statusCode: 404)]
 class JourneyController extends AbstractController
 {

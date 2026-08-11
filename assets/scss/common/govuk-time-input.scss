@@ -31,6 +31,10 @@
 
     .govuk-radios__item {
         margin-bottom: 0;
+
+        .govuk-radios__label {
+            max-width: none;
+        }
     }
 }
 

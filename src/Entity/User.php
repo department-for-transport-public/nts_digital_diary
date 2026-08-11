@@ -2,8 +2,12 @@
 
 namespace App\Entity;
 
+use App\Entity\Utility\NotifyApiResponse;
+use App\Entity\Utility\NotifyApiResponseTrait;
+use App\Messenger\AlphagovNotify\ApiResponseInterface;
 use App\Repository\UserRepository;
 use App\Validator\Constraints\EmailOrNoLoginPlaceholder;
+use Doctrine\Common\Collections\Collection;
 use Doctrine\ORM\Event\PreFlushEventArgs;
 use Doctrine\ORM\Mapping as ORM;
 use Symfony\Bridge\Doctrine\Validator\Constraints\UniqueEntity;
@@ -20,16 +24,16 @@ use Symfony\Component\Validator\Context\ExecutionContextInterface;
 #[ORM\HasLifecycleCallbacks]
 #[ORM\Table]
 #[ORM\UniqueConstraint(columns: ['username', 'virtual_column_training_interviewer_id'])]
-class User implements UserInterface, PasswordAuthenticatedUserInterface, PreferenceUserInterface
+class User implements UserInterface, PasswordAuthenticatedUserInterface, PreferenceUserInterface, ApiResponseInterface
 {
-    public const NO_LOGIN_PLACEHOLDER = "no-login";
-    public const INTERVIEWER_TRAINING_PLACEHOLDER = "int-trng";
+    public const string NO_LOGIN_PLACEHOLDER = "no-login";
+    public const string INTERVIEWER_TRAINING_PLACEHOLDER = "int-trng";
 
-    public const ROLE_USER = 'ROLE_USER';
-    public const ROLE_INTERVIEWER = 'ROLE_INTERVIEWER';
-    public const ROLE_DIARY_KEEPER = 'ROLE_DIARY_KEEPER';
+    public const string ROLE_USER = 'ROLE_USER';
+    public const string ROLE_INTERVIEWER = 'ROLE_INTERVIEWER';
+    public const string ROLE_DIARY_KEEPER = 'ROLE_DIARY_KEEPER';
 
-    use IdTrait;
+    use IdTrait, NotifyApiResponseTrait;
 
     #[Assert\Email(message: 'wizard.diary-keeper.user-identifier.email', groups: ['admin.interviewer', 'api.interviewer'])]
     #[Assert\NotBlank(message: 'wizard.diary-keeper.user-identifier.not-blank', groups: ['admin.interviewer', 'api.interviewer'])]
@@ -37,6 +41,12 @@ class User implements UserInterface, PasswordAuthenticatedUserInterface, Prefere
     #[EmailOrNoLoginPlaceholder(message: "wizard.diary-keeper.user-identifier.email", groups: ["wizard.on-boarding.diary-keeper.user-identifier", "direct-onboarding.logins"])]
     #[ORM\Column(type: 'string', length: 180)]
     private string $username = '';
+
+    /**
+     * @var Collection<int, NotifyApiResponse>
+     */
+    #[ORM\ManyToMany(targetEntity: NotifyApiResponse::class, cascade: ['remove'])]
+    protected Collection $apiResponses;
 
     #[Assert\Callback(groups: ['wizard.on-boarding.direct.interviewer-training'])]
     public function validateDirectOnboardingTrainingDuplicateUsernames(ExecutionContextInterface $context): void
@@ -353,5 +363,19 @@ class User implements UserInterface, PasswordAuthenticatedUserInterface, Prefere
             $this->preferences = new UserPreferences();
         }
         return $this->preferences;
+    }
+
+    public function getNotifyApiResponses(): Collection
+    {
+        return $this->apiResponses;
+    }
+
+    public function addNotifyApiResponse(NotifyApiResponse $notifyApiResponse): static
+    {
+        if (!$this->apiResponses->contains($notifyApiResponse)) {
+            $this->apiResponses[] = $notifyApiResponse;
+        }
+
+        return $this;
     }
 }

@@ -89,6 +89,9 @@
         {%- if is_granted('HOUSEHOLD_MAINTENANCE_ADD_DIARY_KEEPER', household) -%}
             <a href="{{ path('admin_household_maintenance_add_diary_keeper_place', {id: household.id}) }}" class="govuk-button govuk-button">{{ 'household-maintenance.household-details.add-diary-keeper.label' | trans }}</a>
         {%- endif -%}
+        {%- if is_granted('ADMIN_VIEW_HOUSEHOLD_METRICS') -%}
+            <a href="{{ path('admin_household_maintenance_metrics', {id: household.id}) }}" class="govuk-button govuk-button--secondary">View metrics</a>
+        {%- endif -%}
     </div>
 
     <ul class="govuk-list govuk-!-margin-bottom-8">

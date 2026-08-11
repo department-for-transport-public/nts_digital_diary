@@ -48,9 +48,6 @@ class DiaryKeeper implements UserPersonInterface
     #[ORM\Column(type: 'boolean')]
     private ?bool $isAdult = null;
 
-    #[ORM\Column(type: 'boolean', nullable: true)]
-    private ?bool $hasUsedPracticeDay = null;
-
     #[Assert\NotBlank(message: 'wizard.diary-keeper.name.not-null', groups: ['wizard.on-boarding.diary-keeper.details', 'direct-onboarding.ingress'])]
     #[Assert\Length(max: 255, maxMessage: 'common.string.max-length', groups: ['wizard.on-boarding.diary-keeper.details', 'direct-onboarding.ingress'])]
     #[ORM\Column(type: 'string', length: 255)]
@@ -74,8 +71,6 @@ class DiaryKeeper implements UserPersonInterface
     #[ORM\OneToMany(mappedBy: 'primaryDriver', targetEntity: Vehicle::class)]
     #[ORM\OrderBy(['friendlyName' => 'ASC'])]
     private Collection $primaryDriverVehicles;
-
-    private ?array $frequentLocations = [];
 
     /**
      * Orphan removal is required here, as part of on-boarding.
@@ -111,6 +106,9 @@ class DiaryKeeper implements UserPersonInterface
 
     #[ORM\OneToOne(targetEntity: SatisfactionSurvey::class, inversedBy: 'diaryKeeper', cascade: ['persist', 'remove'])]
     private ?SatisfactionSurvey $satisfactionSurvey = null;
+
+    #[ORM\Column(type: 'datetime_immutable', nullable: true)]
+    private ?DateTimeImmutable $weekStartReminderSentAt = null;
 
     public function __construct()
     {
@@ -170,13 +168,7 @@ class DiaryKeeper implements UserPersonInterface
 
     public function getHasUsedPracticeDay(): ?bool
     {
-        return $this->hasUsedPracticeDay;
-    }
-
-    public function setHasUsedPracticeDay(?bool $hasUsedPracticeDay): static
-    {
-        $this->hasUsedPracticeDay = $hasUsedPracticeDay;
-        return $this;
+        return $this->getPracticeDay()->getJourneys()->count() > 0;
     }
 
     public function getName(): ?string
@@ -207,12 +199,12 @@ class DiaryKeeper implements UserPersonInterface
     public function getDiaryDays(): Collection
     {
         // don't include the practice day
-        return $this->diaryDays->filter(fn(DiaryDay $d, $k): bool => $d->getNumber() !== 0);
+        return $this->diaryDays->filter(fn(DiaryDay $d, $k): bool => $d->getNumber() > 0);
     }
 
     public function getPracticeDay(): ?DiaryDay
     {
-        return $this->getDiaryDayByNumber(0);
+        return $this->getDiaryDayByNumber(DiaryDay::PRACTICE_DAY_NUMBER);
     }
 
     public function getDiaryDayByNumber(int $dayNumber): ?DiaryDay
@@ -258,17 +250,6 @@ class DiaryKeeper implements UserPersonInterface
             $user->setDiaryKeeper($newDiaryKeeper);
         }
 
-        return $this;
-    }
-
-    public function getFrequentLocations(): array
-    {
-        return $this->frequentLocations;
-    }
-
-    public function setFrequentLocations(array $frequentLocations): self
-    {
-        $this->frequentLocations = $frequentLocations;
         return $this;
     }
 
@@ -484,5 +465,22 @@ class DiaryKeeper implements UserPersonInterface
     public function isValidMediaType(): bool
     {
         return in_array($this->getMediaType(), [self::MEDIA_TYPE_DIGITAL, self::MEDIA_TYPE_INTERVIEWER_TRANSCRIBED, self::MEDIA_TYPE_PAPER]);
+    }
+
+    public function hasJourneysButNoShortWalksOnDayOne(): bool
+    {
+        return $this->getDiaryDayByNumber(1)->getJourneys()->count() > 0
+            && $this->getDiaryDayByNumber(1)->hasShortWalks() === false;
+    }
+
+    public function getWeekStartReminderSentAt(): ?DateTimeImmutable
+    {
+        return $this->weekStartReminderSentAt;
+    }
+
+    public function setWeekStartReminderSentAt(?DateTimeImmutable $weekStartReminderSentAt): self
+    {
+        $this->weekStartReminderSentAt = $weekStartReminderSentAt;
+        return $this;
     }
 }

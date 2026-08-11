@@ -17,7 +17,7 @@ Adding a `debug` parameter (with no value) will enable the display of any valida
 
 ### Household data
 
-- `add` - the address number for the household / the second part of the serial number (expected to be in the range 1-22)
+- `add` - the address number for the household / the second part of the serial number (expected to be in the range 1-25)
 - `h` - the household number / the third part of the serial number (1-99)
 - `start` - the diary week start date (yyyy-mm-dd)
 - `cl` - the check letter

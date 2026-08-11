@@ -8,23 +8,23 @@ use App\Utility\TravelDiary\UserPreferencesHelper;
 
 class DateTimeFormats
 {
-    public const MODE_12_HOUR = '12-hour';
-    public const MODE_24_HOUR = '24-hour';
+    public const string MODE_12_HOUR = '12-hour';
+    public const string MODE_24_HOUR = '24-hour';
 
 
-    private const DATE_DEFAULT = 'd/m/Y';
-    private const DATE_REVERSE = 'Y-m-d';
-    private const DATE_SHORT_WITH_DOW = 'D jS M';
-    private const DATE_WITH_DOW = 'l jS M';
+    public const string DATE_DEFAULT = 'd/m/Y';
+    public const string DATE_REVERSE = 'Y-m-d';
+    public const string DATE_SHORT_WITH_DOW = 'D jS M';
+    public const string DATE_WITH_DOW = 'l jS F';
 
-    private const TIME = [
+    private const array TIME = [
         self::MODE_12_HOUR => 'g:i a',
         self::MODE_24_HOUR => 'H:i'
     ];
 
     public function __construct(protected UserPreferencesHelper $userPreferencesHelper) {}
 
-    public const DATE_MODES = [
+    public const array DATE_MODES = [
         'default',
         'reverse',
         'with-dow',
@@ -44,7 +44,7 @@ class DateTimeFormats
         };
     }
 
-    public const TIME_MODES = [
+    public const array TIME_MODES = [
         self::MODE_12_HOUR,
         self::MODE_24_HOUR,
         'user-pref',

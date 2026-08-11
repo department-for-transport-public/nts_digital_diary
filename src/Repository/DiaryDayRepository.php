@@ -7,7 +7,6 @@ use App\Entity\User;
 use Doctrine\Bundle\DoctrineBundle\Repository\ServiceEntityRepository;
 use Doctrine\ORM\NonUniqueResultException;
 use Doctrine\ORM\NoResultException;
-use Doctrine\ORM\Query\Expr;
 use Doctrine\ORM\QueryBuilder;
 use Doctrine\Persistence\ManagerRegistry;
 use Symfony\Bundle\SecurityBundle\Security;
@@ -20,29 +19,37 @@ use Symfony\Bundle\SecurityBundle\Security;
  */
 class DiaryDayRepository extends ServiceEntityRepository
 {
-    public function __construct(ManagerRegistry $registry, protected readonly Security $security)
-    {
+    public function __construct(
+        ManagerRegistry $registry,
+        protected readonly Security $security,
+    ) {
         parent::__construct($registry, DiaryDay::class);
     }
 
-    public function getQueryBuilderForRepeatJourneySourceDay(int $beforeOrIncludingDay = 7): QueryBuilder
+    public function getJourneyCountForUser(): int
+    {
+        /** @var User $user */
+        $user = $this->security->getUser();
+        $qb = $this->createQueryBuilder('diary_day')
+            ->leftJoin('diary_day.journeys', 'journey')
+            ->select('count(journey) as count')
+            ->where('diary_day.diaryKeeper = :diary_keeper')
+            ->setParameter('diary_keeper', $user->getDiaryKeeper());
+        return (int)$qb->getQuery()->getSingleScalarResult();
+    }
+
+    public function getQueryBuilderForRepeatJourneySourceDay(): QueryBuilder
     {
         /** @var User $user */
         $user = $this->security->getUser();
         $qb = $this->createQueryBuilder('diary_day')
             ->leftJoin('diary_day.diaryKeeper', 'diary_keeper')
             ->where('diary_keeper = :diary_keeper')
+            ->andWhere('diary_day.number <= 7')
+            ->andWhere('diary_day.number >= 0')
             ->orderBy('diary_day.number')
-            ->setParameter('diary_keeper', $user->getDiaryKeeper())
-            ->setParameter('number', $beforeOrIncludingDay);
+            ->setParameter('diary_keeper', $user->getDiaryKeeper());
 
-        if ($beforeOrIncludingDay === 0) {
-            $qb->andWhere('diary_day.number = :number');
-        } else {
-            $qb
-                ->andWhere('diary_day.number <= :number')
-                ->andWhere('diary_day.number >= 1');
-        }
         return $qb;
     }
 
@@ -65,11 +72,7 @@ class DiaryDayRepository extends ServiceEntityRepository
         return $this->createQueryBuilder('diary_day')
             ->leftJoin('diary_day.diaryKeeper', 'diary_keeper')
             ->where('diary_keeper = :diary_keeper')
-            ->andWhere(new Expr\Comparison(
-                'diary_day.number',
-                $sourceDay->getNumber() === 0 ? Expr\Comparison::EQ : Expr\Comparison::GTE,
-                ':number')
-            )
+            ->andWhere('diary_day.number >= :number')
             ->orderBy('diary_day.number')
             ->setParameter('diary_keeper', $user->getDiaryKeeper())
             ->setParameter('number', $sourceDay->getNumber());

@@ -154,11 +154,15 @@
     <div class="govuk-grid-row">
         <div class="govuk-grid-column-one-half">
             <h3 class="govuk-heading-s">{{ "day.notes.diary-keepers-notes" | trans({}, 'travel-diary') }}</h3>
-            <div class="govuk-body-s">{{ day.diaryKeeperNotes ?? ("day.notes.no-notes" | trans({}, 'travel-diary')) }}</div>
+            <div class="govuk-body-s">{{ (day.diaryKeeperNotes ?? ("day.notes.no-notes" | trans({}, 'travel-diary'))) | nl2br }}</div>
         </div>
         <div class="govuk-grid-column-one-half">
-            <h3 class="govuk-heading-s">{{ "day.notes.interviewers-notes" | trans({}, 'travel-diary') }}</h3>
-            <div class="govuk-body-s">{{ day.interviewerNotes ?? ("day.notes.no-notes" | trans({}, 'travel-diary')) }}</div>
+            <h3 class="govuk-heading-s">
+                {{ "day.notes.interviewers-notes" | trans({}, 'travel-diary') }}
+                <a class="govuk-link govuk-body-s govuk-!-margin-left-3" href="{{ path('interviewer_diary_notes_edit', {diaryKeeper: diaryKeeper.id, dayNumber: day.number}) }}">Edit<span class="govuk-visually-hidden"> interviewer notes</span></a>
+            </h3>
+            <div class="govuk-body-s">{{ (day.interviewerNotes ?? ("day.notes.no-notes" | trans({}, 'travel-diary'))) | nl2br }}</div>
+
         </div>
     </div>
 {% endmacro %}

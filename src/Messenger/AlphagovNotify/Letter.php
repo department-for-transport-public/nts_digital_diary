@@ -5,6 +5,7 @@ namespace App\Messenger\AlphagovNotify;
 
 
 use App\Entity\Embeddable\Address;
+use function PHPUnit\Framework\isEmpty;
 
 class Letter extends AbstractMessage
 {
@@ -49,5 +50,12 @@ class Letter extends AbstractMessage
             $notifyAddressFields,
             $address
         );
+    }
+
+    public function getRecipient(): ?string
+    {
+        return $this->address->isFilled()
+            ? join("\n", array_filter($this->address->toArray(), fn($v) => !isEmpty($v)))
+            : null;
     }
 }

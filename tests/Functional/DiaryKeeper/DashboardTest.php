@@ -36,14 +36,17 @@ class DashboardTest extends AbstractFunctionalTestCase
     {
         $this->client->request('GET', '/travel-diary/');
 
-        $data = $this->getSummaryListData();
+        $this->getElementByTextContains('span', 'Diary keeper details', 0)->click();
+
+        $data = $this->getSummaryListData('//*[@id="main-content"]/details/div/dl/div');
 
         $this->assertDataHasKeyValuePair($data, 'Name', 'Test Diary Keeper (Adult)');
         $this->assertDataHasKeyValuePair($data, 'Serial number', '111984 / 08 / 2 / 1');
         $this->assertDataHasKeyValuePair($data, 'Diary status', 'In progress');
+        $this->assertDataHasKeyValuePair($data, 'Adult / child', 'Adult (16+)');
 
-        // 3 rows as per above, and 7 rows for days
-        $this->assertDataSize($data, 10);
+        // 4 rows as per above, and 7 rows for days
+        $this->assertDataSize($data, 4);
     }
 
     public function testDashboardBreadcrumbs(): void
@@ -115,7 +118,7 @@ class DashboardTest extends AbstractFunctionalTestCase
                 }
 
                 $this->assertDataHasKeyValuePair($data,
-                    'Transport method',
+                    'Travel method',
                     $method
                 );
 

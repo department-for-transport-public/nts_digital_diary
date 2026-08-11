@@ -9,6 +9,7 @@ use Doctrine\Common\DataFixtures\ReferenceRepository;
 use Liip\TestFixturesBundle\Services\DatabaseToolCollection;
 use Symfony\Bundle\FrameworkBundle\KernelBrowser;
 use Symfony\Component\HttpFoundation\Request;
+use Symfony\Component\HttpFoundation\Response;
 use Symfony\Component\Routing\RouterInterface;
 
 
@@ -97,6 +98,27 @@ class SplitJourneyVisibilityTest extends AbstractInterviewerDiaryKeeperTest
         $this->assertEquals('/travel-diary', $this->client->getRequest()->getRequestUri());
 
         $this->assertSplitJourneyLinkState($expectedToHaveSplitJourneyLink, $journeyReference);
+    }
+
+    public function testSplitJourneyNotAccessibleWhenImpersonatingDifferentDiaryKeeper(): void
+    {
+        // Impersonate the child diary keeper (who is in the same household)
+        $this->logInAsInterviewerAndDrillDownToUsersHouseholdPage('diary-keeper-child@example.com');
+
+        $tableHelper = new CrawlerTableHelper($this->client->getCrawler());
+        $impersonateUrl = $tableHelper->getLinkUrlForRowMatching('Impersonate', [
+            'Name' => 'Test Diary Keeper (Child)',
+        ], false);
+        $this->client->request(Request::METHOD_GET, $impersonateUrl);
+
+        // Try to access the adult diary keeper's splittable journey
+        $journey = $this->referenceRepository->getReference('journey:1', Journey::class);
+        $url = $this->router->generate('traveldiary_split_journey_wizard_start', [
+            'journeyId' => $journey->getId(),
+        ]);
+
+        $this->client->request(Request::METHOD_GET, $url);
+        $this->assertEquals(Response::HTTP_NOT_FOUND, $this->client->getResponse()->getStatusCode());
     }
 
     protected function assertSplitJourneyLinkState(bool $expectedToHaveSplitJourneyLink, string $journeyReference): void

@@ -8,7 +8,7 @@ common:
   email:
     already-used: This email address is already in use
   number:
-    invalid: Enter a number
+    invalid: Enter a whole number
     not-null: Enter a number
     max: "Cannot be more than {limit, number}"
     positive: Enter a positive number
@@ -19,7 +19,7 @@ common:
     not-complex-enough: Enter a password at least 8 characters long. It must contain an uppercase letter, a lowercase letter and a number.
   string:
     invalid: Enter a valid value
-    max-length: Enter {limit} characters or fewer
+    max-length: "Enter {limit} characters or fewer. The current value is {value_length} characters."
   option:
     required: This field is required
 
@@ -59,10 +59,12 @@ security:
     invalid-credentials: Incorrect passcodes
     too-many-attempts: *tooManyAttempts
 
-setup:
-  password:
-    not-blank: Enter a password
-    must-match: This password must match the first
+password:
+  not-blank: Enter a password
+  must-match: This password must match the first
+  current:
+    not-blank: Enter your current password
+    invalid: Current password is incorrect
 
 api:
   area-period:
@@ -127,6 +129,9 @@ wizard.journey:
   start-time.not-null: Enter the start time
 
 wizard.on-boarding:
+  submit:
+    diary-keeper-count:
+      at-least-one: Add at least one diary keeper before submitting
   diary-keeper:
     identity:
       at-least-one: Enter an email address or choose a proxy for this diary keeper
@@ -188,14 +193,14 @@ wizard.split-journey:
 
 wizard.stage:
   adult-count:
-    at-least-1: The number of adults must be 1 or more
+    at-least-1: There must be at least 1 adult as this is an adult's diary
     not-blank: Enter the number of adults
     positive-or-zero: The number of adults must not be negative
   boarding-count:
     not-blank: Enter the number of times you boarded the vehicle
     positive: Enter a positive number of times you boarded the vehicle
   child-count:
-    at-least-1: The number of children must be 1 or more
+    at-least-1: There must be at least 1 child as this is a child's diary
     not-blank: Enter the number of children
     positive-or-zero: The number of children must not be negative
   distance-travelled:
@@ -211,11 +216,11 @@ wizard.stage:
     unit.not-blank: Choose the unit for distance travelled
   driver-or-passenger.not-null: Indicate whether you were driving or not
   is-adult-ticket.not-null: Choose adult or child ticket
-  method.not-null: Select a method of transport
+  method.not-null: Select a method of travel
   method-other:
     bus-or-coach.not-empty: Provide details of the bus or coach
-    other-private.not-empty: Provide details of the private method of transport
-    other-public.not-empty: provide details of the public method of transport
+    other-private.not-empty: Provide details of the private transport
+    other-public.not-empty: Provide details of the public transport
   parking-cost:
     has-cost.not-null: Select an option
     cost:
@@ -277,3 +282,5 @@ wizard.direct-onboarding:
     ingress:
       household-mismatch: "Direct set-up has already been started using these passcodes, but the household details do not match (existing household: {originalSerial}, new serial: {newSerial})"
       existing-household: "A household with this serial already exists"
+      unique-diary-keeper-names: "Each respondent/diary keeper's name must be unique within the household"
+      unique-vehicle-names: "Each vehicle's description/friendly name must be unique within the household"

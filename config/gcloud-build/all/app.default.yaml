@@ -6,12 +6,60 @@ instance_class: F2
 automatic_scaling:
   target_cpu_utilization: 0.8
   min_instances: 1
-  max_concurrent_requests: 50
+  max_instances: 4
+  # Sized from measured prod-mode peak memory: steady-state p50 ~4MB / p95 ~6MB /
+  # max ~10MB (the single 18MB sample was a cold-worker warmup). Against F2's
+  # ~200MB free after the 256MB opcache, 30 x ~6MB ~= 180MB leaves headroom; the
+  # previous 50 was above what an F2 can serve concurrently and delayed scale-out.
+  max_concurrent_requests: 30
   target_throughput_utilization: 0.8
 
 handlers:
   - url: /build
     static_dir: public/build
+
+  # --- Block automated probe traffic (served as static 404, no PHP) ---
+
+  # Backup / archive / database-dump file probes (catches 100% of the
+  # 2026-06-02 scan). Anchored on the trailing extension.
+  - url: /(?i).*\.(7z|z|xz|gz|bz2|lz|lzma|tar|tgz|tbz2|zip|rar|war|jar|sql|sqlite|sqlitedb|db|bak|backup|dump|old|swp)$
+    static_files: deny/blocked
+    upload: deny/blocked
+
+  # Sensitive dotfiles / VCS / secrets / IDE-sync files anywhere in the path
+  - url: /(.*/)?\.(env|git|svn|hg|aws|ssh|htpasswd|htaccess|bash_history|npmrc|vscode|idea|remote-sync|DS_Store).*
+    static_files: deny/blocked
+    upload: deny/blocked
+
+  # Known CMS / admin / tooling probes (this app exposes only clean routes
+  # through public/index.php, so no legitimate URL contains these tokens)
+  - url: /(?i).*(wp-admin|wp-login|wp-content|wp-includes|wordpress|xmlrpc\.php|phpmyadmin|/pma/|adminer|phpinfo|\.php~|\.php\.bak|\.php\.old|/cgi-bin/|/vendor/|\.aws/credentials).*
+    static_files: deny/blocked
+    upload: deny/blocked
+
+  # Foreign / non-served script & page extensions. This Symfony app serves NO
+  # .html/.htm/.php/.jsp/.aspx/.do/.cgi URLs (verified against all routes via
+  # `bin/console debug:router`), so any request ending in these is a probe.
+  - url: /(?i).*\.(jsp|jspa|aspx|asp|do|cgi|esp|cc|xhtml|cfm|pl|shtml|action|html?|phtml|php[0-9]?)$
+    static_files: deny/blocked
+    upload: deny/blocked
+
+  # VPN / network-appliance / dev-config exploit paths (distributed scanners)
+  - url: /(?i)(dana-na|\+csco[et]\+|\+webvpn\+|sonicui|sonicos|global-protect|sslvpn|logon/LogonPoint|owa/auth|_layouts/15|mifs/|cgi-mod/|api/sonicos|api/v2/cmdb|remote/(login|fgt_lang|hostcheck)|rdweb|RASHTML5Gateway|webclient/login|wsman|firebase/init|auth/admin|deployment-config\.json|randomstring).*
+    static_files: deny/blocked
+    upload: deny/blocked
+
+  # --- Benign browser/crawler assets the app doesn't serve: cheap static 404
+  #     (no PHP) instead of a full app request. NOTE: if you later add a real
+  #     robots.txt / sitemap.xml (e.g. a dynamic route), remove them from here
+  #     or this handler will shadow it. ---
+  - url: /(.*/)?(favicon\.ico|apple-touch-icon[a-z0-9-]*\.png|browserconfig\.xml|robots\.txt|sitemap\.xml|humans\.txt)$
+    static_files: deny/blocked
+    upload: deny/blocked
+  - url: /\.well-known/assetlinks\.json
+    static_files: deny/blocked
+    upload: deny/blocked
+
   - url: /.*
     script: auto
 

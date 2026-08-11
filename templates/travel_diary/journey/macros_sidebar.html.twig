@@ -64,7 +64,7 @@
 {%- macro renderStage(stage, translation_prefix, options) -%}
     {%- set isCurrentStage = stage.id == (options.currentStageId ?? null) -%}
     <li{% if isCurrentStage %} class="nts-stagelist--current"{% endif %}>
-        {%- set method = stage.methodForDisplay(true) -%}
+        {%- set method = stage.methodForDisplay() -%}
         {%- if method is not null -%}{%- set method = method | trans -%}{%- endif -%}
 
         {%- set argState = method is null ? 'empty' : (stage.travelTime is null ? 'noTravelTime': 'other') -%}

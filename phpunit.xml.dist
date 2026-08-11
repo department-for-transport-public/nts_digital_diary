@@ -19,6 +19,7 @@
 
     <testsuites>
         <testsuite name="unit">
+            <directory>tests/Entity</directory>
             <directory>tests/EventSubscriber</directory>
             <directory>tests/Form</directory>
             <directory>tests/FormWizard</directory>
@@ -26,6 +27,7 @@
             <directory>tests/Messenger</directory>
             <directory>tests/Security</directory>
             <directory>tests/Serializer</directory>
+            <directory>tests/Twig</directory>
             <directory>tests/Utility</directory>
         </testsuite>
         <testsuite name="functional">

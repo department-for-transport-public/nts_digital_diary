@@ -4,12 +4,12 @@ namespace App\Tests\Utility\Metrics;
 
 use App\Entity\Interviewer;
 use App\Entity\InterviewerTrainingRecord;
+use App\Entity\Metrics\MetricsLog;
 use App\Entity\OtpUser;
 use App\Entity\User;
-use App\Entity\Utility\MetricsLog;
-use App\Repository\Utility\MetricsLogRepository;
-use App\Security\OneTimePassword\PasscodeGenerator;
+use App\Repository\Metrics\MetricsLogRepository;
 use App\Security\OneTimePassword\InterviewerLinkedTrainingUserProvider;
+use App\Security\OneTimePassword\PasscodeGenerator;
 use App\Tests\DataFixtures\OtpUserFixtures;
 use App\Tests\DataFixtures\UserFixtures;
 use App\Tests\Functional\AbstractFunctionalTestCase;

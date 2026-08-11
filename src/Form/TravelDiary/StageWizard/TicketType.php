@@ -16,12 +16,14 @@ class TicketType extends AbstractType
 
     public function buildForm(FormBuilderInterface $builder, array $options): void
     {
+        $isSubForm = $options['sub_form_label'] !== false;
+
         $builder
             ->add('ticketType', InputType::class, [
-                'label_is_page_heading' => true,
-                'label' => "stage.ticket.page-title",
-                'label_attr' => ['class' => 'govuk-label--l'],
-                'help' => "stage.ticket.ticket-type.help",
+                'label_is_page_heading' => !$isSubForm,
+                'label' => $isSubForm ? $options['sub_form_label'] : "stage.ticket.page-title",
+                'label_attr' => ['class' => $isSubForm ? 'govuk-label--m' : 'govuk-label--l'],
+                'help' => $isSubForm ? $options['sub_form_help'] : "stage.ticket.ticket-type.help",
                 'help_html' => 'markdown',
             ])
             ;
@@ -33,6 +35,8 @@ class TicketType extends AbstractType
             'data_class' => Stage::class,
             'validation_groups' => 'wizard.ticket-type',
             'translation_domain' => 'travel-diary',
+            'sub_form_label' => false,
+            'sub_form_help' => null,
         ]);
     }
 }

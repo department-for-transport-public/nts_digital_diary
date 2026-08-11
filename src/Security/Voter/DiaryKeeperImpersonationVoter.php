@@ -25,7 +25,7 @@ class DiaryKeeperImpersonationVoter extends Voter
      */
     protected function voteOnAttribute(string $attribute, $subject, TokenInterface $token): bool
     {
-        $user = $token instanceof SwitchUserToken
+        $user = ($isImpersonating = $token instanceof SwitchUserToken)
             ? $token->getOriginalToken()->getUser()
             : $token->getUser();
 
@@ -34,6 +34,13 @@ class DiaryKeeperImpersonationVoter extends Voter
         }
 
         if ($user->hasRole('ROLE_DIARY_KEEPER')) {
+            // Due to the way User is serialized in the SwitchUserToken, it does not have a DiaryKeeper (causing an exception)
+            // Since this voter is used to ask if the user can impersonate another diary keeper, we can just return false
+            // when they are already impersonating someone. Users must exit impersonation before trying to impersonate
+            // someone else.
+            if ($isImpersonating) {
+                return false;
+            }
             return $user->getDiaryKeeper()->isActingAsProxyFor($subject->getDiaryKeeper());
         }
 

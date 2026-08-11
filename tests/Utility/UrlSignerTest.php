@@ -83,4 +83,25 @@ class UrlSignerTest extends TestCase
 
         $this->assertEquals($expectedToBeValid, $isValid);
     }
+
+    /**
+     * Analytics/tracking params (especially utm_*) are sometimes stripped by mail clients,
+     * proxies or redirect services. Removing them from a signed URL
+     * should not invalidate the signature.
+     */
+    public function testRemovingSourceParameterDoesNotInvalidateSignature(): void
+    {
+        $srcParam = UrlSigner::SOURCE_TRACKING_PARAMETER_NAME;
+
+        $signer = new UrlSigner('abcd12345');
+        $url = "https://example.com/wibble?wobble=12&{$srcParam}=email&wubble=toast";
+
+        $signedUrl = $signer->sign($url, 10000, 1600000000);
+        $modifiedUrl = (new Url($signedUrl))->removeQueryParam($srcParam)->__toString();
+
+        $this->assertTrue(
+            $signer->isValid($modifiedUrl, 1600001000),
+            "Removing {$srcParam} from a signed URL should not invalidate the signature"
+        );
+    }
 }

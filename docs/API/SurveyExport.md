@@ -203,6 +203,8 @@ null indicates there was a cost but that the diary keeper didn't know how much.
 
 ### Property change history
 
+See also [Property change log details](../Travel%20Diary/PropertyChangeLog.md)
+
 History objects will contain a list of all relevant properties that have changed for the current `Journey` or `Stage`.
 The value of each property is an array of the history of that property. The individual historical values take the following form:
 

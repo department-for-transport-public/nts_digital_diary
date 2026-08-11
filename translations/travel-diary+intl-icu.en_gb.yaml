@@ -21,6 +21,7 @@ breadcrumbs:
           other {{diary_keeper_name}'s}
     } travel diary
   day: *dayDescription
+  example-day: Example day
   delete-journey: Delete journey
   delete-stage: Delete stage
   diary-keeper-notes: Notes
@@ -56,7 +57,11 @@ days:
   page-title: *pageTitle
   intro: This is an overview of your travel week. You can view a day’s journeys or add new journeys from here.
   add-journey: "Add journey"
-  add-journey-sr-hidden-suffix: to day {dayNumber}
+  add-journey-sr-hidden-suffix: >-
+    {dayNumber, select,
+      0     {to practice day}
+      other {to day {dayNumber}}
+    }
   switch-user: Switch to {diary_keeper_name, select,
     My    {{diary_keeper_name}}
     other {{diary_keeper_name}'s}
@@ -66,17 +71,28 @@ days:
               My    {{diary_keeper_name}}
               other {{diary_keeper_name}'s}
         } diary week
-  diary-week-intro-copy: On day 1, include **all** walks and runs. On days 2-7, only include walks and runs of a mile or more (it takes approximately 20 minutes to walk a mile).
+  diary-week-intro-copy: On day 1, record **all** walks and runs including those of less than a mile. On days 2-7, only include walks and runs of a mile or more (it takes approximately 20 minutes to walk a mile).
   list:
     name: Name
     serial: Serial number
     state: Diary status
+    is-adult: Adult / child
+    is-adult-value: >-
+      {value, select,
+          1       {Adult (16+)}
+          other   {Child (under 16)}
+      }
   other-members-of-my-household: Other members of my household
-  practice-day:
-    heading: Practice diary
-    link: View practice diary
+  other-days:
+    heading: Examples and practice
+    practice-link: Use the practice area
+    example-link: View example day
   view: View
-  view-sr-hidden-suffix: Day {dayNumber}
+  view-sr-hidden-suffix: >-
+    {dayNumber, select,
+      0     {Practice day}
+      other {Day {dayNumber}}
+    }
   x-journeys: >-
     {journeyCount, plural,
         =0    {}
@@ -100,6 +116,13 @@ vehicle.odometer-readings:
     label: Milometer units
     help: ''
 
+example-day:
+  page-title: Example day
+
+dashboard:
+  diary-keeper-details:
+    title: Diary keeper details
+
 day:
   page-title: *dayDescription
 
@@ -115,32 +138,29 @@ day:
             }"
     time: "{time}"
 
-  day-1-walk-details: As this is day 1, include **all** walks and runs.
   introduction-markdown:
     text: |-
       {dayNumber, select,
-        0     {Enter some practice journeys and stages in the practice day. Anything you enter here will not be used as part of your travel diary.
-      
-      The practice day already has some example journeys to help get you started.}
-        1     {As this is day 1, include **all** walks and runs.}
-        other {}
+        example {Explore these example journeys to get an idea of how things work.}
+        0       {Enter some practice journeys and stages in the practice day. Anything you enter here will not be used as part of your travel diary.}
+        1       {As this is day 1, record **all** walks and runs including those of less than a mile.}
+        other   {}
       }
     text-milometer: |-
       {dayNumber, select,
-        0     {Enter some practice journeys and stages in the practice day. Anything you enter here will not be used as part of your travel diary.
-      
-      The practice day already has some example journeys to help get you started.}
-        1     {As this is day 1, include **all** walks and runs{vehicleCount, plural, 
+        example {Explore these example journeys to get an idea of how things work.}
+        0       {Enter some practice journeys and stages in the practice day. Anything you enter here will not be used as part of your travel diary.}
+        1       {As this is day 1, record **all** walks and runs including those of less than a mile.{vehicleCount, plural, 
                   =0 {}
-                  one {, and remember to record the start of week milometer readings for your [vehicle]({vehicleUrl}) at the beginning of the day}
-                  other {, and remember to record the start of week milometer readings for your [vehicles]({vehicleUrl}) at the beginning of the day}
-              }.}
-        7     {{vehicleCount, plural, 
+                  one { Remember to record the start of week milometer readings for your [vehicle]({vehicleUrl}) at the beginning of the day}
+                  other { Remember to record the start of week milometer readings for your [vehicles]({vehicleUrl}) at the beginning of the day}
+                }.}
+        7       {{vehicleCount, plural, 
                   =0 {}
                   one {Remember to record the end of week milometer readings for your [vehicle]({vehicleUrl}) at the end of the day}
                   other {Remember to record the end of week milometer readings for your [vehicles]({vehicleUrl}) at the end of the day}
-              }.}
-        other {}
+                }.}
+        other   {}
       }
   notes:
     heading: Notes
@@ -193,7 +213,7 @@ journey.delete:
 
 journey.locations:
   page-title: Tell us where you were travelling from and to
-  help: For round trips, please record it as two separate journeys using the furthest point as your destination.
+  help: For trips where the start and end points are the same such as a walk from home to home, record it as two separate journeys using the furthest point as your destination.
   choices:
     home: Home
     other: Somewhere else
@@ -239,17 +259,32 @@ journey.times:
   end:
     label: What time did you finish the journey?
 
+journey.view-example:
+  page-title: "{startLocation} to {endLocation} ({time})"
+
 journey.view:
-  page-title: "{startLocation} to {endLocation} (Day {day}, {time})"
+  page-title: >-
+    {day, select,
+      0     {{startLocation} to {endLocation} (Practice day, {time})}
+      other {{startLocation} to {endLocation} (Day {day}, {time})}
+    }
+  heading:
+    route: "{startLocation} to {endLocation}"
+    day-time: >-
+      {day, select,
+        0     {Practice day — {time}}
+        other {Day {day} — {time}}
+      }
 
   no-stages-warning: |-
     This journey does not have any stages.
     Use the "Add a stage" link to add one or more stages to this journey.
   add-stage: Add a stage
+  back-to-example: Back to example day
   back: >-
     {dayNumber, select,
-      0     {Back to practice day}
-      other {Back to day {dayNumber}}
+      0     {Go back to the practice day}
+      other {Go back to day {dayNumber}}
     }
   change: Change
   complete-journey: Mark journey as complete
@@ -265,6 +300,8 @@ journey.view:
       other {#th}
     } stage ({method}, {travelTime} mins)
   show-stage-sr-hidden-suffix: *stage-sr-hidden-suffix
+  show-all-stages: Show all stages
+  hide-all-stages: Hide all stages
   end-location-time:
     change-sr-hidden-suffix: end location and time
     key: End Location / Time
@@ -275,7 +312,7 @@ journey.view:
   reorder-stages: Re-order stages
   shared-from: Journey shared by {name}
   shared-to: Journey shared with {names}
-  share-journey: Share this journey
+  share-journey: Share this journey (with other members of your household)
 
   split-journey: Split journey (Interviewer only)
   start-location-time:
@@ -289,8 +326,7 @@ journey.view:
     intro: Use these links to do more with this journey
   finally:
     title: Finally
-    intro: Have you have finished working with this journey?
-
+    intro: "If you have finished working with this journey, go [back to {day, select, 0 {the practice day} other {day {day}}}]({url})"
 
 mark-as-complete:
   page-title: Mark diary as complete
@@ -299,7 +335,7 @@ mark-as-complete:
     
     You will not be able to edit your travel diary after doing this.
   form:
-    mark-as-complete: Mark travel diary as complete
+    mark-as-complete: Mark my travel diary as complete
 
 satisfaction:
   ease-of-use:
@@ -394,20 +430,20 @@ stage.details:
   page-title: Provide more details about stage {stage_number} of the journey
   adult-count:
     label: 'Adults'
-    help: ''
+    help: 'Aged 16 and over'
   child-count:
     label: 'Children'
-    help: ''
+    help: 'Under 16'
   companions:
     label: 'How many people were travelling?'
     help: "- Enter the number of people, **including you**, who set out together.\n- Only include people who were with you for at least half the distance of the journey."
   distance-travelled:
-    label: 'How far did you travel on this stage of the journey?'
+    label: 'How far did you travel on this {wizard, select, reflow {part} other {stage}} of the journey?'
     help: "- Provide the distance you travelled in miles or metres.\nFor example 3 miles, 0.5 miles, 300 metres.\n- If unsure, please estimate the distance."
   travel-time:
     label: 'How long did you spend travelling, in minutes?'
     help: >-
-      Enter the time in minutes. Do not include any time spent {method_type, select,
+      Do not include any time spent {method_type, select,
           public  {waiting for public transport or }
           other   {}
       }
@@ -435,7 +471,7 @@ stage.driver-and-parking:
 stage.intermediary:
   page-title: "{journeyStartLocation} to {journeyEndLocation} - Add stages"
   pre-form:
-    intro: Next, you need to provide details of each stage of this journey. A stage is where you change from one method of transport to another.
+    intro: Next, you need to provide details of each stage of this journey. A stage is where you change from one method of travel to another.
     example:
       intro: For example, a journey may consist of three stages
       stage-1: Driving a car from home to the train station
@@ -443,16 +479,15 @@ stage.intermediary:
       stage-3: Taking a bus from the train station to shops
 
 stage.method:
-  page-title: What method of transport did you use in stage {stage_number}?
-  label: ''
+  page-title: What method of travel did you use in stage {stage_number}?
   help: Select how you travelled for this stage of your journey.
   choices:
     walk: Walk or run
     walk.help: >-
       {dayNumber, select,
           0       {Include all walks and runs}
-          1       {This journey is on day 1. Include all walks and runs}
-          other   {This journey is on day {dayNumber}. Only include walks and runs of 1 mile or more}
+          1       {This journey is on day 1. Record all walks and runs, including those of less than a mile}
+          other   {This journey is on day {dayNumber}. Only record walks and runs of 1 mile or more}
       }
     bicycle: Bicycle
     car: Car
@@ -537,7 +572,10 @@ stage.ticket-cost-and-boardings:
         london_underground {different trains you used}
         ferry {different ferries you used}
         other {different vehicles of this type ({stage_method}) you used}  
-      } on this stage of your journey.
+      } on this {wizard, select,
+        reflow {part}
+        other {stage}
+      } of your journey.
   ticket-cost: &ticketCost
     boolean:
       label: Did your ticket cost anything?
@@ -553,7 +591,6 @@ stage.ticket-cost-and-boardings:
 stage.vehicle:
   page-title: Which vehicle did you use for this stage of your journey?
   vehicle:
-    label: Which vehicle did you use for stage {stage_number} of your journey?
     help: ''
     other: Other
   vehicle-other:
@@ -603,7 +640,7 @@ stage.view:
   is-ticket-adult:
     key: Was it an adult or child ticket?
   method:
-    key: Transport method
+    key: Travel method
     other: "Other: {method}"
   parking-cost:
     key: Parking cost
@@ -645,7 +682,11 @@ stage.view:
 
 repeat-journey.full-introduction:
   page-title: Repeat a previous journey
-  pre-form: You are filling in day {dayNumber} of your diary. This form will enable you to copy/duplicate a previous journey to this day.
+  pre-form: >-
+    {dayNumber, select,
+      0     {You are filling in the practice day of your diary.}
+      other {You are filling in day {dayNumber} of your diary.}
+    } This form will enable you to copy/duplicate a previous journey to this day.
 repeat-journey.alt-introduction:
   page-title: Repeat a previous journey
   pre-form: This form will enable you to copy/duplicate the journey from {startLocation} to {endLocation}.
@@ -826,3 +867,111 @@ split-journey:
 
   sidebar:
     title: Original journey
+
+
+
+add-journey.journey-type:
+  page-title: What type of journey do you want to add on day {dayNumber} ({date})
+  choices:
+    new:
+      label: A new journey
+      help: ''
+    repeat:
+      label: A repeat journey
+      help: "The same journey that you've previously made in this travel week"
+    return:
+      label: A return journey
+      help: "The reverse of a journey that you've previously made in this travel week"
+
+add-journey.locations:
+  page-title: Where were you travelling from and to?
+
+add-journey.journey-details:
+  page-title: Tell us some details about this journey
+
+add-journey.stage-method:
+  page-title: >-
+    What method of travel did you use
+    {stageNumber, select,
+      1     {when you left {startLocation}}
+      other {next}
+    } on this journey?
+  help: ''
+
+add-journey.stage-details:
+  page-title: Provide details about the {stage_number, ordinal} part of the journey ({method_type})
+
+add-journey.stage-vehicle:
+  page-title: Which vehicle did you use for the {stage_number, ordinal} part of the journey ({method_type})
+
+add-journey.stage-driver-and-parking:
+  page-title: Tell us about parking and if you were driving for the {stage_number, ordinal} part of the journey ({method_type})
+
+add-journey.stage-ticket-details:
+  page-title: Provide more details about the {stage_number, ordinal} part of the journey ({method_type})
+  ticket-type:
+    label: What type of ticket did you use?
+    help: "Provide information about your ticket, including:\n
+      - The type of ticket (for example, single, return, travel card, season ticket, or something else)\n
+      - If you used reduced or free tickets, or a concessionary pass that allows you to travel for free\n
+      "
+
+add-journey.stage-add-another:
+  label: Had you reached your destination ({endLocation}) at this point?
+  help: >-
+    So far you have said you used {stages, number} {stages, plural, =1 {method} other {methods}} of travel on this journey ({methods}). You can review the journey so far using the summary
+    <span class="govuk-!-display-none-until-tablet">on the right.</span>
+    <span class="govuk-!-display-none-from-tablet">below.</span>
+  choices:
+    yes: Yes, I had reached {endLocation}
+    no: No, I used more methods of travel before reaching {endLocation}
+
+repeat:
+  select-day-journey:
+    choice-label: &duplicateJourneyChoiceLabel "{dayNumber, select,
+        0 {Practice day}
+        other {Day {dayNumber} — {date}}
+      } ({journeyCount, select,
+        0 {no journeys}
+        1 {1 journey}
+        other {{journeyCount} journeys}
+      })"
+    label: Select the journey that you want to repeat?
+    help: ''
+
+  journey-details:
+    page-title: Enter the details for the repeat journey
+    is-same-stages:
+      label: Did you use the same {stages, select, 1 {method} other {methods}} of travel as the original journey?
+      help: >-
+        Did you use the same {stages, select, 1 {method} other {methods}} of travel as the original journey{stages, select, 1 {} other {, in the same order}} ({methods})? You can review the
+        original journey
+        <span class="govuk-!-display-none-until-tablet">on the right.</span>
+        <span class="govuk-!-display-none-from-tablet">below.</span>
+      choices:
+        yes: Yes, the {stages, select, 1 {method of travel is the same} other {methods of travel are the same}}
+        no: No, I used different method(s) of travel
+
+return:
+  select-day-journey:
+    choice-label: *duplicateJourneyChoiceLabel
+    label: Select the journey that you want to return?
+    help: ''
+
+  journey-details:
+    page-title: Enter the details for the return journey
+    is-same-stages:
+      label: Did you use the same {stages, select, 1 {method} other {methods}} of travel as the outward journey?
+      help: >-
+        Did you use the same {stages, select, 1 {method} other {methods}} of travel as the outward journey{stages, select, 1 {} other {, in exactly reverse order}} ({reverseMethods})? You can review the
+        outward journey
+        <span class="govuk-!-display-none-until-tablet">on the right.</span>
+        <span class="govuk-!-display-none-from-tablet">below.</span>
+      choices:
+        yes: Yes, the {stages, select, 1 {method of travel is} other {methods of travel are}} the same
+        no: No, I used different method(s) of travel
+
+return-or-repeat:
+  stage-details:
+    page-title: "Enter the details for the {number, ordinal} travel method ({method})"
+

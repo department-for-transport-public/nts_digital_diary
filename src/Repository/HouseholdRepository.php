@@ -130,6 +130,22 @@ class HouseholdRepository extends ServiceEntityRepository
      */
     public function getSurveysForPurge(\DateTime $diaryWeekEndsBefore): array
     {
+        // First query: get up to 500 distinct household IDs
+        $ids = $this->createQueryBuilder('household')
+            ->select('household.id')
+            ->join('household.areaPeriod', 'areaPeriod')
+            ->andWhere('household.diaryWeekStartDate < :before')
+            ->andWhere('areaPeriod.trainingInterviewer is NULL')
+            ->setMaxResults(500)
+            ->getQuery()
+            ->setParameter('before', $diaryWeekEndsBefore->modify('-1 week'))
+            ->getSingleColumnResult();
+
+        if (empty($ids)) {
+            return [];
+        }
+
+        // Second query: load full entities with all relations for deletion
         return $this->createQueryBuilder('household')
             ->leftJoin('household.diaryKeepers', 'dk')
             ->leftJoin('household.areaPeriod', 'areaPeriod')
@@ -138,10 +154,9 @@ class HouseholdRepository extends ServiceEntityRepository
             ->leftJoin('dk.diaryDays', 'day')
             ->leftJoin('day.journeys', 'journey')
             ->leftJoin('journey.stages', 'stage')
-            ->andWhere('household.diaryWeekStartDate < :before')
-            ->andWhere('areaPeriod.trainingInterviewer is NULL')
+            ->andWhere('household.id IN (:ids)')
+            ->setParameter('ids', $ids)
             ->getQuery()
-            ->setParameter('before', $diaryWeekEndsBefore->modify('-1 week'))
             ->getResult();
     }
 
@@ -209,4 +224,17 @@ class HouseholdRepository extends ServiceEntityRepository
             ->setParameter('areaPeriodIds', $areaPeriodIds)
             ->setParameter('overdueDate', $overdueDate);
     }
+
+    public function getHouseholdsForWeekStartReminder(): array
+    {
+        $qb = $this->createQueryBuilder('h')
+            ->select('h, a')
+            ->join('h.areaPeriod', 'a')
+            ->andWhere('h.isOnboardingComplete = 1')
+            ->andWhere('h.diaryWeekStartDate = :date')
+            ->setParameter('date', new DateTime('tomorrow'))
+        ;
+        return $qb->getQuery()->execute();
+    }
+
 }

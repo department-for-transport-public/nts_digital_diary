@@ -1,6 +1,6 @@
 @import "common";
 
-body.nts-admin {
+html:not(.govuk-full-width) body.nts-admin {
   .govuk-width-container {
     max-width: 1100px;
   }
@@ -28,3 +28,87 @@ body.nts-admin {
     min-width: 0;
   }
 }
+
+
+html.nts-admin-household-metrics {
+  .list-table,
+  .list-table .govuk-table__cell:last-child .govuk-details,
+  .list-table select,
+  .list-table input{
+    @include govuk-font-size(14);
+  }
+
+  // Strip the GDS details "panel" look from the top-level "View" dump:
+  // no grey left bar, flush to the cell.
+  .govuk-details__text.metrics-metadata {
+    border-left: 0;
+    padding: 0;
+    margin-top: govuk-spacing(1);
+  }
+
+  .metrics-metadata {
+    @include govuk-font-size(14);
+    font-family: ui-monospace, "SFMono-Regular", Menlo, Consolas, monospace;
+    line-height: 1.45;
+
+    // Nested levels indent; the root level does not.
+    .mm-node > .mm-level {
+      padding-left: 1.1em;
+    }
+
+    .mm-row {
+      display: flex;
+      gap: 0 0.5em;
+      align-items: baseline;
+    }
+
+    .mm-key {
+      font-weight: 700;
+      white-space: nowrap;
+    }
+    .mm-row > .mm-key::after {
+      content: ":";
+      font-weight: 400;
+    }
+
+    .mm-value {
+      word-break: break-word;
+    }
+
+    // Expandable node: caret AFTER the key, so keys stay left-aligned.
+    .mm-summary {
+      display: inline-flex;
+      align-items: baseline;
+      cursor: pointer;
+      list-style: none;             // removes the Firefox marker
+      user-select: none;
+
+      &::-webkit-details-marker { display: none; }   // removes the WebKit marker
+
+      &::after {
+        content: "\25B8";           // ▸  (rotates to ▾ when open)
+        margin-left: 0.4em;
+        font-size: 0.8em;
+        line-height: 1;
+        color: $govuk-secondary-text-colour;
+        transition: transform 0.1s ease-in-out;
+      }
+
+      &:hover .mm-key { text-decoration: underline; }
+
+      &:focus {                     // GDS-style yellow focus
+        outline: 3px solid transparent;
+        color: $govuk-text-colour;
+        background-color: $govuk-focus-colour;
+        box-shadow: 0 -2px $govuk-focus-colour, 0 4px $govuk-text-colour;
+        text-decoration: none;
+      }
+    }
+
+    .mm-node[open] > .mm-summary::after {
+      transform: rotate(90deg);
+    }
+  }
+}
+
+

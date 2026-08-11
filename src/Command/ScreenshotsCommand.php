@@ -52,7 +52,10 @@ class ScreenshotsCommand extends Command
         }
 
         $this->fixtureCreator->deleteExistingInterviewer();
+        $this->fixtureCreator->deleteExistingAccountSetupFixtures();
         $this->fixtureCreator->createInterviewer();
+        $this->fixtureCreator->createAccountSetupFixtures();
+        $this->fixtureCreator->createReflowFixtures();
 
         $path = dirname(__FILE__).'/../../screenshots/screenshots.js';
 

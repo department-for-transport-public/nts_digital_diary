@@ -23,13 +23,17 @@ class ListPagesController extends AbstractController
     }
 
     #[Route("/dashboard", name: "view_dashboard")]
+    #[Route("/dashboard/archive", name: "view_dashboard_archive")]
     #[IsGranted(attribute: 'ADMIN_FEEDBACK_VIEW')]
     public function viewDashboard(FeedbackViewListPage $listPage, Request $request): Response
     {
-        return $this->renderListPage($listPage, $request, "admin/feedback/view_list.html.twig");
+        $listPage->setIsArchive($isArchive = $request->get('_route') === "admin_feedback_view_dashboard_archive");
+        return $this->renderListPage($listPage, $request, "admin/feedback/view_list.html.twig", [
+            'isArchive' => $isArchive,
+        ]);
     }
 
-    protected function renderListPage(AbstractListPage $listPage, Request $request, string $template): Response
+    protected function renderListPage(AbstractListPage $listPage, Request $request, string $template, array $additionalViewData = []): Response
     {
         $listPage->handleRequest($request);
 
@@ -37,9 +41,9 @@ class ListPagesController extends AbstractController
             return new RedirectResponse($listPage->getClearUrl());
         }
 
-        return $this->render($template, [
+        return $this->render($template, array_merge($additionalViewData, [
             'data' => $listPage->getData(),
             'form' => $listPage->getFiltersForm(),
-        ]);
+        ]));
     }
 }

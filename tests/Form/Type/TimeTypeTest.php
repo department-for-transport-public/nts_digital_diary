@@ -46,7 +46,7 @@ class TimeTypeTest extends AbstractTypeTest
         $this->assertInstanceOf(FormInterface::class, $form);
     }
 
-    protected function dataSubmit(): array
+    public function dataSubmit(): array
     {
         $hour12 = ['mode' => TimeType::MODE_12_HOUR];
         $hour24 = ['mode' => TimeType::MODE_24_HOUR];

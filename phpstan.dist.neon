@@ -6,3 +6,12 @@ parameters:
         - public/
         - src/
         - tests/
+    scanDirectories:
+        - var/cache/dev/Symfony/Config
+    ignoreErrors:
+        -
+            message: '#extends deprecated class Doctrine\\DBAL\\Platforms\\MySQL80Platform#'
+            path: src/Doctrine/DBAL/Platforms/DateTimeFieldLengthMySQL80Platform.php
+        - [message: '#type mapping mismatch: property can contain (string|bool|int|DateTime(Immutable)?|App\\Entity\\(\w+\\?)+)\|null#']
+        - [message: '#type mapping mismatch: property can contain Doctrine\\Common\\Collections\\Collection#']
+        - [message: '#undefined static method Symfony\\Component\\Panther\\ServerExtension::takeScreenshots\(\)#']

@@ -6,6 +6,7 @@ use App\Entity\BasicMetadataInterface;
 use App\Entity\BasicMetadataTrait;
 use App\Entity\DiaryDay;
 use App\Entity\DiaryKeeper;
+use App\Entity\Embeddable\Distance;
 use App\Entity\IdTrait;
 use App\Entity\PropertyChangeLoggableInterface;
 use App\Repository\Journey\JourneyRepository;
@@ -20,24 +21,36 @@ use Symfony\Component\Validator\Context\ExecutionContextInterface;
 
 #[Assert\Callback([JourneySharingValidator::class, 'validateJourney'], groups: ['wizard.share-journey.purpose'])]
 #[ORM\Entity(repositoryClass: JourneyRepository::class)]
+#[ORM\HasLifecycleCallbacks]
 class Journey implements PropertyChangeLoggableInterface, BasicMetadataInterface
 {
     use IdTrait;
     use BasicMetadataTrait;
 
-    public const TO_GO_HOME = 'Go home';
+    public const string TO_GO_HOME = 'Go home';
 
-    public const MERGE_PROPERTIES = [
+    public const array MERGE_PROPERTIES = [
                                 'diaryDay',
         /* purpose form */      'purpose',
         /* times form */        'startTime', 'endTime',
         /* locations form */    'startLocation', 'isStartHome', 'endLocation', 'isEndHome',
     ];
 
-    public const SHARE_JOURNEY_CLONE_PROPERTIES = [
+    public const array SHARE_JOURNEY_CLONE_PROPERTIES = [
         /* times form */        'startTime', 'endTime',
         /* locations form */    'startLocation', 'isStartHome', 'endLocation', 'isEndHome',
     ];
+
+    public const array REPEAT_JOURNEY_CLONE_PROPERTIES = [
+        /* times */             'startTime', 'endTime',
+        /* purpose form */      'purpose',
+        /* locations form */    'startLocation', 'isStartHome', 'endLocation', 'isEndHome',
+    ];
+
+    public const RETURN_JOURNEY_CLONE_PROPERTIES = [
+        /* locations form */    'startLocation', 'isStartHome', 'endLocation', 'isEndHome',
+    ];
+
 
     #[Assert\NotNull(message: 'wizard.return-journey.diary-day.not-null', groups: ['wizard.return-journey.target-day'])]
     #[Assert\NotNull(message: 'wizard.repeat-journey.target-day.not-null', groups: ['wizard.repeat-journey.target-day'])]
@@ -62,7 +75,7 @@ class Journey implements PropertyChangeLoggableInterface, BasicMetadataInterface
     /**
      * @var Collection<Stage>
      */
-    #[ORM\OneToMany(mappedBy: 'journey', targetEntity: Stage::class, cascade: ['persist'], orphanRemoval: true)]
+    #[ORM\OneToMany(targetEntity: Stage::class, mappedBy: 'journey', cascade: ['persist'], orphanRemoval: true)]
     #[ORM\OrderBy(['number' => 'ASC'])]
     private Collection $stages;
 
@@ -91,7 +104,7 @@ class Journey implements PropertyChangeLoggableInterface, BasicMetadataInterface
      * @var Collection<Journey>
      */
     #[Assert\Count(min: 1, minMessage: 'wizard.share-journey.who-with.not-blank', groups: ['wizard.share-journey.share-to'])]
-    #[ORM\OneToMany(mappedBy: 'sharedFrom', targetEntity: Journey::class, cascade: ['persist'])]
+    #[ORM\OneToMany(targetEntity: Journey::class, mappedBy: 'sharedFrom', cascade: ['persist'])]
     private Collection $sharedTo;
 
     #[Assert\Callback(groups: ['wizard.share-journey.share-to'])] // NOTE (2023-05-03): while re-writing journey sharing tests, realised that this doesn't validate
@@ -319,7 +332,7 @@ class Journey implements PropertyChangeLoggableInterface, BasicMetadataInterface
 
     public function getSharedToNames(): ?string
     {
-        if (empty($this->sharedTo)) {
+        if ($this->sharedTo->isEmpty()) {
             return null;
         }
 
@@ -354,5 +367,26 @@ class Journey implements PropertyChangeLoggableInterface, BasicMetadataInterface
     public function getSharedToJourneysBeingAdded(): Collection
     {
         return $this->getSharedTo()->filter(fn(Journey $j): bool => $j->getId() === null);
+    }
+
+    public function hasShortWalkStage(): bool
+    {
+        foreach ($this->getStages() as $stage) {
+            if ($stage->getMethod()->getDescriptionTranslationKey() === 'walk'
+                && $stage->getDistanceTravelled()?->getValueNormalized(Distance::UNIT_MILES)?->isLessThan(1)
+            ) {
+                return true;
+            }
+        }
+        return false;
+    }
+
+    #[ORM\PrePersist]
+    public function setGoHomePurposeWhenGoingHome(): void
+    {
+        if ($this->getIsEndHome() && ! $this->getIsStartHome() && empty($this->getPurpose())) {
+            $this->setPurpose(self::TO_GO_HOME);
+        }
+
     }
 }

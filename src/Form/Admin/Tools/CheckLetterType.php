@@ -19,12 +19,15 @@ class CheckLetterType extends AbstractType
                     'class' => 'govuk-fieldset--inline govuk-fieldset--inline-narrow',
                 ],
             ])
-            ->add('submit', ButtonType::class);
+            ->add('submit', ButtonType::class, [
+                'label' => 'tools.index.check-letter.submit',
+            ]);
     }
 
     public function configureOptions(OptionsResolver $resolver): void
     {
         $resolver->setDefaults([
+            'translation_domain' => 'admin',
             'attr' => [
                 'class' => 'govuk-fieldset--inline govuk-fieldset--inline-narrow',
             ],

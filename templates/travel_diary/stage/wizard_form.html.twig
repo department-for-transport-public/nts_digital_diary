@@ -2,11 +2,14 @@
 
 {%- trans_default_domain 'travel-diary' -%}
 
-{%- set stage = subject -%}
+{%- set stage = form.vars.value ?? formWizardState.stage -%}
 
 {%- set translation_parameters = (translation_parameters ?? {}) | merge({
     stage_number: stage.number,
+    method_type: stage.methodForDisplay
 }) -%}
+
+{%- set title_translation_parameters = (title_translation_parameters ?? {}) | merge(translation_parameters) -%}
 
 {%- block formContext -%}
     {%- import "travel_diary/stage/macros_sidebar.html.twig" as st -%}

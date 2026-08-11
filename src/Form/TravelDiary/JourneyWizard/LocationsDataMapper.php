@@ -54,11 +54,6 @@ class LocationsDataMapper implements DataMapperInterface
 
         $this->mapLocationFormsToData('start', $forms, $viewData);
         $this->mapLocationFormsToData('end', $forms, $viewData);
-
-        // only set the purpose if it's a new Journey, and the end is home
-        if (!$viewData->getId() && $viewData->isGoingHome()) {
-            $viewData->setPurpose(Journey::TO_GO_HOME);
-        }
     }
 
     /**

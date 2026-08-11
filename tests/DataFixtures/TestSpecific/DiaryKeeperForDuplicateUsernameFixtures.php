@@ -12,6 +12,8 @@ use Doctrine\Persistence\ObjectManager;
 
 class DiaryKeeperForDuplicateUsernameFixtures extends AbstractFixture implements DependentFixtureInterface
 {
+    use CreateUserTrait;
+
     public function load(ObjectManager $manager): void
     {
         $household = $this->getReference('household:not-onboarded', Household::class);
@@ -30,19 +32,6 @@ class DiaryKeeperForDuplicateUsernameFixtures extends AbstractFixture implements
 
         $manager->persist($dk1);
         $manager->flush();
-    }
-
-    protected function createUser(ObjectManager $manager, string $email, ?string $password='password'): User
-    {
-        $user = (new User())
-            ->setUsername($email);
-
-        if ($password) {
-            $user->setPlainPassword($password);
-        }
-
-        $manager->persist($user);
-        return $user;
     }
 
     public function getDependencies(): array

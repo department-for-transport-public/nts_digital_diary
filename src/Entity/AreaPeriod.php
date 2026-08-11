@@ -48,14 +48,16 @@ class AreaPeriod implements ApiIdInterface
 {
     use ApiIdTrait;
 
+    public const int HOUSEHOLDS_PER_AREA = 25;
+
     public const int VALID_FIELDWORK_PERIOD_MONTHS = 3;
 
-    public const TRAINING_PERSONAL_DIARY_AREA_SERIAL = "000000";
-    public const TRAINING_ONBOARDING_AREA_SERIAL = "000100";
-    public const TRAINING_CORRECTION_AREA_SERIAL = "000200";
+    public const string TRAINING_PERSONAL_DIARY_AREA_SERIAL = "000000";
+    public const string TRAINING_ONBOARDING_AREA_SERIAL = "000100";
+    public const string TRAINING_CORRECTION_AREA_SERIAL = "000200";
 
-    public const AREA_PATTERN = "\d{1}((0[1-9])|(1[0-2]))\d{3}";
-    public const AREA_REGEX = "/^" . self::AREA_PATTERN . "$/";
+    public const string AREA_PATTERN = "\d{1}((0[1-9])|(1[0-2]))\d{3}";
+    public const string AREA_REGEX = "/^" . self::AREA_PATTERN . "$/";
 
     #[ApiProperty(identifier: true)]
     #[Assert\NotBlank(message: 'api.area-period.area.not-blank', groups: ['interviewer.allocate-area', 'api.area-period', 'cli.add-area-period'])]
@@ -146,7 +148,7 @@ class AreaPeriod implements ApiIdInterface
      */
     public function getInterviewers(): Collection
     {
-        if ($this->getTrainingInterviewer()) {
+        if ($this->isTrainingArea()) {
             $interviewers = new ArrayCollection();
             $interviewers->add($this->getTrainingInterviewer());
             return $interviewers;
@@ -244,7 +246,7 @@ class AreaPeriod implements ApiIdInterface
 
     public function getFirstValidDiaryStartDate(): DateTime
     {
-        return $this->getTrainingInterviewer()
+        return $this->isTrainingArea()
             ? new DateTime("midnight, first day of last month")
             : new DateTime("{$this->year}/{$this->month}/01 midnight");
     }
@@ -306,5 +308,10 @@ class AreaPeriod implements ApiIdInterface
     {
         // N.B. Logic matches that in (Interviewer) DashboardController
         return $this->getLastValidDiaryStartDate() < (new \DateTime())->sub(new \DateInterval('P9W'));
+    }
+
+    public function isTrainingArea(): bool
+    {
+        return $this->getTrainingInterviewer() !== null;
     }
 }

@@ -2,13 +2,18 @@
 
 namespace App\Utility\Cleanup;
 
+use App\Entity\Household;
 use App\Repository\HouseholdRepository;
+use App\Repository\PropertyChangeLogRepository;
 use Doctrine\ORM\EntityManagerInterface;
 
 class SurveyPurgeUtility
 {
-    public function __construct(protected EntityManagerInterface $entityManager, protected HouseholdRepository $householdRepository)
-    {}
+    public function __construct(
+        protected EntityManagerInterface $entityManager,
+        protected HouseholdRepository $householdRepository,
+        protected PropertyChangeLogRepository $propertyChangeLogRepository,
+    ) {}
 
     public function purgeOldSurveys(): int
     {
@@ -17,6 +22,8 @@ class SurveyPurgeUtility
         $households = $this->householdRepository->getSurveysForPurge($twoHundredDaysAgo);
 
         foreach($households as $household) {
+            $this->deletePropertyChangeLogsForHousehold($household);
+
             $areaPeriod = $household->getAreaPeriod();
             $householdCount = $areaPeriod->getHouseholds()->count();
             $this->entityManager->remove($household);
@@ -33,5 +40,23 @@ class SurveyPurgeUtility
         }
 
         return $count;
+    }
+
+    protected function deletePropertyChangeLogsForHousehold(Household $household): void
+    {
+        $entityIds = [];
+
+        foreach ($household->getDiaryKeepers() as $diaryKeeper) {
+            foreach ($diaryKeeper->getDiaryDays() as $diaryDay) {
+                foreach ($diaryDay->getJourneys() as $journey) {
+                    $entityIds[] = $journey->getId();
+                    foreach ($journey->getStages() as $stage) {
+                        $entityIds[] = $stage->getId();
+                    }
+                }
+            }
+        }
+
+        $this->propertyChangeLogRepository->deleteForEntityIds($entityIds);
     }
 }

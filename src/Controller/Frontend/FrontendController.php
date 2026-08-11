@@ -5,6 +5,7 @@ namespace App\Controller\Frontend;
 use App\Controller\AbstractController;
 use App\Form\Frontend\UserLoginType;
 use App\Utility\Security\TranslatedAuthenticationUtils;
+use Doctrine\ORM\EntityManagerInterface;
 use Exception;
 use Symfony\Bridge\Twig\Attribute\Template;
 use Symfony\Component\Form\FormError;
@@ -20,7 +21,7 @@ class FrontendController extends AbstractController
      *
      * However, in some cases redirection is needed, and that's what this little workaround is for.
      */
-    public const REDIRECT_INTERVIEWER_DASHBOARD_TO_GUIDE = 'redirect-interviewer-dashboard-to-guide';
+    public const string REDIRECT_INTERVIEWER_DASHBOARD_TO_GUIDE = 'redirect-interviewer-dashboard-to-guide';
 
     #[Route(name: 'home')]
     public function index(): Response

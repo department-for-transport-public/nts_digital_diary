@@ -2,6 +2,14 @@
 
 # API Change Log
 
+## Changes in v2026.02.26
+
+- **Added**: Version 2 of authentication protocol. Signature based on method, body and URL.
+
+## Changes in v2025.12.11
+
+- **Updated**: Include the single result when property history for a journey/stage that has only been created/edited by interviewer 
+
 ## Changes in v2024.10.17
 
 - **Added**: new value option for diary keeper media type - `transcribed` (survey export)

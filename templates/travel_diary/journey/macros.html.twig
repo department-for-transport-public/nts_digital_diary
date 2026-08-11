@@ -4,20 +4,30 @@
     {%- set options = options ?? {} %}
 
     <dl class="govuk-summary-list">
-        {{ _self.journey_row(journey, "purpose", journey.purpose, options | merge({place: 'purpose'})) }}
+        {%- set isReflowEnabled = is_dk_feature_enabled(constant('App\\Utility\\DiaryKeeperFeaturesService::JOURNEY_WIZARD_REFLOW')) -%}
+        {{ _self.journey_row(journey, "purpose", journey.purpose, options | merge({place: isReflowEnabled
+            ? constant('App\\FormWizard\\TravelDiary\\CombinedReflowState::STATE_STANDARD__DETAILS')
+            : constant('App\\FormWizard\\TravelDiary\\JourneyState::STATE_PURPOSE')
+        })) }}
         {{ _self.journey_row(journey, "start-location-time",
             "journey.view.location-and-time" | trans({
                 location: journey.startLocationForDisplay,
                 time: journey.startTime | date(date_time_format.time('user-pref')),
             }),
-            options | merge({place: "locations"})
+            options | merge({place: isReflowEnabled
+                ? constant('App\\FormWizard\\TravelDiary\\CombinedReflowState::STATE_STANDARD__LOCATIONS')
+                : constant('App\\FormWizard\\TravelDiary\\JourneyState::STATE_LOCATIONS')
+            })
         ) }}
         {{ _self.journey_row(journey, "end-location-time",
             "journey.view.location-and-time" | trans({
                 location: journey.endLocationForDisplay,
                 time: journey.endTime | date(date_time_format.time('user-pref')),
             }),
-            options | merge({place: "locations"})
+            options | merge({place: isReflowEnabled
+                ? constant('App\\FormWizard\\TravelDiary\\CombinedReflowState::STATE_STANDARD__LOCATIONS')
+                : constant('App\\FormWizard\\TravelDiary\\JourneyState::STATE_LOCATIONS')
+            })
         ) }}
     </dl>
 {% endmacro %}
@@ -26,7 +36,7 @@
     show stages (as steps)
 #}
 {%- macro showStages(stages, options) -%}
-<div data-module="appstepnav" id="step-by-step-navigation" class="app-step-nav app-step-nav--large" data-show-text="Show" data-hide-text="Hide" data-show-all-text="Show all steps" data-hide-all-text="Hide all steps">
+<div data-module="appstepnav" id="step-by-step-navigation" class="app-step-nav app-step-nav--large" data-show-text="Show" data-hide-text="Hide" data-show-all-text="{{ 'journey.view.show-all-stages' | trans }}" data-hide-all-text="{{ 'journey.view.hide-all-stages' | trans }}">
     <ol class="app-step-nav__steps">
         {% for stage in stages %}
             {{ _self.showStageStep(stage, options) }}
@@ -40,7 +50,7 @@
     {% set panelId %}step-panel-stage-{{ stage.number }}{% endset %}
     {% set subTitle %}
         {{- stage.distanceTravelled.isBlank ? '' : ("distance.#{stage.distanceTravelled.unit}" | trans({value: stage.distanceTravelled.value.toFloat}, 'messages')) -}}
-        {{- (stage.travelTime ?? false and not stage.distanceTravelled.isBlank) ? ', ' -}}
+        {{- ((stage.travelTime ?? false) and (not stage.distanceTravelled.isBlank)) ? ', ' -}}
         {{- stage.travelTime is null ? '' : ("stage.view.travel-time.value" | trans({minutes: stage.travelTime})) -}}
     {% endset %}
     {# @var stage \App\Entity\Journey\Stage #}
@@ -54,14 +64,16 @@
                 }),
             }) -}}
 
-            <span class="govuk-summary-card__actions">
-                <span class="govuk-summary-card__action">
-                    {{ _self.showStageDeleteLink(stage, options) }}
+            {% if stage.id ?? false %}
+                <span class="govuk-summary-card__actions">
+                    <span class="govuk-summary-card__action">
+                        {{ _self.showStageDeleteLink(stage, options) }}
+                    </span>
                 </span>
-            </span>
+            {% endif %}
         </div>
         <div class="app-step-nav__panel js-panel" id="{{ panelId }}">
-            {{ _self.showStageDetails(stage, {showHeading: false}) }}
+            {{ _self.showStageDetails(stage, {showHeading: false, disable_link: stage.journey.diaryDay.isExampleDay}) }}
         </div>
     </li>
 {% endmacro %}
@@ -75,6 +87,7 @@
     {%- set diaryKeeper = stage.journey.diaryDay.diaryKeeper -%}
     {%- set options = options ?? {} %}
     {%- set headingElement = options.headingElement ?? 'h3' %}
+    {%- set isReflowEnabled = is_dk_feature_enabled(constant('App\\Utility\\DiaryKeeperFeaturesService::JOURNEY_WIZARD_REFLOW')) -%}
 
     {% if options.showHeading ?? true %}<{{ headingElement }} class="{{ options.headingClass ?? 'govuk-heading-l' }} govuk-!-padding-top-4">{{ "stage.view.x-ordinal" | trans({number: stage.number}) }}</{{ headingElement }}>{% endif %}
 
@@ -82,50 +95,59 @@
         {{ _self.stage_row(stage, "method", stage.methodForDisplay | trans,
             options | merge({disable_link: true})
         ) }}
+        {%- set stageRowPlace = isReflowEnabled
+            ? constant('App\\FormWizard\\TravelDiary\\CombinedReflowState::STATE_STANDARD__STAGE_DETAILS')
+            : constant('App\\FormWizard\\TravelDiary\\StageState::STATE_DETAILS') -%}
         {{ _self.stage_row(stage, "distance",
             stage.distanceTravelled.isBlank
                 ? '-'
                 : "distance.#{stage.distanceTravelled.unit}" | trans({value: stage.distanceTravelled.value.toFloat}, 'messages'),
-            options | merge({place: 'details'})
+            options | merge({place: stageRowPlace})
         ) }}
         {{ _self.stage_row(stage, "travel-time",
             stage.travelTime is null ? '-' : "stage.view.travel-time.value" | trans({minutes: stage.travelTime}),
-            options | merge({place: 'details'})
+            options | merge({place: stageRowPlace})
         ) }}
         {{ _self.stage_row(stage, "companion-count",
             "stage.view.companion-count.value" | trans({adultCount: stage.adultCount ?? 0, childCount: stage.childCount ?? 0, count: stage.travellingPeopleCount}),
-            options | merge({place: 'details'})
+            options | merge({place: stageRowPlace})
         ) }}
 
         {%- if stage.method.type == constant('App\\Entity\\Journey\\Method::TYPE_PRIVATE') %}
+            {%- set stageRowPlace = isReflowEnabled
+                ? constant('App\\FormWizard\\TravelDiary\\CombinedReflowState::STATE_STANDARD__STAGE_VEHICLE')
+                : constant('App\\FormWizard\\TravelDiary\\StageState::STATE_VEHICLE') -%}
             {{ _self.stage_row(stage, "vehicle",
                 stage.vehicle.friendlyName ?? stage.vehicleOther ?? ("stage.view.vehicle.unknown" | trans),
-                options | merge({place: 'vehicle'})
+                options | merge({place: stageRowPlace})
             ) }}
             {%- if diaryKeeper.isAdult -%}
                 {{ _self.stage_row(stage, "driver-or-passenger",
                     ("stage.view.driver-or-passenger." ~ (stage.isDriver ? 'driver' : 'passenger')) | trans,
-                    options | merge({place: 'vehicle'})
+                    options | merge({place: stageRowPlace})
                 ) }}
                 {{ _self.stage_row(stage, "parking-cost",
                     stage.parkingCost | format_cost_or_nil('stage.view.parking-cost.value'),
-                    options | merge({place: 'vehicle'})
+                    options | merge({place: stageRowPlace})
                 ) }}
             {%- endif -%}
         {%- elseif stage.method.type == constant('App\\Entity\\Journey\\Method::TYPE_PUBLIC') %}
+            {%- set stageRowPlace = isReflowEnabled
+                ? constant('App\\FormWizard\\TravelDiary\\CombinedReflowState::STATE_STANDARD__STAGE_TICKET_DETAILS')
+                : constant('App\\FormWizard\\TravelDiary\\StageState::STATE_TICKET_TYPE') -%}
             {{ _self.stage_row(stage, "ticket-type",
                 stage.ticketType,
-                options | merge({place: 'ticket-type'})
+                options | merge({place: stageRowPlace})
             ) }}
 
             {{ _self.stage_row(stage, "ticket-cost",
                 stage.ticketCost | format_cost_or_nil('stage.view.ticket-cost.value'),
-                options | merge({place: 'ticket-type'})
+                options | merge({place: stageRowPlace})
             ) }}
 
             {{ _self.stage_row(stage, "boarding-count",
                 stage.boardingCount,
-                options | merge({place: 'ticket-type'})
+                options | merge({place: stageRowPlace})
             ) }}
         {%- endif -%}
     </dl>
@@ -148,12 +170,19 @@
 #}
 
 {% macro journey_row(journey, translation_key, value, options) -%}
-    {%- set url = path('traveldiary_journey_wizard_edit', {journeyId: journey.id, place: options.place ?? translation_key}) -%}
-    {{- _self.row(url, "journey.view", translation_key, value, options) -}}
+    {%- set args = {journeyId: journey.id, place: options.place} -%}
+    {%- set journeyUrl = (options.disable_link ?? false) ? null : (is_dk_feature_enabled(constant('App\\Utility\\DiaryKeeperFeaturesService::JOURNEY_WIZARD_REFLOW'))
+        ? path('traveldiary_reflow_edit_journey_place', args) : path('traveldiary_journey_wizard_edit', args)
+    ) -%}
+    {{- _self.row(journeyUrl, "journey.view", translation_key, value, options) -}}
 {% endmacro %}
 
 {% macro stage_row(stage, translation_key, value, options) %}
-    {%- set url = (options.disable_link | default(false)) == true ? null : path('traveldiary_stage_wizard_edit', {stageId: stage.id, place: options.place ?? null}) -%}
+    {%- set args = {stageId: stage.id, place: options.place ?? null} -%}
+    {%- set url = (options.disable_link ?? false) ? null : (is_dk_feature_enabled(constant('App\\Utility\\DiaryKeeperFeaturesService::JOURNEY_WIZARD_REFLOW'))
+        ? path('traveldiary_reflow_edit_stage_wizard_place', args)
+        : path('traveldiary_stage_wizard_edit', args)
+    ) -%}
     {%- set srHiddenSuffixParams = (options.srHiddenSuffixParams ?? {})|merge({
         stageDescription: 'stage.view.stage-description' | trans({
             stageNumber: stage.number,

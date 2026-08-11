@@ -26,11 +26,13 @@ abstract class AbstractWizardTest extends AbstractFunctionalTestCase
     {
         $debugLevel = getenv('DEBUG') ?? 0;
         $entityManager = $this->getContainer()->get('doctrine.orm.entity_manager');
+        $metricsEntityManager = $this->getContainer()->get('doctrine.orm.metrics_entity_manager');
 
         $output = ($debugLevel > 0) ? new ConsoleOutput() : null;
         $context = new Context($this->client, $entityManager, $this, $output, [
             'basePath' => $basePath,
             'debugLevel' => $debugLevel,
+            'metricsEntityManager' => $metricsEntityManager,
         ]);
 
         if ($debugLevel > 0) {

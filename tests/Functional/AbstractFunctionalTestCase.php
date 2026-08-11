@@ -2,8 +2,11 @@
 
 namespace App\Tests\Functional;
 
+use App\Messenger\AlphagovNotify\Email;
 use Doctrine\Common\DataFixtures\ReferenceRepository;
+use Doctrine\ORM\EntityManagerInterface;
 use Facebook\WebDriver\WebDriverBy;
+use Facebook\WebDriver\WebDriverDimension;
 use Facebook\WebDriver\WebDriverElement;
 use Liip\TestFixturesBundle\Services\DatabaseToolCollection;
 use PHPUnit\Runner\BaseTestRunner;
@@ -25,6 +28,21 @@ class AbstractFunctionalTestCase extends PantherTestCase
         $this->fixtureReferenceRepository = $fixtures->getReferenceRepository();
 
         $this->client = static::createPantherClient($pantherOptions, $kernelOptions);
+        $this->client->manage()->window()->setSize(new WebDriverDimension(1200, 1800));
+
+        // panther is running a separate environment, with file based session storage
+        // easiest way to ensure we're starting "fresh" is just to click logout if the link is there
+        $this->client->request('GET', '/');
+        $this->logoutIfLoggedIn();
+        $this->client->request('GET', '/onboarding');
+        $this->logoutIfLoggedIn();
+    }
+
+    private function logoutIfLoggedIn(): void
+    {
+        try {
+            $this->client->clickLink('Logout');
+        } catch (\Exception $e) {}
     }
 
     public function loginUser(?string $userIdentifier, ?string $password = 'password'): void
@@ -106,13 +124,41 @@ class AbstractFunctionalTestCase extends PantherTestCase
         // Doing things this way seems to mean that we don't need to use client->waitFor()
         // (compared with client->findElement->click)
         $textContains = str_replace("'", "\'", $textContains);
-        $xpath = $xpathBase.'a[contains(text(), "' . $textContains . '")]';
+        // exclude links withing a `details` block that is closed
+        $xpath = $xpathBase.'a[contains(text(), "' . $textContains . '") and not(ancestor::details[not(@open)])]';
 
         $links = $this->client->getCrawler()->filterXPath($xpath)->links();
         $link = $links[$index] ?? null;
 
         if ($link === null) {
             $this->fail("No such link found (contains: \"$textContains\", index: $index)");
+        }
+
+        $this->client->click($link);
+    }
+
+    /**
+     * Clicks the "Change" link on a summary-list row, identified by the row's
+     * visually-hidden suffix (e.g. "Journey purpose", "Vehicle", "Ticket cost").
+     * The govuk-frontend summary-list renders this suffix inside a nested
+     * <span class="govuk-visually-hidden">, so the standard text()-based match
+     * in clickLinkContaining() won't find it.
+     *
+     * Stage rows live inside collapsed step-by-step panels; expand them first
+     * so the links are interactable.
+     */
+    protected function clickChangeLinkFor(string $rowSrSuffix): void
+    {
+        $this->client->executeScript('document.querySelectorAll(".js-panel").forEach(p => p.classList.remove("js-hidden"))');
+
+        $rowSrSuffix = str_replace("'", "\'", $rowSrSuffix);
+        $xpath = '//a[contains(text(), "Change") and contains(., "' . $rowSrSuffix . '") and not(ancestor::details[not(@open)])]';
+
+        $links = $this->client->getCrawler()->filterXPath($xpath)->links();
+        $link = $links[0] ?? null;
+
+        if ($link === null) {
+            $this->fail("No 'Change' link found for row '{$rowSrSuffix}'");
         }
 
         $this->client->click($link);
@@ -206,6 +252,35 @@ class AbstractFunctionalTestCase extends PantherTestCase
 
         $func = $functionMap[($negate ? 'Not' : '') . ($isRegex ? 'Regex' : 'Equals')];
         $this->$func($expectedPath, $this->getCurrentPath(), $errorMessage);
+    }
+
+    
+    protected function getUrlFromMessage(?string $assertEventNameAs = null): string
+    {
+        return $this->getMessage($assertEventNameAs)->getPersonalisation()['url'];
+    }
+
+    protected function getAddresseeFromMessage(?string $assertEventNameAs = null): string
+    {
+        return $this->getMessage($assertEventNameAs)->getEmailAddress();
+    }
+
+    protected function getMessage(?string $assertEventNameAs = null): object
+    {
+        $container = static::getContainer();
+        $entityManager = $container->get(EntityManagerInterface::class);
+        $message = $entityManager->getConnection()->fetchAssociative('SELECT * FROM messenger_messages LIMIT 1');
+
+        $this->assertNotFalse($message, 'No message in message table');
+
+        $serializer = $container->get('messenger.default_serializer');
+        $envelope = $serializer->decode($message);
+
+        $message = $envelope->getMessage();
+
+        $this->assertInstanceOf(Email::class, $message);
+        if ($assertEventNameAs) $this->assertSame($assertEventNameAs, $message->getEventName());
+        return $message;
     }
 
     /**

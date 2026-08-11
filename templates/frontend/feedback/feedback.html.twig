@@ -13,9 +13,9 @@
 
     {%- if is_interviewer and category == 'support' -%}
         {{- notificationBanner({
-            title: 'feedback.interviewer-support-warning.title',
-            content: 'feedback.interviewer-support-warning.content',
-            options: {style: 'warning', nl2br: true},
+            titleText: 'feedback.interviewer-support-warning.title' | trans,
+            html: 'feedback.interviewer-support-warning.content' | trans | nl2br,
+            classes: 'govuk-notification-banner--warning',
         }) -}}
     {%- endif -%}
 {%- endblock -%}

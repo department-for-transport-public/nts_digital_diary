@@ -203,4 +203,9 @@ class DirectOnboardingWizardController extends AbstractSessionStateFormWizardCon
     {
         return null;
     }
+
+    protected function getAbortRedirectResponse(): RedirectResponse
+    {
+        return new RedirectResponse($this->generateUrl('onboarding_direct_workflow_place', ['place' => DirectOnboardingState::STATE_INTRODUCTION]));
+    }
 }

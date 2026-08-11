@@ -57,6 +57,7 @@ Encore
     .enableSassLoader(function(options) {
         options.sassOptions['quietDeps'] = true // Don't show deprecation warnings that originate from inside node_modules/
     })
+    .enablePostCssLoader()
 
     .copyFiles({
         from: './assets/images/onboarding',

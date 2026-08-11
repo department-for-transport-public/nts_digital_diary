@@ -267,6 +267,7 @@ direct-onboarding:
     errors:
       page-title: Direct set-up error
       help: There was an error processing the direct set-up data.
+      manual-fallback: Set up this household manually
     resume-existing-household:
       notification-banner:
         title: Warning

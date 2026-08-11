@@ -5,116 +5,15 @@
 {%- block beforeMainWrapper -%}
     {{- parent() -}}
 
-    {# @var areaPeriod \App\Entity\AreaPeriod #}
+    {# @var trainingArea \App\Entity\AreaPeriod #}
     {% set trainingArea = household.areaPeriod ?? areaPeriod ?? false %}
     {%- if trainingArea.trainingInterviewer ?? false -%}
-        {% set trainingRecord = areaPeriod.latestTrainingRecord %}
-        {{- include('interviewer/training/breadcrumbs.html.twig') -}}
-    {%- else -%}
-        {%- from '@GhostGovUkFrontend/components/macros.html.twig' import breadcrumbs -%}
-        {%- set breadcrumbItems = [
-            {
-                href: path('interviewer_dashboard'),
-                text: 'breadcrumbs.dashboard' | trans,
-            }
-        ] -%}
-        {%- if
-            (action is defined and action == 'archived-areas') or
-            (areaPeriod is defined) and areaPeriod.isArchived()
-        -%}
-            {% set breadcrumbItems = breadcrumbItems | merge([
-                {
-                    href: path("interviewer_dashboard_archived_areas"),
-                    text: 'survey-areas.archived.breadcrumb' | trans,
-                }
-            ]) %}
-        {%- endif -%}
-        {%- if areaPeriod is defined %}{% set breadcrumbItems = breadcrumbItems | merge([
-            {
-                href: path('interviewer_dashboard_area', {areaPeriod: areaPeriod.id}),
-                text: areaPeriod.area,
-            }
-        ]) %}{% endif -%}
-        {%- if household is defined %}{% set breadcrumbItems = breadcrumbItems | merge([
-            {
-                href: path("interviewer_dashboard_household", {household: household.id}),
-                text: "#{household.addressNumber} / #{household.householdNumber}",
-            }
-        ]) %}{% endif -%}
-        {%- if diaryKeeper is defined %}{% set breadcrumbItems = breadcrumbItems | merge([
-            {
-                href: path("interviewer_dashboard_diary_keeper", {diaryKeeper: diaryKeeper.id}),
-                text: "#{diaryKeeper.name}",
-            }
-        ]) %}{% endif -%}
-        {%- if action is defined and action == 'change-email' -%}
-            {% set breadcrumbItems = breadcrumbItems | merge([
-                {
-                    href: path("interviewer_change_email", {diaryKeeper: diaryKeeper.id}),
-                    text: 'change-email.breadcrumb' | trans({
-                        name: diaryKeeper.name,
-                    }, 'auth'),
-                }
-            ]) %}
-        {%- endif -%}
-        {%- if action is defined and action == 'change-proxies' -%}
-            {% set breadcrumbItems = breadcrumbItems | merge([
-                {
-                    href: path("interviewer_change_proxies", {diaryKeeper: diaryKeeper.id}),
-                    text: 'diary-keeper.change-proxies.breadcrumb' | trans({name: diaryKeeper.name}),
-                }
-            ]) %}
-        {%- endif -%}
-        {%- if action is defined and action == 'diary-state.approve' -%}
-            {% set breadcrumbItems = breadcrumbItems | merge([
-                {
-                    href: path("interviewer_diary_state_approve", {diaryKeeper: diaryKeeper.id}),
-                    text: 'diary-state.approve.breadcrumb' | trans,
-                }
-            ]) %}
-        {%- endif -%}
-        {%- if action is defined and action == 'diary-state.discard' -%}
-            {% set breadcrumbItems = breadcrumbItems | merge([
-                {
-                    href: path("interviewer_diary_state_discard", {diaryKeeper: diaryKeeper.id}),
-                    text: 'diary-state.discard.breadcrumb' | trans,
-                }
-            ]) %}
-        {%- endif -%}
-        {%- if action is defined and action == 'diary-state.un-approve' -%}
-            {% set breadcrumbItems = breadcrumbItems | merge([
-                {
-                    href: path("interviewer_diary_state_un_approve", {diaryKeeper: diaryKeeper.id}),
-                    text: 'diary-state.un-approve.breadcrumb' | trans,
-                }
-            ]) %}
-        {%- endif -%}
-        {%- if action is defined and action == 'diary-state.un-discard' -%}
-            {% set breadcrumbItems = breadcrumbItems | merge([
-                {
-                    href: path("interviewer_diary_state_un_discard", {diaryKeeper: diaryKeeper.id}),
-                    text: 'diary-state.un-discard.breadcrumb' | trans,
-                }
-            ]) %}
-        {%- endif -%}
-        {%- if action is defined and action == 'submit-household' -%}
-            {% set breadcrumbItems = breadcrumbItems | merge([
-                {
-                    href: path("interviewer_household_submit", {household: household.id}),
-                    text: 'household.submit.breadcrumb' | trans,
-                }
-            ]) %}
-        {%- endif -%}
-        {%- if action is defined and action == 'compare-household' -%}
-            {% set breadcrumbItems = breadcrumbItems | merge([
-                {
-                    text: 'compare-household.breadcrumb' | trans,
-                }
-            ]) %}
-        {%- endif -%}
+        {% include 'includes/training-banner.html.twig' with {
+            trainingRecord: trainingArea.latestTrainingRecord,
+            moduleUrl: path('interviewer_training_module_index', {moduleName: trainingArea.latestTrainingRecord.moduleName})
+        } %}
+    {% endif %}
 
-        {%- if (breadcrumbItems | length > 1) -%}
-            {{- breadcrumbs({items: breadcrumbItems}) -}}
-        {%- endif -%}
-    {%- endif -%}
+    {{ block('breadcrumbs', 'interviewer/breadcrumbs.html.twig') }}
 {%- endblock -%}
+

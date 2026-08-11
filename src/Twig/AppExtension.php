@@ -2,8 +2,10 @@
 
 namespace App\Twig;
 
+use App\Entity\DiaryKeeper;
 use App\Entity\PreferenceUserInterface;
 use App\Features;
+use App\Utility\DiaryKeeperFeaturesService;
 use Exception;
 use Symfony\Component\HttpFoundation\RequestStack;
 use Symfony\Component\Security\Core\User\UserInterface;
@@ -16,7 +18,7 @@ use Twig\TwigFunction;
 
 class AppExtension extends AbstractExtension implements GlobalsInterface
 {
-    public function __construct(protected readonly RequestStack $requestStack)
+    public function __construct(protected readonly RequestStack $requestStack, protected readonly DiaryKeeperFeaturesService $diaryKeeperFeatures)
     {}
 
     public function getFilters(): array
@@ -36,6 +38,7 @@ class AppExtension extends AbstractExtension implements GlobalsInterface
         return [
             new TwigFunction('choiceLabel', $this->choiceLabel(...)),
             new TwigFunction('is_feature_enabled', $this->isFeatureEnabled(...)),
+            new TwigFunction('is_dk_feature_enabled', $this->isDiaryKeeperFeatureEnabled(...)),
             new TwigFunction('shiftMapping', $this->shiftMapping(...)),
             new TwigFunction('is_translatable_message',fn(mixed $x) => $x instanceof TranslatableMessage),
         ];
@@ -49,6 +52,19 @@ class AppExtension extends AbstractExtension implements GlobalsInterface
             return Features::isEnabled($str);
         } catch(Exception) {
             throw new SyntaxError("Unknown feature '$str'");
+        }
+    }
+
+    /**
+     * @throws SyntaxError
+     */
+    public function isDiaryKeeperFeatureEnabled(string $str, ?DiaryKeeper $diaryKeeper = null): bool {
+        try {
+            return $diaryKeeper
+                ? $this->diaryKeeperFeatures->isEnabled($str, $diaryKeeper)
+                : $this->diaryKeeperFeatures->isEnabledForCurrentUser($str);
+        } catch(Exception) {
+            throw new SyntaxError("Unknown diary keeper feature '$str'");
         }
     }
 

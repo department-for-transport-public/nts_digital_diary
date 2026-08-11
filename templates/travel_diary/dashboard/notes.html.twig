@@ -4,9 +4,7 @@
 {% set title_translation_parameters = {
     dayNumber: day.number,
     date: day.date | date(date_time_format.date('with-dow')),
-    diary_keeper_name: diaryKeeper | diary_keeper_display_name,
 } %}
-{% set breadcrumb_translation_parameters = title_translation_parameters %}
 {% set heading_class = "govuk-heading-xl" %}
 
 {% block pageHeading %}

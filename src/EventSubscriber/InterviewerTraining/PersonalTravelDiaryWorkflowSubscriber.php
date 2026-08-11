@@ -35,7 +35,7 @@ class PersonalTravelDiaryWorkflowSubscriber implements EventSubscriberInterface
         /** @var DiaryKeeper $diaryKeeper */
         $diaryKeeper = $event->getSubject();
         $areaPeriod = $diaryKeeper->getHousehold()->getAreaPeriod();
-        if (!$areaPeriod->getTrainingInterviewer()
+        if (!$areaPeriod->isTrainingArea()
             || $areaPeriod->getLatestTrainingRecord()->getModuleName() !== InterviewerTrainingRecord::MODULE_PERSONAL_TRAVEL_DIARY
         ) {
             return;

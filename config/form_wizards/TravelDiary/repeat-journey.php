@@ -36,7 +36,6 @@ return static function (ContainerConfigurator $container): void {
                     ], 'travel_diary/repeat_journey/wizard_full_introduction.html.twig'),
                     td_place(State::STATE_SELECT_SOURCE_DAY,SourceDayType::class, 'repeat-journey.select-source-day', [
                         'form_data_property' => null,
-                        'form_options' => ['is_practice' => 'isPracticeDay'],
                     ], $defaultTemplate),
                     td_place(State::STATE_SELECT_SOURCE_JOURNEY,SourceJourneyType::class, 'repeat-journey.select-source-journey', [
                         'form_data_property' => null,

@@ -13,6 +13,7 @@
 {% set interviewerNavigation = (is_granted('ROLE_INTERVIEWER')) ? [
     {href: path('interviewer_dashboard'), text: 'breadcrumbs.dashboard' | trans([], 'interviewer')},
     {href: path('interviewer_training_dashboard'), text: 'breadcrumbs.training' | trans([], 'interviewer')},
+    {href: path('interviewer_change_password'), text: 'breadcrumbs.change-password' | trans([], 'interviewer')},
 ] : [] %}
 {% set supportNavigation = (is_feedback_route or is_admin) ? [] : [{href: path('app_feedback_form', {category: constant('App\\Entity\\Feedback\\CategoryEnum::Support').value, info: encodeFeedback()}), text: 'Support'}] %}
 {% set preferencesNavigation = ((app.user | is_preference_user) and not is_granted('IS_IMPERSONATOR'))  ? [{href: path('app_user_preferences_index'), text: 'Preferences'}] : [] %}
@@ -78,7 +79,10 @@
 {% endblock %}
 
 {% block bodyEnd %}
-    {{ include('includes/viewport-size-monitor.html.twig') }}
+    {# In its own block so error pages can drop it: rendering it reads/writes the
+       session (and fires the /viewport-size XHR), which we don't want on 404s. #}
+    {% block viewportMonitor %}{{ include('includes/viewport-size-monitor.html.twig') }}{% endblock %}
+
     {%- if isVimeoUsed() -%}
         <script type="text/javascript" src="https://player.vimeo.com/api/player.js" defer></script>
     {%- endif -%}

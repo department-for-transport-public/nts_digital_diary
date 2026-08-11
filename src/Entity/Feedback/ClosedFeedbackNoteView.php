@@ -16,10 +16,11 @@ class ClosedFeedbackNoteView
     protected int $id;
 
     #[ORM\OneToOne(targetEntity: Message::class)]
+    #[ORM\JoinColumn(nullable: false)]
     protected Message $message;
 
     #[ORM\Column(type: Types::DATETIME_IMMUTABLE)]
-    protected \DateTime $createdAt;
+    protected \DateTimeImmutable $createdAt;
 
     public function getId(): int
     {
@@ -34,7 +35,7 @@ class ClosedFeedbackNoteView
         return $this->message;
     }
 
-    public function getCreatedAt(): \DateTime
+    public function getCreatedAt(): \DateTimeImmutable
     {
         return $this->createdAt;
     }

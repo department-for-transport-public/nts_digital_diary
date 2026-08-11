@@ -20,7 +20,7 @@ framework:
         ## Pentest recommended limiting session lifetime
         # using gc_maxlifetime looks at idle time, not just a finite cookie lifetime
         gc_maxlifetime: 3600
-        gc_probability: 5
+        gc_probability: 0
         gc_divisor: 100
 
     uid:
@@ -38,4 +38,4 @@ services:
         arguments:
             - '%env(resolve:DATABASE_URL)%'
 #            If you get transaction issues (e.g. after login) uncomment the line below
-#            - { lock_mode: !php/const Symfony\Component\HttpFoundation\Session\Storage\Handler\PdoSessionHandler::LOCK_ADVISORY }
+            - { lock_mode: !php/const Symfony\Component\HttpFoundation\Session\Storage\Handler\PdoSessionHandler::LOCK_ADVISORY }

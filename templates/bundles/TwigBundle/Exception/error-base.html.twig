@@ -6,6 +6,17 @@
 
 {% block sessionWarning %}{% endblock %}
 
+{# Don't record viewport on error pages — it reads/writes the session and fires
+   the /viewport-size XHR. Not wanted on 404s (and anonymous error views). #}
+{% block viewportMonitor %}{% endblock %}
+
+{# Skip the parent beforeContent (flash banners + form error summary): neither is
+   relevant on an error page, and flashNotificationBanners() reads the flash bag,
+   which starts the session (a PdoSessionHandler hit). Still render the heading. #}
+{% block beforeContent %}
+    {{ block('pageHeading') }}
+{% endblock %}
+
 {% block pageHeading %}
     <h1 class="govuk-heading govuk-heading-xl">{{ (prefix ~ 'heading')|trans|nl2br }}</h1>
 

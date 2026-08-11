@@ -29,6 +29,15 @@
         ]) -%}
     {%- endif -%}
 
+    {%- if breadcrumb_action == 'metrics' and household is defined -%}
+        {%- set breadcrumb_items = breadcrumb_items | merge([
+            {
+                href: path('admin_household_maintenance_metrics', {id: household.id}),
+                text: 'Metrics',
+            }
+        ]) -%}
+    {%- endif -%}
+
     {%- if breadcrumb_items | length > 1 -%}
         {%- from '@GhostGovUkFrontend/components/macros.html.twig' import breadcrumbs -%}
         {{- breadcrumbs({items: breadcrumb_items}) -}}

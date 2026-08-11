@@ -4,6 +4,11 @@
 
 {% block content %}
     <p class="govuk-body">{{ 'direct-onboarding.ingress.errors.help' | trans }}</p>
+    <p class="govuk-body">
+        <a class="govuk-link" href="{{ path('onboarding_household_index') }}">
+            {{- 'direct-onboarding.ingress.errors.manual-fallback' | trans -}}
+        </a>
+    </p>
     {% if form ?? false %}
         <h2 class="govuk-heading-s">Debug information</h2>
         <p class="govuk-body">Please share these details when reporting the error.</p>

@@ -43,5 +43,8 @@
         "ie 8-11",
         "iOS >= 9"
     ],
-    "packageManager": "yarn@4.9.2"
+    "packageManager": "yarn@4.9.2",
+    "dependencies": {
+        "postcss-loader": "^8.1.0"
+    }
 }

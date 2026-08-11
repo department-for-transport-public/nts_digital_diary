@@ -20,8 +20,8 @@ class MessengerCronController extends AbstractCronController
             'messenger:consume',
             [
                 '--memory-limit' => '128M',
-                '--time-limit' => 290, // die before the next scheduled run time (5 minutes less 10 seconds)
-                'receivers' => ['async_notify', 'async_property_change', 'async_feedback'],
+                '--time-limit' => 295, // die before the next scheduled run time (5 minutes less 5 seconds)
+                'receivers' => ['async_notify', 'async_property_change', 'async_feedback', 'async_job'],
             ]
         );
     }

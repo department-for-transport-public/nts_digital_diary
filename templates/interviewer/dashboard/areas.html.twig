@@ -12,12 +12,11 @@
     {%- from '@GhostGovUkFrontend/components/macros.html.twig' import notificationBanner -%}
 
     {%- if (areasWithOverdueHouseholds ?? []) | length > 0 -%}
+        {%- set _params = {numberOfHouseholds: overdueHouseholds | length, numberOfAreas: areasWithOverdueHouseholds | length} -%}
         {{- notificationBanner({
-            title: 'survey-areas.overdue-households.title',
-            content: 'survey-areas.overdue-households.content',
-            options: {style: 'warning', nl2br: true},
-            translation_domain: 'interviewer',
-            translation_parameters: {numberOfHouseholds: overdueHouseholds | length, numberOfAreas: areasWithOverdueHouseholds | length}
+            titleText: 'survey-areas.overdue-households.title' | trans(_params, 'interviewer'),
+            html: 'survey-areas.overdue-households.content' | trans(_params, 'interviewer') | nl2br,
+            classes: 'govuk-notification-banner--warning',
         }) -}}
     {%- endif -%}
 {%- endblock -%}

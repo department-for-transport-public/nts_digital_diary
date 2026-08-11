@@ -1,17 +1,39 @@
 const {goto, submit, clickLinkWithText, getScreenshotter, clickButtonWithText, fillForm, executeCommand,
-    clickLinkWithTextThatStartsWith, clickLinkContainingText, clickElement, waitForOptions
+    clickLinkWithTextThatStartsWith, clickLinkContainingText, clickElement, waitForOptions, VIEWPORTS
 } = require("./common")
 const {retrieveOnboardingCodes} = require("./interviewer")
 
+const nameEmailTemplate = "{name} ({email})"
+const dk1 = {
+    name: 'Alice',
+    email: 'alice@example.com',
+    number: '1',
+}
+const dk2 = {
+    name: 'Bob',
+    email: 'bob@example.com',
+    number: '2',
+}
+const dk3 = {
+    name: 'Charlie',
+    newEmail: 'charlie2@example.com',
+    number: '3',
+}
+const dk4 = {
+    name: 'David',
+    number: '4',
+}
+
+
 module.exports.documentationFlow = async function(page, baseUrl, outputDir) {
     const screenshot = await getScreenshotter(page, outputDir  + 'documentation/')
-    await page.setViewport({width: 1003, height: 200})
+    await page.setViewport(VIEWPORTS.desktop)
 
     const [passcode1, passcode2] = await retrieveOnboardingCodes(111111)
     await onboardingFlow(page, baseUrl, screenshot, passcode1, passcode2)
 
     await executeCommand(`addDocumentationFixtures()`)
-    await shareAnikasJourneys(page)
+    await shareDkTwosJourneys(page)
 
     await interviewerFlow(page, baseUrl, screenshot)
 }
@@ -50,12 +72,6 @@ async function onboardingFlow(page, baseUrl, screenshot, passcode1, passcode2) {
     await clickLinkWithText(page, 'Add a household member')
     await screenshot('4-add-householder_details.png')
 
-    let dk1= {
-        name: 'Elliot',
-        email: 'Elliot@example.com',
-        number: '1',
-    }
-
     await submit(page, {
         Name: dk1.name,
         Number: dk1.number,
@@ -80,8 +96,8 @@ async function onboardingFlow(page, baseUrl, screenshot, passcode1, passcode2) {
     }, 'Continue')
 
     await submit(page, {
-        Name: 'Anika',
-        Number: '2',
+        Name: dk2.name,
+        Number: dk2.number,
         Yes: true,
     }, 'Continue')
 
@@ -91,8 +107,8 @@ async function onboardingFlow(page, baseUrl, screenshot, passcode1, passcode2) {
     await screenshot('7-add-second-householder_identity.png')
 
     await fillForm(page, {
-        'Enter their email address': 'anika@example.com',
-        'Elliot (elliot@example.com)': true
+        'Enter their email address': dk2.email,
+        [substitute(nameEmailTemplate, dk1)]: true
     })
     await screenshot('8-add-second-householder_identity-and-proxy.png',{
         cropSelector: 'fieldset.govuk-fieldset[aria-describedby="user_identifier_user_proxies-hint"]',
@@ -111,8 +127,8 @@ async function onboardingFlow(page, baseUrl, screenshot, passcode1, passcode2) {
     }, 'Continue')
 
     await submit(page, {
-        Name: 'Jaya',
-        Number: '3',
+        Name: dk3.name,
+        Number: dk3.number,
         No: true,
     }, 'Continue')
 
@@ -126,8 +142,8 @@ async function onboardingFlow(page, baseUrl, screenshot, passcode1, passcode2) {
     })
 
     await submit(page, {
-        'Anika (anika@example.com)': true,
-        'Elliot (elliot@example.com)': true,
+        [substitute(nameEmailTemplate, dk2)]: true,
+        [substitute(nameEmailTemplate, dk1)]: true,
     }, 'Save and continue')
 
     // Fourth diary keeper
@@ -136,15 +152,15 @@ async function onboardingFlow(page, baseUrl, screenshot, passcode1, passcode2) {
     }, 'Continue')
 
     await submit(page, {
-        Name: 'Oliver',
-        Number: '4',
+        Name: dk4.name,
+        Number: dk4.number,
         No: true,
     }, 'Continue')
 
     await fillForm(page, {
         'Digital diary': true,
-        'Anika (anika@example.com)': true,
-        'Elliot (elliot@example.com)': true,
+        [substitute(nameEmailTemplate, dk2)]: true,
+        [substitute(nameEmailTemplate, dk1)]: true,
     })
 
     await screenshot('10-add-forth-householder_identity-and-proxy.png',{
@@ -174,18 +190,18 @@ async function onboardingFlow(page, baseUrl, screenshot, passcode1, passcode2) {
     await screenshot('13-add-vehicle.png')
 
     await submit(page, {
-        'Name': `Elliot's White Volvo`,
+        'Name': `${dk1.name}'s White Volvo`,
         'Car': true,
         'Vehicle CAPI number': '1',
-        ['Elliot']: true,
+        [dk1.name]: true,
     }, 'Save vehicle')
 
     await clickLinkWithText(page, 'Add a vehicle')
     await submit(page, {
-        'Name': `Anika's Red Fiat`,
+        'Name': `${dk2.name}'s Red Fiat`,
         'Car': true,
         'Vehicle CAPI number': '2',
-        ['Anika']: true,
+        [dk2.name]: true,
     }, 'Save vehicle')
 
     await screenshot('14-summary-page.png')
@@ -228,29 +244,29 @@ async function interviewerFlow(page, baseUrl, screenshot) {
         cropPadding: 10
     })
     await clickLinkWithText(page, 'Details / actions', 2)
-    await screenshot('21-details-for-jaya.png')
+    await screenshot('21-details-for-dk-three.png')
 
     await clickLinkWithText(page, 'Change email')
     await screenshot('22-change-email-address.png')
 
     await submit(page,{
-        'New email address': 'jaya2@example.com',
+        'New email address': dk3.newEmail,
     }, 'Change email address')
     await screenshot('23-change-initiated.png')
 
     await clickLinkWithText(page, 'Back to household')
-    await screenshot('24-elliot.png', {
+    await screenshot(`24-dk-one.png`, {
         cropSelector: '.govuk-body + .govuk-table .govuk-table__body tr:nth-child(1)',
         cropPadding: 10
     })
 
     await clickLinkWithText(page, 'Details / actions')
-    await screenshot('25-details-for-elliot.png')
+    await screenshot('25-details-for-dk-one.png')
 
     await clickLinkWithText(page, 'Change')
     await screenshot('26-change-proxies.png')
 
-    await fillForm(page, {'Anika': true})
+    await fillForm(page, {[dk2.name]: true})
     await screenshot('27-ticking-boxes.png', {
         cropSelector: ['main > h1', 'main > form'],
         cropPadding: 10
@@ -262,14 +278,14 @@ async function interviewerFlow(page, baseUrl, screenshot) {
     const button = await page.waitForSelector("::-p-xpath(//a[contains(text(), 'View / amend')])")
     await button.evaluate(b => b.classList.add('highlight'))
 
-    await page.setViewport({width: 1920, height: 200})
+    await page.setViewport(VIEWPORTS.wide)
     await screenshot('28-amend-a-travel-diary.png')
 
     await clickLinkContainingText(page, 'View / amend')
     await screenshot('29-compare-household-view.png')
 
-    await clickLinkWithText(page, 'Anika')
-    await screenshot('30-compare-household-view_anika.png')
+    await clickLinkWithText(page, dk2.name)
+    await screenshot('30-compare-household-view_dk-two.png')
 
     const two = await page.waitForSelector("::-p-xpath(//div[@id='tab-diary-keeper-2']//a[text()='2'])")
     await two.evaluate(t => t.classList.add('highlight'))
@@ -284,7 +300,7 @@ async function interviewerFlow(page, baseUrl, screenshot) {
     })
 
     await two.evaluate(t => t.classList.remove('highlight'))
-    const impersonate = await page.waitForSelector("::-p-xpath(//div[@id='tab-diary-keeper-2']//a[text()='Impersonate'])")
+    const impersonate = await page.waitForSelector("::-p-xpath(//div[@id='tab-diary-keeper-2']//a[starts-with(text(),'Impersonate')])")
     await impersonate.evaluate(t => t.classList.add('highlight'))
 
     await screenshot('32-impersonation.png', {
@@ -297,12 +313,12 @@ async function interviewerFlow(page, baseUrl, screenshot) {
         cropX2: 820,
     })
 
-    await page.setViewport({width: 1003, height: 200})
+    await page.setViewport(VIEWPORTS.desktop)
 
-    await clickLinkWithText(page, 'Elliot')
-    await clickLinkWithText(page, 'Impersonate')
+    await clickLinkWithText(page, dk1.name)
+    await clickLinkContainingText(page, 'Impersonate')
 
-    await screenshot('33-impersonating-elliot.png', {
+    await screenshot('33-impersonating-dk-one.png', {
         cropSelector: [
             '.govuk-header',
             '.govuk-summary-list__key:nth-child(1)',
@@ -311,11 +327,11 @@ async function interviewerFlow(page, baseUrl, screenshot) {
     })
 
     await clickLinkContainingText(page, 'Exit')
-    await clickLinkContainingText(page, 'Anika')
-    await clickLinkWithText(page, 'Impersonate', 1) // Need the 1, since the 1st link is the hidden one on Elliot's tab
+    await clickLinkContainingText(page, dk2.name)
+    await clickLinkContainingText(page, 'Impersonate', 1) // Need the 1, since the 1st link is the hidden one on dk-one's tab
     await clickLinkContainingText(page, 'Back to diary')
 
-    await screenshot('34-impersonating-anika.png')
+    await screenshot('34-impersonating-dk-two.png')
 
     await clickLinkContainingText(page, 'View', 1)
     await screenshot('35-day-view.png')
@@ -325,7 +341,7 @@ async function interviewerFlow(page, baseUrl, screenshot) {
 
     await clickLinkContainingText(page, 'Exit')
 
-    await page.setViewport({width: 1920, height: 200})
+    await page.setViewport(VIEWPORTS.wide)
     await page.$$eval(
         "::-p-xpath(//div[@id='tab-diary-keeper-1']//tbody/tr[2]/td[contains(text(), 'Holt')])",
         elements => elements.map(e => e.innerHTML = '<span class="highlight">' + e.innerHTML + '</span>')
@@ -336,7 +352,7 @@ async function interviewerFlow(page, baseUrl, screenshot) {
     const linkToJourneyTwo = await page.$("::-p-xpath(//div[@id='tab-diary-keeper-1']//tbody/tr[2]/th/a)")
     await clickElement(page, linkToJourneyTwo)
 
-    await page.setViewport({width: 1003, height: 200})
+    await page.setViewport(VIEWPORTS.desktop)
     await page.$$eval(
         "::-p-xpath(//a[contains(text(), 'Split journey')])",
         elements => elements.map(e => e.classList.add('highlight'))
@@ -345,7 +361,7 @@ async function interviewerFlow(page, baseUrl, screenshot) {
 
     await clickLinkContainingText(page, 'Split journey')
 
-    await screenshot('39-split-elliot-journey.png', {
+    await screenshot('39-split-dk-one-journey.png', {
         cropSelector: [
             '.govuk-header',
             'form',
@@ -362,8 +378,8 @@ async function interviewerFlow(page, baseUrl, screenshot) {
     })
 
     await page.goto(baseUrl + 'travel-diary')
-    await clickLinkContainingText(page, 'Mark travel diary as complete')
-    await submit(page, {}, 'Mark travel diary as complete')
+    await clickLinkContainingText(page, 'Mark my travel diary as complete')
+    await submit(page, {}, 'Mark my travel diary as complete')
     await clickLinkContainingText(page, 'Exit')
     await clickLinkContainingText(page, '2 / 3')
     await clickLinkContainingText(page, 'Details')
@@ -388,38 +404,42 @@ async function interviewerFlow(page, baseUrl, screenshot) {
     await screenshot('45-submit-household.png')
 }
 
-async function shareAnikasJourneys(page){
-    const anikaUrl = await executeCommand(`getOnboardingUrlFromEmail('anika@example.com')`);
-    await goto(page, anikaUrl)
-    const password = 'Anika9832'
+async function shareDkTwosJourneys(page){
+    const dkUrl = await executeCommand(`getOnboardingUrlFromEmail('${dk2.email}')`);
+    await goto(page, dkUrl)
+    const password = 'DKtwo9832'
+    await clickButtonWithText(page, 'Continue') // pre-auth
     await submit(page, {'Choose a password': password, 'Repeat the password': password}, 'Create account')
-    await submit(page, {Email: 'anika@example.com', Password: password}, 'Sign in')
     await submit(page, {'12 hour': true}, 'Save')
 
     await clickLinkContainingText(page, 'View', 1) // Day 1 (N.B. practise day is 0)
     await clickLinkContainingText(page, 'View', 0) // Journey 1
     await clickLinkContainingText(page, 'Share this journey')
     await submit(page, {}, 'Continue')
-    await submit(page, {Jaya: true, Oliver: true}, 'Continue')
+    await submit(page, {[dk3.name]: true, [dk4.name]: true}, 'Continue')
     await submit(page, {
-        'Purpose of journey for Jaya': 'To go to school',
-        'Purpose of journey for Oliver': 'To go to school',
+        [`Purpose of journey for ${dk3.name}`]: 'To go to school',
+        [`Purpose of journey for ${dk4.name}`]: 'To go to school',
     }, 'Continue')
     await submit(page, {
-        'Did Jaya pay anything for parking?': {No: true},
-        'Did Oliver pay anything for parking?': {No: true},
+        [`Did ${dk3.name} pay anything for parking?`]: {No: true},
+        [`Did ${dk4.name} pay anything for parking?`]: {No: true},
     }, 'Save and continue')
     await clickLinkContainingText(page, 'Back to day')
 
     await clickLinkContainingText(page, 'View', 3) // Journey 4
     await clickLinkContainingText(page, 'Share this journey')
     await submit(page, {}, 'Continue')
-    await submit(page, {Jaya: true, Oliver: true}, 'Continue')
+    await submit(page, {[dk3.name]: true, [dk4.name]: true}, 'Continue')
     await submit(page, {}, 'Continue') // pre-filled with "Go home"
     await submit(page, {
-        'Did Jaya pay anything for parking?': {No: true},
-        'Did Oliver pay anything for parking?': {No: true},
+        [`Did ${dk3.name} pay anything for parking?`]: {No: true},
+        [`Did ${dk4.name} pay anything for parking?`]: {No: true},
     }, 'Save and continue')
 
     await clickLinkContainingText(page, 'Logout')
+}
+
+function substitute(template, variables) {
+    return template.replace(/{(\w+)}/g, (match, key) => variables[key] || match);
 }

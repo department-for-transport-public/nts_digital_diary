@@ -1,0 +1,94 @@
+{%- extends 'admin/household-maintenance/base.html.twig' -%}
+
+{% set htmlClasses = "govuk-full-width nts-admin-household-metrics" %}
+
+{%- set breadcrumb_action = 'metrics' -%}
+{%- set heading_class = 'govuk-heading-l govuk-!-margin-bottom-6' -%}
+
+{%- block pageTitlePrefix -%}Metrics - {% endblock -%}
+
+{%- block pageHeading -%}
+    <h1 class="{{ heading_class }}">Metrics{% if household is defined %} &ndash; {{ household.serialNumber }}{% endif %}</h1>
+{%- endblock -%}
+
+{%- block content -%}
+    {%- from '@GhostGovUkFrontend/components/macros.html.twig' import tableCell, tableRow -%}
+    {%- from '@GhostGovUkCore/list-page.html.twig' import listTableStart, listTableEnd -%}
+
+    {{ listTableStart(data, form) }}
+    {% for metricsLog in data.entities %}
+        {# @var metricsLog \App\Entity\Metrics\MetricsLog #}
+        <tr class="govuk-table__row">
+            {{ tableCell({classes: 'nowrap', text: metricsLog.createdAt | date(date_time_format.date('default') ~ ' ' ~ date_time_format.time('24-hour'))}) }}
+            {{ tableCell({text: metricsLog.diarySerial ?? '-'}) }}
+            {{ tableCell({text: metricsLog.event}) }}
+            {{ tableCell({text: metricsLog.userSerial ?? '-'}) }}
+            {{ tableCell({text: _self.viewportDetails(metricsLog.metadata)}) }}
+            {%- set metadata = metricsLog.metadata -%}
+            {%- if metadata | filter((v, k) => k != 'browser_viewport') -%}
+                {%- set metadataHtml -%}
+                    <details class="govuk-details govuk-!-margin-bottom-0">
+                        <summary class="govuk-details__summary"><span class="govuk-details__summary-text">View</span></summary>
+                        <div class="govuk-details__text metrics-metadata">{{ _self.renderMetadata(metadata) }}</div>
+                    </details>
+                {%- endset -%}
+                {{ tableCell({colspan: 2, classes: "govuk-!-text-align-left", html: metadataHtml}) }}
+            {%- else -%}
+                {{ tableCell({colspan: 2, classes: "govuk-!-text-align-left", text: '-'}) }}
+            {%- endif -%}
+        </tr>
+    {% else %}
+        {{ tableRow([{text: 'No results', colspan: data.fields | length}]) }}
+    {% endfor %}
+    {{ listTableEnd(data, form) }}
+{%- endblock -%}
+
+
+{%- macro renderMetadata(value) -%}
+    <div class="mm-level">
+        {%- if value is mapping -%}
+            {%- for key, item in value | filter((v, k) => k != 'browser_viewport') -%}
+                {%- set isComplex = item is iterable and item is not empty
+                    and (item is mapping or item|filter(v => v is iterable) is not empty) -%}
+                {%- if isComplex -%}
+                    <details class="mm-node" open>
+                        <summary class="mm-summary"><span class="mm-key">{{ key }}</span></summary>
+                        {{ _self.renderMetadata(item) }}
+                    </details>
+                {%- else -%}
+                    <div class="mm-row"><span class="mm-key">{{ key }}</span><span class="mm-value">{{ _self.renderScalar(item) }}</span></div>
+                {%- endif -%}
+            {%- endfor -%}
+        {%- else -%}{# sequence containing arrays #}
+            {%- for item in value -%}
+                {%- if item is iterable -%}
+                    <details class="mm-node" open>
+                        <summary class="mm-summary"><span class="mm-key">{{ loop.index0 }}</span></summary>
+                        {{ _self.renderMetadata(item) }}
+                    </details>
+                {%- else -%}
+                    <div class="mm-row"><span class="mm-value">{{ _self.renderScalar(item) }}</span></div>
+                {%- endif -%}
+            {%- endfor -%}
+        {%- endif -%}
+    </div>
+{%- endmacro -%}
+
+{%- macro renderScalar(value) -%}
+    {%- if value is null -%}&ndash;
+    {%- elseif value is same as(true) -%}true
+    {%- elseif value is same as(false) -%}false
+    {%- elseif value is iterable and value is empty -%}&ndash;
+    {%- elseif value is iterable -%}{{ value|map(v => _self.renderScalar(v))|join(', ') }}
+    {%- else -%}{{ value }}
+    {%- endif -%}
+{%- endmacro -%}
+
+{%- macro viewportDetails(metadata) -%}
+    {% set viewport = metadata.browser_viewport ?? false %}
+    {%- if viewport and (viewport.size is defined) and (viewport.aspect is defined) -%}
+        {{ viewport.size }} / {{ viewport.aspect }}
+    {%- else -%}
+        -
+    {%- endif -%}
+{%- endmacro -%}

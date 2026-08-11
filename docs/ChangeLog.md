@@ -2,8 +2,70 @@
 
 # Change log
 
-## Upcoming
-- 
+## Pending deployment
+- **Update**: Break view journey title onto two lines, and use "Practice day" instead of "Day 0"
+- **Fix**: garbage collection cron URL
+- **Feature**: Add journey reflow
+
+## 2026-04-27
+- **Update**: Change references to `my travel diary` with DK's name, to clarify it for shared users
+- **Update**: Add mobile view screenshots
+- **Update**: Add link to manual onboarding page from error page, as a partial mitigation against broken onboarding URLs
+- **Fix**: Use options\[disabled\] instead of attr\[disabled\]
+- **Fix**: Re-order stages screen bug + add test
+- **Fix**: Fix being able to onboard an empty household
+- **Fix**: exclude source tracking parameter from signed URLs and change the parameter's name to avoid removal by firefox etc.
+- **Update**: Add a pre-auth form to the password reset flow
+
+## 2026-04-09
+- **Added**: API authentication protocol V2
+- **Updated**: API replay caching now uses valid cache keys, and DB based cache
+- **Feature**: Interviewers can change their own password
+- **Update**: Set max_instances to prevent cost spiralling during DDOS
+- **Update**: Improve max-length validation messages
+- **Update**: Adjust journey sharing help message
+- **Fix**: Change survey purge cron to make sure it takes property change log entries into account
+- **Fix**: Migrate to use the new-style notificationBanner() macro  
+- **Fix**: Allow interviewers to change diary keeper email even after the account has been confirmed (password set)
+- **Update**: Move session garbage collection to cron task
+- **Fix**: Add pre-auth form to prevent email clients from triggering email resend
+
+## 2026-02-12
+- **Update**: Allow interviewers to edit diarykeeper day notes without having to impersonate
+- **Update**: Add feedback message archive + allow feedback messages to transition directly to closed from assigned
+- **Update**: Composer libraries
+- **Fix**: sharing a journey with a diary keeper will ensure that their diary is marked as in progress
+- **Update**: accessibility statement
+- **Update**: add screenshot comparison tool
+- **Update**: make some changes to the paradata events 
+
+## 2025-12-15
+- **Update**: Send reminder emails to diary keepers the day before their diary week starts. Only applies to 2026 area codes and onwards.
+- **Update**: Add personalisation parameters to account creation email sending, and switch to new template on Notify
+- **Fix**: fix several minor deprecations, update `core-bundle` to 5.0.1 
+- **Update**: Performing actions (repeat, return, share) on practice journeys, phase 2 — enable the actions
+- **Update**: Output data when property change log/export api property history contains a single interviewer edit
+- **Update**: include the number of diary keepers and which ones are adults in metrics log/paradata onboarding events
+
+## 2025-10-29
+- **Update**: Performing actions (repeat, return, share) on practice journeys, phase 1 — move example journeys to a new example day 
+- **Update**: use Core Bundle Features and Kernel
+- **Update**: update GovUkCoreBundle to make use of the reconnecting DBAL Connection wrapper
+
+## 2025-10-15
+- **Fix**: problem with diary comparison screen if it contains walks without a distance
+
+## 2025-10-08
+- **Update**: indicate adult/child diary type on dashboard, and clarify passenger count validation messages
+- **Update**: increase the number of area onboarding codes to 25. Ensure that tests and validation is using the same constant.
+- **Update**: instruct interviewers to verify lack of short walks on day 1, and make note.
+
+## 2025-10-01
+- **Update**: Create a generic, asynchronous job handling service 
+- **Update**: Improve admin data export by using new Job infrastructure
+- **Update**: Add diary week start date to the metrics log `onboarding complete event` 
+- **Fix**: Prevent duplicate DK and vehicle names during direct onboarding QR code processing
+- **Fix**: A DiaryKeeper proxying as another who could also proxy for anyone would cause a 500 
 
 ## 2025-08-21
 - **Fix**: include rebrand assets in webpack file copy list

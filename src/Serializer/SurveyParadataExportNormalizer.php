@@ -2,7 +2,7 @@
 
 namespace App\Serializer;
 
-use App\Entity\Utility\MetricsLog;
+use App\Entity\Metrics\MetricsLog;
 use Symfony\Component\Serializer\Exception\ExceptionInterface;
 use Symfony\Component\Serializer\Normalizer\NormalizerAwareInterface;
 use Symfony\Component\Serializer\Normalizer\NormalizerAwareTrait;
